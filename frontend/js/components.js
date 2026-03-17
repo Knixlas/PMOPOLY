@@ -371,13 +371,70 @@ function truncate(str, max) {
 // ══════════════════════════════════════
 // Phase 1 Board (Projektutveckling)
 // ══════════════════════════════════════
+const SQ_COLORS = {
+    start: '#2E7D32', projekt: '#1565C0', kort: '#6A1B9A',
+    stjarna: '#F9A825', stadshuset: '#C62828', lansstyrelsen: '#4E342E',
+    skonhetsradet: '#AD1457',
+};
+
+function renderSquareOverlays(boardSquares) {
+    let html = '';
+    for (const sq of boardSquares) {
+        const pos = BOARD_LAYOUT.find(l => l.nr === sq.nr);
+        if (!pos) continue;
+        const fill = SQ_COLORS[sq.typ] || '#333';
+        const x = pos.x, y = pos.y;
+
+        // Background rect
+        html += `<rect x="${x}" y="${y}" width="${SQ_W}" height="${SQ_H}"
+                       rx="6" fill="${fill}" opacity="0.85" stroke="#f0c929" stroke-width="1.5"/>`;
+
+        // Square number
+        html += `<text x="${x + 4}" y="${y + 13}" fill="rgba(255,255,255,0.6)"
+                       font-size="9" font-weight="400">${sq.nr}</text>`;
+
+        // Square name (wrap long names)
+        const name = sq.namn;
+        const cx = x + SQ_W / 2;
+        if (name.length > 12) {
+            const mid = name.lastIndexOf(' ', 12);
+            const line1 = mid > 0 ? name.substring(0, mid) : name.substring(0, 12);
+            const line2 = mid > 0 ? name.substring(mid + 1) : name.substring(12);
+            html += `<text x="${cx}" y="${y + 32}" text-anchor="middle"
+                           fill="white" font-size="9" font-weight="700">${line1}</text>`;
+            html += `<text x="${cx}" y="${y + 44}" text-anchor="middle"
+                           fill="white" font-size="9" font-weight="700">${line2}</text>`;
+        } else {
+            html += `<text x="${cx}" y="${y + 38}" text-anchor="middle"
+                           fill="white" font-size="10" font-weight="700">${name}</text>`;
+        }
+
+        // Type icon
+        const icons = { kort: '🃏', stjarna: '⭐', stadshuset: '🏛', lansstyrelsen: '⚖', skonhetsradet: '🎨', start: '🏁' };
+        if (icons[sq.typ]) {
+            html += `<text x="${x + SQ_W - 14}" y="${y + 14}" font-size="11">${icons[sq.typ]}</text>`;
+        }
+    }
+    return html;
+}
+
 export function renderBoard(boardSquares, players) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    let html = `<image href="/img/boards/phase1.jpg" x="0" y="0" width="610" height="610"
-                       preserveAspectRatio="xMidYMid slice" opacity="0.9"/>`;
+    // Dark background instead of mismatched image
+    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
 
+    // Center decoration
+    html += `<text x="305" y="290" text-anchor="middle" fill="#f0c929"
+                   font-size="28" font-weight="900" opacity="0.3">PMOPOLY</text>`;
+    html += `<text x="305" y="320" text-anchor="middle" fill="#f0c929"
+                   font-size="12" font-weight="400" opacity="0.2">Husbyggspelet</text>`;
+
+    // Square overlays with labels
+    html += renderSquareOverlays(boardSquares);
+
+    // Player tokens on top
     html += renderPlayerTokens(players, BOARD_LAYOUT, SQ_W, SQ_H);
     svg.innerHTML = html;
 }
