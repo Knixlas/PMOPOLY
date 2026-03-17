@@ -3182,7 +3182,8 @@ def _f4_setup_market(room, player, events):
         return
 
     real_ek = _calc_real_ek(player)
-    forced_sell = real_ek < 0 and len(player.fastigheter) > 1
+    has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
+    forced_sell = has_loan and len(player.fastigheter) > 1
 
     # Draw new market properties
     new_avail = []
@@ -3201,6 +3202,7 @@ def _f4_setup_sell_or_buy(room, player):
     """Ask player if they want to sell, buy, or skip market."""
     new_avail = room.temp.get("f4_new_avail", [])
     real_ek = _calc_real_ek(player)
+    has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
 
     # Build property info for selling
     sell_list = []
@@ -3213,29 +3215,31 @@ def _f4_setup_sell_or_buy(room, player):
             "earn_30": round(earn, 1),
         })
 
-    # Build property info for buying
+    # Build property info for buying (blocked if player has parent company loan)
     buy_list = []
-    for prop in new_avail:
-        y = _prop_yield(prop, room)
-        fv = _calc_fastighetsvarde(prop, y, prop.energiklass)
-        cost = fv * (1 - LOAN_RATIO)
-        buy_list.append({
-            "namn": prop.namn, "typ": prop.typ, "bta": prop.bta,
-            "driftnetto": round(prop.driftnetto, 1), "ek": prop.energiklass,
-            "fv": round(fv, 1), "cost_30": round(cost, 1),
-            "can_afford": cost <= real_ek,
-        })
+    if not has_loan:
+        for prop in new_avail:
+            y = _prop_yield(prop, room)
+            fv = _calc_fastighetsvarde(prop, y, prop.energiklass)
+            cost = fv * (1 - LOAN_RATIO)
+            buy_list.append({
+                "namn": prop.namn, "typ": prop.typ, "bta": prop.bta,
+                "driftnetto": round(prop.driftnetto, 1), "ek": prop.energiklass,
+                "fv": round(fv, 1), "cost_30": round(cost, 1),
+                "can_afford": cost <= real_ek,
+            })
 
     room.sub_state = "f4_market"
     room.pending_action = {
         "action": "f4_market",
         "player_id": player.id,
-        "message": "Fastighetsmarknad",
+        "message": "Köpförbud — du har moderbolagslån" if has_loan else "Fastighetsmarknad",
         "sell_list": sell_list,
         "buy_list": buy_list,
         "real_ek": round(real_ek, 1),
-        "can_buy": real_ek >= 0,
+        "can_buy": not has_loan and real_ek >= 0,
         "forced_sell": False,
+        "has_loan": has_loan,
     }
 
 
@@ -3256,7 +3260,7 @@ def _f4_setup_sell(room, player, forced=False):
     room.pending_action = {
         "action": "f4_market_sell",
         "player_id": player.id,
-        "message": "Tvångsförsäljning - negativt EK!" if forced else "Sälj fastighet",
+        "message": "Tvångsförsäljning — du har moderbolagslån och fler än 1 fastighet!" if forced else "Sälj fastighet",
         "sell_list": sell_list,
         "real_ek": round(real_ek, 1),
         "forced": forced,
@@ -3296,6 +3300,12 @@ def _f4_setup_buy(room, player):
     """Setup buy phase with available market properties."""
     new_avail = room.temp.get("f4_new_avail", [])
     real_ek = _calc_real_ek(player)
+    has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
+
+    # Block purchases if player has parent company loan
+    if has_loan:
+        _f4_after_market(room, player, [])
+        return
 
     buy_list = []
     for prop in new_avail:
