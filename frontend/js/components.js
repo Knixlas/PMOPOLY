@@ -469,13 +469,72 @@ function getPlanGFPosition(gameState, player) {
     return 1; // at PL start
 }
 
+const PL_GF_SQUARES = [
+    { nr: 1, namn: 'Stödfunktioner', typ: 'org' },
+    { nr: 2, namn: 'MARK', typ: 'lev' },
+    { nr: 3, namn: 'HUSUNDER-BYGGNAD', typ: 'lev' },
+    { nr: 4, namn: 'Digitalisering', typ: 'org' },
+    { nr: 5, namn: 'STOMME', typ: 'lev' },
+    { nr: 6, namn: 'INSTALL.', typ: 'lev' },
+    { nr: 7, namn: 'Operativt team', typ: 'org' },
+    { nr: 8, namn: 'GEM. ARBETEN', typ: 'lev' },
+    { nr: 9, namn: 'YTTERTAK', typ: 'lev' },
+    { nr: 10, namn: 'FASADER', typ: 'lev' },
+    { nr: 11, namn: 'Marknadsteam', typ: 'org' },
+    { nr: 12, namn: 'STOMKOMP.', typ: 'lev' },
+    { nr: 13, namn: 'INV YTSKIKT', typ: 'lev' },
+    { nr: 14, namn: 'GENOMFÖRANDE', typ: 'transition' },
+    { nr: 15, namn: 'Faskort 1', typ: 'fas' },
+    { nr: 16, namn: 'Faskort 2', typ: 'fas' },
+    { nr: 17, namn: 'Faskort 3', typ: 'fas' },
+    { nr: 18, namn: 'Faskort 4', typ: 'fas' },
+    { nr: 19, namn: 'Faskort 5', typ: 'fas' },
+    { nr: 20, namn: 'Faskort 6', typ: 'fas' },
+    { nr: 21, namn: 'Faskort 7', typ: 'fas' },
+    { nr: 22, namn: 'Faskort 8', typ: 'fas' },
+    { nr: 23, namn: 'Garanti', typ: 'garanti' },
+    { nr: 24, namn: 'Slutsam.', typ: 'summary' },
+];
+
+const PL_GF_COLORS = {
+    lev: '#1565C0', org: '#2E7D32', transition: '#F57F17',
+    fas: '#6A1B9A', garanti: '#E65100', summary: '#C62828',
+};
+
+function renderPlanGFSquares(gameState) {
+    let html = '';
+    for (const sq of PL_GF_SQUARES) {
+        const pos = PL_GF_LAYOUT.find(l => l.nr === sq.nr);
+        if (!pos) continue;
+        const fill = PL_GF_COLORS[sq.typ] || '#333';
+        const x = pos.x, y = pos.y;
+        const cx = x + SQ_W / 2;
+
+        html += `<rect x="${x}" y="${y}" width="${SQ_W}" height="${SQ_H}"
+                       rx="6" fill="${fill}" opacity="0.85" stroke="#4db8ff" stroke-width="1.5"/>`;
+        html += `<text x="${x + 4}" y="${y + 13}" fill="rgba(255,255,255,0.6)"
+                       font-size="9">${sq.nr}</text>`;
+
+        const name = sq.namn;
+        if (name.length > 12) {
+            const mid = name.lastIndexOf('-', 12) + 1 || name.lastIndexOf(' ', 12);
+            const l1 = mid > 0 ? name.substring(0, mid) : name.substring(0, 12);
+            const l2 = mid > 0 ? name.substring(mid).trim() : name.substring(12);
+            html += `<text x="${cx}" y="${y + 32}" text-anchor="middle" fill="white" font-size="9" font-weight="700">${l1}</text>`;
+            html += `<text x="${cx}" y="${y + 44}" text-anchor="middle" fill="white" font-size="9" font-weight="700">${l2}</text>`;
+        } else {
+            html += `<text x="${cx}" y="${y + 38}" text-anchor="middle" fill="white" font-size="10" font-weight="700">${name}</text>`;
+        }
+    }
+    return html;
+}
+
 export function renderPlanGFBoard(gameState) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    // Use phase2.jpg for both PL and GF (combined board)
-    let html = `<image href="/img/boards/phase2.jpg" x="0" y="0" width="610" height="610"
-                       preserveAspectRatio="xMidYMid slice" opacity="0.9"/>`;
+    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
+    html += renderPlanGFSquares(gameState);
 
     // Player tokens
     const players = gameState.players || [];
@@ -567,12 +626,42 @@ function getF4Position(gameState) {
     return (quarter - 1) * 6 + stepInQ;
 }
 
+const F4_QUARTER_COLORS = ['#1565C0', '#2E7D32', '#E65100', '#6A1B9A'];
+
+function renderF4Squares(gameState) {
+    const quarter = gameState.f4_quarter || 1;
+    let html = '';
+    const labels = [
+        'Personal', 'Driftnetto', 'Hyresförhd.', 'Händelser', 'Energi', 'Marknad',
+        'Personal', 'Driftnetto', 'Hyresförhd.', 'Händelser', 'Energi', 'Marknad',
+        'Personal', 'Driftnetto', 'Hyresförhd.', 'Händelser', 'Energi', 'Marknad',
+        'Personal', 'Driftnetto', 'Hyresförhd.', 'Händelser', 'Slutvärdering', 'Resultat',
+    ];
+    for (let i = 0; i < 24; i++) {
+        const pos = F4_LAYOUT.find(l => l.nr === i + 1);
+        if (!pos) continue;
+        const q = Math.floor(i / 6);
+        const fill = F4_QUARTER_COLORS[q];
+        const x = pos.x, y = pos.y;
+        const cx = x + SQ_W / 2;
+
+        html += `<rect x="${x}" y="${y}" width="${SQ_W}" height="${SQ_H}"
+                       rx="6" fill="${fill}" opacity="${q + 1 === quarter ? '0.9' : '0.4'}"
+                       stroke="${q + 1 === quarter ? '#f0c929' : '#555'}" stroke-width="1.5"/>`;
+        html += `<text x="${x + 4}" y="${y + 13}" fill="rgba(255,255,255,0.6)"
+                       font-size="9">Q${q + 1}</text>`;
+        html += `<text x="${cx}" y="${y + 38}" text-anchor="middle"
+                       fill="white" font-size="9" font-weight="700">${labels[i]}</text>`;
+    }
+    return html;
+}
+
 export function renderPhase4Board(gameState) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    let html = `<image href="/img/boards/phase4.jpg" x="0" y="0" width="610" height="610"
-                       preserveAspectRatio="xMidYMid slice" opacity="0.9"/>`;
+    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
+    html += renderF4Squares(gameState);
 
     // Player tokens
     const players = gameState.players || [];
