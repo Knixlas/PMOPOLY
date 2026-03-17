@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMOPOLY - Husbyggspelet</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
+</head>
+<body>
+    <div id="app">
+        <!-- LOBBY VIEW -->
+        <div id="view-lobby" class="view active">
+            <div class="lobby-container">
+                <h1 class="logo">PMOPOLY</h1>
+                <p class="subtitle">Husbyggspelet - Online</p>
+
+                <div class="lobby-panels">
+                    <div class="panel">
+                        <h2>Skapa nytt rum</h2>
+                        <input type="text" id="host-name" placeholder="Ditt namn" maxlength="20">
+                        <input type="text" id="room-name" placeholder="Rummets namn" maxlength="30">
+                        <button id="btn-create" class="btn btn-primary">Skapa rum</button>
+                    </div>
+                    <div class="panel">
+                        <h2>Gå med i rum</h2>
+                        <input type="text" id="join-name" placeholder="Ditt namn" maxlength="20">
+                        <div id="room-list" class="room-list">
+                            <p class="muted">Laddar rum...</p>
+                        </div>
+                        <button id="btn-refresh" class="btn btn-secondary">Uppdatera</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WAITING ROOM VIEW -->
+        <div id="view-waiting" class="view">
+            <div class="waiting-container">
+                <h1>Väntar på spelare...</h1>
+                <h2 id="waiting-room-name"></h2>
+                <div id="waiting-players" class="player-list"></div>
+                <button id="btn-start" class="btn btn-primary" style="display:none">Starta spelet</button>
+                <p id="waiting-msg" class="muted">Väntar på att värden startar...</p>
+            </div>
+        </div>
+
+        <!-- GAME VIEW -->
+        <div id="view-game" class="view">
+            <div class="game-layout">
+                <!-- Header bar -->
+                <div class="game-header">
+                    <div class="phase-indicator">
+                        <span id="phase-name">Fas 1: Projektutveckling</span>
+                        <span id="phase-sub" class="muted"></span>
+                    </div>
+                    <div id="turn-indicator" class="turn-indicator"></div>
+                </div>
+
+                <!-- Left: Current square info (zoomed) -->
+                <div class="game-info-panel" id="info-panel">
+                    <div id="info-content"></div>
+                    <div class="event-log" id="event-log">
+                        <div class="event-log-header">Händelser</div>
+                        <div id="event-list" class="event-list"></div>
+                    </div>
+                </div>
+
+                <!-- Center: Board -->
+                <div class="game-board-area" id="board-container">
+                    <svg id="game-board" viewBox="0 0 610 610" class="game-board"></svg>
+                </div>
+
+                <!-- Right: Actions (cards, choices, etc.) -->
+                <div class="game-sidebar">
+                    <div class="action-panel" id="action-panel">
+                        <div id="action-content"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom: Player assets -->
+                <div class="game-assets">
+                    <div class="player-bar" id="player-bar"></div>
+                    <div class="assets-panel" id="assets-panel">
+                        <div id="assets-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div id="instruction-modal" class="modal" style="display:none">
+        <div class="modal-content instruction-display">
+            <h3 id="instr-title"></h3>
+            <div id="instr-body"></div>
+            <button id="instr-close" class="btn btn-primary">Förstått!</button>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal" style="display:none">
+        <div class="modal-content preview-display">
+            <div id="preview-body"></div>
+            <div class="preview-buttons">
+                <button id="preview-confirm" class="btn btn-primary">Välj detta</button>
+                <button id="preview-cancel" class="btn btn-secondary">Gå tillbaka</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Modal -->
+    <div id="card-modal" class="modal" style="display:none">
+        <div class="modal-content card-display">
+            <div id="card-modal-body"></div>
+            <button id="card-modal-close" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+
+    <!-- Dice Animation Overlay -->
+    <div id="dice-overlay" class="dice-overlay" style="display:none">
+        <div class="dice-container">
+            <div id="dice-value" class="dice">?</div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/app.js?v=2"></script>
+</body>
+</html>
