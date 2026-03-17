@@ -51,7 +51,7 @@ function allOrientations(cells) {
 let dragState = null;
 let lastPointerPos = { clientX: 0, clientY: 0 };
 
-function startDrag(id, kind, typ, shapeCells, event) {
+export function startDrag(id, kind, typ, shapeCells, event) {
     lastPointerPos = { clientX: event.clientX, clientY: event.clientY };
     const orientations = allOrientations(shapeCells);
     dragState = {

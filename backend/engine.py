@@ -805,19 +805,17 @@ def _advance_namndbeslut(room: GameRoom):
 def _setup_placement(room: GameRoom):
     player = room.current_player
 
-    # Check if player exceeds limits (BTA no longer limited — geometry handles it)
-    over_projects = len(player.projects) > MAX_PROJECTS
+    # Check if player's projects exceed available cells (geometry decides fit)
     over_cells = player.used_cells > player.available_cells
 
-    if over_projects or over_cells:
+    if over_cells:
         room.sub_state = "return_project"
         room.pending_action = {
             "action": "return_project",
             "player_id": player.id,
             "projects": [p.to_dict() for p in player.projects],
-            "over_projects": over_projects,
             "over_cells": over_cells,
-            "message": "Du har för många projekt. Välj vilket du vill lämna tillbaka.",
+            "message": "Dina projekt får inte plats på tomten. Välj vilket du vill lämna tillbaka.",
         }
     else:
         _advance_placement(room)

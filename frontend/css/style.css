@@ -853,10 +853,12 @@ input[type="text"]:focus { border-color: var(--primary); }
     opacity: 0.8;
 }
 .puzzle-inv-shape {
-    padding: 4px;
+    padding: 6px;
     cursor: grab;
     display: flex;
     justify-content: center;
+    background: rgba(0,0,0,0.3);
+    min-height: 28px;
 }
 .puzzle-remove-btn {
     background: none;
@@ -875,13 +877,14 @@ input[type="text"]:focus { border-color: var(--primary); }
     gap: 1px;
 }
 .mini-shape-cell {
-    width: 12px;
-    height: 12px;
-    border-radius: 1px;
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 .mini-shape-empty {
-    width: 12px;
-    height: 12px;
+    width: 18px;
+    height: 18px;
     aspect-ratio: 1;
 }
 

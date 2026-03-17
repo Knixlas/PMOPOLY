@@ -7,7 +7,7 @@ import { renderPhase1Action } from './phase1.js';
 import { renderPhase2Action } from './phase2.js';
 import { renderPhase3Action } from './phase3.js';
 import { renderPhase4Action } from './phase4.js';
-import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo } from './puzzle.js';
+import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag } from './puzzle.js';
 
 // Board square definitions (must match backend config.py)
 const BOARD_SQUARES = [
@@ -507,6 +507,29 @@ function renderAssetsPanel(gs) {
     panel.querySelectorAll('.asset-card.clickable').forEach(card => {
         card.addEventListener('click', () => showAssetDetail(card, me));
     });
+
+    // During puzzle phase: make project cards draggable from bottom bar
+    if (gs.phase === 'puzzle_placement' && gs.my_puzzle) {
+        const puzzle = gs.my_puzzle;
+        const shapes = puzzle.shapes || {};
+        const placements = puzzle.placements || {};
+
+        panel.querySelectorAll('.asset-card.asset-project').forEach(card => {
+            const namn = card.dataset.idx;
+            // Find project id by name in shapes
+            const entry = Object.entries(shapes).find(([, s]) => s.namn === namn);
+            if (!entry) return;
+            const [pid, shape] = entry;
+            if (placements[pid]) return; // already placed
+
+            card.style.cursor = 'grab';
+            card.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startDrag(pid, 'project', shape.typ, shape.cells, e);
+            });
+        });
+    }
 }
 
 function truncName(name, max) {
