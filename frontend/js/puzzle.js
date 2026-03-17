@@ -167,18 +167,21 @@ function checkPlacementValid(targetCells) {
     const typ = dragState.typ;
 
     if (isBostad(typ)) {
-        // Bostäder can be on mark or on top of other projects, but not overlap other bostäder
+        // Bostäder must sit on top of ground projects, not on empty grid cells
+        const groundOccupied = new Set();
         const bostadOccupied = new Set();
         for (const [pid, pl] of Object.entries(puzzle.placements)) {
             if (pid === dragState.id) continue;
             const shape = puzzle.shapes?.[pid];
             if (shape && isBostad(shape.typ)) {
                 for (const [r, c] of pl.cells) bostadOccupied.add(`${r},${c}`);
+            } else if (shape) {
+                for (const [r, c] of pl.cells) groundOccupied.add(`${r},${c}`);
             }
         }
         return targetCells.every(([r, c]) =>
             r >= 0 && r < 10 && c >= 0 && c < 10 &&
-            gridSet.has(`${r},${c}`) &&
+            groundOccupied.has(`${r},${c}`) &&
             !bostadOccupied.has(`${r},${c}`)
         );
     } else {

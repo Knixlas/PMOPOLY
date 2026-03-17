@@ -1690,8 +1690,8 @@ def _handle_puzzle(room: GameRoom, player, action: dict) -> dict:
         is_bostad = proj.typ in BOSTADER_TYPER
 
         if is_bostad:
-            # Bostäder can be placed on mark OR on top of other projects
-            # but cannot overlap other bostäder
+            # Bostäder must sit on top of ground projects, not on empty grid
+            ground_occupied = _get_ground_occupied(player, exclude_pid=project_id)
             bostad_occupied = set()
             for pid, placement in player.puzzle_placements.items():
                 if pid == project_id:
@@ -1705,6 +1705,8 @@ def _handle_puzzle(room: GameRoom, player, action: dict) -> dict:
                     for rc in placement["cells"]:
                         bostad_occupied.add((rc[0], rc[1]))
             for r, c in cells:
+                if (r, c) not in ground_occupied:
+                    return {"type": "error", "message": "Bostäder måste placeras ovanpå markplansprojekt"}
                 if (r, c) in bostad_occupied:
                     return {"type": "error", "message": "Bostäder kan inte överlappa andra bostäder"}
         else:
@@ -3268,7 +3270,7 @@ def _f4_setup_sell(room, player, forced=False):
 
 
 def _f4_do_sell(room, player, prop_idx, events):
-    """Execute a property sale. Repays parent company loan from proceeds first."""
+    """Execute a property sale. Sale proceeds go to EK."""
     prop = player.fastigheter.pop(prop_idx)
     y = _prop_yield(prop, room)
     fv = _calc_fastighetsvarde(prop, y, _get_prop_ek(prop, player))
@@ -3276,24 +3278,21 @@ def _f4_do_sell(room, player, prop_idx, events):
     player.eget_kapital += earn
     player.projekt_energiklass.pop(prop.namn, None)
 
-    # Repay parent company loan from sale proceeds
-    loans_gross = player.abt_loans_net + player.abt_borrowing_cost
-    if loans_gross > 0:
-        repay = min(earn, loans_gross)
-        # Repay borrowing cost first, then net loan
-        cost_repay = min(repay, player.abt_borrowing_cost)
-        player.abt_borrowing_cost -= cost_repay
-        net_repay = repay - cost_repay
-        player.abt_loans_net -= net_repay
-        events.append({
-            "type": "loan",
-            "text": f"Moderbolagslån återbetalat: {repay:.1f} Mkr",
-        })
-
     events.append({
         "type": "economics",
-        "text": f"{player.name} sålde {prop.namn} för {earn:.1f} Mkr",
+        "text": f"{player.name} sålde {prop.namn} för {earn:.1f} Mkr (EK)",
     })
+
+    # After selling, check if loan can now be fully repaid from EK
+    loans_gross = player.abt_loans_net + player.abt_borrowing_cost
+    if loans_gross > 0 and player.eget_kapital >= loans_gross:
+        player.eget_kapital -= loans_gross
+        player.abt_loans_net = 0
+        player.abt_borrowing_cost = 0
+        events.append({
+            "type": "loan",
+            "text": f"Moderbolagslån återbetalat: {loans_gross:.1f} Mkr från EK (netto EK: {player.eget_kapital:.1f} Mkr)",
+        })
 
 
 def _f4_setup_buy(room, player):
@@ -3569,9 +3568,9 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
             idx = int(val)
             if 0 <= idx < len(player.fastigheter):
                 _f4_do_sell(room, player, idx, events)
-                # Check if still forced
-                real_ek = _calc_real_ek(player)
-                if real_ek < 0 and len(player.fastigheter) > 1:
+                # Check if still forced: keep selling while loan exists and >1 property
+                has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
+                if has_loan and len(player.fastigheter) > 1:
                     _f4_setup_sell(room, player, forced=True)
                 else:
                     _f4_setup_buy(room, player)

@@ -375,7 +375,8 @@ class Player:
 
     @property
     def available_cells(self) -> int:
-        return 16 + self.mark_expansions
+        expansion_cells = sum(p["cell_count"] for p in self.mark_expansion_pieces) if self.mark_expansion_pieces else 0
+        return 16 + expansion_cells
 
     @property
     def used_cells(self) -> int:
