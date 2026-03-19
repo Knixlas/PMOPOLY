@@ -628,9 +628,13 @@ function renderStatusList(statuses) {
 
 function renderMiniShape(cells, color) {
     if (!cells || cells.length === 0) return '';
-    const maxR = Math.max(...cells.map(c => c[0]));
-    const maxC = Math.max(...cells.map(c => c[1]));
-    const cellSet = new Set(cells.map(([r, c]) => `${r},${c}`));
+    // Normalize to (0,0) origin
+    const minR = Math.min(...cells.map(c => c[0]));
+    const minC = Math.min(...cells.map(c => c[1]));
+    const norm = cells.map(([r, c]) => [r - minR, c - minC]);
+    const maxR = Math.max(...norm.map(c => c[0]));
+    const maxC = Math.max(...norm.map(c => c[1]));
+    const cellSet = new Set(norm.map(([r, c]) => `${r},${c}`));
 
     let html = `<div class="mini-shape" style="grid-template-columns:repeat(${maxC + 1},1fr);grid-template-rows:repeat(${maxR + 1},1fr)">`;
     for (let r = 0; r <= maxR; r++) {

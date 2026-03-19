@@ -113,10 +113,12 @@ class GameRoom:
         for p in self.players:
             p.has_mark_tomt = True
 
-        # Begin Phase 1: Mark och Tomt - each player picks first project
-        self.phase = GamePhase.PHASE1_MARK_TOMT
+        # Begin Phase 1: First hire PC, then pick projects
+        self.phase = GamePhase.PHASE1_PC_HIRE
         self.turn_index = 0
-        self._setup_mark_tomt_action()
+        self.temp = {"pc_hired_ids": set()}
+        from engine import _setup_pc_hire
+        _setup_pc_hire(self)
 
     def _setup_mark_tomt_action(self):
         """Set up action for current player to pick a project type."""

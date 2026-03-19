@@ -88,11 +88,10 @@ def _handle_mark_tomt(room: GameRoom, player: Player, action: dict) -> dict:
         # Next player or advance phase
         room.next_turn()
         if room.turn_index == 0:
-            # All players have picked - move to PC hiring
-            room.phase = GamePhase.PHASE1_PC_HIRE
+            # All players have picked — move to board game
+            room.phase = GamePhase.PHASE1_BOARD
             room.turn_index = 0
-            room.temp["pc_hired_ids"] = set()
-            _setup_pc_hire(room)
+            _setup_board_turn(room)
         else:
             room._setup_mark_tomt_action()
 
@@ -135,10 +134,10 @@ def _handle_pc_hire(room: GameRoom, player, action: dict) -> dict:
 
     room.next_turn()
     if room.turn_index == 0:
-        # All players hired — move to board game
-        room.phase = GamePhase.PHASE1_BOARD
+        # All players hired — move to mark & tomt (project selection)
+        room.phase = GamePhase.PHASE1_MARK_TOMT
         room.turn_index = 0
-        _setup_board_turn(room)
+        room._setup_mark_tomt_action()
     else:
         _setup_pc_hire(room)
 

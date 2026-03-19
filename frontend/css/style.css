@@ -477,6 +477,18 @@ input[type="text"]:focus { border-color: var(--primary); }
     }
     .game-info-panel { display: none; }
     .game-sidebar { max-height: 300px; border-left: none; border-top: 1px solid rgba(255,255,255,0.1); }
+
+    /* Puzzle mobile: smaller shapes, bigger touch targets */
+    .puzzle-inventory { max-height: 250px; gap: 6px; }
+    .puzzle-inv-item { min-height: 44px; }
+    .puzzle-inv-header { padding: 8px 10px; font-size: 0.85em; min-height: 40px; }
+    .puzzle-inv-shape { padding: 8px; min-height: 40px; }
+    .mini-shape-cell { width: 14px; height: 14px; min-width: 14px; min-height: 14px; border-width: 1px; }
+    .mini-shape-empty { width: 14px; height: 14px; }
+    .puzzle-touch-controls { display: flex !important; gap: 8px; margin: 6px 0; }
+    .puzzle-touch-btn { flex: 1; padding: 12px; font-size: 1em; min-height: 44px; }
+    .puzzle-hint { font-size: 0.8em; }
+    .puzzle-section-label { font-size: 0.8em; padding: 4px 0; }
 }
 
 /* ═══════════════════════════════════════════
