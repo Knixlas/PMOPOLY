@@ -45,12 +45,49 @@ function allOrientations(cells) {
     return orientations;
 }
 
-// ── Drag state ──
+// ── Interaction state ──
 
-// dragKind: 'project' | 'mark_expansion'
+// Shared selection state for both drag and tap modes
 let dragState = null;
+let selectState = null;  // tap-to-place: {id, kind, typ, orientations, orientationIdx}
 let lastPointerPos = { clientX: 0, clientY: 0 };
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
+// Select a piece (tap mode for touch devices)
+export function selectPiece(id, kind, typ, shapeCells) {
+    const orientations = allOrientations(shapeCells);
+    selectState = { id, kind, typ, orientations, orientationIdx: 0 };
+    // Re-render to show selection highlight and preview
+    if (state.gameState) {
+        renderPuzzleBoard(state.gameState);
+        const panel = document.getElementById('action-panel');
+        if (panel) renderPuzzleAction(panel, state.gameState);
+    }
+}
+
+export function clearSelection() {
+    selectState = null;
+}
+
+export function getSelectState() { return selectState; }
+
+// Place the selected piece at grid position
+function tapPlaceAt(row, col) {
+    if (!selectState) return;
+    const cells = selectState.orientations[selectState.orientationIdx];
+    const targetCells = cells.map(([r, c]) => [r + row, c + col]);
+    const valid = checkPlacementValid(targetCells);
+    if (!valid) return;
+
+    if (selectState.kind === 'mark_expansion') {
+        sendAction({ action: 'puzzle_place_mark_expansion', piece_id: selectState.id, cells: targetCells });
+    } else {
+        sendAction({ action: 'puzzle_place_project', project_id: selectState.id, cells: targetCells });
+    }
+    selectState = null;
+}
+
+// Drag start (desktop / pointer devices)
 export function startDrag(id, kind, typ, shapeCells, event) {
     lastPointerPos = { clientX: event.clientX, clientY: event.clientY };
     const orientations = allOrientations(shapeCells);
@@ -326,6 +363,29 @@ export function renderPuzzleBoard(gs) {
     }
     html += '</div>';
     boardEl.innerHTML = html;
+
+    // Tap-to-place: add click handlers on grid cells and show preview
+    if (selectState) {
+        const gridEl = boardEl.querySelector('.puzzle-grid');
+        if (gridEl) {
+            // Show preview of selected piece shape on hover/focus
+            const cells = selectState.orientations[selectState.orientationIdx];
+            gridEl.querySelectorAll('.puzzle-cell').forEach(cellEl => {
+                const r = parseInt(cellEl.dataset.row);
+                const c = parseInt(cellEl.dataset.col);
+                cellEl.addEventListener('click', () => tapPlaceAt(r, c));
+            });
+
+            // Highlight valid placement area (center of grid as preview)
+            const previewRow = 3, previewCol = 3;
+            const previewCells = cells.map(([dr, dc]) => [dr + previewRow, dc + previewCol]);
+            const valid = checkPlacementValid(previewCells);
+            for (const [pr, pc] of previewCells) {
+                const el = gridEl.querySelector(`.puzzle-cell[data-row="${pr}"][data-col="${pc}"]`);
+                if (el) el.classList.add(valid ? 'drag-valid' : 'drag-invalid');
+            }
+        }
+    }
 }
 
 // ── Action panel ──
@@ -360,7 +420,11 @@ export function renderPuzzleAction(panel, gs) {
         <span>${placedMark.length}/${markPieces.length} markbitar</span>
     </div>`;
 
-    html += '<div class="puzzle-hint">Dra bitar till rutnätet. R = rotera, F = spegla.</div>';
+    if (isTouch) {
+        html += '<div class="puzzle-hint">Tryck på en bit, rotera/spegla, tryck på rutnätet för att placera.</div>';
+    } else {
+        html += '<div class="puzzle-hint">Dra bitar till rutnätet. R = rotera, F = spegla.</div>';
+    }
     html += `<div class="puzzle-touch-controls">
         <button class="puzzle-touch-btn" id="puzzle-rotate-btn">↻ Rotera</button>
         <button class="puzzle-touch-btn" id="puzzle-flip-btn">↔ Spegla</button>
@@ -463,32 +527,46 @@ export function renderPuzzleAction(panel, gs) {
 
     panel.innerHTML = html;
 
-    // ── Drag handlers for mark expansion pieces ──
+    // ── Interaction handlers (tap on touch, drag on desktop) ──
     panel.querySelectorAll('.puzzle-inv-shape[data-mark-id]').forEach(el => {
         const markId = el.dataset.markId;
         const piece = markPieces.find(p => p.id === markId);
         if (piece && !piece.placed) {
-            el.style.cursor = 'grab';
-            el.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                startDrag(markId, 'mark_expansion', 'mark', piece.cells, e);
-            });
+            if (isTouch) {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => selectPiece(markId, 'mark_expansion', 'mark', piece.cells));
+            } else {
+                el.style.cursor = 'grab';
+                el.addEventListener('pointerdown', (e) => { e.preventDefault(); startDrag(markId, 'mark_expansion', 'mark', piece.cells, e); });
+            }
         }
     });
 
-    // ── Drag handlers for projects ──
     panel.querySelectorAll('.puzzle-inv-shape[data-pid]').forEach(el => {
         const pid = el.dataset.pid;
         const typ = el.dataset.typ;
         const shape = shapes[pid];
         if (shape && !placements[pid]) {
-            el.style.cursor = 'grab';
-            el.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                startDrag(pid, 'project', typ, shape.cells, e);
-            });
+            if (isTouch) {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => selectPiece(pid, 'project', typ, shape.cells));
+            } else {
+                el.style.cursor = 'grab';
+                el.addEventListener('pointerdown', (e) => { e.preventDefault(); startDrag(pid, 'project', typ, shape.cells, e); });
+            }
         }
     });
+
+    // Highlight currently selected item
+    if (selectState) {
+        panel.querySelectorAll('.puzzle-inv-item').forEach(item => {
+            const shapeEl = item.querySelector('.puzzle-inv-shape[data-pid], .puzzle-inv-shape[data-mark-id]');
+            if (shapeEl) {
+                const id = shapeEl.dataset.pid || shapeEl.dataset.markId;
+                if (id === selectState.id) item.classList.add('selected');
+            }
+        });
+    }
 
     // Remove buttons (projects)
     panel.querySelectorAll('.puzzle-remove-btn[data-pid]').forEach(el => {
@@ -506,23 +584,25 @@ export function renderPuzzleAction(panel, gs) {
         });
     });
 
-    // Touch rotate/flip buttons
+    // Rotate/flip buttons (work for both tap-select and drag modes)
     const rotateBtn = panel.querySelector('#puzzle-rotate-btn');
     if (rotateBtn) {
         rotateBtn.addEventListener('click', () => {
-            if (!dragState) return;
-            dragState.orientationIdx = (dragState.orientationIdx + 2) % dragState.orientations.length;
-            createGhost(lastPointerPos);
-            highlightTarget(lastPointerPos);
+            const s = selectState || dragState;
+            if (!s) return;
+            s.orientationIdx = (s.orientationIdx + 2) % s.orientations.length;
+            if (dragState) { createGhost(lastPointerPos); highlightTarget(lastPointerPos); }
+            if (selectState && state.gameState) { renderPuzzleBoard(state.gameState); }
         });
     }
     const flipBtn = panel.querySelector('#puzzle-flip-btn');
     if (flipBtn) {
         flipBtn.addEventListener('click', () => {
-            if (!dragState) return;
-            dragState.orientationIdx = (dragState.orientationIdx ^ 1);
-            createGhost(lastPointerPos);
-            highlightTarget(lastPointerPos);
+            const s = selectState || dragState;
+            if (!s) return;
+            s.orientationIdx = (s.orientationIdx ^ 1);
+            if (dragState) { createGhost(lastPointerPos); highlightTarget(lastPointerPos); }
+            if (selectState && state.gameState) { renderPuzzleBoard(state.gameState); }
         });
     }
 

@@ -838,6 +838,10 @@ input[type="text"]:focus { border-color: var(--primary); }
         display: flex;
     }
 }
+.puzzle-inv-item.selected {
+    border: 2px solid #f0c929;
+    box-shadow: 0 0 10px rgba(240, 201, 41, 0.5);
+}
 .puzzle-touch-btn {
     background: var(--accent);
     color: #000;
