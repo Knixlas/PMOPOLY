@@ -361,6 +361,10 @@ export function renderPuzzleAction(panel, gs) {
     </div>`;
 
     html += '<div class="puzzle-hint">Dra bitar till rutnätet. R = rotera, F = spegla.</div>';
+    html += `<div class="puzzle-touch-controls">
+        <button class="puzzle-touch-btn" id="puzzle-rotate-btn">↻ Rotera</button>
+        <button class="puzzle-touch-btn" id="puzzle-flip-btn">↔ Spegla</button>
+    </div>`;
 
     html += '<div class="puzzle-inventory">';
 
@@ -501,6 +505,26 @@ export function renderPuzzleAction(panel, gs) {
             sendAction({ action: 'puzzle_remove_mark_expansion', piece_id: el.dataset.markRemove });
         });
     });
+
+    // Touch rotate/flip buttons
+    const rotateBtn = panel.querySelector('#puzzle-rotate-btn');
+    if (rotateBtn) {
+        rotateBtn.addEventListener('click', () => {
+            if (!dragState) return;
+            dragState.orientationIdx = (dragState.orientationIdx + 2) % dragState.orientations.length;
+            createGhost(lastPointerPos);
+            highlightTarget(lastPointerPos);
+        });
+    }
+    const flipBtn = panel.querySelector('#puzzle-flip-btn');
+    if (flipBtn) {
+        flipBtn.addEventListener('click', () => {
+            if (!dragState) return;
+            dragState.orientationIdx = (dragState.orientationIdx ^ 1);
+            createGhost(lastPointerPos);
+            highlightTarget(lastPointerPos);
+        });
+    }
 
     // Confirm button
     const confirmBtn = panel.querySelector('.puzzle-confirm-btn');

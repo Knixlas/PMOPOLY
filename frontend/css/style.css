@@ -766,6 +766,7 @@ input[type="text"]:focus { border-color: var(--primary); }
     border-radius: 8px;
     overflow: hidden;
     margin: 0 auto;
+    touch-action: none;
 }
 
 .puzzle-cell {
@@ -820,6 +821,32 @@ input[type="text"]:focus { border-color: var(--primary); }
 .puzzle-ghost-cell {
     border-radius: 2px;
     border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* Touch drag helpers */
+.puzzle-inv-shape {
+    touch-action: none;
+}
+.puzzle-touch-controls {
+    display: none;
+    gap: 8px;
+    justify-content: center;
+    margin: 8px 0;
+}
+@media (pointer: coarse) {
+    .puzzle-touch-controls {
+        display: flex;
+    }
+}
+.puzzle-touch-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 /* Inventory */
