@@ -36,6 +36,8 @@ def process_action(room: GameRoom, player_id: str, action: dict) -> dict:
         return _handle_puzzle(room, player, action)
     elif room.phase == GamePhase.PHASE1_MARK_TOMT:
         return _handle_mark_tomt(room, player, action)
+    elif room.phase == GamePhase.PHASE1_PC_HIRE:
+        return _handle_pc_hire(room, player, action)
     elif room.phase == GamePhase.PHASE1_BOARD:
         return _handle_board(room, player, action)
     elif room.phase == GamePhase.PHASE1_NAMNDBESLUT:
@@ -44,6 +46,8 @@ def process_action(room: GameRoom, player_id: str, action: dict) -> dict:
         return _handle_placement(room, player, action)
     elif room.phase == GamePhase.PHASE1_EKONOMI:
         return _handle_ekonomi(room, player, action)
+    elif room.phase == GamePhase.PHASE2_AC_HIRE:
+        return _handle_ac_hire(room, player, action)
     elif room.phase == GamePhase.PHASE2_PLANERING:
         return _handle_planering(room, player, action)
     elif room.phase == GamePhase.PHASE3_GENOMFORANDE:
@@ -84,16 +88,61 @@ def _handle_mark_tomt(room: GameRoom, player: Player, action: dict) -> dict:
         # Next player or advance phase
         room.next_turn()
         if room.turn_index == 0:
-            # All players have picked - move to board game
-            room.phase = GamePhase.PHASE1_BOARD
+            # All players have picked - move to PC hiring
+            room.phase = GamePhase.PHASE1_PC_HIRE
             room.turn_index = 0
-            _setup_board_turn(room)
+            room.temp["pc_hired_ids"] = set()
+            _setup_pc_hire(room)
         else:
             room._setup_mark_tomt_action()
 
         return {"type": "state_update", "events": [event]}
 
     return {"type": "error", "message": "Okänd åtgärd"}
+
+
+# ═══════════════════════════════════════════
+#  PHASE 1: PC HIRE
+# ═══════════════════════════════════════════
+
+def _setup_pc_hire(room: GameRoom):
+    """Set up PC hiring for current player."""
+    player = room.current_player
+    hired_ids = room.temp.get("pc_hired_ids", set())
+    available = [pc for pc in room.game_data.pc_staff if pc["id"] not in hired_ids]
+    room.sub_state = "choose_pc"
+    room.pending_action = {
+        "action": "choose_pc",
+        "player_id": player.id,
+        "available": available,
+        "message": f"{player.name}, välj din Projektchef (PC).",
+    }
+
+
+def _handle_pc_hire(room: GameRoom, player, action: dict) -> dict:
+    pc_id = action.get("value")
+    hired_ids = room.temp.get("pc_hired_ids", set())
+    pc = next((p for p in room.game_data.pc_staff if p["id"] == pc_id and pc_id not in hired_ids), None)
+    if not pc:
+        return {"type": "error", "message": "Ogiltig PC"}
+
+    player.projektchef = dict(pc)
+    hired_ids.add(pc_id)
+    room.temp["pc_hired_ids"] = hired_ids
+
+    event = {"type": "event", "text": f"{player.name} anställer {pc['namn']} som Projektchef"}
+    room.events_log.append(event)
+
+    room.next_turn()
+    if room.turn_index == 0:
+        # All players hired — move to board game
+        room.phase = GamePhase.PHASE1_BOARD
+        room.turn_index = 0
+        _setup_board_turn(room)
+    else:
+        _setup_pc_hire(room)
+
+    return {"type": "state_update", "events": [event]}
 
 
 # ═══════════════════════════════════════════
@@ -183,6 +232,14 @@ def _handle_board(room: GameRoom, player: Player, action: dict) -> dict:
         # Player clicked "Roll D20" in card modal
         card = room.temp.get("current_card")
         d20_result = roll("D20")
+        # PC lindring: add bonus if PC's motstand matches card type
+        pc_bonus = 0
+        if player.projektchef:
+            card_typ = card.typ if hasattr(card, 'typ') else card.get("typ", "")
+            motstand = player.projektchef.get("handelsemotstand", "")
+            if card_typ and card_typ.lower() in motstand.lower():
+                pc_bonus = player.projektchef.get("kapacitet", 0)
+                d20_result += pc_bonus
         effect = _get_card_effect(card, d20_result)
         room.temp["d20_result"] = d20_result
 
@@ -695,6 +752,11 @@ def _handle_namndbeslut(room: GameRoom, player: Player, action: dict) -> dict:
 
     if room.sub_state == "namndbeslut_roll":
         result = roll("D20")
+        # PC nämndbonus
+        pc_namnd = 0
+        if player.projektchef:
+            pc_namnd = player.projektchef.get("namnd_bonus", 0)
+            result += pc_namnd
         proj = room.temp.get("current_project")
         threshold = proj.namndbeslut if proj else 1
         passed = result >= threshold
@@ -1786,15 +1848,62 @@ def _finalize_puzzle(room: GameRoom, events: list):
                         f"(Q-krav nu {player.q_krav}, H-krav nu {player.h_krav})",
             })
 
-    room.phase = GamePhase.PHASE2_PLANERING
+    room.phase = GamePhase.PHASE2_AC_HIRE
     room.turn_index = 0
-    room.temp = {}
-    _setup_planering(room)
+    room.temp = {"ac_hired_ids": set()}
+    _setup_ac_hire(room)
     events.append({
         "type": "phase_change",
-        "phase": "phase2_planering",
-        "text": "Kvartersplanering klar! Nu börjar Projektplanering.",
+        "phase": "phase2_ac_hire",
+        "text": "Kvartersplanering klar! Välj Arbetschef innan planeringen börjar.",
     })
+
+
+# ═══════════════════════════════════════════
+#  PHASE 2: AC HIRE
+# ═══════════════════════════════════════════
+
+def _setup_ac_hire(room: GameRoom):
+    """Set up AC hiring for current player."""
+    player = room.current_player
+    hired_ids = room.temp.get("ac_hired_ids", set())
+    available = [ac for ac in room.game_data.ac_staff if ac["id"] not in hired_ids]
+    room.sub_state = "choose_ac"
+    room.pending_action = {
+        "action": "choose_ac",
+        "player_id": player.id,
+        "available": available,
+        "message": f"{player.name}, välj din Arbetschef (AC).",
+    }
+
+
+def _handle_ac_hire(room: GameRoom, player, action: dict) -> dict:
+    ac_id = action.get("value")
+    hired_ids = room.temp.get("ac_hired_ids", set())
+    ac = next((a for a in room.game_data.ac_staff if a["id"] == ac_id and ac_id not in hired_ids), None)
+    if not ac:
+        return {"type": "error", "message": "Ogiltig AC"}
+
+    player.arbetschef = dict(ac)
+    hired_ids.add(ac_id)
+    room.temp["ac_hired_ids"] = hired_ids
+
+    # Deduct cost from ABT budget
+    player.abt_budget -= ac.get("lon", 0)
+
+    event = {"type": "event", "text": f"{player.name} anställer {ac['namn']} som Arbetschef (-{ac.get('lon', 0)} Mkr)"}
+    room.events_log.append(event)
+
+    room.next_turn()
+    if room.turn_index == 0:
+        # All players hired — start planning
+        room.phase = GamePhase.PHASE2_PLANERING
+        room.temp = {}
+        _setup_planering(room)
+    else:
+        _setup_ac_hire(room)
+
+    return {"type": "state_update", "events": [event]}
 
 
 # ═══════════════════════════════════════════
@@ -2209,6 +2318,8 @@ def _gf_play_competence_card(room: GameRoom, player: Player, card_key: str, even
         player.used_org_keys.append(card["key"])
     elif card["source"] == "external":
         player.used_external_ids.append(card["key"])
+    elif card["source"] == "ac":
+        player.ac_kompetens_used = True
 
     contrib_str = ", ".join(contrib_parts) if contrib_parts else "inga matchande"
     events.append({

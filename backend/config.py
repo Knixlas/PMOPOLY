@@ -115,6 +115,7 @@ DATA_FILES = {
     "omvarldskort": os.path.join("4_forvaltning", "F_4_omvärldskort.csv"),
     "handelsekort_forv": os.path.join("4_forvaltning", "F_4_händelsekort.csv"),
     "moderbolagslan": os.path.join("4_forvaltning", "F_4_moderbolagslån.csv"),
+    "pu_pl_personal": "PU_PL_personal.csv",
 }
 
 def data_path(key: str) -> str:

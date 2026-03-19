@@ -22,6 +22,7 @@ export function renderPhase1Action(panel, gs, pending) {
         case 'return_project': renderReturnProject(panel, pending); break;
         case 'riskbuffert_invest': renderRiskbuffertInvest(panel, pending, gs); break;
         case 'card_swap_project': renderCardSwapProject(panel, pending); break;
+        case 'choose_pc': renderChoosePC(panel, pending); break;
         default: panel.innerHTML = `<p>${pending.message || 'Väntar...'}</p>`;
     }
 }
@@ -276,6 +277,31 @@ function renderCardSwapProject(panel, pending) {
                     sendAction({ action: 'card_swap_project', value: btn.dataset.id });
                 });
             }
+        });
+    });
+}
+
+function renderChoosePC(panel, pending) {
+    let html = `<h3>Välj Projektchef (PC)</h3><p>${pending.message}</p>`;
+    const options = pending.available || [];
+    for (const pc of options) {
+        const motstand = pc.handelsemotstand || 'ingen';
+        const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        html += `
+            <div class="project-option action-btn" data-id="${pc.id}">
+                <div class="proj-name">${pc.namn}</div>
+                <div class="proj-type">${pc.specialisering}</div>
+                <div class="proj-stats">
+                    Lindring: +${pc.kapacitet} (${motstand})${namnd}<br>
+                    Lön: ${pc.lon} Mkr
+                </div>
+                <div class="proj-desc">${pc.not_text || ''}</div>
+            </div>`;
+    }
+    panel.innerHTML = html;
+    panel.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            sendAction({ action: 'choose_pc', value: btn.dataset.id });
         });
     });
 }

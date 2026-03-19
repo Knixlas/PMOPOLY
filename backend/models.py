@@ -10,10 +10,12 @@ from config import DICE_MAP, D20_THRESHOLDS
 class GamePhase(str, Enum):
     LOBBY = "lobby"
     PHASE1_MARK_TOMT = "phase1_mark_tomt"
+    PHASE1_PC_HIRE = "phase1_pc_hire"
     PHASE1_BOARD = "phase1_board"
     PHASE1_NAMNDBESLUT = "phase1_namndbeslut"
     PHASE1_PLACEMENT = "phase1_placement"
     PHASE1_EKONOMI = "phase1_ekonomi"
+    PHASE2_AC_HIRE = "phase2_ac_hire"
     PHASE2_PLANERING = "phase2_planering"
     PUZZLE_PLACEMENT = "puzzle_placement"
     PHASE3_GENOMFORANDE = "phase3_genomforande"
@@ -322,6 +324,9 @@ class Player:
     mark_expansions: int = 0  # legacy counter (for economics)
     mark_expansion_pieces: List[dict] = field(default_factory=list)  # [{id, cells: [[r,c],...]}]
     has_mark_tomt: bool = False
+    projektchef: Optional[dict] = None  # PC hired in Phase 1
+    arbetschef: Optional[dict] = None   # AC hired in Phase 2
+    ac_kompetens_used: bool = False      # AC competence card played once
     # Economics
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
@@ -397,6 +402,9 @@ class Player:
             exp += s.erfarenhet if hasattr(s, 'erfarenhet') else s.get("erfarenhet", 0)
         for o in self.pl_orgs.values():
             exp += o.erfarenhet if hasattr(o, 'erfarenhet') else o.get("erfarenhet", 0)
+        # AC experience bonus
+        if self.arbetschef:
+            exp += self.arbetschef.get("kapacitet", 0)
         return exp
 
     @property
@@ -448,6 +456,11 @@ class Player:
             if eid not in self.used_external_ids:
                 cards.append({"source": "external", "key": eid, "namn": es.get("namn", ""),
                               "kompetenser": es.get("kompetenser", {})})
+        # AC (arbetschef) — playable once
+        if self.arbetschef and not self.ac_kompetens_used:
+            komp = self.arbetschef.get("kompetenser", {})
+            cards.append({"source": "ac", "key": "ac", "namn": self.arbetschef.get("namn", "AC"),
+                          "kompetenser": komp})
         return cards
 
     def card_is_eligible(self, card) -> bool:
@@ -518,4 +531,6 @@ class Player:
             "f4_tb": round(self.f4_tb, 1),
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
+            "projektchef": self.projektchef,
+            "arbetschef": self.arbetschef,
         }

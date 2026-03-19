@@ -448,6 +448,61 @@ def load_staff() -> List[Staff]:
     return staff
 
 
+def _parse_kompetenser(text: str) -> Dict[str, int]:
+    """Parse competence string like 'LED:2, SAM:3' into dict."""
+    result = {}
+    if not text:
+        return result
+    for part in text.split(","):
+        part = part.strip()
+        if ":" in part:
+            key, val = part.split(":", 1)
+            result[key.strip().upper()] = safe_int(val.strip())
+    return result
+
+
+def _parse_namnd_bonus(not_text: str) -> int:
+    """Extract namnd bonus from Not field, e.g. 'nämndbonus +3' → 3."""
+    import re
+    m = re.search(r'n[äa]mndbonus\s*\+?\s*(\d+)', not_text, re.IGNORECASE)
+    return int(m.group(1)) if m else 0
+
+
+def load_pc_ac_staff() -> Dict[str, list]:
+    """Load PC and AC candidates from PU_PL_personal.csv."""
+    fp = data_path("pu_pl_personal")
+    if not os.path.exists(fp):
+        return {"PC": [], "AC": []}
+    rows = read_csv(fp)
+    result = {"PC": [], "AC": []}
+    for row in rows:
+        roll = safe_str(row.get("Roll")).upper()
+        if roll not in ("PC", "AC"):
+            continue
+        not_text = safe_str(row.get("Not"))
+        forhandling = safe_str(row.get("Förhandling", row.get("F\x94rhandling")))
+        lon_str = safe_str(row.get("Lön_Mkr_per_kv", row.get("L\x94n_Mkr_per_kv")))
+        lon = safe_float(lon_str.replace(",", "."))
+
+        entry = {
+            "roll": roll,
+            "id": safe_str(row.get("ID")),
+            "namn": safe_str(row.get("Namn")),
+            "specialisering": safe_str(row.get("Specialisering")),
+            "kapacitet": safe_int(row.get("Kapacitet_proj")),
+            "handelsemotstand": safe_str(row.get("Händelsemotstånd", row.get("H\x84ndelsemotst\x86nd"))),
+            "lon": lon,
+            "forhandling": forhandling,
+            "not_text": not_text,
+        }
+        if roll == "PC":
+            entry["namnd_bonus"] = _parse_namnd_bonus(not_text)
+        elif roll == "AC":
+            entry["kompetenser"] = _parse_kompetenser(forhandling)
+        result[roll].append(entry)
+    return result
+
+
 def load_yield_cards() -> Dict[str, List[float]]:
     """Load yield change cards grouped by type (bostäder/kommersiellt)."""
     rows = read_csv(data_path("yield"))
@@ -680,6 +735,9 @@ class GameData:
         self.penalty_cards = load_penalty_cards()
         self.garanti_cards = load_garanti_cards()
         self.staff = load_staff()
+        _pc_ac = load_pc_ac_staff()
+        self.pc_staff = _pc_ac["PC"]
+        self.ac_staff = _pc_ac["AC"]
         self.yield_cards = load_yield_cards()
         self.world_events = load_world_events()
         self.dd_cards = load_dd_cards()

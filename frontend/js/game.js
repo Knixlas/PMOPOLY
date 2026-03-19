@@ -58,13 +58,16 @@ export function handleGameState(gs) {
 
     // Render board - each phase gets its own board
     const boardEl = document.getElementById('board-container');
-    const phase1Phases = ['phase1_mark_tomt', 'phase1_board', 'phase1_namndbeslut',
-                          'phase1_placement', 'phase1_ekonomi'];
+    const phase1Phases = ['phase1_mark_tomt', 'phase1_pc_hire', 'phase1_board',
+                          'phase1_namndbeslut', 'phase1_placement', 'phase1_ekonomi'];
     if (phase1Phases.includes(gs.phase)) {
         renderBoard(BOARD_SQUARES, gs.players);
         if (boardEl) boardEl.style.display = '';
     } else if (gs.phase === 'puzzle_placement') {
         renderPuzzleBoard(gs);
+        if (boardEl) boardEl.style.display = '';
+    } else if (gs.phase === 'phase2_ac_hire') {
+        renderPlanGFBoard(gs);
         if (boardEl) boardEl.style.display = '';
     } else if (gs.phase === 'phase2_planering' || gs.phase === 'phase3_genomforande') {
         renderPlanGFBoard(gs);
@@ -208,8 +211,8 @@ function renderInfoPanel(gs) {
     const pending = gs.pending_action || {};
     let html = '';
 
-    const phase1Phases = ['phase1_mark_tomt', 'phase1_board', 'phase1_namndbeslut',
-                          'phase1_placement', 'phase1_ekonomi'];
+    const phase1Phases = ['phase1_mark_tomt', 'phase1_pc_hire', 'phase1_board',
+                          'phase1_namndbeslut', 'phase1_placement', 'phase1_ekonomi'];
 
     if (phase1Phases.includes(gs.phase)) {
         // Show current square info

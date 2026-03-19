@@ -20,6 +20,7 @@ export function renderPhase2Action(panel, gs, pending) {
         case 'roll_d20': renderPlanningRollD20(panel, pending, statusHtml); break;
         case 'use_riskbuffert': renderPlanningReroll(panel, pending, statusHtml); break;
         case 'continue': renderPlanningContinue(panel, pending, statusHtml); break;
+        case 'choose_ac': renderChooseAC(panel, pending); break;
         default: panel.innerHTML = statusHtml + `<p>${pending.message || 'Väntar...'}</p>`;
     }
 }
@@ -202,5 +203,30 @@ function renderPlanningContinue(panel, pending, statusHtml) {
     `;
     document.getElementById('btn-continue').addEventListener('click', () => {
         sendAction({ action: 'continue' });
+    });
+}
+
+function renderChooseAC(panel, pending) {
+    let html = `<h3>Välj Arbetschef (AC)</h3><p>${pending.message}</p>`;
+    const options = pending.available || [];
+    for (const ac of options) {
+        const komp = ac.forhandling || 'ingen';
+        html += `
+            <div class="project-option action-btn" data-id="${ac.id}">
+                <div class="proj-name">${ac.namn}</div>
+                <div class="proj-type">${ac.specialisering}</div>
+                <div class="proj-stats">
+                    Erfarenhet: +${ac.kapacitet}<br>
+                    Kompetens: ${komp}<br>
+                    Lön: ${ac.lon} Mkr (dras från ABT)
+                </div>
+                <div class="proj-desc">${ac.not_text || ''}</div>
+            </div>`;
+    }
+    panel.innerHTML = html;
+    panel.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            sendAction({ action: 'choose_ac', value: btn.dataset.id });
+        });
     });
 }

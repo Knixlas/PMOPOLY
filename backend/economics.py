@@ -41,7 +41,8 @@ def calc_phase1_economics(player, events: list):
     mark_cost = 15 if player.has_mark_tomt else 0
     expansion_cost = player.mark_expansions * 5
     dev_cost = sum(p.kostnad for p in player.projects)
-    total_cost = mark_cost + expansion_cost + dev_cost
+    pc_cost = player.projektchef.get("lon", 0) if player.projektchef else 0
+    total_cost = mark_cost + expansion_cost + dev_cost + pc_cost
 
     # Net
     net = revenue - total_cost
