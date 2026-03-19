@@ -1840,11 +1840,20 @@ def _finalize_puzzle(room: GameRoom, events: list):
             for proj in removed:
                 player.q_krav = max(0, player.q_krav - proj.kvalitet)
                 player.h_krav = max(0, player.h_krav - proj.hallbarhet)
+
+            # Adjust ABT: remove revenue (anskaffning) but keep dev cost (already paid)
+            # Net effect: ABT -= (anskaffning - kostnad) for each removed project
+            lost_revenue = sum(p.anskaffning for p in removed)
+            kept_cost = sum(p.kostnad for p in removed)
+            abt_reduction = lost_revenue - kept_cost
+            player.abt_budget -= abt_reduction
+            player.abt_start -= abt_reduction
+
             names = ", ".join(p.namn for p in removed)
             events.append({
                 "type": "event",
                 "text": f"{player.name} fick inte plats med: {names} "
-                        f"(Q-krav nu {player.q_krav}, H-krav nu {player.h_krav})",
+                        f"(ABT -{abt_reduction} Mkr, Q-krav nu {player.q_krav}, H-krav nu {player.h_krav})",
             })
 
     room.phase = GamePhase.PHASE2_AC_HIRE
