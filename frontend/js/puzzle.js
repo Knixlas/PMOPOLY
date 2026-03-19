@@ -166,7 +166,9 @@ function highlightTarget(event) {
 
     const pos = getDropRowCol(event);
     if (!pos) return;
-    const cells = dragState.orientations[dragState.orientationIdx];
+    const active = getActiveState();
+    if (!active) return;
+    const cells = active.orientations[active.orientationIdx];
     const targetCells = cells.map(([r, c]) => [r + pos.row, c + pos.col]);
     const valid = checkPlacementValid(targetCells);
     const gridEl = document.querySelector('.puzzle-grid');
@@ -177,15 +179,19 @@ function highlightTarget(event) {
     }
 }
 
+function getActiveState() { return dragState || selectState; }
+
 function checkPlacementValid(targetCells) {
     const puzzle = state.gameState?.my_puzzle;
     if (!puzzle) return false;
+    const active = getActiveState();
+    if (!active) return false;
 
-    if (dragState.kind === 'mark_expansion') {
+    if (active.kind === 'mark_expansion') {
         // Mark expansion: must be adjacent to grid, not overlap grid, within bounds
         const gridSet = new Set(puzzle.grid_cells.map(([r, c]) => `${r},${c}`));
         // Remove own previous placement
-        const old = puzzle.mark_placements?.[dragState.id];
+        const old = puzzle.mark_placements?.[active.id];
         if (old) for (const rc of old.cells) gridSet.delete(`${rc[0]},${rc[1]}`);
 
         let adjacent = false;
@@ -201,14 +207,14 @@ function checkPlacementValid(targetCells) {
 
     // Project placement
     const gridSet = new Set(puzzle.grid_cells.map(([r, c]) => `${r},${c}`));
-    const typ = dragState.typ;
+    const typ = active.typ;
 
     if (isBostad(typ)) {
         // Bostäder must sit on top of ground projects, not on empty grid cells
         const groundOccupied = new Set();
         const bostadOccupied = new Set();
         for (const [pid, pl] of Object.entries(puzzle.placements)) {
-            if (pid === dragState.id) continue;
+            if (pid === active.id) continue;
             const shape = puzzle.shapes?.[pid];
             if (shape && isBostad(shape.typ)) {
                 for (const [r, c] of pl.cells) bostadOccupied.add(`${r},${c}`);
@@ -225,7 +231,7 @@ function checkPlacementValid(targetCells) {
         // Ground project: no overlap with other ground projects
         const groundOccupied = new Set();
         for (const [pid, pl] of Object.entries(puzzle.placements)) {
-            if (pid === dragState.id) continue;
+            if (pid === active.id) continue;
             const shape = puzzle.shapes?.[pid];
             if (shape && !isBostad(shape.typ)) {
                 for (const [r, c] of pl.cells) groundOccupied.add(`${r},${c}`);
@@ -662,12 +668,10 @@ export function openPieceModal(id, kind, typ, shapeCells) {
         });
         modal.querySelector('#pm-place').addEventListener('click', (e) => {
             e.stopPropagation();
-            // Select piece and close modal — user taps grid to place
+            // Start touch-follow mode with ghost piece
             selectState = { id, kind, typ, orientations, orientationIdx };
             closePieceModal();
-            if (state.gameState) {
-                renderPuzzleBoard(state.gameState);
-            }
+            startTouchFollow();
         });
         modal.querySelector('#pm-cancel').addEventListener('click', (e) => {
             e.stopPropagation();
@@ -681,6 +685,107 @@ export function openPieceModal(id, kind, typ, shapeCells) {
 
     document.body.appendChild(modal);
     renderModalContent();
+}
+
+function startTouchFollow() {
+    if (!selectState) return;
+
+    // Create a ghost element centered on screen
+    const cells = selectState.orientations[selectState.orientationIdx];
+    const gridEl = document.querySelector('.puzzle-grid');
+    const cellSize = gridEl ? gridEl.offsetWidth / 10 : 30;
+    const maxR = Math.max(...cells.map(c => c[0]));
+    const maxC = Math.max(...cells.map(c => c[1]));
+
+    const ghost = document.createElement('div');
+    ghost.className = 'puzzle-ghost touch-follow';
+    ghost.style.gridTemplateRows = `repeat(${maxR + 1}, 1fr)`;
+    ghost.style.gridTemplateColumns = `repeat(${maxC + 1}, 1fr)`;
+    ghost.style.width = `${(maxC + 1) * cellSize}px`;
+    ghost.style.height = `${(maxR + 1) * cellSize}px`;
+
+    const bg = selectState.kind === 'mark_expansion'
+        ? MARK_COLOR_LIGHT
+        : (TYPE_COLORS_LIGHT[selectState.typ] || '#888');
+    for (const [r, c] of cells) {
+        const cell = document.createElement('div');
+        cell.className = 'puzzle-ghost-cell';
+        cell.style.gridRow = r + 1;
+        cell.style.gridColumn = c + 1;
+        cell.style.background = bg;
+        ghost.appendChild(cell);
+    }
+
+    // Position centered above grid
+    const gridRect = gridEl?.getBoundingClientRect();
+    const cx = gridRect ? gridRect.left + gridRect.width / 2 : window.innerWidth / 2;
+    const cy = gridRect ? gridRect.top + gridRect.height / 2 : window.innerHeight / 3;
+    ghost.style.left = `${cx - (maxC + 1) * cellSize / 2}px`;
+    ghost.style.top = `${cy - (maxR + 1) * cellSize / 2}px`;
+
+    document.body.appendChild(ghost);
+
+    // Instruction overlay
+    const hint = document.createElement('div');
+    hint.id = 'touch-follow-hint';
+    hint.className = 'touch-follow-hint';
+    hint.innerHTML = 'Dra med fingret till rätt position, släpp för att placera';
+    document.body.appendChild(hint);
+
+    function moveGhost(x, y) {
+        ghost.style.left = `${x - (maxC + 1) * cellSize / 2}px`;
+        ghost.style.top = `${y - (maxR + 1) * cellSize / 2}px`;
+        // Highlight grid cells
+        highlightTarget({ clientX: x, clientY: y });
+    }
+
+    function placeGhost(x, y) {
+        const pos = getDropRowCol({ clientX: x, clientY: y });
+        if (pos && selectState) {
+            const placeCells = cells.map(([r, c]) => [r + pos.row, c + pos.col]);
+            const valid = checkPlacementValid(placeCells);
+            if (valid) {
+                if (selectState.kind === 'mark_expansion') {
+                    sendAction({ action: 'puzzle_place_mark_expansion', piece_id: selectState.id, cells: placeCells });
+                } else {
+                    sendAction({ action: 'puzzle_place_project', project_id: selectState.id, cells: placeCells });
+                }
+                selectState = null;
+            }
+        }
+        cleanup();
+    }
+
+    function cleanup() {
+        ghost.remove();
+        hint.remove();
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        // Clear highlights
+        document.querySelectorAll('.puzzle-cell.drag-valid, .puzzle-cell.drag-invalid')
+            .forEach(el => el.classList.remove('drag-valid', 'drag-invalid'));
+        // Re-render board
+        if (state.gameState) renderPuzzleBoard(state.gameState);
+    }
+
+    function onTouchMove(e) {
+        e.preventDefault();
+        const t = e.touches[0];
+        moveGhost(t.clientX, t.clientY);
+    }
+    function onTouchEnd(e) {
+        const t = e.changedTouches[0];
+        placeGhost(t.clientX, t.clientY);
+    }
+    function onMouseMove(e) { moveGhost(e.clientX, e.clientY); }
+    function onMouseUp(e) { placeGhost(e.clientX, e.clientY); }
+
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
 }
 
 function closePieceModal() {

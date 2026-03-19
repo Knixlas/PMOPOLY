@@ -967,6 +967,13 @@ input[type="text"]:focus { border-color: var(--primary); }
     background: transparent !important; color: #aaa; font-size: 0.85em;
     margin-top: 4px;
 }
+.touch-follow-hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.85); color: #f0c929; padding: 10px 20px;
+    border-radius: 20px; font-size: 0.85em; z-index: 1001;
+    pointer-events: none; white-space: nowrap;
+}
+.puzzle-ghost.touch-follow { opacity: 0.8; }
 .puzzle-selectable { cursor: pointer; transition: all 0.15s; }
 .puzzle-selectable:hover, .puzzle-selectable:active {
     outline: 2px solid var(--accent); outline-offset: -2px;
