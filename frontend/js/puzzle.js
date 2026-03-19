@@ -436,12 +436,10 @@ export function renderPuzzleAction(panel, gs) {
     if (unplacedMark.length > 0) {
         html += '<div class="puzzle-section-label">Markexpansioner</div>';
         for (const piece of unplacedMark) {
-            html += `<div class="puzzle-inv-item">
+            const isSelected = selectState && selectState.id === piece.id;
+            html += `<div class="puzzle-inv-item puzzle-selectable ${isSelected ? 'selected' : ''}" data-mark-id="${piece.id}">
                 <div class="puzzle-inv-header" style="background:${MARK_COLOR}">
                     Mark ${piece.cells.length} rutor
-                </div>
-                <div class="puzzle-inv-shape" data-mark-id="${piece.id}">
-                    ${renderMiniShape(piece.cells, MARK_COLOR_LIGHT)}
                 </div>
             </div>`;
         }
@@ -471,13 +469,10 @@ export function renderPuzzleAction(panel, gs) {
         html += '<div class="puzzle-section-label">Markplansprojekt</div>';
         for (const [pid, shape] of unplacedGround) {
             const bg = TYPE_COLORS[shape.typ] || '#555';
-            const bgLight = TYPE_COLORS_LIGHT[shape.typ] || '#777';
-            html += `<div class="puzzle-inv-item">
+            const isSelected = selectState && selectState.id === pid;
+            html += `<div class="puzzle-inv-item puzzle-selectable ${isSelected ? 'selected' : ''}" data-pid="${pid}" data-typ="${shape.typ}">
                 <div class="puzzle-inv-header" style="background:${bg}">
                     ${shape.namn} <span class="puzzle-inv-cells">${shape.cells.length}</span>
-                </div>
-                <div class="puzzle-inv-shape" data-pid="${pid}" data-typ="${shape.typ}">
-                    ${renderMiniShape(shape.cells, bgLight)}
                 </div>
             </div>`;
         }
@@ -487,13 +482,10 @@ export function renderPuzzleAction(panel, gs) {
         html += '<div class="puzzle-section-label">Bostäder (byggs ovanpå)</div>';
         for (const [pid, shape] of unplacedBostad) {
             const bg = TYPE_COLORS[shape.typ] || '#555';
-            const bgLight = TYPE_COLORS_LIGHT[shape.typ] || '#777';
-            html += `<div class="puzzle-inv-item">
+            const isSelected = selectState && selectState.id === pid;
+            html += `<div class="puzzle-inv-item puzzle-selectable ${isSelected ? 'selected' : ''}" data-pid="${pid}" data-typ="${shape.typ}">
                 <div class="puzzle-inv-header" style="background:${bg}">
                     ${shape.namn} <span class="puzzle-inv-cells">${shape.cells.length}</span>
-                </div>
-                <div class="puzzle-inv-shape" data-pid="${pid}" data-typ="${shape.typ}">
-                    ${renderMiniShape(shape.cells, bgLight)}
                 </div>
             </div>`;
         }
@@ -527,46 +519,35 @@ export function renderPuzzleAction(panel, gs) {
 
     panel.innerHTML = html;
 
-    // ── Interaction handlers (tap on touch, drag on desktop) ──
-    panel.querySelectorAll('.puzzle-inv-shape[data-mark-id]').forEach(el => {
-        const markId = el.dataset.markId;
-        const piece = markPieces.find(p => p.id === markId);
-        if (piece && !piece.placed) {
-            if (isTouch) {
-                el.style.cursor = 'pointer';
-                el.addEventListener('click', () => selectPiece(markId, 'mark_expansion', 'mark', piece.cells));
-            } else {
-                el.style.cursor = 'grab';
-                el.addEventListener('pointerdown', (e) => { e.preventDefault(); startDrag(markId, 'mark_expansion', 'mark', piece.cells, e); });
-            }
-        }
-    });
-
-    panel.querySelectorAll('.puzzle-inv-shape[data-pid]').forEach(el => {
+    // ── Interaction handlers ──
+    // All selectable items (projects + mark pieces) — tap opens modal, desktop drag
+    panel.querySelectorAll('.puzzle-selectable').forEach(el => {
         const pid = el.dataset.pid;
-        const typ = el.dataset.typ;
-        const shape = shapes[pid];
-        if (shape && !placements[pid]) {
-            if (isTouch) {
-                el.style.cursor = 'pointer';
-                el.addEventListener('click', () => selectPiece(pid, 'project', typ, shape.cells));
-            } else {
-                el.style.cursor = 'grab';
-                el.addEventListener('pointerdown', (e) => { e.preventDefault(); startDrag(pid, 'project', typ, shape.cells, e); });
-            }
-        }
-    });
+        const markId = el.dataset.markId;
+        const id = pid || markId;
 
-    // Highlight currently selected item
-    if (selectState) {
-        panel.querySelectorAll('.puzzle-inv-item').forEach(item => {
-            const shapeEl = item.querySelector('.puzzle-inv-shape[data-pid], .puzzle-inv-shape[data-mark-id]');
-            if (shapeEl) {
-                const id = shapeEl.dataset.pid || shapeEl.dataset.markId;
-                if (id === selectState.id) item.classList.add('selected');
-            }
+        let shapeCells, kind, typ;
+        if (pid) {
+            const shape = shapes[pid];
+            if (!shape) return;
+            shapeCells = shape.cells;
+            kind = 'project';
+            typ = shape.typ;
+        } else if (markId) {
+            const piece = markPieces.find(p => p.id === markId);
+            if (!piece) return;
+            shapeCells = piece.cells;
+            kind = 'mark_expansion';
+            typ = 'mark';
+        }
+        if (!shapeCells) return;
+
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPieceModal(id, kind, typ, shapeCells);
         });
-    }
+    });
 
     // Remove buttons (projects)
     panel.querySelectorAll('.puzzle-remove-btn[data-pid]').forEach(el => {
@@ -626,8 +607,91 @@ function renderStatusList(statuses) {
     return html + '</div>';
 }
 
-function renderMiniShape(cells, color) {
+// ── Piece selection modal ──
+
+export function openPieceModal(id, kind, typ, shapeCells) {
+    // Close any existing modal
+    closePieceModal();
+
+    const orientations = allOrientations(shapeCells);
+    let orientationIdx = 0;
+
+    // Carry over orientation if re-opening same piece
+    if (selectState && selectState.id === id) {
+        orientationIdx = selectState.orientationIdx;
+    }
+
+    const color = typ === 'mark'
+        ? MARK_COLOR_LIGHT
+        : (TYPE_COLORS_LIGHT[typ] || '#777');
+    const bg = typ === 'mark'
+        ? MARK_COLOR
+        : (TYPE_COLORS[typ] || '#555');
+
+    const modal = document.createElement('div');
+    modal.id = 'puzzle-piece-modal';
+    modal.className = 'puzzle-modal-overlay';
+
+    function renderModalContent() {
+        const cells = orientations[orientationIdx];
+        modal.innerHTML = `
+            <div class="puzzle-modal" style="border-color:${bg}">
+                <div class="puzzle-modal-title" style="background:${bg}">
+                    ${kind === 'mark_expansion' ? `Mark ${shapeCells.length} rutor` : (state.gameState?.my_puzzle?.shapes?.[id]?.namn || id)}
+                </div>
+                <div class="puzzle-modal-shape">
+                    ${renderMiniShape(cells, color, 24)}
+                </div>
+                <div class="puzzle-modal-buttons">
+                    <button class="puzzle-modal-btn" id="pm-rotate">↻ Rotera</button>
+                    <button class="puzzle-modal-btn" id="pm-flip">↔ Spegla</button>
+                </div>
+                <button class="puzzle-modal-btn puzzle-modal-place" id="pm-place">Placera ▸</button>
+                <button class="puzzle-modal-btn puzzle-modal-cancel" id="pm-cancel">Avbryt</button>
+            </div>`;
+
+        modal.querySelector('#pm-rotate').addEventListener('click', (e) => {
+            e.stopPropagation();
+            orientationIdx = (orientationIdx + 2) % orientations.length;
+            renderModalContent();
+        });
+        modal.querySelector('#pm-flip').addEventListener('click', (e) => {
+            e.stopPropagation();
+            orientationIdx = (orientationIdx ^ 1);
+            renderModalContent();
+        });
+        modal.querySelector('#pm-place').addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Select piece and close modal — user taps grid to place
+            selectState = { id, kind, typ, orientations, orientationIdx };
+            closePieceModal();
+            if (state.gameState) {
+                renderPuzzleBoard(state.gameState);
+            }
+        });
+        modal.querySelector('#pm-cancel').addEventListener('click', (e) => {
+            e.stopPropagation();
+            closePieceModal();
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closePieceModal();
+    });
+
+    document.body.appendChild(modal);
+    renderModalContent();
+}
+
+function closePieceModal() {
+    const existing = document.getElementById('puzzle-piece-modal');
+    if (existing) existing.remove();
+}
+
+
+function renderMiniShape(cells, color, cellSize) {
     if (!cells || cells.length === 0) return '';
+    const sz = cellSize || 20;
     // Normalize to (0,0) origin
     const minR = Math.min(...cells.map(c => c[0]));
     const minC = Math.min(...cells.map(c => c[1]));
@@ -636,13 +700,16 @@ function renderMiniShape(cells, color) {
     const maxC = Math.max(...norm.map(c => c[1]));
     const cellSet = new Set(norm.map(([r, c]) => `${r},${c}`));
 
-    let html = `<div class="mini-shape" style="grid-template-columns:repeat(${maxC + 1},1fr);grid-template-rows:repeat(${maxR + 1},1fr)">`;
+    const sizeStyle = sz !== 20 ? `style="grid-template-columns:repeat(${maxC + 1},${sz}px);grid-template-rows:repeat(${maxR + 1},${sz}px)"` :
+        `style="grid-template-columns:repeat(${maxC + 1},1fr);grid-template-rows:repeat(${maxR + 1},1fr)"`;
+    let html = `<div class="mini-shape" ${sizeStyle}>`;
     for (let r = 0; r <= maxR; r++) {
         for (let c = 0; c <= maxC; c++) {
+            const cellStyle = sz !== 20 ? `width:${sz}px;height:${sz}px;min-width:${sz}px;min-height:${sz}px;` : '';
             if (cellSet.has(`${r},${c}`)) {
-                html += `<div class="mini-shape-cell" style="background:${color}"></div>`;
+                html += `<div class="mini-shape-cell" style="background:${color};${cellStyle}"></div>`;
             } else {
-                html += `<div class="mini-shape-empty"></div>`;
+                html += `<div class="mini-shape-empty" style="${cellStyle}"></div>`;
             }
         }
     }

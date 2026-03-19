@@ -7,7 +7,7 @@ import { renderPhase1Action } from './phase1.js';
 import { renderPhase2Action } from './phase2.js';
 import { renderPhase3Action } from './phase3.js';
 import { renderPhase4Action } from './phase4.js';
-import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag, selectPiece, getSelectState } from './puzzle.js';
+import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag, selectPiece, getSelectState, openPieceModal } from './puzzle.js';
 
 // Board square definitions (must match backend config.py)
 const BOARD_SQUARES = [
@@ -549,20 +549,11 @@ function renderAssetsPanel(gs) {
                 card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
             }
 
-            if (isTouchDevice) {
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selectPiece(pid, 'project', shape.typ, shape.cells);
-                });
-            } else {
-                card.style.cursor = 'grab';
-                card.addEventListener('pointerdown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startDrag(pid, 'project', shape.typ, shape.cells, e);
-                });
-            }
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openPieceModal(pid, 'project', shape.typ, shape.cells);
+            });
         });
 
         // Mark expansion cards
@@ -577,20 +568,11 @@ function renderAssetsPanel(gs) {
                 card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
             }
 
-            if (isTouchDevice) {
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selectPiece(markId, 'mark_expansion', 'mark', piece.cells);
-                });
-            } else {
-                card.style.cursor = 'grab';
-                card.addEventListener('pointerdown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startDrag(markId, 'mark_expansion', 'mark', piece.cells, e);
-                });
-            }
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openPieceModal(markId, 'mark_expansion', 'mark', piece.cells);
+            });
         });
     }
 }
