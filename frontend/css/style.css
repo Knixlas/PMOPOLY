@@ -905,18 +905,19 @@ input[type="text"]:focus { border-color: var(--primary); }
 /* Mini shape preview */
 .mini-shape {
     display: inline-grid;
-    gap: 1px;
+    gap: 2px;
 }
 .mini-shape-cell {
-    width: 18px;
-    height: 18px;
-    border-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.3);
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.4);
+    min-width: 20px;
+    min-height: 20px;
 }
 .mini-shape-empty {
-    width: 18px;
-    height: 18px;
-    aspect-ratio: 1;
+    width: 20px;
+    height: 20px;
 }
 
 /* Action panel elements */

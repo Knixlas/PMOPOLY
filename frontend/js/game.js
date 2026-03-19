@@ -7,7 +7,7 @@ import { renderPhase1Action } from './phase1.js';
 import { renderPhase2Action } from './phase2.js';
 import { renderPhase3Action } from './phase3.js';
 import { renderPhase4Action } from './phase4.js';
-import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag } from './puzzle.js';
+import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag, selectPiece, getSelectState } from './puzzle.js';
 
 // Board square definitions (must match backend config.py)
 const BOARD_SQUARES = [
@@ -452,6 +452,20 @@ function renderAssetsPanel(gs) {
         </div>`;
     });
 
+    // ── Mark expansion pieces (during puzzle phase) ──
+    if (gs.phase === 'puzzle_placement' && gs.my_puzzle) {
+        const markPieces = gs.my_puzzle.mark_pieces || [];
+        markPieces.forEach(piece => {
+            const placed = piece.placed;
+            html += `<div class="asset-card asset-mark ${placed ? '' : 'clickable'}" style="background:#8B7355;${placed ? 'opacity:0.4' : ''}" data-mark-id="${piece.id}">
+                <div class="ac-overlay">
+                    <div class="ac-name">Mark</div>
+                    <div class="ac-stats">${piece.cells.length} rutor${placed ? ' ✓' : ''}</div>
+                </div>
+            </div>`;
+        });
+    }
+
     // ── Moderbolagslån card ──
     const loanNet = me.abt_loans_net || 0;
     if (loanNet > 0) {
@@ -508,26 +522,72 @@ function renderAssetsPanel(gs) {
         card.addEventListener('click', () => showAssetDetail(card, me));
     });
 
-    // During puzzle phase: make project cards draggable from bottom bar
+    // During puzzle phase: make project cards selectable/draggable from bottom bar
     if (gs.phase === 'puzzle_placement' && gs.my_puzzle) {
         const puzzle = gs.my_puzzle;
         const shapes = puzzle.shapes || {};
         const placements = puzzle.placements || {};
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+        const sel = getSelectState();
 
         panel.querySelectorAll('.asset-card.asset-project').forEach(card => {
             const namn = card.dataset.idx;
-            // Find project id by name in shapes
             const entry = Object.entries(shapes).find(([, s]) => s.namn === namn);
             if (!entry) return;
             const [pid, shape] = entry;
-            if (placements[pid]) return; // already placed
+            if (placements[pid]) {
+                card.style.opacity = '0.4';
+                return;
+            }
 
-            card.style.cursor = 'grab';
-            card.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startDrag(pid, 'project', shape.typ, shape.cells, e);
-            });
+            // Highlight selected
+            if (sel && sel.id === pid) {
+                card.style.border = '2px solid #f0c929';
+                card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
+            }
+
+            if (isTouchDevice) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectPiece(pid, 'project', shape.typ, shape.cells);
+                });
+            } else {
+                card.style.cursor = 'grab';
+                card.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startDrag(pid, 'project', shape.typ, shape.cells, e);
+                });
+            }
+        });
+
+        // Mark expansion cards
+        const markPieces = puzzle.mark_pieces || [];
+        panel.querySelectorAll('.asset-card.asset-mark.clickable').forEach(card => {
+            const markId = card.dataset.markId;
+            const piece = markPieces.find(p => p.id === markId);
+            if (!piece || piece.placed) return;
+
+            if (sel && sel.id === markId) {
+                card.style.border = '2px solid #f0c929';
+                card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
+            }
+
+            if (isTouchDevice) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectPiece(markId, 'mark_expansion', 'mark', piece.cells);
+                });
+            } else {
+                card.style.cursor = 'grab';
+                card.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startDrag(markId, 'mark_expansion', 'mark', piece.cells, e);
+                });
+            }
         });
     }
 }
