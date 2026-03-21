@@ -481,6 +481,26 @@ function renderAssetsPanel(gs) {
         </div>`;
     }
 
+    // ── PC (Projektchef) ──
+    if (me.projektchef) {
+        const pc = me.projektchef;
+        html += `<div class="asset-card clickable" style="background:#5B4A3F" data-detail="pc" data-idx="pc">
+            <div class="ac-name">${truncName(pc.namn, 12)}</div>
+            <div class="ac-type">PC</div>
+            <div class="ac-stats">${pc.specialisering || ''}</div>
+        </div>`;
+    }
+
+    // ── AC (Arbetschef) ──
+    if (me.arbetschef) {
+        const ac = me.arbetschef;
+        html += `<div class="asset-card clickable" style="background:#2E4057" data-detail="ac" data-idx="ac">
+            <div class="ac-name">${truncName(ac.namn, 12)}</div>
+            <div class="ac-type">AC</div>
+            <div class="ac-stats">${ac.specialisering || ''}</div>
+        </div>`;
+    }
+
     // ── Suppliers (only during Phase 2 and 3) ──
     const showSuppliers = gs.phase === 'phase2_planering' || gs.phase === 'phase3_genomforande';
     if (showSuppliers) {
@@ -668,6 +688,43 @@ function showAssetDetail(card, player) {
                 ${o.riskbuffert ? `<div class="detail-row"><span>Riskbuffert</span><span>+${o.riskbuffert}</span></div>` : ''}
                 ${kompStr ? `<div class="detail-row"><span>Kompetenser</span><span>${kompStr}</span></div>` : ''}
             </div>
+        `;
+    } else if (type === 'pc') {
+        const pc = player.projektchef;
+        if (!pc) return;
+        const kompStr = Object.entries(pc.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
+        html = `
+            <h3>${pc.namn}</h3>
+            <div class="card-type">Projektchef — ${pc.specialisering || ''}</div>
+            <div class="detail-grid">
+                <div class="detail-row"><span>Lindring</span><span>+${pc.lindring || 0}</span></div>
+                <div class="detail-row"><span>Motstånd</span><span>${pc.handelsemotstand || '—'}</span></div>
+                <div class="detail-row"><span>Nämndbonus</span><span>+${pc.namnd_bonus || 0}</span></div>
+                <div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb || 0}</span></div>
+                ${pc.q_bonus ? `<div class="detail-row"><span>Kvalitet</span><span>+${pc.q_bonus}</span></div>` : ''}
+                ${pc.h_bonus ? `<div class="detail-row"><span>Hållbarhet</span><span>+${pc.h_bonus}</span></div>` : ''}
+                ${pc.t_bonus ? `<div class="detail-row"><span>Tid</span><span>-${pc.t_bonus} mån</span></div>` : ''}
+                ${kompStr ? `<div class="detail-row"><span>Kompetenser</span><span>${kompStr}</span></div>` : ''}
+            </div>
+            <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${pc.not_text || ''}</p>
+        `;
+    } else if (type === 'ac') {
+        const ac = player.arbetschef;
+        if (!ac) return;
+        const kompStr = Object.entries(ac.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
+        html = `
+            <h3>${ac.namn}</h3>
+            <div class="card-type">Arbetschef — ${ac.specialisering || ''}</div>
+            <div class="detail-grid">
+                <div class="detail-row"><span>Erfarenhet</span><span>+${ac.erfarenhet || 0}</span></div>
+                <div class="detail-row"><span>Motstånd</span><span>${ac.handelsemotstand || '—'}</span></div>
+                <div class="detail-row"><span>Riskbuffert</span><span>+${ac.rb || 0}</span></div>
+                ${ac.q_bonus ? `<div class="detail-row"><span>Kvalitet</span><span>+${ac.q_bonus}</span></div>` : ''}
+                ${ac.h_bonus ? `<div class="detail-row"><span>Hållbarhet</span><span>+${ac.h_bonus}</span></div>` : ''}
+                ${ac.t_bonus ? `<div class="detail-row"><span>Tid</span><span>-${ac.t_bonus} mån</span></div>` : ''}
+                ${kompStr ? `<div class="detail-row"><span>Kompetenser</span><span>${kompStr}</span></div>` : ''}
+            </div>
+            <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${ac.not_text || ''}</p>
         `;
     } else if (type === 'staff') {
         const s = player.staff?.find(st => st.namn === idx);

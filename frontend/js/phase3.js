@@ -224,7 +224,7 @@ function renderCompCard(card, remaining) {
             return `<span class="comp-tag ${useful ? 'comp-useful' : ''}">${k}: ${v}</span>`;
         })
         .join(' ');
-    const sourceLabel = card.source === 'supplier' ? 'Lev' : card.source === 'org' ? 'Org' : 'Ext';
+    const sourceLabel = card.source === 'supplier' ? 'Lev' : card.source === 'org' ? 'Org' : card.source === 'ac' ? 'AC' : 'Ext';
     return `
         <div class="supplier-option gf-comp-card" data-key="${card.key}">
             <div class="sup-header">
