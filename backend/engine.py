@@ -2911,9 +2911,21 @@ def _setup_forvaltning(room: GameRoom):
                 room.f4_market_props.append(copy.deepcopy(proj))
     random.shuffle(room.f4_market_props)
 
-    # Per-player: assign non-BRF properties as fastigheter, setup mgmt decks
+    # Per-player: sell BRFs (add profit to EK), keep rest as fastigheter
     room.f4_mgmt_decks = {}
     for player in room.players:
+        # BRF profit: marknadsvärde - anskaffning → EK
+        brf_projects = [p for p in player.projects
+                        if p.typ == "BRF" and p.id in player.placed_project_ids]
+        brf_profit = sum(p.marknadsvarde - p.anskaffning for p in brf_projects)
+        if brf_profit != 0:
+            player.eget_kapital += brf_profit
+            brf_names = ", ".join(p.namn for p in brf_projects)
+            events.append({
+                "type": "event",
+                "text": f"{player.name} säljer BRF:er ({brf_names}): +{brf_profit} Mkr till EK",
+            })
+
         player.fastigheter = [p for p in player.projects
                               if p.typ != "BRF" and p.id in player.placed_project_ids]
         for prop in player.fastigheter:
