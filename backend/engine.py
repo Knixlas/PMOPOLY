@@ -864,22 +864,10 @@ def _advance_namndbeslut(room: GameRoom):
 # ═══════════════════════════════════════════
 
 def _setup_placement(room: GameRoom):
-    player = room.current_player
-
-    # Check if player's projects exceed available cells (geometry decides fit)
-    over_cells = player.used_cells > player.available_cells
-
-    if over_cells:
-        room.sub_state = "return_project"
-        room.pending_action = {
-            "action": "return_project",
-            "player_id": player.id,
-            "projects": [p.to_dict() for p in player.projects],
-            "over_cells": over_cells,
-            "message": "Dina projekt får inte plats på tomten. Välj vilket du vill lämna tillbaka.",
-        }
-    else:
-        _advance_placement(room)
+    # No longer force return_project here — the puzzle phase handles
+    # which projects fit. Players keep all projects and pay dev cost
+    # for any that don't fit on the grid.
+    _advance_placement(room)
 
 
 def _handle_placement(room: GameRoom, player: Player, action: dict) -> dict:
