@@ -1,17 +1,17 @@
-Namn;Nivå;Kostnad_Mkr;Q;H;T_mån;erfarenhet;Riskbuffert;STA;KOM;SAM;NOG;INN;ABM
-Operativt team;1;8;1;0;0;0;;1;0;0;0;0;0
-Operativt team;2;13;0;1;0;0;1;2;1;2;0;0;0
-Operativt team;3;20;1;0;-1;1;;3;2;3;0;1;0
-Operativt team;4;28;1;1;-1;1;;4;3;3;0;0;4
-Stödfunktioner;1;8;0;1;0;0;;0;0;0;0;0;1
-Stödfunktioner;2;13;0;0;0;1;1;0;2;0;0;0;2
-Stödfunktioner;3;20;0;1;-1;1;;0;3;0;0;1;3
-Stödfunktioner;4;28;1;2;-1;0;;3;3;0;0;1;4
-Marknadsteam;1;8;0;0;0;1;;0;1;0;0;0;0
-Marknadsteam;2;13;0;0;0;1;1;1;2;0;0;1;0
-Marknadsteam;3;20;1;1;0;1;;2;3;0;0;1;0
-Marknadsteam;4;28;1;1;0;2;;3;4;0;0;2;0
-Digitalisering;1;8;0;0;0;1;;0;0;1;0;1;0
-Digitalisering;2;13;1;0;0;0;1;0;0;2;1;3;0
-Digitalisering;3;20;1;1;0;1;;0;1;3;2;4;0
-Digitalisering;4;28;2;1;-1;1;;0;2;3;2;5;0
+Namn;Nivå;Kostnad_Mkr;Q;H;T_mån;erfarenhet;Riskbuffert;STA;KOM;SAM;NOG;INN;ABM;@bildsida;@textsida;fill_color;line_color;ordning_bild;ordning_text
+Operativt team;1;8;1;0;0;0;;1;0;0;0;0;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Operativt team 1.png;;#3D5A6B;#5D737E;1;4
+Operativt team;2;13;0;1;0;0;1;2;1;2;0;0;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Operativt team 2.png;;#3D5A6B;#5D737E;2;3
+Operativt team;3;20;1;0;-1;1;;3;2;3;0;1;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Operativt team 3.png;;#3D5A6B;#5D737E;3;2
+Operativt team;4;28;1;1;-1;1;;4;3;3;0;0;4;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Operativt team 4.png;;#3D5A6B;#5D737E;4;1
+Stödfunktioner;1;8;0;1;0;0;;0;0;0;0;0;1;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Stödfunktioner 1.png;;#3D5A6B;#5D737E;1;4
+Stödfunktioner;2;13;0;0;0;1;1;0;2;0;0;0;2;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Stödfunktioner 2.png;;#3D5A6B;#5D737E;2;3
+Stödfunktioner;3;20;0;1;-1;1;;0;3;0;0;1;3;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Stödfunktioner 3.png;;#3D5A6B;#5D737E;3;2
+Stödfunktioner;4;28;1;2;-1;0;;3;3;0;0;1;4;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Stödfunktioner 4.png;;#3D5A6B;#5D737E;4;1
+Marknadsteam;1;8;0;0;0;1;;0;1;0;0;0;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Marknadsteam 1.png;;#3D5A6B;#5D737E;1;4
+Marknadsteam;2;13;0;0;0;1;1;1;2;0;0;1;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Marknadsteam 2.png;;#3D5A6B;#5D737E;2;3
+Marknadsteam;3;20;1;1;0;1;;2;3;0;0;1;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Marknadsteam 3.png;;#3D5A6B;#5D737E;3;2
+Marknadsteam;4;28;1;1;0;2;;3;4;0;0;2;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Marknadsteam 4.png;;#3D5A6B;#5D737E;4;1
+Digitalisering;1;8;0;0;0;1;;0;0;1;0;1;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Digitalisering 1.png;;#3D5A6B;#5D737E;1;4
+Digitalisering;2;13;1;0;0;0;1;0;0;2;1;3;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Digitalisering 2.png;;#3D5A6B;#5D737E;2;3
+Digitalisering;3;20;1;1;0;1;;0;1;3;2;4;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Digitalisering 3.png;;#3D5A6B;#5D737E;3;2
+Digitalisering;4;28;2;1;-1;1;;0;2;3;2;5;0;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Organisation Digitalisering 4.png;;#3D5A6B;#5D737E;4;1
