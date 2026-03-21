@@ -237,7 +237,7 @@ def _handle_board(room: GameRoom, player: Player, action: dict) -> dict:
             card_typ = card.typ if hasattr(card, 'typ') else card.get("typ", "")
             motstand = player.projektchef.get("handelsemotstand", "")
             if card_typ and card_typ.lower() in motstand.lower():
-                pc_bonus = player.projektchef.get("kapacitet", 0)
+                pc_bonus = player.projektchef.get("lindring", 0)
                 d20_result += pc_bonus
         effect = _get_card_effect(card, d20_result)
         room.temp["d20_result"] = d20_result

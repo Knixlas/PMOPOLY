@@ -287,13 +287,15 @@ function renderChoosePC(panel, pending) {
     for (const pc of options) {
         const motstand = pc.handelsemotstand || 'ingen';
         const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        const komp = pc.kompetenser ? Object.entries(pc.kompetenser).map(([k,v]) => `${k}:${v}`).join(', ') : '';
         html += `
             <div class="project-option action-btn" data-id="${pc.id}">
                 <div class="proj-name">${pc.namn}</div>
                 <div class="proj-type">${pc.specialisering}</div>
                 <div class="proj-stats">
-                    Lindring: +${pc.kapacitet} (${motstand})${namnd}<br>
-                    Lön: ${pc.lon} Mkr
+                    Lindring: +${pc.lindring || 0} (${motstand})${namnd}<br>
+                    ${komp ? `Kompetens: ${komp}<br>` : ''}
+                    Kostnad: ${pc.lon} Mkr
                 </div>
                 <div class="proj-desc">${pc.not_text || ''}</div>
             </div>`;

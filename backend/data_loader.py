@@ -468,6 +468,20 @@ def _parse_namnd_bonus(not_text: str) -> int:
     return int(m.group(1)) if m else 0
 
 
+def _parse_lindring(not_text: str) -> int:
+    """Extract lindring bonus from Not field, e.g. 'Lindrar politikkort +2' → 2."""
+    import re
+    m = re.search(r'[Ll]indrar.*\+(\d+)', not_text)
+    return int(m.group(1)) if m else 0
+
+
+def _parse_erfarenhet(not_text: str) -> int:
+    """Extract experience bonus from Not field, e.g. '+2 erfarenhet' → 2."""
+    import re
+    m = re.search(r'\+(\d+)\s*erfarenhet', not_text, re.IGNORECASE)
+    return int(m.group(1)) if m else 0
+
+
 def load_pc_ac_staff() -> Dict[str, list]:
     """Load PC and AC candidates from PU_PL_personal.csv."""
     fp = data_path("pu_pl_personal")
@@ -480,25 +494,36 @@ def load_pc_ac_staff() -> Dict[str, list]:
         if roll not in ("PC", "AC"):
             continue
         not_text = safe_str(row.get("Not"))
-        forhandling = safe_str(row.get("Förhandling", row.get("F\x94rhandling")))
-        lon_str = safe_str(row.get("Lön_Mkr_per_kv", row.get("L\x94n_Mkr_per_kv")))
-        lon = safe_float(lon_str.replace(",", "."))
+        kostnad_str = safe_str(row.get("Kostnad", row.get("Lön_Mkr_per_kv", "")))
+        lon = safe_float(kostnad_str.replace(",", "."))
+
+        kompetenser = {
+            "LED": safe_int(row.get("LED")),
+            "KOM": safe_int(row.get("KOM")),
+            "SAM": safe_int(row.get("SAM")),
+            "PRO": safe_int(row.get("PRO")),
+            "ABM": safe_int(row.get("ABM")),
+        }
+        # Remove zero-value keys for cleaner display
+        kompetenser = {k: v for k, v in kompetenser.items() if v > 0}
 
         entry = {
             "roll": roll,
             "id": safe_str(row.get("ID")),
             "namn": safe_str(row.get("Namn")),
             "specialisering": safe_str(row.get("Specialisering")),
-            "kapacitet": safe_int(row.get("Kapacitet_proj")),
-            "handelsemotstand": safe_str(row.get("Händelsemotstånd", row.get("H\x84ndelsemotst\x86nd"))),
+            "handelsemotstand": safe_str(row.get("Händelsemotstand",
+                                    row.get("Händelsemotstånd",
+                                    row.get("H\x84ndelsemotst\x86nd", "")))),
             "lon": lon,
-            "forhandling": forhandling,
+            "kompetenser": kompetenser,
             "not_text": not_text,
         }
         if roll == "PC":
             entry["namnd_bonus"] = _parse_namnd_bonus(not_text)
+            entry["lindring"] = _parse_lindring(not_text)
         elif roll == "AC":
-            entry["kompetenser"] = _parse_kompetenser(forhandling)
+            entry["erfarenhet"] = _parse_erfarenhet(not_text)
         result[roll].append(entry)
     return result
 

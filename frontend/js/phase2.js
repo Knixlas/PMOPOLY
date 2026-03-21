@@ -210,15 +210,15 @@ function renderChooseAC(panel, pending) {
     let html = `<h3>Välj Arbetschef (AC)</h3><p>${pending.message}</p>`;
     const options = pending.available || [];
     for (const ac of options) {
-        const komp = ac.forhandling || 'ingen';
+        const komp = ac.kompetenser ? Object.entries(ac.kompetenser).map(([k,v]) => `${k}:${v}`).join(', ') : 'ingen';
         html += `
             <div class="project-option action-btn" data-id="${ac.id}">
                 <div class="proj-name">${ac.namn}</div>
                 <div class="proj-type">${ac.specialisering}</div>
                 <div class="proj-stats">
-                    Erfarenhet: +${ac.kapacitet}<br>
+                    Erfarenhet: +${ac.erfarenhet || 0}<br>
                     Kompetens: ${komp}<br>
-                    Lön: ${ac.lon} Mkr (dras från ABT)
+                    Kostnad: ${ac.lon} Mkr (dras från ABT)
                 </div>
                 <div class="proj-desc">${ac.not_text || ''}</div>
             </div>`;

@@ -404,7 +404,7 @@ class Player:
             exp += o.erfarenhet if hasattr(o, 'erfarenhet') else o.get("erfarenhet", 0)
         # AC experience bonus
         if self.arbetschef:
-            exp += self.arbetschef.get("kapacitet", 0)
+            exp += self.arbetschef.get("erfarenhet", 0)
         return exp
 
     @property
