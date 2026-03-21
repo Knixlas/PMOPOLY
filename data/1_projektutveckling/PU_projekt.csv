@@ -1,0 +1,50 @@
+Namn;Typ;Förekomst;Kostnad;Namn;Formfaktor;BTA;Anskaffning;Marknadsvärde;Rörligt marknadsvärde;Kvalitet;Hållbarhet;Tid;Riskbuffert;Antal krav;Nämndbeslut;STA;KOM;SAM;NOG;INN;ABM;MARK;HUSUNDERBYGGNAD;STOMME;YTTERTAK;FASADER;STOMKOMPLETTERING;INV YTSKIKT;INSTALLATIONER;GEMENSAMMA ARBETEN;Energiklass;Skalfaktor;Driftnetto;intäkt/kvm nu;förslag intäkt;temp;temp2
+BRF-1  ; BRF      ;3;2; BRF-1  ;2;1000;33;40;D12;1;1;;;;1;;2;;1;0;1;;;;;;;;;;C;;;43;44;36;36
+BRF-2  ; BRF      ;3;4; BRF-2  ;2;1500;50;58;D10;1;1;;;;1;;2;1;;0;1;;;;;;;;;;C;;;40,66666667;44;36;54
+BRF-3  ; BRF      ;3;5; BRF-3  ;2;2000;66;75;D6;1;1;;;;1;;2;;1;0;1;;;;;;;;;;C;;;39,5;44;36;72
+BRF-4  ; BRF      ;2;5; BRF-4  ;4;1500;62;70;D10;2;1;;;3;1;;1;1;1;0;1;;;Betong etablerat;;;Standard lösningar;;;;C;;;50;53;45;68
+BRF-5  ; BRF      ;2;6; BRF-5  ;5;1750;79;90;D8;2;1;1;;4;1;;2;1;1;0;;;Standard betongkonstruktion;;Plåttak standard;;;Standardfinish;;Standardmiljö;C;;;53,14285714;57;49;86
+BRF-6  ; BRF      ;2;4; BRF-6  ;3;1250;54;65;D10;3;1;;;4;1;1;2;;;0;1;;;Betong etablerat;;Tegelfasad;;;Standardsystem;;C;;;52,8;55;47;59
+BRF-7  ; BRF      ;1;3; BRF-7  ;4;1000;39;45;D12;2;1;;;2;1;;1;;2;0;1;;;;Tegeltak;;;;Avancerade system;;C;;;50;51;43;43
+BRF-8  ; BRF      ;1;2; BRF-8  ;2;750;30;35;D12;2;1;;;3;1;;1;1;;0;2;;;;;Natursten;;;;Förbättrad miljö;C;;;52;51;43;32
+BRF-9  ; BRF      ;1;7; BRF-9  ;8;2000;103;120;D6;3;1;2;;5;4;1;2;;1;0;1;;;Prefab-element;;;Förstärkt ljudisolering;;Avancerade system;;C;;;59,5;64;56;112
+FSK-1  ; FÖRSKOLOR;3;3; FSK-1  ;2;1000;45;68;D8;1;1;;;;1;1;1;;;0;2;;;;;;;;;;C;1;1;44;44;39;39
+FSK-2  ; FÖRSKOLOR;3;4; FSK-2  ;2;1500;67;97;D8;1;1;;;;1;1;1;;;0;2;;;;;;;;;;D;0,95;1,5;42;44;39;58
+FSK-3  ; FÖRSKOLOR;3;2; FSK-3  ;2;750;31;31;D12;1;1;;;;1;;1;;1;0;2;;;;;;;;;;E;0,9;0,5;45,33333333;44;36;27
+FSK-4  ; FÖRSKOLOR;2;7; FSK-4  ;6;2000;125;170;D10;1;2;1;1;5;3;1;1;1;;0;2;;Standard betongkonstruktion;;Plåttak standard;;Standard lösningar;;Standardsystem;Standardmiljö;C;1;2,5;57,5;61;54;109
+FSK-5  ; FÖRSKOLOR;2;4; FSK-5  ;3;1250;64;68;D12;1;2;;1;3;1;1;1;;1;0;1;;;;;Tegelfasad;;Standardfinish;;;C;1;1;50,4;53;45;56
+FSK-6  ; FÖRSKOLOR;2;6; FSK-6  ;5;1750;101;136;D12;1;2;1;1;4;1;1;1;1;;0;2;;Standard betongkonstruktion;;Plåttak standard;;Standard lösningar;;Standardsystem;;C;1;2;54,28571429;58;50;88
+FSK-7; FÖRSKOLOR;1;3; FSK-7;4;1000;53;65;D8;2;2;;1;1;1;1;2;;;0;1;;Förstärkt konstruktion;;;;;;;;D;0,95;1;51;51;46;46
+FSK-8; FÖRSKOLOR;1;4; FSK-8;5;1250;71;92;D8;2;2;1;1;2;1;;1;1;1;0;1;;;Prefab-element;;;;Kvalitetsfinish;;;E;0,9;1,5;53,6;55;50;62
+FSK-9; FÖRSKOLOR;1;5; FSK-9;6;1500;91;143;D8;2;2;1;1;3;1;1;1;;1;0;2;;Förstärkt konstruktion;;Tegeltak;;;;Avancerade system;;B;1,05;2;56;58;53;79
+HAN-1  ;LOKAL;3;2; HAN-1  ;2;750;36;34;D6;1;2;;;;1;1;1;2;1;0;;;;;;;;;;;C;1;0,5;46,66666667;45;41;31
+HAN-2  ;LOKAL;3;3; HAN-2  ;2;1250;57;97;D8;1;2;;;;1;1;1;2;1;0;;;;;;;;;;;D;0,95;1,5;44;45;40;50
+HAN-3  ;LOKAL;3;4; HAN-3  ;2;1750;77;92;D10;1;2;;;;1;1;1;1;1;0;;;;;;;;;;;E;0,9;1,5;41,71428571;45;38;67
+HAN-4  ;LOKAL;2;6; HAN-4  ;5;1750;98;136;D10;1;2;1;;3;1;1;1;2;;0;1;;;Betong etablerat;;;;Standardfinish;;Standardmiljö;C;1;2;52;55;48;85
+HAN-5  ;LOKAL;2;4; HAN-5  ;3;1250;64;97;D8;1;2;;;2;1;1;1;2;1;0;;;Standard betongkonstruktion;;Plåttak standard;;;;;;D;0,95;1,5;48,8;50;45;56
+HAN-6  ;LOKAL;2;3; HAN-6  ;2;1000;51;61;D8;1;2;;;2;1;;1;2;1;0;;;;;;Tegelfasad;;;;;E;0,9;1;49;49;44;44
+HAN-7  ;LOKAL;1;1; HAN-7  ;1;500;25;34;D4;2;2;;;1;1;1;1;1;1;0;1;;;;;Natursten;;;;;C;1;0,5;50;47;44;22
+HAN-8  ;LOKAL;1;7; HAN-8  ;8;2000;120;162;D12;2;2;2;;3;3;1;1;2;1;0;;;Förstärkt konstruktion;;Tegeltak;;Förstärkt ljudisolering;;;;D;0,95;2,5;55,5;60;52;104
+HAN-9  ;LOKAL;1;6; HAN-9  ;7;1750;103;122;D10;2;2;1;;3;1;1;1;2;1;0;1;;;;;Natursten;;Kvalitetsfinish;;;E;0,9;2;54,85714286;58;51;90
+KON-1  ; KONTOR   ;3;3; KON-1  ;2;1000;47;68;D6;1;1;;1;;1;;1;1;2;0;1;;;;;;;;;;C;1;1;45;45;41;41
+KON-2  ; KONTOR   ;3;4; KON-2  ;2;1500;69;97;D8;1;1;;1;;1;;1;1;2;0;1;;;;;;;;;;D;0,95;1,5;43,33333333;45;40;60
+KON-3  ; KONTOR   ;3;5; KON-3  ;2;2000;89;122;D10;1;1;;1;;1;;1;2;1;0;1;;;;;;;;;;E;0,9;2;41,5;45;38;77
+KON-4  ; KONTOR   ;2;4; KON-4  ;3;1250;62;102;D12;2;2;;;2;1;;1;1;1;0;1;;Standard betongkonstruktion;;;;Standard lösningar;;;;C;1;1,5;48,8;51;43;54
+KON-5  ; KONTOR   ;2;6; KON-5  ;5;1750;97;129;D12;2;2;1;;3;1;;1;1;2;0;1;;;Betong etablerat;;Tegelfasad;;Standardfinish;;;D;0,95;2;52;56;48;84
+KON-6  ; KONTOR   ;2;6; KON-6  ;5;1750;97;122;D12;2;2;1;;3;1;1;1;1;1;0;1;;;;Plåttak standard;;Standard lösningar;;Standardsystem;;E;0,9;2;52;56;48;84
+KON-7  ; KONTOR   ;1;7; KON-7  ;8;2000;126;204;D12;2;3;2;;4;4;;1;1;2;0;1;;;Prefab-element;;;Förstärkt ljudisolering;;Avancerade system;Förbättrad miljö;C;1;3;58,5;63;55;110
+KON-8  ; KONTOR   ;1;7; KON-8  ;8;2000;121;162;D10;2;3;2;;2;3;1;1;1;2;0;1;;;;;;;Kvalitetsfinish;;Förbättrad miljö;D;0,95;2,5;55,5;59;52;105
+KON-9  ; KONTOR   ;1;7; KON-9  ;8;2000;129;184;D12;3;3;2;;4;4;;1;2;2;0;1;;;;;;;;;;E;0,9;3;59,5;64;56;112
+HR-1;Hyresrätt;3;2;HR-1;2;750;34;68;D6;1;1;;;;1;;1;2;;0;1;;;;;;;;;;C;1;1;45,33333333;44;40;30
+HR-2;Hyresrätt;3;3;HR-2;2;1250;55;65;D8;1;1;;;;1;;1;2;1;0;;;;;;;;;;;D;0,95;1;42,4;44;39;48
+HR-3;Hyresrätt;3;4;HR-3;2;1500;75;92;D10;1;1;;;3;1;;1;2;;0;1;;;Betong lokalt;;Puts;;;;Flärdlöst;E;0,9;1,5;47,33333333;50;43;65
+HR-4;Hyresrätt;2;2;HR-4;1;750;37;68;D6;2;1;;1;1;1;;0;2;1;0;1;;;;;;;Standardfinish;;;C;1;1;48;47;43;32
+HR-5;Hyresrätt;2;4;HR-5;3;1250;66;97;D8;2;1;;1;2;1;;2;1;;0;1;;;;;;Standard lösningar;;;;D;0,95;1,5;49,6;51;46;57
+HR-6;Hyresrätt;2;5;HR-6;4;1500;82;122;D10;2;1;;1;3;1;1;1;1;;0;1;;;Betong etablerat;;Tegelfasad;;;;Standardmiljö;E;0,9;2;51,33333333;54;47;71
+HR-7;Hyresrätt;1;2;HR-7;2;750;39;68;D6;2;2;;1;1;1;;1;1;1;0;1;;Förstärkt konstruktion;;;Natursten;;;;Förbättrad miljö;C;1;1;50,66666667;49;45;34
+HR-8;Hyresrätt;1;7;HR-8;8;2000;122;179;D12;2;2;2;1;3;4;1;1;2;;0;1;;;Prefab-element;;;Förstärkt ljudisolering;;Avancerade system;;B;1,05;2,5;56,5;61;53;106
+HR-9;Hyresrätt;1;6;HR-9;7;1750;101;129;D10;2;2;1;1;2;1;;1;2;1;0;1;;;;Tegeltak;;;;;Förbättrad miljö;D;0,95;2;53,71428571;57;50;88
+;;;;;;;;0;;;;;;;;;0;;;0;;;;;;;;;;;;;;49,73957672;51,68888889;;
+;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;
+;;;;;;;0,8;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;

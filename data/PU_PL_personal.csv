@@ -1,11 +1,11 @@
-Roll;ID;Namn;Specialisering;Kapacitet_proj;Händelsemotstand;Lön_Mkr_per_kv;Förhandling;Not;fill_color;line_color;@bild;ordning_bild;ordning_text
-PC;PC-1;Henrik Åberg;Bostäder;+1;Politikkort;2;D4;Junior projektutvecklare. Lindrar politikkort +1. Billig men begränsad.;#5B4A3F;#8B7355;;;1
-PC;PC-2;Camilla Forsberg;Kommersiellt;+2;Politikkort, Dialogkort;2,5;D6;Bred erfarenhet av PU. Lindrar politik- och dialogkort +2.;#5B4A3F;#8B7355;;;2
-PC;PC-3;Anders Wikström;Samhälle;+2;Politikkort, Nämnd;3;D8;Kommunala kontakter. Lindrar politikkort +2 och ger nämndbonus +2.;#5B4A3F;#8B7355;;;3
-PC;PC-4;Maria Ekström;Generalist;+3;Politikkort, Dialogkort, Nämnd;3,5;D10;Senior PU-chef. Lindrar alla kort +3 och ger nämndbonus +3. LED:2, KOM:3.;#5B4A3F;#8B7355;;;4
-PC;PC-5;Lars-Erik Sundberg;Expert;+3;Politikkort, Dialogkort, Nämnd;4;D12;Veteran med 30 års erfarenhet. Lindrar alla kort +3, nämndbonus +4, ger +1 Rb. LED:3, KOM:4.;#5B4A3F;#8B7355;;;5
-AC;AC-1;Sofia Hedlund;Produktion;+1;Leverantörshändelser;2;LED:1, PRO:2;Junior arbetschef. +1 erfarenhet. Grundläggande kompetenskort.;#2E4057;#4A6FA5;;;6
-AC;AC-2;Markus Granlund;Samordning;+1;Samordningshändelser;2,5;LED:2, SAM:3;Samordnare med fokus på tidplan. +1 erfarenhet. Stark SAM.;#2E4057;#4A6FA5;;;7
-AC;AC-3;Jenny Nordström;Kvalitet;+2;Kvalitetshändelser;3;LED:2, KOM:2, PRO:3;Kvalitetsfokuserad. +2 erfarenhet. Bra PRO-kort.;#2E4057;#4A6FA5;;;8
-AC;AC-4;Robert Lindgren;Generalist;+2;Alla händelser;3,5;LED:3, KOM:3, SAM:2, PRO:2;Senior arbetschef. +2 erfarenhet. Bred kompetens, kan spelas på alla faskort.;#2E4057;#4A6FA5;;;9
-AC;AC-5;Eva-Lena Sjögren;Expert;+2;Alla händelser;4;LED:4, KOM:3, SAM:3, PRO:3, ABM:2;Veteran. +2 erfarenhet, lindrar händelsekort extra (-1 Mkr). Starkaste kompetenskortet.;#2E4057;#4A6FA5;;;10
+Roll;ID;Namn;Specialisering;Händelsemotstand;Kostnad;LED;KOM;SAM;PRO;ABM;;Not;fill_color;line_color;@bild;ordning_bild;ordning_text
+PC;PC-1;Lina Bergström;Bostäder;Politikkort;2;1;;;2;;;Junior projektutvecklare med fokus på BRF-projekt. Lindrar politikkort +1. Ny men driven.;#5B4A3F;#8B7355;;;1
+PC;PC-2;Johan Sandqvist;Kommersiellt;Politikkort, Dialogkort;2;2;;3;;;;Erfarenhet av kontor och handel. Lindrar politik- och dialogkort +2. Bred kompetens.;#5B4A3F;#8B7355;;;2
+PC;PC-3;Karin Malmström;Samhälle;Politikkort, Nämnd;3;2;2;;3;;;Starka kommunala kontakter och vana vid detaljplaneprocesser. Lindrar politikkort +2 och ger nämndbonus +2.;#5B4A3F;#8B7355;;;3
+PC;PC-4;Anders Lindgren;Generalist;Politikkort, Dialogkort, Nämnd;3;3;3;2;2;;;Senior PU-chef med 20 års erfarenhet. Lindrar alla kort +3 och ger nämndbonus +3. Kan hantera komplexa projekt.;#5B4A3F;#8B7355;;;4
+PC;PC-5;Lars-Erik Sundberg;Expert;Politikkort, Dialogkort, Nämnd;4;4;3;3;3;2;;Veteran med 30 års erfarenhet. Lindrar alla kort +3, nämndbonus +4, ger +1 Rb. LED:3, KOM:4.;#5B4A3F;#8B7355;;;5
+AC;AC-1;Sofia Hedlund;Produktion;Leverantörshändelser;2;1;;;2;;;Junior arbetschef. +1 erfarenhet. Grundläggande kompetenskort.;#2E4057;#4A6FA5;;;6
+AC;AC-2;Markus Granlund;Samordning;Samordningshändelser;3;2;;3;;;;Samordnare med fokus på tidplan. +1 erfarenhet. Stark SAM.;#2E4057;#4A6FA5;;;7
+AC;AC-3;Jenny Nordström;Kvalitet;Kvalitetshändelser;3;2;2;;3;;;Kvalitetsfokuserad. +2 erfarenhet. Bra PRO-kort.;#2E4057;#4A6FA5;;;8
+AC;AC-4;Robert Lindgren;Generalist;Alla händelser;4;3;3;2;2;;;Senior arbetschef. +2 erfarenhet. Bred kompetens, kan spelas på alla faskort.;#2E4057;#4A6FA5;;;9
+AC;AC-5;Eva-Lena Sjögren;Expert;Alla händelser;5;4;3;3;3;2;;Veteran. +2 erfarenhet, lindrar händelsekort extra (-1 Mkr). Starkaste kompetenskortet.;#2E4057;#4A6FA5;;;10

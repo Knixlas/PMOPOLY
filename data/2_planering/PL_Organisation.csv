@@ -1,0 +1,17 @@
+Namn;Nivå;Kostnad_Mkr;Q;H;T_mån;erfarenhet;Riskbuffert;STA;KOM;SAM;NOG;INN;ABM
+Operativt team;1;8;1;0;0;0;;1;0;0;0;0;0
+Operativt team;2;13;0;1;0;0;1;2;1;2;0;0;0
+Operativt team;3;20;1;0;-1;1;;3;2;3;0;1;0
+Operativt team;4;28;1;1;-1;1;;4;3;3;0;0;4
+Stödfunktioner;1;8;0;1;0;0;;0;0;0;0;0;1
+Stödfunktioner;2;13;0;0;0;1;1;0;2;0;0;0;2
+Stödfunktioner;3;20;0;1;-1;1;;0;3;0;0;1;3
+Stödfunktioner;4;28;1;2;-1;0;;3;3;0;0;1;4
+Marknadsteam;1;8;0;0;0;1;;0;1;0;0;0;0
+Marknadsteam;2;13;0;0;0;1;1;1;2;0;0;1;0
+Marknadsteam;3;20;1;1;0;1;;2;3;0;0;1;0
+Marknadsteam;4;28;1;1;0;2;;3;4;0;0;2;0
+Digitalisering;1;8;0;0;0;1;;0;0;1;0;1;0
+Digitalisering;2;13;1;0;0;0;1;0;0;2;1;3;0
+Digitalisering;3;20;1;1;0;1;;0;1;3;2;4;0
+Digitalisering;4;28;2;1;-1;1;;0;2;3;2;5;0
