@@ -616,8 +616,10 @@ function renderStatusList(statuses) {
 // ── Piece selection modal ──
 
 export function openPieceModal(id, kind, typ, shapeCells) {
-    // Close any existing modal
+    // Close any existing modal and ghost
     closePieceModal();
+    document.querySelectorAll('.puzzle-ghost, .touch-follow-hint').forEach(el => el.remove());
+    selectState = null;
 
     const orientations = allOrientations(shapeCells);
     let orientationIdx = 0;
