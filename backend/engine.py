@@ -2182,7 +2182,7 @@ def _parse_comp_req(req_text: str) -> dict:
         return reqs
     for part in req_text.split(","):
         tokens = part.strip().split()
-        if len(tokens) >= 2 and tokens[0] in ("LED", "KOM", "SAM", "PRO", "ABM"):
+        if len(tokens) >= 2 and tokens[0] in ("STA", "KOM", "SAM", "NOG", "INN", "ABM", "LED", "PRO"):
             try:
                 reqs[tokens[0]] = int(tokens[-1])
             except ValueError:

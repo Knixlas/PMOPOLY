@@ -101,10 +101,10 @@ def load_projects() -> Dict[str, List[Project]]:
                 energiklass=safe_str(row.get("Energiklass"), "C"),
                 driftnetto=safe_float(row.get("Driftnetto")),
                 supplier_reqs=supplier_reqs,
-                led=safe_int(row.get("LED")),
+                led=safe_int(row.get("STA", row.get("LED"))),
                 kom=safe_int(row.get("KOM")),
                 sam=safe_int(row.get("SAM")),
-                pro=safe_int(row.get("PRO")),
+                pro=safe_int(row.get("NOG", row.get("PRO"))),
                 abm=safe_int(row.get("ABM")),
             )
             stacks.setdefault(typ, []).append(p)
@@ -182,10 +182,11 @@ def load_suppliers() -> Dict[str, List[Supplier]]:
             "D": safe_int(row.get("Klass_D")),
         }
         kompetenser = {
-            "LED": safe_int(row.get("LED")),
+            "STA": safe_int(row.get("STA", row.get("LED"))),
             "KOM": safe_int(row.get("KOM")),
             "SAM": safe_int(row.get("SAM")),
-            "PRO": safe_int(row.get("PRO")),
+            "NOG": safe_int(row.get("NOG", row.get("PRO"))),
+            "INN": safe_int(row.get("INN")),
             "ABM": safe_int(row.get("ABM")),
         }
         s = Supplier(
@@ -218,10 +219,11 @@ def load_organisations() -> Dict[str, List[Organisation]]:
         if not namn:
             continue
         kompetenser = {
-            "LED": safe_int(row.get("LED")),
+            "STA": safe_int(row.get("STA", row.get("LED"))),
             "KOM": safe_int(row.get("KOM")),
             "SAM": safe_int(row.get("SAM")),
-            "PRO": safe_int(row.get("PRO")),
+            "NOG": safe_int(row.get("NOG", row.get("PRO"))),
+            "INN": safe_int(row.get("INN")),
             "ABM": safe_int(row.get("ABM")),
         }
         o = Organisation(
@@ -326,10 +328,11 @@ def load_external_support() -> List[ExternalSupport]:
         if not namn:
             continue
         kompetenser = {
-            "LED": safe_int(row.get("LED")),
+            "STA": safe_int(row.get("STA", row.get("LED"))),
             "KOM": safe_int(row.get("KOM")),
             "SAM": safe_int(row.get("SAM")),
-            "PRO": safe_int(row.get("PRO")),
+            "NOG": safe_int(row.get("NOG", row.get("PRO"))),
+            "INN": safe_int(row.get("INN")),
             "ABM": safe_int(row.get("ABM")),
         }
         cards.append(ExternalSupport(
@@ -493,18 +496,16 @@ def load_pc_ac_staff() -> Dict[str, list]:
         roll = safe_str(row.get("Roll")).upper()
         if roll not in ("PC", "AC"):
             continue
-        not_text = safe_str(row.get("Not"))
-        kostnad_str = safe_str(row.get("Kostnad", row.get("Lön_Mkr_per_kv", "")))
-        lon = safe_float(kostnad_str.replace(",", "."))
+        beskrivning = safe_str(row.get("Beskrivning", row.get("Not", "")))
 
         kompetenser = {
-            "LED": safe_int(row.get("LED")),
+            "STA": safe_int(row.get("STA", row.get("LED"))),
             "KOM": safe_int(row.get("KOM")),
             "SAM": safe_int(row.get("SAM")),
-            "PRO": safe_int(row.get("PRO")),
+            "NOG": safe_int(row.get("NOG", row.get("PRO"))),
+            "INN": safe_int(row.get("INN")),
             "ABM": safe_int(row.get("ABM")),
         }
-        # Remove zero-value keys for cleaner display
         kompetenser = {k: v for k, v in kompetenser.items() if v > 0}
 
         entry = {
@@ -513,17 +514,21 @@ def load_pc_ac_staff() -> Dict[str, list]:
             "namn": safe_str(row.get("Namn")),
             "specialisering": safe_str(row.get("Specialisering")),
             "handelsemotstand": safe_str(row.get("Händelsemotstand",
-                                    row.get("Händelsemotstånd",
-                                    row.get("H\x84ndelsemotst\x86nd", "")))),
-            "lon": lon,
+                                    row.get("Händelsemotstånd", ""))),
             "kompetenser": kompetenser,
-            "not_text": not_text,
+            "not_text": beskrivning,
+            "rb": safe_int(row.get("Rb")),
+            "q_bonus": safe_int(row.get("Q")),
+            "h_bonus": safe_int(row.get("H")),
+            "t_bonus": safe_int(row.get("T")),
         }
         if roll == "PC":
-            entry["namnd_bonus"] = _parse_namnd_bonus(not_text)
-            entry["lindring"] = _parse_lindring(not_text)
+            entry["lindring"] = safe_int(row.get("Lindring"))
+            entry["namnd_bonus"] = safe_int(row.get("Nämnd", row.get("N\xe4mnd", 0)))
+            entry["lon"] = 0  # PC cost handled differently now
         elif roll == "AC":
-            entry["erfarenhet"] = _parse_erfarenhet(not_text)
+            entry["erfarenhet"] = safe_int(row.get("Erfarenhet"))
+            entry["lon"] = 0  # AC cost handled differently now
         result[roll].append(entry)
     return result
 
