@@ -540,8 +540,12 @@ function renderAssetsPanel(gs) {
 
     panel.innerHTML = html;
 
-    // Attach click handlers for detail modal
+    // Attach click handlers for detail modal (skip project/mark cards during puzzle phase)
+    const isPuzzle = gs.phase === 'puzzle_placement';
     panel.querySelectorAll('.asset-card.clickable').forEach(card => {
+        if (isPuzzle && (card.classList.contains('asset-project') || card.classList.contains('asset-mark'))) {
+            return; // Puzzle phase handles these separately below
+        }
         card.addEventListener('click', () => showAssetDetail(card, me));
     });
 

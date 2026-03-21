@@ -754,9 +754,11 @@ function startTouchFollow() {
                     sendAction({ action: 'puzzle_place_project', project_id: selectState.id, cells: placeCells });
                 }
                 selectState = null;
+                cleanup();
+                return;
             }
         }
-        cleanup();
+        // Invalid placement — keep ghost active, don't cleanup
     }
 
     function onKeyDown(e) {
