@@ -729,7 +729,10 @@ function startTouchFollow() {
     const hint = document.createElement('div');
     hint.id = 'touch-follow-hint';
     hint.className = 'touch-follow-hint';
-    hint.innerHTML = 'Dra med fingret till rätt position, släpp för att placera';
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    hint.innerHTML = isTouch
+        ? 'Dra med fingret till rätt position, släpp för att placera'
+        : 'Flytta musen till rätt position och klicka för att placera';
     document.body.appendChild(hint);
 
     function moveGhost(x, y) {
@@ -756,6 +759,11 @@ function startTouchFollow() {
         cleanup();
     }
 
+    function onKeyDown(e) {
+        if (e.key === 'Escape') { selectState = null; cleanup(); }
+    }
+    document.addEventListener('keydown', onKeyDown);
+
     function cleanup() {
         ghost.remove();
         hint.remove();
@@ -763,6 +771,7 @@ function startTouchFollow() {
         document.removeEventListener('touchend', onTouchEnd);
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('keydown', onKeyDown);
         // Clear highlights
         document.querySelectorAll('.puzzle-cell.drag-valid, .puzzle-cell.drag-invalid')
             .forEach(el => el.classList.remove('drag-valid', 'drag-invalid'));
@@ -785,7 +794,10 @@ function startTouchFollow() {
     document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    // Delay mouseup listener to avoid immediate placement from the "Placera" click
+    setTimeout(() => {
+        document.addEventListener('mouseup', onMouseUp);
+    }, 100);
 }
 
 function closePieceModal() {
