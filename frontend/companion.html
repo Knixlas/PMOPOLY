@@ -667,21 +667,26 @@ function renderPlayer() {
         html += '<div class="asset-label">KONSEKVENSKORT</div>';
         html += '<div style="font-size:14px;margin-bottom:8px">Antal kort: T:' + konsKortT + ' Q:' + konsKortQ + ' H:' + konsKortH + ' = <strong>' + (konsKortT+konsKortQ+konsKortH) + ' kort</strong></div>';
 
-        // Tid: antal kort + ABT-kostnad
+        // TID först — kan påverka Q, H och kostnad
         html += '<div style="border-bottom:1px solid #1a2736;padding:8px 0">';
-        html += '<div style="font-weight:600">Tid (' + konsKortT + ' kort)</div>';
+        html += '<div style="font-weight:600;color:#e67e22">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
+        html += '<div style="font-size:12px;color:#999;margin-bottom:4px">Tidskorten kan p\u00e5verka Q, H och kostnad</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
         html += '</div>';
 
-        // Kvalitet: antal kort + ABT-kostnad only
+        // KVALITET — bara kostnad
         html += '<div style="border-bottom:1px solid #1a2736;padding:8px 0">';
-        html += '<div style="font-weight:600">Kvalitet (' + konsKortQ + ' kort)</div>';
+        html += '<div style="font-weight:600;color:#3498db">Kvalitet (' + konsKortQ + ' kort)</div>';
+        html += '<div style="font-size:12px;color:#999;margin-bottom:4px">Kvalitetskorten p\u00e5verkar bara kostnad</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
         html += '</div>';
 
-        // H\u00e5llbarhet: antal kort + ABT-kostnad only
+        // HÅLLBARHET — bara kostnad
         html += '<div style="padding:8px 0">';
-        html += '<div style="font-weight:600">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
+        html += '<div style="font-weight:600;color:#27ae60">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
+        html += '<div style="font-size:12px;color:#999;margin-bottom:4px">H\u00e5llbarhetskorten p\u00e5verkar bara kostnad</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
         html += '</div>';
         html += '</div>';
@@ -720,20 +725,52 @@ function renderPlayer() {
 
     // Phase 3: ABT→EK (rörlig intäkt BRF + moderbolagslån)
     if (step === 'gf_abt_ek') {
-        // Fast intäkt = sum of anskaffning for non-BRF
-        var fastIntakt = p.projects.reduce(function(s, pr) { return s + (pr.typ !== 'BRF' ? (pr.anskaffning||0) : 0); }, 0);
-        // BRF rörlig
+        // BRF: fast intäkt = MV - anskaffning
         var brfProj = p.projects.filter(function(pr) { return pr.typ === 'BRF'; });
+        var brfFast = brfProj.reduce(function(s, pr) { return s + ((pr.marknadsvarde||pr.anskaffning) - pr.anskaffning); }, 0);
+
+        // TB = anskaffning kvar (already calculated as anskKvar above in summary)
+        // Recalculate here for use
+        var _projAnsk = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
+        var _projKost = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
+        var _chc3 = p.pl_choices||{}, _plEv3 = p.pl_events||{}, _gfP3 = p.gf_phases||{};
+        var _abtUsed = 0;
+        for (var _k3 in _chc3) _abtUsed += _chc3[_k3].cost||0;
+        for (var _k3 in _plEv3) _abtUsed += _plEv3[_k3].abt||0;
+        for (var _f3 in _gfP3) _abtUsed += _gfP3[_f3].abt||0;
+        _abtUsed += (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
+        var tb = _projAnsk - _projKost - _abtUsed;
+
+        var rorlig = p.gf_brf_rorlig || 0;
+        var modLanAntal = p.gf_moderbolagslan_antal || 0;
+        var modLanSkuld = modLanAntal * 100;
+        var modLanTillskott = modLanAntal * 95;
+
+        // EK = BRF fast + TB + rörlig + moderbolagslån tillskott - moderbolagslån skuld
+        var calcEK = brfFast + tb + rorlig + modLanTillskott - modLanSkuld;
 
         html += '<div class="asset-card" style="border-left-color:#27ae60">';
-        html += '<div class="asset-label">R\u00d6RLIG INTÄKT BRF & EKONOMI</div>';
+        html += '<div class="asset-label">EKONOMISK SAMMANST\u00c4LLNING</div>';
+        html += '<div style="font-size:14px;line-height:1.8">';
+        html += '<div>TB (anskaffn. kvar): <strong>' + Math.round(tb) + ' Mkr</strong></div>';
         if (brfProj.length > 0) {
-            html += '<div style="font-size:13px;color:#999;margin-bottom:6px">BRF-projekt (' + brfProj.length + ' st): sl\u00e5 t\u00e4rning f\u00f6r r\u00f6rlig int\u00e4kt</div>';
+            html += '<div>Fast int\u00e4kt BRF (' + brfProj.length + ' st): <strong>' + Math.round(brfFast) + ' Mkr</strong></div>';
+            html += '<div style="font-size:13px;color:#999">BRF-projekt: sl\u00e5 t\u00e4rning f\u00f6r r\u00f6rlig int\u00e4kt</div>';
         }
-        html += counterRow('R\u00f6rlig int\u00e4kt BRF (Mkr)', p.gf_brf_rorlig || 0, 'gf_brf_rorlig', true);
-        html += counterRow('Moderbolags\u00e5n (Mkr)', p.gf_moderbolagslan || 0, 'gf_moderbolagslan', true);
-        html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
+        html += counterRow('R\u00f6rlig int\u00e4kt BRF (Mkr)', rorlig, 'gf_brf_rorlig', true);
+        html += counterRow('Moderbolags\u00e5n (antal)', modLanAntal, 'gf_moderbolagslan_antal', false);
+        if (modLanAntal > 0) {
+            html += '<div style="font-size:12px;color:#e74c3c;margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till EK: ' + modLanTillskott + ' Mkr</div>';
+        }
+        html += '<div style="border-top:1px solid #334;padding-top:6px;margin-top:6px;font-size:16px">';
+        html += '<strong style="color:' + (calcEK >= 0 ? '#27ae60' : '#e74c3c') + '">EK = ' + Math.round(calcEK) + ' Mkr</strong>';
         html += '</div>';
+        html += '</div></div>';
+
+        // Auto-set eget_kapital so it carries to phase 4
+        if (Math.round(p.eget_kapital||0) !== Math.round(calcEK)) {
+            send({ type: 'update_assets', assets: { eget_kapital: Math.round(calcEK) } });
+        }
     }
 
     // Phase 4: Förvaltning
@@ -844,9 +881,8 @@ function renderPlayer() {
         html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:#27ae60;margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
         html += '</div>';
 
-        // Yield input (quarterly)
-        var isQuarter = ['f4_q1','f4_q2','f4_q3','f4_q4'].indexOf(step) >= 0;
-        if (isQuarter || step === 'f4_slut') {
+        // Yield input (always visible in phase 4)
+        if (true) {
             html += '<div class="asset-card" style="border-left-color:#3498db">';
             html += '<div class="asset-label">YIELD</div>';
             html += '<div style="font-size:14px">';
@@ -916,7 +952,7 @@ function renderPlayer() {
             html += '<div>Q: <strong style="color:' + (curQ >= totalQ ? '#27ae60' : '#e74c3c') + '">(' + curQ + ')' + totalQ + '</strong></div>';
             html += '<div>H: <strong style="color:' + (curH >= totalH ? '#27ae60' : '#e74c3c') + '">(' + curH + ')' + totalH + '</strong></div>';
         }
-        html += '<div>T: <strong>' + curT + '(' + baseT + ') m\u00e5n</strong></div>';
+        html += '<div>T: <strong style="color:' + (curT <= 12 ? '#27ae60' : '#e74c3c') + '">' + curT + '</strong> m\u00e5n <span style="color:#999">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
         html += '<div>Rb: <strong>' + p.riskbuffertar + '</strong></div>';
         html += '<div>Erf: <strong>' + plErf + '</strong></div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
