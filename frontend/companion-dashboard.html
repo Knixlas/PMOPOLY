@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMOPOLY — Vinstchans</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; padding: 20px; }
+h1 { color: #f0c929; text-align: center; font-size: 28px; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 20px; }
+.phase-bar { text-align: center; margin-bottom: 20px; padding: 10px; background: #1a2736; border-radius: 10px; }
+.phase-bar .phase { color: #f0c929; font-size: 16px; font-weight: 700; }
+.phase-bar .step { color: #4db8ff; font-size: 13px; }
+
+.leaderboard { max-width: 800px; margin: 0 auto; }
+.lb-entry { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 6px; border-radius: 10px; background: #1a2736; }
+.lb-entry:nth-child(1) { border-left: 4px solid #f0c929; background: #1f2d3d; }
+.lb-entry:nth-child(2) { border-left: 4px solid #bdc3c7; }
+.lb-entry:nth-child(3) { border-left: 4px solid #cd7f32; }
+.lb-rank { font-size: 22px; font-weight: 900; color: #f0c929; min-width: 30px; text-align: center; }
+.lb-entry:nth-child(1) .lb-rank { font-size: 28px; }
+.lb-info { flex: 1; }
+.lb-name { font-size: 16px; font-weight: 700; }
+.lb-detail { font-size: 12px; color: #888; margin-top: 2px; }
+.lb-score { text-align: right; }
+.lb-score-val { font-size: 22px; font-weight: 900; color: #27ae60; }
+.lb-score-label { font-size: 11px; color: #888; }
+.lb-bar-bg { width: 100px; height: 8px; background: #0f1923; border-radius: 4px; margin-top: 4px; }
+.lb-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #27ae60, #f0c929); }
+
+.quarters-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+.q-mini { background: #1a2736; border-radius: 8px; padding: 10px; text-align: center; }
+.q-mini h4 { color: #f0c929; font-size: 14px; margin-bottom: 4px; }
+.q-mini .stat { font-size: 12px; color: #999; }
+
+.refresh-note { text-align: center; color: #555; font-size: 12px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>PMOPOLY</h1>
+<div class="subtitle">Vem har störst vinstchans?</div>
+<div class="phase-bar">
+    <div class="phase" id="db-phase">—</div>
+    <div class="step" id="db-step">—</div>
+</div>
+<div class="leaderboard" id="db-leaderboard"></div>
+<div class="quarters-row" id="db-quarters"></div>
+<div class="refresh-note">Uppdateras var 5:e sekund</div>
+
+<script>
+const code = window.location.pathname.split('/').pop();
+
+async function refresh() {
+    try {
+        const res = await fetch(`/api/companion/leaderboard/${code}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('db-phase').textContent = data.phase_name || '—';
+        document.getElementById('db-step').textContent = data.step_name || '—';
+
+        const lb = data.leaderboard || [];
+        const maxScore = Math.max(1, ...lb.map(e => e.profit_score));
+        let html = '';
+        for (const e of lb) {
+            const barW = Math.round((e.profit_score / maxScore) * 100);
+            html += `<div class="lb-entry">
+                <div class="lb-rank">${e.rank}</div>
+                <div class="lb-info">
+                    <div class="lb-name">${e.name}</div>
+                    <div class="lb-detail">${e.quarter} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
+                </div>
+                <div class="lb-score">
+                    <div class="lb-score-val">${e.profit_score}</div>
+                    <div class="lb-score-label">poäng</div>
+                    <div class="lb-bar-bg"><div class="lb-bar" style="width:${barW}%"></div></div>
+                </div>
+            </div>`;
+        }
+        if (lb.length === 0) html = '<div style="text-align:center;color:#666;padding:40px">Inga spelare med projekt ännu...</div>';
+        document.getElementById('db-leaderboard').innerHTML = html;
+
+        let qHtml = '';
+        for (const q of (data.quarters || [])) {
+            qHtml += `<div class="q-mini">
+                <h4>${q.name}</h4>
+                <div class="stat">${q.num_players} spelare | ${q.total_projects} proj</div>
+            </div>`;
+        }
+        document.getElementById('db-quarters').innerHTML = qHtml;
+    } catch (e) {}
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

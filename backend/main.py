@@ -206,6 +206,27 @@ async def companion_join_quarter(body: dict):
     return {"code": room.code, "player_id": player_id, "quarter_name": room.quarter_names[quarter_idx]}
 
 
+@app.get("/companion/dashboard/{code}")
+async def companion_dashboard(code: str):
+    """External public dashboard."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion-dashboard.html"))
+
+
+@app.get("/api/companion/leaderboard/{code}")
+async def companion_leaderboard(code: str):
+    room = companion_manager.get_room(code)
+    if not room:
+        return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
+    phase = room.current_phase
+    step = room.current_step
+    return {
+        "phase_name": phase["name"] if phase else "—",
+        "step_name": step["name"] if step else "—",
+        "leaderboard": room.leaderboard(),
+        "quarters": [room.quarter_summary(i) for i in range(room.num_quarters)],
+    }
+
+
 @app.get("/api/companion/data/pc")
 async def companion_pc_data():
     return {"pc": game_data.pc_staff}

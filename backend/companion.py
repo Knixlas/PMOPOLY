@@ -43,6 +43,38 @@ class CompanionPlayer:
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
 
+    def step_done(self, step_id: str) -> bool:
+        """Check if player appears done with a given step."""
+        if step_id == "choose_pc":
+            return self.projektchef is not None
+        elif step_id == "projects":
+            return len(self.projects) >= 1
+        elif step_id == "namndbeslut":
+            return len(self.projects) >= 1  # GM judges manually
+        elif step_id == "ekonomi":
+            return self.abt_budget > 0
+        return False
+
+    @property
+    def profit_score(self) -> float:
+        """Estimate profit chance from current assets. Higher = better."""
+        if not self.projects:
+            return 0
+        # Net revenue potential
+        total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
+        total_kost = sum(p.get("kostnad", 0) for p in self.projects)
+        net = total_ansk - total_kost
+        # Lower Q/H = easier to fulfill = less risk (bonus for low values)
+        qh_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
+        # Riskbuffertar give safety
+        rb_bonus = self.riskbuffertar * 5
+        # PC quality
+        pc_bonus = 0
+        if self.projektchef:
+            pc_bonus = self.projektchef.get("kapacitet", 0) * 3
+            pc_bonus += self.projektchef.get("namnd_bonus", 0) * 4
+        return round(net + qh_bonus + rb_bonus + pc_bonus, 1)
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -57,6 +89,7 @@ class CompanionPlayer:
             "mark_expansions": self.mark_expansions,
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
+            "profit_score": self.profit_score,
         }
 
 
@@ -99,8 +132,35 @@ class CompanionRoom:
             "total_bta": total_bta,
             "avg_q_krav": avg_q,
             "avg_h_krav": avg_h,
-            "players": [p.to_dict() for p in qp],
+            "players": [self._player_with_status(p) for p in qp],
         }
+
+    def _player_with_status(self, p: CompanionPlayer) -> dict:
+        d = p.to_dict()
+        step = self.current_step
+        d["step_done"] = p.step_done(step["id"]) if step else False
+        return d
+
+    def leaderboard(self) -> list:
+        """All players ranked by profit_score for external dashboard."""
+        all_p = [p for p in self.players.values() if not p.is_gm and p.projects]
+        ranked = sorted(all_p, key=lambda p: p.profit_score, reverse=True)
+        result = []
+        for i, p in enumerate(ranked):
+            q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
+            result.append({
+                "rank": i + 1,
+                "name": p.name,
+                "quarter": q_name,
+                "profit_score": p.profit_score,
+                "num_projects": len(p.projects),
+                "total_bta": sum(pr.get("bta", 0) for pr in p.projects),
+                "q_krav": p.q_krav,
+                "h_krav": p.h_krav,
+                "riskbuffertar": p.riskbuffertar,
+                "pc_name": p.projektchef.get("namn", "") if p.projektchef else "—",
+            })
+        return result
 
     def to_dict(self):
         phase = self.current_phase

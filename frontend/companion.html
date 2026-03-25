@@ -103,6 +103,16 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 .modal-item .item-detail { color: #999; font-size: 13px; margin-top: 4px; }
 .modal-footer { padding: 12px 16px; border-top: 1px solid #334; display: flex; gap: 8px; }
 .modal-footer button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+/* GM Table */
+.gm-tab.active { background: #f0c929 !important; color: #1a1a2e !important; }
+.gm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.gm-table th { background: #243447; padding: 8px 10px; text-align: left; color: #f0c929; font-size: 12px; text-transform: uppercase; position: sticky; top: 0; }
+.gm-table td { padding: 6px 10px; border-bottom: 1px solid #1a2736; }
+.gm-table tr:hover td { background: #1a2736; }
+.status-done { color: #27ae60; font-weight: 700; }
+.status-wait { color: #c0392b; }
+.score-bar { display: inline-block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #27ae60, #f0c929); min-width: 4px; vertical-align: middle; margin-right: 6px; }
 </style>
 </head>
 <body>
@@ -152,8 +162,24 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <div class="gm-phase-bar">
         <div class="phase" id="gm-phase-name">—</div>
         <div class="step" id="gm-step-name">—</div>
+        <div style="margin-top:6px"><a id="gm-dashboard-link" href="#" target="_blank" style="color:#4db8ff;font-size:13px">Öppna extern dashboard</a></div>
     </div>
-    <div class="quarters-grid" id="gm-quarters"></div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn-secondary gm-tab active" data-tab="table" style="flex:1;padding:8px">Spelaröversikt</button>
+        <button class="btn-secondary gm-tab" data-tab="quarters" style="flex:1;padding:8px">Kvarter</button>
+    </div>
+
+    <!-- Table view -->
+    <div id="gm-table-view" class="gm-tab-content">
+        <div style="overflow-x:auto"><table id="gm-player-table" class="gm-table"></table></div>
+    </div>
+
+    <!-- Quarters view -->
+    <div id="gm-quarters-view" class="gm-tab-content" style="display:none">
+        <div class="quarters-grid" id="gm-quarters"></div>
+    </div>
 </div>
 
 <!-- MODAL CONTAINER -->
@@ -442,27 +468,72 @@ function renderGM() {
     document.getElementById('gm-room-code').textContent = st.code;
     document.getElementById('gm-phase-name').textContent = st.phase_name || '—';
     document.getElementById('gm-step-name').textContent = st.step_name || '—';
+    document.getElementById('gm-dashboard-link').href = `/companion/dashboard/${st.code}`;
 
+    renderGMTable(st);
+    renderGMQuarters(st);
+}
+
+function renderGMTable(st) {
+    const table = document.getElementById('gm-player-table');
+    const allPlayers = (st.quarters || []).flatMap(q =>
+        q.players.map(p => ({ ...p, quarter: q.name }))
+    );
+    const maxScore = Math.max(1, ...allPlayers.map(p => p.profit_score || 0));
+
+    let html = `<thead><tr>
+        <th>Kvarter</th><th>Spelare</th><th>Status</th>
+        <th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>
+        <th>Vinstchans</th>
+    </tr></thead><tbody>`;
+
+    for (const p of allPlayers) {
+        const done = p.step_done;
+        const statusCls = done ? 'status-done' : 'status-wait';
+        const statusTxt = done ? '✓ Klar' : '○ Väntar';
+        const pcName = p.projektchef ? p.projektchef.namn : '—';
+        const numProj = p.projects?.length || 0;
+        const barW = Math.round((p.profit_score / maxScore) * 60);
+        html += `<tr>
+            <td>${p.quarter}</td>
+            <td><strong>${p.name}</strong></td>
+            <td class="${statusCls}">${statusTxt}</td>
+            <td>${pcName}</td>
+            <td>${numProj}</td>
+            <td>${p.q_krav}</td>
+            <td>${p.h_krav}</td>
+            <td>${p.riskbuffertar}</td>
+            <td><span class="score-bar" style="width:${barW}px"></span>${p.profit_score}</td>
+        </tr>`;
+    }
+    html += '</tbody>';
+    table.innerHTML = html;
+}
+
+function renderGMQuarters(st) {
     const grid = document.getElementById('gm-quarters');
     let html = '';
     for (const q of (st.quarters || [])) {
+        const done = q.players.filter(p => p.step_done).length;
+        const total = q.players.length;
         html += `<div class="quarter-card">
             <h3>
                 <span class="q-name" data-qi="${q.quarter_idx}" title="Klicka för att byta namn"
                       style="cursor:pointer;border-bottom:1px dashed #666">${q.name}</span>
-                <span style="color:#888;font-size:13px">(${q.num_players}/4)</span>
+                <span style="color:#888;font-size:13px">(${total}/4)</span>
+                <span style="float:right;font-size:13px;color:${done===total && total>0 ? '#27ae60' : '#c0392b'}">${done}/${total} klara</span>
             </h3>
             <div class="quarter-stat" style="margin-bottom:6px"><span>Kvarterskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
             <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
             <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
             <div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">${q.avg_q_krav}</span></div>
             <div class="quarter-stat"><span>Snitt H-krav</span><span class="val">${q.avg_h_krav}</span></div>
-            <div class="quarter-players">${q.players.map(p => `<span>${p.name}${p.projektchef ? ' ✓' : ''}</span>`).join('')}</div>
+            <div class="quarter-players">${q.players.map(p =>
+                `<span style="color:${p.step_done ? '#27ae60' : '#ccc'}">${p.name}${p.step_done ? ' ✓' : ''}</span>`
+            ).join('')}</div>
         </div>`;
     }
     grid.innerHTML = html;
-
-    // Attach rename handlers
     grid.querySelectorAll('.q-name').forEach(el => {
         el.addEventListener('click', () => {
             const qi = parseInt(el.dataset.qi);
@@ -481,6 +552,17 @@ document.getElementById('btn-next-step').addEventListener('click', () => {
 });
 document.getElementById('btn-prev-step').addEventListener('click', () => {
     send({ type: 'prev_step' });
+});
+
+// Tab switching
+document.querySelectorAll('.gm-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.gm-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('gm-table-view').style.display = tab === 'table' ? '' : 'none';
+        document.getElementById('gm-quarters-view').style.display = tab === 'quarters' ? '' : 'none';
+    });
 });
 </script>
 </body>
