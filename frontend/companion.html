@@ -270,6 +270,7 @@ function connectWs(code, playerId) {
     ws.onopen = () => console.log('WS connected');
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
+        console.log('WS msg:', data.type, 'isGM:', S.isGM, 'hasPlayer:', !!data.state?.player);
         if (data.type === 'state') {
             S.state = data.state;
             render();
@@ -336,8 +337,12 @@ async function loadReferenceData() {
 
 // ── Render ──
 function render() {
-    if (S.isGM) renderGM();
-    else renderPlayer();
+    try {
+        if (S.isGM) renderGM();
+        else renderPlayer();
+    } catch(e) {
+        console.error('render error:', e);
+    }
 }
 
 // ── Player Rendering ──
