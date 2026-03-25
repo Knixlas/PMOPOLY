@@ -49,6 +49,35 @@ PHASES = [
             "Resterande Rb sparas till fas 3 (omslag på händelsekort).\n"
             "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i fas 2."},
     ]},
+    {"id": "phase2", "name": "Fas 2: Projektplanering", "steps": [
+        {"id": "choose_ac", "name": "2.1 Välj Arbetschef", "help":
+            "Varje spelare väljer 1 av 10 arbetschefer. Gratis.\n\n"
+            "Attribut att jämföra:\n"
+            "• Riskbuffertar (Rb) — extra säkerhet\n"
+            "• Erfarenhet — permanent bonus på ALLA händelsekort (fas 2+3)\n"
+            "• Kompetens (STA/KOM/SAM/NOG/INN/ABM) — spelbar som kort i fas 3\n"
+            "• Q/H/T-bonus — tillämpas direkt\n\n"
+            "Tips: +2 erfarenhet är extremt värdefullt — det lindrar ALLA händelsekort. "
+            "Men det kostar kompetenspoäng. En AC med INN:4 kan vara avgörande."},
+        {"id": "planning", "name": "2.3 Planeringssteg", "help":
+            "13 steg i ordning: Stödf. → Mark → Husund. → Dig. → Stomme → Install. → "
+            "Op.team → Gem.arb → Yttertak → Fasader → Markn. → Stomkomp. → Inv.ytsk.\n\n"
+            "Per steg:\n"
+            "• Välj leverantör/organisation (nivå 1–4)\n"
+            "• Pris beror på BYA/BTA-klass, dras från ABT\n"
+            "• Q, H, T, erfarenhet uppdateras\n"
+            "• Dra ett händelsekort → D20 + erfarenhet\n\n"
+            "Registrera dina leverantörsval och uppdatera Q/H/T/ABT med +/- knapparna.\n\n"
+            "Tips: Kolla TG (täckningsgrad) varje steg. Under 20%? Dags att välja billigare."},
+        {"id": "planning_summary", "name": "2.5 Planeringssummering", "help":
+            "Kontrollera dina värden:\n\n"
+            "• Q vs Q-krav — uppfyllt?\n"
+            "• H vs H-krav — uppfyllt?\n"
+            "• T (byggtid i månader)\n"
+            "• ABT kvar — tillräcklig marginal?\n"
+            "• Erfarenhet — påverkar fas 3\n\n"
+            "Alla leverantörs- och organisationskort sparas som kompetenskort för fas 3."},
+    ]},
 ]
 
 
@@ -89,8 +118,16 @@ class CompanionPlayer:
     rb_spent_h: int = 0
     rb_spent_t: int = 0
     mark_expansions: int = 0
+    dev_cost_total: float = 0.0  # Cumulative dev cost (never decreases)
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
+    # Phase 2 assets
+    arbetschef: Optional[dict] = None
+    pl_q: int = 0
+    pl_h: int = 0
+    pl_t: int = 0
+    pl_erfarenhet: int = 0
+    pl_kostnad: float = 0.0
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -102,6 +139,12 @@ class CompanionPlayer:
             return len(self.projects) >= 1  # GM judges manually
         elif step_id == "rb_invest":
             return True  # Always "done" — voluntary step
+        elif step_id == "choose_ac":
+            return self.arbetschef is not None
+        elif step_id == "planning":
+            return self.pl_kostnad > 0
+        elif step_id == "planning_summary":
+            return True
         return False
 
     @property
@@ -140,8 +183,15 @@ class CompanionPlayer:
             "rb_spent_h": self.rb_spent_h,
             "rb_spent_t": self.rb_spent_t,
             "mark_expansions": self.mark_expansions,
+            "dev_cost_total": round(self.dev_cost_total, 1),
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
+            "arbetschef": self.arbetschef,
+            "pl_q": self.pl_q,
+            "pl_h": self.pl_h,
+            "pl_t": self.pl_t,
+            "pl_erfarenhet": self.pl_erfarenhet,
+            "pl_kostnad": round(self.pl_kostnad, 1),
             "profit_score": self.profit_score,
         }
 
@@ -204,6 +254,7 @@ class CompanionRoom:
             players.append({
                 "rank": i + 1,
                 "name": p.name,
+                "block_name": p.block_name,
                 "district": q_name,
                 "profit_score": p.profit_score,
                 "num_projects": len(p.projects),
@@ -415,6 +466,9 @@ class CompanionManager:
                 player.projektchef = assets["projektchef"]
             if "projects" in assets:
                 player.projects = assets["projects"]
+                # Dev cost only goes up — track cumulative
+                current_dev = sum(p.get("kostnad", 0) for p in player.projects)
+                player.dev_cost_total = max(player.dev_cost_total, current_dev)
             if "q_krav" in assets:
                 player.q_krav = int(assets["q_krav"])
             if "h_krav" in assets:
@@ -433,6 +487,18 @@ class CompanionManager:
                 player.eget_kapital = float(assets["eget_kapital"])
             if "abt_budget" in assets:
                 player.abt_budget = float(assets["abt_budget"])
+            if "arbetschef" in assets:
+                player.arbetschef = assets["arbetschef"]
+            if "pl_q" in assets:
+                player.pl_q = int(assets["pl_q"])
+            if "pl_h" in assets:
+                player.pl_h = int(assets["pl_h"])
+            if "pl_t" in assets:
+                player.pl_t = int(assets["pl_t"])
+            if "pl_erfarenhet" in assets:
+                player.pl_erfarenhet = int(assets["pl_erfarenhet"])
+            if "pl_kostnad" in assets:
+                player.pl_kostnad = float(assets["pl_kostnad"])
             # Update GM dashboard
             await self.broadcast_state(room)
 

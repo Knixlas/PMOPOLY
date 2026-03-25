@@ -90,7 +90,7 @@ async function refresh() {
             html += `<div class="lb-entry">
                 <div class="lb-rank">${e.rank}</div>
                 <div class="lb-info">
-                    <div class="lb-name">${e.name}</div>
+                    <div class="lb-name">${e.block_name || e.name}</div>
                     <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
                 </div>
                 <div class="lb-score">

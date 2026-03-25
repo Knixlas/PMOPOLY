@@ -201,6 +201,7 @@ const S = {
     isGM: false,
     state: null,
     pcData: [],
+    acData: [],
     projectData: {},
 };
 
@@ -328,12 +329,14 @@ document.getElementById('btn-join-quarter').addEventListener('click', async () =
 });
 
 async function loadReferenceData() {
-    const [pcRes, projRes] = await Promise.all([
+    const [pcRes, projRes, acRes] = await Promise.all([
         fetch('/api/companion/data/pc'),
         fetch('/api/companion/data/projects'),
+        fetch('/api/companion/data/ac'),
     ]);
     S.pcData = (await pcRes.json()).pc;
     S.projectData = (await projRes.json()).projects;
+    S.acData = (await acRes.json()).ac;
 }
 
 // ── Render ──
@@ -395,15 +398,29 @@ function renderPlayer() {
     const step = st.step || '';
 
     // Determine visibility and editability per step
-    const STEP_ORDER = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
-    const stepIdx = STEP_ORDER.indexOf(step);
-    const showPC = stepIdx >= 0;
+    const phase = st.phase || '';
+    const isPhase1 = phase === 'phase1';
+    const isPhase2 = phase === 'phase2';
+
+    const PH1_STEPS = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
+    const PH2_STEPS = ['choose_ac', 'planning', 'planning_summary'];
+    const ph1Idx = PH1_STEPS.indexOf(step);
+    const ph2Idx = PH2_STEPS.indexOf(step);
+
+    // Phase 1 visibility
+    const showPC = ph1Idx >= 0 || isPhase2;
     const editPC = step === 'choose_pc';
-    const showProjects = stepIdx >= 1;
+    const showProjects = ph1Idx >= 1 || isPhase2;
     const editProjects = step === 'projects';
     const editProjectsRemove = step === 'namndbeslut';
-    const showCounters = stepIdx >= 1;
+    const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
     const showRbInvest = step === 'rb_invest';
+
+    // Phase 2 visibility
+    const showAC = ph2Idx >= 0;
+    const editAC = step === 'choose_ac';
+    const showPlanning = ph2Idx >= 1;
+    const editPlanning = step === 'planning';
 
     let html = '';
 
@@ -492,6 +509,37 @@ function renderPlayer() {
         html += '</div>';
     }
 
+    // AC Card (Phase 2)
+    if (showAC) {
+        html += '<div class="asset-card" style="border-left-color:#4A6FA5">';
+        html += '<div class="asset-label">Arbetschef</div>';
+        if (p.arbetschef) {
+            html += '<div class="chosen-item">';
+            html += '<div class="dot" style="background:#4A6FA5"></div>';
+            html += '<div><div class="name">' + p.arbetschef.namn + '</div>';
+            html += '<div class="detail">' + p.arbetschef.specialisering + ' | Erf: +' + (p.arbetschef.kapacitet || 0) + ' | Komp: ' + (p.arbetschef.forhandling || 'ingen') + '</div></div>';
+            if (editAC) html += '<div class="remove-btn" data-action="remove-ac">\u2715</div>';
+            html += '</div>';
+        } else if (editAC) {
+            html += '<div class="asset-empty" data-action="choose-ac">+ V\u00e4lj Arbetschef</div>';
+        } else {
+            html += '<div style="color:#555;font-style:italic">Ingen vald</div>';
+        }
+        html += '</div>';
+    }
+
+    // Planning counters (Phase 2)
+    if (showPlanning) {
+        html += '<div class="asset-card" style="border-left-color:#1565C0">';
+        html += '<div class="asset-label">Planeringssteg \u2014 registrera \u00e4ndringar</div>';
+        html += counterRow('Kvalitet (Q)', p.pl_q, 'pl_q', true);
+        html += counterRow('H\u00e5llbarhet (H)', p.pl_h, 'pl_h', true);
+        html += counterRow('Byggtid (T) m\u00e5n', p.pl_t, 'pl_t', true);
+        html += counterRow('Erfarenhet', p.pl_erfarenhet, 'pl_erfarenhet');
+        html += counterRow('ABT anv\u00e4nt (Mkr)', p.pl_kostnad, 'pl_kostnad');
+        html += '</div>';
+    }
+
     // Info summary (always visible from step 1+)
     if (stepIdx >= 0) {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
@@ -499,7 +547,7 @@ function renderPlayer() {
         const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
         const totalH = 4 + projH + p.h_krav - (p.rb_spent_h || 0);
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
-        const totalKost = p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
+        const totalKost = p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
         const totalBta = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
         html += '<div class="asset-card" style="border-left-color:#4db8ff;background:#0f1923">';
         html += '<div class="asset-label" style="color:#4db8ff">Sammanst\u00e4llning</div>';
@@ -511,6 +559,13 @@ function renderPlayer() {
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
+        if (isPhase2) {
+            html += '<div>Q (plan): <strong>' + (totalQ + p.pl_q) + '</strong></div>';
+            html += '<div>H (plan): <strong>' + (totalH + p.pl_h) + '</strong></div>';
+            html += '<div>T: <strong>' + (12 + p.pl_t) + ' m\u00e5n</strong></div>';
+            html += '<div>Erf: <strong>' + p.pl_erfarenhet + '</strong></div>';
+            html += '<div>ABT anv: <strong>' + p.pl_kostnad + ' Mkr</strong></div>';
+        }
         html += '</div></div>';
     }
 
@@ -545,6 +600,14 @@ function attachPlayerEvents(container) {
     container.querySelectorAll('[data-action="remove-pc"]').forEach(el => {
         el.addEventListener('click', () => {
             send({ type: 'update_assets', assets: { projektchef: null } });
+        });
+    });
+    container.querySelectorAll('[data-action="choose-ac"]').forEach(el => {
+        el.addEventListener('click', () => openACModal());
+    });
+    container.querySelectorAll('[data-action="remove-ac"]').forEach(el => {
+        el.addEventListener('click', () => {
+            send({ type: 'update_assets', assets: { arbetschef: null } });
         });
     });
     container.querySelectorAll('[data-action="add-project-type"]').forEach(el => {
@@ -626,6 +689,35 @@ function openPCModal() {
     mc.querySelector('#modal-cancel').addEventListener('click', () => { mc.innerHTML = ''; });
 }
 
+// ── AC Modal ──
+function openACModal() {
+    const mc = document.getElementById('modal-container');
+    let html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header"><h3>V\u00e4lj Arbetschef</h3></div>';
+    html += '<div class="modal-body">';
+    for (const ac of S.acData) {
+        html += '<div class="modal-item" data-ac-id="' + ac.id + '">' +
+            '<div class="item-name">' + ac.namn + '</div>' +
+            '<div class="item-detail">' + ac.specialisering + ' | Erf: +' + ac.kapacitet +
+            ' | Komp: ' + (ac.forhandling || 'ingen') + '</div>' +
+            '<div class="item-detail" style="margin-top:4px;color:#777">' + (ac.not_text || '') + '</div>' +
+            '</div>';
+    }
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var ac = S.acData.find(function(a) { return a.id === el.dataset.acId; });
+            if (ac) send({ type: 'update_assets', assets: { arbetschef: ac } });
+            mc.innerHTML = '';
+        });
+    });
+    mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
+}
+
 // ── Project Modal ──
 function openProjectModal(typ, triplePrice) {
     const mc = document.getElementById('modal-container');
@@ -692,7 +784,7 @@ function renderGMTable(st) {
     const maxScore = Math.max(1, ...allPlayers.map(p => p.profit_score || 0));
 
     let html = `<thead><tr>
-        <th>Stadsdel</th><th>Spelare</th><th>Status</th>
+        <th>Stadsdel</th><th>Kvarter</th><th>Spelare</th><th>Status</th>
         <th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>
         <th>Vinstchans</th>
     </tr></thead><tbody>`;
@@ -706,7 +798,8 @@ function renderGMTable(st) {
         const barW = Math.round((p.profit_score / maxScore) * 60);
         html += `<tr>
             <td>${p.district}</td>
-            <td><strong>${p.name}</strong></td>
+            <td style="color:#f0c929">${p.block_name || '—'}</td>
+            <td>${p.name}</td>
             <td class="${statusCls}">${statusTxt}</td>
             <td>${pcName}</td>
             <td>${numProj}</td>

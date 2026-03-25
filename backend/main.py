@@ -241,6 +241,11 @@ async def companion_pc_data():
     return {"pc": game_data.pc_staff}
 
 
+@app.get("/api/companion/data/ac")
+async def companion_ac_data():
+    return {"ac": game_data.ac_staff}
+
+
 @app.get("/api/companion/data/projects")
 async def companion_project_data():
     result = {}
