@@ -541,7 +541,7 @@ function renderPlayer() {
     }
 
     // Info summary (always visible from step 1+)
-    if (stepIdx >= 0) {
+    if (ph1Idx >= 0 || ph2Idx >= 0) {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
