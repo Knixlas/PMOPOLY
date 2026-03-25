@@ -26,6 +26,17 @@ DISTRICT_NAMES = [
     "Vintergatan", "Sommarbo", "Strömsborg", "Klockelund",
 ]
 
+BLOCK_NAMES = [
+    "Eken", "Linden", "Björken", "Granen", "Cedern", "Almen",
+    "Poppeln", "Aspen", "Lönnen", "Rönnen", "Valnöten", "Kastanjen",
+    "Olivträdet", "Magnolian", "Syrenen", "Jasmin", "Rosen", "Tulpanen",
+    "Lavendeln", "Klematis", "Blåklinten", "Prästkragen", "Vallmon",
+    "Smultronet", "Hallonbusken", "Vinbäret", "Krusbäret", "Nyponet",
+    "Vitsippan", "Blåsippan", "Liljekonvaljen", "Snödroppen",
+    "Krokus", "Iris", "Dahlia", "Pionen", "Orkidén", "Solrosen",
+    "Fjällvinden", "Norrsken", "Midnattssol", "Skymningen",
+]
+
 
 @dataclass
 class CompanionPlayer:
@@ -33,6 +44,7 @@ class CompanionPlayer:
     name: str
     quarter_idx: int
     is_gm: bool = False
+    block_name: str = ""  # Personal quarter/block name within district
     # Phase 1 assets
     projektchef: Optional[dict] = None
     projects: List[dict] = field(default_factory=list)
@@ -81,6 +93,7 @@ class CompanionPlayer:
             "name": self.name,
             "quarter_idx": self.quarter_idx,
             "is_gm": self.is_gm,
+            "block_name": self.block_name,
             "projektchef": self.projektchef,
             "projects": self.projects,
             "q_krav": self.q_krav,
@@ -259,8 +272,13 @@ class CompanionManager:
         quarter_players = [p for p in room.players.values() if p.quarter_idx == quarter_idx and not p.is_gm]
         if len(quarter_players) >= 4:
             return None
+        import random
         player_id = uuid.uuid4().hex[:8]
-        player = CompanionPlayer(id=player_id, name=name, quarter_idx=quarter_idx)
+        # Assign a random block name
+        used_blocks = {p.block_name for p in room.players.values() if p.block_name}
+        available_blocks = [b for b in BLOCK_NAMES if b not in used_blocks]
+        block = random.choice(available_blocks) if available_blocks else f"Kvarter {len(room.players)}"
+        player = CompanionPlayer(id=player_id, name=name, quarter_idx=quarter_idx, block_name=block)
         room.players[player_id] = player
         return room, player_id
 
@@ -341,6 +359,12 @@ class CompanionManager:
             new_name = data.get("name", "").strip()
             if idx is not None and 0 <= idx < room.num_quarters and new_name:
                 room.quarter_names[idx] = new_name
+            await self.broadcast_state(room)
+
+        elif msg_type == "rename_block" and not player.is_gm:
+            new_name = data.get("name", "").strip()
+            if new_name:
+                player.block_name = new_name
             await self.broadcast_state(room)
 
         elif msg_type == "update_assets" and not player.is_gm:

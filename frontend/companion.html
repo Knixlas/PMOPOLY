@@ -147,6 +147,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <div class="phase-header">
         <div class="phase-name" id="p-phase-name">—</div>
         <div class="step-name" id="p-step-name">Väntar på Game Master...</div>
+        <div style="margin-top:6px;font-size:13px;color:#888">Kvarter: <span id="p-block-name" style="color:#f0c929;cursor:pointer;border-bottom:1px dashed #666" title="Klicka för att byta namn">—</span></div>
     </div>
     <div class="assets-grid" id="player-assets"></div>
 </div>
@@ -171,17 +172,17 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 
     <!-- Tab switcher -->
     <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn-secondary gm-tab active" data-tab="table" style="flex:1;padding:8px">Spelaröversikt</button>
-        <button class="btn-secondary gm-tab" data-tab="quarters" style="flex:1;padding:8px">Stadsdelar</button>
+        <button class="btn-secondary gm-tab" data-tab="table" style="flex:1;padding:8px">Spelaröversikt</button>
+        <button class="btn-secondary gm-tab active" data-tab="quarters" style="flex:1;padding:8px">Stadsdelar</button>
     </div>
 
     <!-- Table view -->
-    <div id="gm-table-view" class="gm-tab-content">
+    <div id="gm-table-view" class="gm-tab-content" style="display:none">
         <div style="overflow-x:auto"><table id="gm-player-table" class="gm-table"></table></div>
     </div>
 
     <!-- Quarters view -->
-    <div id="gm-quarters-view" class="gm-tab-content" style="display:none">
+    <div id="gm-quarters-view" class="gm-tab-content">
         <div class="quarters-grid" id="gm-quarters"></div>
     </div>
 </div>
@@ -293,6 +294,12 @@ function renderPlayer() {
     if (!st) return;
     document.getElementById('p-phase-name').textContent = st.phase_name || '—';
     document.getElementById('p-step-name').textContent = st.step_name || 'Väntar...';
+    const blockEl = document.getElementById('p-block-name');
+    blockEl.textContent = p.block_name || '—';
+    blockEl.onclick = () => {
+        const newName = prompt('Nytt kvartersnamn:', p.block_name);
+        if (newName && newName.trim()) send({ type: 'rename_block', name: newName.trim() });
+    };
 
     const p = st.player;
     const container = document.getElementById('player-assets');
