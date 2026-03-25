@@ -447,7 +447,11 @@ function renderGM() {
     let html = '';
     for (const q of (st.quarters || [])) {
         html += `<div class="quarter-card">
-            <h3>${q.name} <span style="color:#888;font-size:13px">(${q.num_players}/4)</span></h3>
+            <h3>
+                <span class="q-name" data-qi="${q.quarter_idx}" title="Klicka för att byta namn"
+                      style="cursor:pointer;border-bottom:1px dashed #666">${q.name}</span>
+                <span style="color:#888;font-size:13px">(${q.num_players}/4)</span>
+            </h3>
             <div class="quarter-stat" style="margin-bottom:6px"><span>Kvarterskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
             <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
             <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
@@ -457,6 +461,18 @@ function renderGM() {
         </div>`;
     }
     grid.innerHTML = html;
+
+    // Attach rename handlers
+    grid.querySelectorAll('.q-name').forEach(el => {
+        el.addEventListener('click', () => {
+            const qi = parseInt(el.dataset.qi);
+            const current = el.textContent;
+            const newName = prompt('Nytt kvartersnamn:', current);
+            if (newName && newName.trim()) {
+                send({ type: 'rename_quarter', quarter_idx: qi, name: newName.trim() });
+            }
+        });
+    });
 }
 
 // GM controls

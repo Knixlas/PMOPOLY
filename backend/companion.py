@@ -18,6 +18,15 @@ PHASES = [
 ]
 
 
+QUARTER_NAMES = [
+    "Solbacken", "Ekudden", "Björkhagen", "Tallåsen",
+    "Sjöängen", "Strandliden", "Bergslund", "Ängslyckan",
+    "Åkervallen", "Parkvillan", "Havsutsikten", "Skogsdungen",
+    "Klippudden", "Furuliden", "Mossängen", "Kastanjegården",
+    "Vintergatans", "Sommarbo", "Strömsborg", "Klockelund",
+]
+
+
 @dataclass
 class CompanionPlayer:
     id: str
@@ -136,9 +145,12 @@ class CompanionManager:
 
     def create_room(self, num_quarters: int) -> tuple:
         """Returns (room, gm_id)."""
+        import random
         code = uuid.uuid4().hex[:6].upper()
         gm_id = uuid.uuid4().hex[:8]
-        names = [f"Kvarter {chr(65 + i)}" for i in range(num_quarters)]
+        names = random.sample(QUARTER_NAMES, min(num_quarters, len(QUARTER_NAMES)))
+        if num_quarters > len(QUARTER_NAMES):
+            names += [f"Kvarter {i+1}" for i in range(len(QUARTER_NAMES), num_quarters)]
         # Generate unique code per quarter
         q_codes = []
         for _ in range(num_quarters):
@@ -244,6 +256,13 @@ class CompanionManager:
                 room.phase_idx -= 1
                 phase = PHASES[room.phase_idx]
                 room.step_idx = len(phase["steps"]) - 1
+            await self.broadcast_state(room)
+
+        elif msg_type == "rename_quarter" and player.is_gm:
+            idx = data.get("quarter_idx")
+            new_name = data.get("name", "").strip()
+            if idx is not None and 0 <= idx < room.num_quarters and new_name:
+                room.quarter_names[idx] = new_name
             await self.broadcast_state(room)
 
         elif msg_type == "update_assets" and not player.is_gm:
