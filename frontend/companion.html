@@ -700,7 +700,9 @@ function renderPlayer() {
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
-        html += '<div>Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+        if (isPhase2 || isPhase3) {
+            html += '<div>Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+        }
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
         if (isPhase3) {
             // Konsekvenskort count
