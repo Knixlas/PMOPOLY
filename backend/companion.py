@@ -247,23 +247,43 @@ class CompanionPlayer:
 
     @property
     def profit_score(self) -> float:
-        """Estimate profit chance from current assets. Higher = better."""
-        if not self.projects:
+        """Score = (0.30 × FV + 0.10 × EK) / ägd_BTA × 1000 + TG
+        Before Phase 4: estimate from project data.
+        During/after Phase 4: use actual fastigheter."""
+        fasts = self.fastigheter or []
+        owned = [f for f in fasts if not f.get("sold")]
+
+        if owned:
+            # Phase 4+: use actual fastighetsvärde
+            fv = sum(f.get("marknadsvarde", f.get("anskaffning", 0)) for f in owned)
+            bta = sum(f.get("bta", 0) for f in owned)
+            ek = self.eget_kapital
+            # TG from phase 3
+            total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
+            total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
+            # Sum all ABT usage
+            abt_used = 0
+            for ch in (self.pl_choices or {}).values():
+                abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
+            for ev in (self.pl_events or {}).values():
+                abt_used += ev.get("abt", 0) if isinstance(ev, dict) else 0
+            for gf in (self.gf_phases or {}).values():
+                abt_used += gf.get("abt", 0) if isinstance(gf, dict) else 0
+            abt_used += getattr(self, 'gf_kons_q', 0) + getattr(self, 'gf_kons_h', 0) + getattr(self, 'gf_kons_t', 0) + getattr(self, 'gf_garanti_abt', 0)
+            tb = total_ansk - total_kost - abt_used
+            tg = (tb / total_ansk * 100) if total_ansk > 0 else 0
+        elif self.projects:
+            # Pre-Phase 4: estimate from projects
+            fv = sum(p.get("marknadsvarde", p.get("anskaffning", 0)) for p in self.projects)
+            bta = sum(p.get("bta", 0) for p in self.projects)
+            ek = self.eget_kapital
+            tg = 0
+        else:
             return 0
-        # Net revenue potential
-        total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
-        total_kost = sum(p.get("kostnad", 0) for p in self.projects)
-        net = total_ansk - total_kost
-        # Lower Q/H = easier to fulfill = less risk (bonus for low values)
-        qh_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
-        # Riskbuffertar give safety
-        rb_bonus = self.riskbuffertar * 5
-        # PC quality
-        pc_bonus = 0
-        if self.projektchef:
-            pc_bonus = self.projektchef.get("kapacitet", 0) * 3
-            pc_bonus += self.projektchef.get("namnd_bonus", 0) * 4
-        return round(net + qh_bonus + rb_bonus + pc_bonus, 1)
+
+        if bta > 0:
+            return round((0.30 * fv + 0.10 * ek) / bta * 1000 + tg, 1)
+        return round(tg, 1)
 
     def to_dict(self):
         return {
@@ -366,8 +386,10 @@ class CompanionRoom:
             q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
             players.append({
                 "rank": i + 1,
+                "id": p.id,
                 "name": p.name,
                 "block_name": p.block_name,
+                "quarter": q_name,
                 "district": q_name,
                 "profit_score": p.profit_score,
                 "num_projects": len(p.projects),
@@ -375,6 +397,7 @@ class CompanionRoom:
                 "q_krav": p.q_krav,
                 "h_krav": p.h_krav,
                 "riskbuffertar": p.riskbuffertar,
+                "eget_kapital": round(p.eget_kapital, 1),
                 "pc_name": p.projektchef.get("namn", "") if p.projektchef else "—",
             })
 
@@ -390,6 +413,7 @@ class CompanionRoom:
                 "name": name,
                 "avg_score": avg_score,
                 "num_players": len(qp),
+                "quarters": [name],
             })
         districts.sort(key=lambda d: d["avg_score"], reverse=True)
         for i, d in enumerate(districts):

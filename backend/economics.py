@@ -80,18 +80,29 @@ def calc_real_ek(player) -> float:
 
 
 def calc_final_score(player, total_fv_30: float) -> dict:
-    """Calculate final game score."""
+    """Calculate final game score.
+    Score = (0.30 × FV + 0.10 × EK) / ägd_BTA × 1000 + TG
+    FV = sum of fastigheter marknadsvärde (30% equity, rest is bank loan)
+    """
     real_ek = calc_real_ek(player)
     tg = calc_tg(player)
-    tb = (tg / 100) * player.abt_start if player.abt_start > 0 else 0
-    score = total_fv_30 + real_ek + tb
+
+    # FV = total fastighetsvärde (marknadsvärde of owned properties)
+    fv = total_fv_30 / 0.3 if total_fv_30 > 0 else 0  # total_fv_30 is already 30%, convert back
+    ek = real_ek
+    owned_bta = player.total_bta
+
+    if owned_bta > 0:
+        score = (0.30 * fv + 0.10 * ek) / owned_bta * 1000 + tg
+    else:
+        score = tg
 
     return {
-        "fv_30": round(total_fv_30, 1),
+        "fv": round(fv, 1),
+        "fv_30": round(fv * 0.3, 1),
         "real_ek": round(real_ek, 1),
-        "tb": round(tb, 1),
         "tg_pct": round(tg, 1),
         "score": round(score, 1),
-        "total_bta": player.total_bta,
+        "total_bta": owned_bta,
         "n_projects": len(player.projects),
     }

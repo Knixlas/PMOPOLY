@@ -904,10 +904,43 @@ function renderPlayer() {
 
         // Slutvärdering
         if (step === 'f4_slut') {
-            html += '<div class="asset-card" style="border-left-color:#f0c929">';
-            html += '<div class="asset-label">SLUTV\u00c4RDERING</div>';
-            html += counterRow('Slutpo\u00e4ng (kr/kvm)', p.f4_final_score, 'f4_final_score', true);
+            var _ownedF = fasts.filter(function(f){return !f.sold;});
+            var _fv = _ownedF.reduce(function(s,f){return s+(f.marknadsvarde||f.anskaffning||0);},0);
+            var _btaOwned = _ownedF.reduce(function(s,f){return s+(f.bta||0);},0);
+            var _ek4 = p.eget_kapital || 0;
+            // TG from summary
+            var _pAnsk4 = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
+            var _pKost4 = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
+            var _abt4 = 0;
+            var _ch4 = p.pl_choices||{}; for(var k in _ch4) _abt4 += _ch4[k].cost||0;
+            var _ev4 = p.pl_events||{}; for(var k in _ev4) _abt4 += _ev4[k].abt||0;
+            var _gf4 = p.gf_phases||{}; for(var k in _gf4) _abt4 += _gf4[k].abt||0;
+            _abt4 += (p.gf_kons_q||0)+(p.gf_kons_h||0)+(p.gf_kons_t||0)+(p.gf_garanti_abt||0);
+            var _tb4 = _pAnsk4 - _pKost4 - _abt4;
+            var _tg4 = _pAnsk4 > 0 ? Math.round((_tb4/_pAnsk4)*100) : 0;
+            var _score = _btaOwned > 0 ? (0.30*_fv + 0.10*_ek4)/_btaOwned*1000 + _tg4 : _tg4;
+
+            html += '<div class="asset-card" style="border-left-color:#f0c929;background:#1a2736">';
+            html += '<div class="asset-label" style="color:#f0c929;font-size:18px">\ud83c\udfc6 SLUTV\u00c4RDERING</div>';
+            html += '<div style="font-size:14px;line-height:2">';
+            html += '<div>Fastighetsv\u00e4rde (FV): <strong>' + Math.round(_fv) + ' Mkr</strong></div>';
+            html += '<div>30% av FV: <strong>' + Math.round(0.3*_fv) + ' Mkr</strong></div>';
+            html += '<div>Eget kapital (EK): <strong>' + Math.round(_ek4) + ' Mkr</strong></div>';
+            html += '<div>10% av EK: <strong>' + Math.round(0.1*_ek4) + ' Mkr</strong></div>';
+            html += '<div>\u00c4gd BTA: <strong>' + _btaOwned + ' kvm</strong></div>';
+            html += '<div>TG: <strong>' + _tg4 + '%</strong></div>';
+            html += '<div style="border-top:2px solid #f0c929;padding-top:8px;margin-top:8px;font-size:20px">';
+            html += '<strong style="color:#f0c929">Slutpo\u00e4ng: ' + Math.round(_score*10)/10 + '</strong></div>';
             html += '</div>';
+
+            // Fetch ranking
+            html += '<div id="player-ranking" style="margin-top:12px;color:#999;font-size:13px">H\u00e4mtar ranking...</div>';
+            html += '</div>';
+
+            // Auto-save score
+            if (Math.round((p.f4_final_score||0)*10) !== Math.round(_score*10)) {
+                send({ type: 'update_assets', assets: { f4_final_score: Math.round(_score*10)/10 } });
+            }
         }
     }
 
@@ -984,6 +1017,30 @@ function renderPlayer() {
 
     container.innerHTML = html;
     attachPlayerEvents(container);
+
+    // Fetch ranking for slutvärdering
+    var rankEl = document.getElementById('player-ranking');
+    if (rankEl && S.roomCode) {
+        fetch('/api/companion/leaderboard/' + S.roomCode).then(r => r.json()).then(data => {
+            var players = data.players || [];
+            var myIdx = players.findIndex(p => p.id === S.playerId);
+            var myRank = myIdx >= 0 ? myIdx + 1 : '?';
+            var total = players.length;
+            // Find my quarter/district
+            var myQ = players[myIdx]?.quarter || '';
+            var districts = data.districts || [];
+            var myDist = districts.find(d => d.quarters?.includes(myQ));
+            var distRank = myDist ? (districts.indexOf(myDist) + 1) : '?';
+            var distTotal = districts.length;
+
+            var rhtml = '<div style="font-size:15px;color:#f0c929;font-weight:700;margin-bottom:6px">Din placering</div>';
+            rhtml += '<div>Kvarter: <strong>#' + myRank + '</strong> av ' + total + ' spelare</div>';
+            if (distTotal > 1) {
+                rhtml += '<div>Stadsdel (' + (myDist?.name||myQ) + '): <strong>#' + distRank + '</strong> av ' + distTotal + ' stadsdelar</div>';
+            }
+            rankEl.innerHTML = rhtml;
+        }).catch(() => { rankEl.innerHTML = ''; });
+    }
 
     // Help icon click
     const helpBtn = document.getElementById('btn-help-step');
