@@ -137,7 +137,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 
     <div class="lobby-card">
         <h2>Skapa stadsdelar</h2>
-        <input type="number" id="gm-quarters" value="4" min="1" max="20" placeholder="Antal stadsdelar">
+        <input type="number" id="gm-num-districts" value="4" min="1" max="20" placeholder="Antal stadsdelar">
         <button class="btn-primary" id="btn-create-room">Skapa stadsdelar</button>
     </div>
 </div>
@@ -236,7 +236,7 @@ function send(data) {
 
 // ── Lobby ──
 document.getElementById('btn-create-room').addEventListener('click', async () => {
-    const num = parseInt(document.getElementById('gm-quarters').value) || 4;
+    const num = parseInt(document.getElementById('gm-num-districts').value) || 4;
     const res = await fetch('/api/companion/rooms', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ num_quarters: num }),
@@ -483,10 +483,10 @@ function renderGM() {
     document.getElementById('gm-room-code').textContent = st.code;
     document.getElementById('gm-phase-name').textContent = st.phase_name || '—';
     document.getElementById('gm-step-name').textContent = st.step_name || '—';
-    document.getElementById('gm-dashboard-link').href = `/companion/dashboard/${st.code}`;
+    document.getElementById('gm-dashboard-link').href = '/companion/dashboard/' + st.code;
 
-    renderGMTable(st);
-    renderGMQuarters(st);
+    try { renderGMTable(st); } catch(e) { console.error('renderGMTable error:', e); }
+    try { renderGMQuarters(st); } catch(e) { console.error('renderGMQuarters error:', e); }
 }
 
 function renderGMTable(st) {
@@ -527,30 +527,37 @@ function renderGMTable(st) {
 
 function renderGMQuarters(st) {
     const grid = document.getElementById('gm-quarters');
-    let html = '';
-    for (const q of (st.quarters || [])) {
-        const done = q.players.filter(p => p.step_done).length;
-        const total = q.players.length;
-        html += `<div class="quarter-card">
-            <h3>
-                <span class="q-name" data-qi="${q.quarter_idx}" title="Klicka för att byta namn"
-                      style="cursor:pointer;border-bottom:1px dashed #666">${q.name}</span>
-                <span style="color:#888;font-size:13px">(${total}/4)</span>
-                <span style="float:right;font-size:13px;color:${done===total && total>0 ? '#27ae60' : '#c0392b'}">${done}/${total} klara</span>
-            </h3>
-            <div class="quarter-stat" style="margin-bottom:6px"><span>Stadsdelskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
-            <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
-            <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
-            <div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">${q.avg_q_krav}</span></div>
-            <div class="quarter-stat"><span>Snitt H-krav</span><span class="val">${q.avg_h_krav}</span></div>
-            <div class="quarter-players">${q.players.map(p =>
-                `<span style="color:${p.step_done ? '#27ae60' : '#ccc'}">${p.name}${p.step_done ? ' ✓' : ''}</span>`
-            ).join('')}</div>
-        </div>`;
+    if (!grid) return;
+    const quarters = st.quarters || [];
+    const cards = [];
+    for (let i = 0; i < quarters.length; i++) {
+        const q = quarters[i];
+        const ps = q.players || [];
+        const done = ps.filter(function(p) { return p.step_done; }).length;
+        const total = ps.length;
+        const doneColor = (done === total && total > 0) ? '#27ae60' : '#c0392b';
+        const playerSpans = ps.map(function(p) {
+            const c = p.step_done ? '#27ae60' : '#ccc';
+            const check = p.step_done ? ' \u2713' : '';
+            return '<span style="color:' + c + '">' + p.name + check + '</span>';
+        }).join('');
+        cards.push(
+            '<div class="quarter-card">' +
+            '<h3><span class="q-name" data-qi="' + q.quarter_idx + '" style="cursor:pointer;border-bottom:1px dashed #666">' + q.name + '</span> ' +
+            '<span style="color:#888;font-size:13px">(' + total + '/4)</span>' +
+            '<span style="float:right;font-size:13px;color:' + doneColor + '">' + done + '/' + total + ' klara</span></h3>' +
+            '<div class="quarter-stat" style="margin-bottom:6px"><span>Stadsdelskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">' + (q.code || '\u2014') + '</span></div>' +
+            '<div class="quarter-stat"><span>Projekt</span><span class="val">' + q.total_projects + '</span></div>' +
+            '<div class="quarter-stat"><span>Total BTA</span><span class="val">' + q.total_bta + ' kvm</span></div>' +
+            '<div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">' + q.avg_q_krav + '</span></div>' +
+            '<div class="quarter-stat"><span>Snitt H-krav</span><span class="val">' + q.avg_h_krav + '</span></div>' +
+            '<div class="quarter-players">' + playerSpans + '</div>' +
+            '</div>'
+        );
     }
-    grid.innerHTML = html;
-    grid.querySelectorAll('.q-name').forEach(el => {
-        el.addEventListener('click', () => {
+    grid.innerHTML = cards.join('');
+    grid.querySelectorAll('.q-name').forEach(function(el) {
+        el.addEventListener('click', function() {
             const qi = parseInt(el.dataset.qi);
             const current = el.textContent;
             const newName = prompt('Nytt stadsdelsnamn:', current);
