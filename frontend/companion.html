@@ -587,7 +587,10 @@ function renderPlayer() {
         const baseT = 12 + maxProjT;
         const totalT = baseT - (p.rb_spent_t || 0);
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
-        const totalKost = p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
+        const projKost = p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
+        const markKost = 15;
+        const expKost = (p.mark_expansions || 0) * 5;
+        const totalKost = projKost + markKost + expKost;
         const totalBta = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
         html += '<div class="asset-card" style="border-left-color:#4db8ff;background:#0f1923">';
         html += '<div class="asset-label" style="color:#4db8ff">Sammanst\u00e4llning</div>';
