@@ -460,14 +460,58 @@ function renderPlayer() {
         html += '</div>';
     }
 
-    // Counters
-    if (showCounters) {
+    // Counters (during projects and namndbeslut)
+    if (showCounters && !showRbInvest) {
         html += '<div class="asset-card counters">';
         html += '<div class="asset-label">\u00c4ndringar fr\u00e5n kort & spelbr\u00e4de</div>';
         html += counterRow('Kvalitet (Q)', p.q_krav, 'q_krav', true);
         html += counterRow('H\u00e5llbarhet (H)', p.h_krav, 'h_krav', true);
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
         html += '</div>';
+    }
+
+    // Rb-investering step
+    if (showRbInvest) {
+        const rbLeft = p.riskbuffertar - (p.rb_spent_q || 0) - (p.rb_spent_h || 0) - (p.rb_spent_t || 0);
+        html += '<div class="asset-card" style="border-left-color:#f0c929">';
+        html += '<div class="asset-label">F\u00f6rdela riskbuffertar (' + p.riskbuffertar + ' tillg\u00e4ngliga)</div>';
+        html += '<div class="counter-row"><div class="label">S\u00e4nk Q-krav</div><div class="counter-controls">';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">\u2212</button>';
+        html += '<div class="counter-val">' + (p.rb_spent_q || 0) + '</div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">+</button></div></div>';
+        html += '<div class="counter-row"><div class="label">S\u00e4nk H-krav</div><div class="counter-controls">';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="h">\u2212</button>';
+        html += '<div class="counter-val">' + (p.rb_spent_h || 0) + '</div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="h">+</button></div></div>';
+        html += '<div class="counter-row"><div class="label">S\u00e4nk T (byggtid)</div><div class="counter-controls">';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="t">\u2212</button>';
+        html += '<div class="counter-val">' + (p.rb_spent_t || 0) + '</div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="t">+</button></div></div>';
+        html += '<div style="text-align:center;margin-top:8px;color:' + (rbLeft > 0 ? '#f0c929' : '#888') + ';font-size:14px">';
+        html += rbLeft + ' Rb kvar (sparas till fas 3)</div>';
+        html += '</div>';
+    }
+
+    // Info summary (always visible from step 1+)
+    if (stepIdx >= 0) {
+        const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
+        const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
+        const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
+        const totalH = 4 + projH + p.h_krav - (p.rb_spent_h || 0);
+        const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
+        const totalKost = p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
+        const totalBta = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
+        html += '<div class="asset-card" style="border-left-color:#4db8ff;background:#0f1923">';
+        html += '<div class="asset-label" style="color:#4db8ff">Sammanst\u00e4llning</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:14px">';
+        html += '<div>Q-krav: <strong>' + totalQ + '</strong></div>';
+        html += '<div>H-krav: <strong>' + totalH + '</strong></div>';
+        html += '<div>Rb: <strong>' + p.riskbuffertar + '</strong></div>';
+        html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
+        html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
+        html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
+        html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
+        html += '</div></div>';
     }
 
     container.innerHTML = html;
@@ -511,6 +555,25 @@ function attachPlayerEvents(container) {
             const id = el.dataset.id;
             const projects = S.state.player.projects.filter(p => p.id !== id);
             send({ type: 'update_assets', assets: { projects } });
+        });
+    });
+    container.querySelectorAll('[data-action="rb-incr"]').forEach(el => {
+        el.addEventListener('click', () => {
+            const target = el.dataset.target;
+            const key = 'rb_spent_' + target;
+            const cur = S.state.player[key] || 0;
+            const totalSpent = (S.state.player.rb_spent_q || 0) + (S.state.player.rb_spent_h || 0) + (S.state.player.rb_spent_t || 0);
+            if (totalSpent < S.state.player.riskbuffertar) {
+                send({ type: 'update_assets', assets: { [key]: cur + 1 } });
+            }
+        });
+    });
+    container.querySelectorAll('[data-action="rb-decr"]').forEach(el => {
+        el.addEventListener('click', () => {
+            const target = el.dataset.target;
+            const key = 'rb_spent_' + target;
+            const cur = S.state.player[key] || 0;
+            if (cur > 0) send({ type: 'update_assets', assets: { [key]: cur - 1 } });
         });
     });
     container.querySelectorAll('[data-action="buy-project-3x"]').forEach(el => {

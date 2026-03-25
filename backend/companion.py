@@ -85,6 +85,9 @@ class CompanionPlayer:
     q_krav: int = 0
     h_krav: int = 0
     riskbuffertar: int = 0
+    rb_spent_q: int = 0
+    rb_spent_h: int = 0
+    rb_spent_t: int = 0
     mark_expansions: int = 0
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
@@ -133,6 +136,9 @@ class CompanionPlayer:
             "q_krav": self.q_krav,
             "h_krav": self.h_krav,
             "riskbuffertar": self.riskbuffertar,
+            "rb_spent_q": self.rb_spent_q,
+            "rb_spent_h": self.rb_spent_h,
+            "rb_spent_t": self.rb_spent_t,
             "mark_expansions": self.mark_expansions,
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
@@ -415,6 +421,12 @@ class CompanionManager:
                 player.h_krav = int(assets["h_krav"])
             if "riskbuffertar" in assets:
                 player.riskbuffertar = int(assets["riskbuffertar"])
+            if "rb_spent_q" in assets:
+                player.rb_spent_q = int(assets["rb_spent_q"])
+            if "rb_spent_h" in assets:
+                player.rb_spent_h = int(assets["rb_spent_h"])
+            if "rb_spent_t" in assets:
+                player.rb_spent_t = int(assets["rb_spent_t"])
             if "mark_expansions" in assets:
                 player.mark_expansions = int(assets["mark_expansions"])
             if "eget_kapital" in assets:
