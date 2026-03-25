@@ -88,6 +88,12 @@ input[type="text"]:focus { border-color: var(--primary); }
 .btn-primary:hover { background: #d63850; transform: translateY(-1px); }
 .btn-secondary { background: var(--secondary); color: #fff; }
 .btn-secondary:hover { background: #6a3fa0; }
+
+.lobby-companion { text-align: center; margin-top: 24px; }
+.or-line { color: #666; font-size: 13px; margin-bottom: 10px; }
+.or-line span { background: var(--bg); padding: 0 12px; }
+.btn-companion { display: inline-block; padding: 12px 24px; background: #1a2736; color: #f0c929; border: 2px solid #f0c929; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.btn-companion:hover { background: #f0c929; color: #1a1a2e; }
 .btn-success { background: var(--success); color: #fff; }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-warning { background: var(--warning); color: #222; }
