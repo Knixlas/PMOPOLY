@@ -147,7 +147,9 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <div class="phase-header">
         <div class="phase-name" id="p-phase-name">—</div>
         <div class="step-name" id="p-step-name">Väntar på Game Master...</div>
-        <div style="margin-top:6px;font-size:13px;color:#888">Kvarter: <span id="p-block-name" style="color:#f0c929;cursor:pointer;border-bottom:1px dashed #666" title="Klicka för att byta namn">—</span></div>
+        <div style="margin-top:6px;font-size:13px;color:#888">Kvarter: <span id="p-block-name" style="color:#f0c929;cursor:pointer;border-bottom:1px dashed #666" title="Klicka för att byta namn">—</span>
+            <span id="btn-leave-player" style="margin-left:12px;color:#c0392b;cursor:pointer;font-size:12px">Lämna</span>
+        </div>
     </div>
     <div class="assets-grid" id="player-assets"></div>
 </div>
@@ -223,19 +225,39 @@ function restoreSession() {
     return true;
 }
 
+function clearSession() {
+    sessionStorage.removeItem('pmopoly_companion');
+    S.playerId = null;
+    S.roomCode = null;
+    S.isGM = false;
+    S.state = null;
+}
+
+async function tryReconnect() {
+    // Verify room still exists on server
+    const res = await fetch('/api/companion/rooms/' + S.roomCode);
+    if (!res.ok) {
+        clearSession();
+        return false;
+    }
+    return true;
+}
+
 // Show GM lobby if URL is /companion/gm
 if (location.pathname.endsWith('/gm')) {
     if (restoreSession() && S.isGM) {
-        connectWs(S.roomCode, S.playerId);
-        showView('view-gm');
+        tryReconnect().then(ok => {
+            if (ok) { connectWs(S.roomCode, S.playerId); showView('view-gm'); }
+            else showView('view-gm-lobby');
+        });
     } else {
         showView('view-gm-lobby');
     }
 } else {
     if (restoreSession() && !S.isGM) {
-        loadReferenceData().then(() => {
-            connectWs(S.roomCode, S.playerId);
-            showView('view-player');
+        tryReconnect().then(ok => {
+            if (ok) { loadReferenceData().then(() => { connectWs(S.roomCode, S.playerId); showView('view-player'); }); }
+            else showView('view-lobby');
         });
     }
 }
@@ -617,6 +639,15 @@ document.querySelectorAll('.gm-tab').forEach(btn => {
         document.getElementById('gm-table-view').style.display = tab === 'table' ? '' : 'none';
         document.getElementById('gm-quarters-view').style.display = tab === 'quarters' ? '' : 'none';
     });
+});
+
+// Leave button
+document.getElementById('btn-leave-player').addEventListener('click', () => {
+    if (confirm('Vill du lämna spelet?')) {
+        clearSession();
+        if (S.ws) { S.ws.close(); S.ws = null; }
+        showView('view-lobby');
+    }
 });
 </script>
 </body>
