@@ -163,14 +163,9 @@ class CompanionPlayer:
     # Phase 2 assets
     arbetschef: Optional[dict] = None
     pl_choices: Dict[str, dict] = field(default_factory=dict)  # step_id -> {name, niva, q, h, t, erf, cost}
-    pl_event_q: int = 0   # Q changes from event cards
-    pl_event_h: int = 0   # H changes from event cards
-    pl_event_abt: float = 0.0  # ABT changes from event cards
-    # Phase 3 assets
-    gf_abt_changes: float = 0.0  # ABT changes during genomförande
-    gf_q_changes: int = 0  # Q changes during genomförande
-    gf_h_changes: int = 0  # H changes during genomförande
-    gf_t_changes: int = 0  # T changes during genomförande
+    pl_events: Dict[str, dict] = field(default_factory=dict)  # step_id -> {q, h, abt} event card effects
+    # Phase 3 assets - per byggfas (1-8)
+    gf_phases: Dict[str, dict] = field(default_factory=dict)  # "1"-"8" -> {q, h, t, abt}
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -237,11 +232,8 @@ class CompanionPlayer:
             "pl_choices": self.pl_choices,
             "pl_event_q": self.pl_event_q,
             "pl_event_h": self.pl_event_h,
-            "pl_event_abt": round(self.pl_event_abt, 1),
-            "gf_abt_changes": round(self.gf_abt_changes, 1),
-            "gf_q_changes": self.gf_q_changes,
-            "gf_h_changes": self.gf_h_changes,
-            "gf_t_changes": self.gf_t_changes,
+            "pl_events": self.pl_events,
+            "gf_phases": self.gf_phases,
             "profit_score": self.profit_score,
         }
 
@@ -549,16 +541,10 @@ class CompanionManager:
                 player.pl_event_q = int(assets["pl_event_q"])
             if "pl_event_h" in assets:
                 player.pl_event_h = int(assets["pl_event_h"])
-            if "pl_event_abt" in assets:
-                player.pl_event_abt = float(assets["pl_event_abt"])
-            if "gf_abt_changes" in assets:
-                player.gf_abt_changes = float(assets["gf_abt_changes"])
-            if "gf_q_changes" in assets:
-                player.gf_q_changes = int(assets["gf_q_changes"])
-            if "gf_h_changes" in assets:
-                player.gf_h_changes = int(assets["gf_h_changes"])
-            if "gf_t_changes" in assets:
-                player.gf_t_changes = int(assets["gf_t_changes"])
+            if "pl_events" in assets:
+                player.pl_events = assets["pl_events"]
+            if "gf_phases" in assets:
+                player.gf_phases = assets["gf_phases"]
             # Update GM dashboard
             await self.broadcast_state(room)
 

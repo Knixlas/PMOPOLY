@@ -114,6 +114,8 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 .status-wait { color: #c0392b; }
 .score-bar { display: inline-block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #27ae60, #f0c929); min-width: 4px; vertical-align: middle; margin-right: 6px; }
 .help-icon { cursor: pointer; margin-left: 6px; font-size: 16px; vertical-align: middle; }
+.ev-btn, .gf-btn { cursor: pointer; padding: 0 4px; color: #f0c929; font-weight: 700; user-select: none; }
+.ev-btn:active, .gf-btn:active { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -556,21 +558,48 @@ function renderPlayer() {
         html += '</div>';
     }
 
-    // Planning steps (Phase 2)
+    // Planning steps (Phase 2) — collapsed in Phase 3
     if (showPlanning && S.planningData) {
+        var plCollapsed = isPhase3;
         var choices = p.pl_choices || {};
+        var plEvents = p.pl_events || {};
         html += '<div class="asset-card" style="border-left-color:#1565C0">';
-        html += '<div class="asset-label">Planeringssteg \u2014 v\u00e4lj leverant\u00f6r/organisation</div>';
+        html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="planning-list">';
+        html += 'Planeringssteg <span style="float:right;font-size:11px;color:#666">' + (plCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
+        html += '<div id="planning-list" style="' + (plCollapsed ? 'display:none' : '') + '">';
         for (var si = 0; si < S.planningData.steps.length; si++) {
             var ps = S.planningData.steps[si];
             var chosen = choices[ps.id];
+            var ev = plEvents[ps.id] || {};
             var typeLabel = ps.type === 'supplier' ? 'Lev' : 'Org';
             if (chosen) {
+                html += '<div style="border-bottom:1px solid #1a2736;padding:4px 0">';
                 html += '<div class="chosen-item" data-action="choose-planning" data-step-id="' + ps.id + '" style="cursor:pointer">';
                 html += '<div class="dot" style="background:' + (ps.type === 'supplier' ? '#1565C0' : '#2E7D32') + '"></div>';
                 html += '<div><div class="name">' + ps.name + ' \u2014 Niv\u00e5 ' + chosen.niva + '</div>';
                 html += '<div class="detail">Q:' + (chosen.q||0) + ' H:' + (chosen.h||0) + ' T:' + (chosen.t||0) + ' Erf:' + (chosen.erf||0) + ' | ' + chosen.cost + ' Mkr</div></div>';
                 if (editPlanning) html += '<div class="remove-btn" data-action="remove-planning" data-step-id="' + ps.id + '">\u2715</div>';
+                html += '</div>';
+                // Event card effect for this step
+                if (editPlanning) {
+                    var evQ = ev.q || 0, evH = ev.h || 0, evAbt = ev.abt || 0;
+                    html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:#e67e22">';
+                    html += 'H\u00e4ndelsekort: ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="-1">\u2212</span>';
+                    html += ' Q:' + evQ + ' ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="1">+</span> | ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="h" data-dir="-1">\u2212</span>';
+                    html += ' H:' + evH + ' ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="h" data-dir="1">+</span> | ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="-1">\u2212</span>';
+                    html += ' ABT:' + evAbt + ' ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="1">+</span>';
+                    html += '</div>';
+                } else if (ev.q || ev.h || ev.abt) {
+                    html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:#e67e22">';
+                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' ABT:' + (ev.abt||0);
+                    html += '</div>';
+                }
                 html += '</div>';
             } else if (editPlanning) {
                 html += '<div class="asset-empty" data-action="choose-planning" data-step-id="' + ps.id + '" style="padding:4px 0">';
@@ -579,25 +608,27 @@ function renderPlayer() {
                 html += '<div style="padding:4px 0;color:#555">' + (si+1) + '. ' + ps.name + ' \u2014 ej vald</div>';
             }
         }
-        html += '</div>';
-
-        // Event card effects (manual +/-)
-        html += '<div class="asset-card" style="border-left-color:#e67e22">';
-        html += '<div class="asset-label">H\u00e4ndelsekort \u2014 manuella \u00e4ndringar</div>';
-        html += counterRow('Q fr\u00e5n kort', p.pl_event_q, 'pl_event_q', true);
-        html += counterRow('H fr\u00e5n kort', p.pl_event_h, 'pl_event_h', true);
-        html += counterRow('ABT fr\u00e5n kort (Mkr)', p.pl_event_abt, 'pl_event_abt', true);
-        html += '</div>';
+        html += '</div></div>';
     }
 
-    // Phase 3: Genomförande
+    // Phase 3: Genomförande — 8 numbered phases
     if (showGF) {
+        var gfPhases = p.gf_phases || {};
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
-        html += '<div class="asset-label">Genomf\u00f6rande \u2014 \u00e4ndringar</div>';
-        html += counterRow('Q fr\u00e5n faskort/h\u00e4ndelser', p.gf_q_changes, 'gf_q_changes', true);
-        html += counterRow('H fr\u00e5n faskort/h\u00e4ndelser', p.gf_h_changes, 'gf_h_changes', true);
-        html += counterRow('T fr\u00e5n faskort/h\u00e4ndelser', p.gf_t_changes, 'gf_t_changes', true);
-        html += counterRow('ABT \u00e4ndringar (Mkr)', p.gf_abt_changes, 'gf_abt_changes', true);
+        html += '<div class="asset-label">Byggfaser (1\u20138)</div>';
+        for (var fi = 1; fi <= 8; fi++) {
+            var fk = '' + fi;
+            var gf = gfPhases[fk] || {};
+            var hasData = (gf.q || gf.h || gf.t || gf.abt);
+            html += '<div style="border-bottom:1px solid #1a2736;padding:6px 0">';
+            html += '<div style="font-weight:600;font-size:14px">Fas ' + fi + (hasData ? '' : ' <span style="color:#555;font-weight:400">\u2014 ej registrerad</span>') + '</div>';
+            html += '<div style="display:flex;gap:8px;margin-top:4px;font-size:13px;flex-wrap:wrap">';
+            html += '<span>Q: <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="-1">\u2212</span> <strong>' + (gf.q||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="1">+</span></span>';
+            html += '<span>H: <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="-1">\u2212</span> <strong>' + (gf.h||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="1">+</span></span>';
+            html += '<span>T: <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="-1">\u2212</span> <strong>' + (gf.t||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="1">+</span></span>';
+            html += '<span>ABT: <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
+            html += '</div></div>';
+        }
         html += '</div>';
     }
 
@@ -627,40 +658,36 @@ function renderPlayer() {
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
-        if (isPhase2) {
-            // Calculate totals from pl_choices
+        if (isPhase2 || isPhase3) {
+            // Sum from pl_choices + pl_events
             var choices = p.pl_choices || {};
-            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0;
-            for (var k in choices) {
-                var ch = choices[k];
-                plQ += ch.q || 0;
-                plH += ch.h || 0;
-                plT += ch.t || 0;
-                plErf += ch.erf || 0;
-                plCost += ch.cost || 0;
-            }
-            var achievedQ = plQ + (p.pl_event_q || 0);
-            var achievedH = plH + (p.pl_event_h || 0);
-            html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
-            html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
-            html += '<div>T: <strong>' + (totalT + plT) + '(' + baseT + ') m\u00e5n</strong></div>';
-            html += '<div>Erf: <strong>' + plErf + '</strong></div>';
-            html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
-            html += '<div>H\u00e4nd: <strong>' + (p.pl_event_abt || 0) + ' Mkr</strong></div>';
-        }
-        if (isPhase3) {
-            // Show Phase 2 values (locked) + Phase 3 changes
-            var choices = p.pl_choices || {};
-            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0;
+            var plEvts = p.pl_events || {};
+            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0, plEvQ = 0, plEvH = 0, plEvAbt = 0;
             for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
-            var gfQ = totalQ + plQ + (p.pl_event_q||0) + (p.gf_q_changes||0);
-            var gfH = totalH + plH + (p.pl_event_h||0) + (p.gf_h_changes||0);
-            var gfT = totalT + plT + (p.gf_t_changes||0);
-            html += '<div>Q: <strong>(' + gfQ + ')' + totalQ + '</strong></div>';
-            html += '<div>H: <strong>(' + gfH + ')' + totalH + '</strong></div>';
-            html += '<div>T: <strong>' + gfT + '(' + baseT + ') m\u00e5n</strong></div>';
-            html += '<div>Erf: <strong>' + plErf + '</strong></div>';
-            html += '<div>ABT \u00e4ndr: <strong>' + ((p.gf_abt_changes||0) + (p.pl_event_abt||0)) + ' Mkr</strong></div>';
+            for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvAbt += ev.abt||0; }
+            var achievedQ = plQ + plEvQ;
+            var achievedH = plH + plEvH;
+
+            if (isPhase3) {
+                // Add Phase 3 changes
+                var gfP = p.gf_phases || {};
+                var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
+                for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
+                achievedQ += gfQ; achievedH += gfH;
+                html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
+                html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
+                html += '<div>T: <strong>' + (totalT + plT + gfT) + '(' + baseT + ') m\u00e5n</strong></div>';
+                html += '<div>Erf: <strong>' + plErf + '</strong></div>';
+                html += '<div>ABT \u00e4ndr: <strong>' + (plEvAbt + gfAbt) + ' Mkr</strong></div>';
+                html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
+            } else {
+                html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
+                html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
+                html += '<div>T: <strong>' + (totalT + plT) + '(' + baseT + ') m\u00e5n</strong></div>';
+                html += '<div>Erf: <strong>' + plErf + '</strong></div>';
+                html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
+                html += '<div>H\u00e4nd.ABT: <strong>' + plEvAbt + ' Mkr</strong></div>';
+            }
         }
         html += '</div></div>';
     }
@@ -744,6 +771,34 @@ function attachPlayerEvents(container) {
                 var arrow = el.querySelector('span');
                 if (arrow) arrow.textContent = hidden ? '\u25bc' : '\u25b6';
             }
+        });
+    });
+    // Event card +/- per planning step
+    container.querySelectorAll('.ev-btn').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var stepId = el.dataset.step;
+            var field = el.dataset.field;
+            var dir = parseInt(el.dataset.dir);
+            var plEvents = Object.assign({}, S.state.player.pl_events || {});
+            var ev = Object.assign({}, plEvents[stepId] || {});
+            ev[field] = (ev[field] || 0) + dir;
+            plEvents[stepId] = ev;
+            send({ type: 'update_assets', assets: { pl_events: plEvents } });
+        });
+    });
+    // Genomförande fas +/- buttons
+    container.querySelectorAll('.gf-btn').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var fas = el.dataset.fas;
+            var field = el.dataset.field;
+            var dir = parseInt(el.dataset.dir);
+            var gfPhases = Object.assign({}, S.state.player.gf_phases || {});
+            var gf = Object.assign({}, gfPhases[fas] || {});
+            gf[field] = (gf[field] || 0) + dir;
+            gfPhases[fas] = gf;
+            send({ type: 'update_assets', assets: { gf_phases: gfPhases } });
         });
     });
     container.querySelectorAll('[data-action="choose-planning"]').forEach(el => {
