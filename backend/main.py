@@ -153,6 +153,11 @@ async def companion_index():
     return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"))
 
 
+@app.get("/companion/gm")
+async def companion_gm():
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"))
+
+
 # ── Companion API ──
 
 @app.post("/api/companion/rooms")
