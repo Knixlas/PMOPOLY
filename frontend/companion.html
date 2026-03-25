@@ -267,13 +267,17 @@ if (location.pathname.endsWith('/gm')) {
 
 // ── WebSocket ──
 function connectWs(code, playerId) {
+    // Close any existing connection
+    if (S.ws && S.ws.readyState <= 1) {
+        S.ws.onclose = null;  // Prevent reconnect loop
+        S.ws.close();
+    }
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${proto}//${location.host}/companion/ws/${code}/${playerId}`;
     const ws = new WebSocket(url);
     ws.onopen = () => console.log('WS connected');
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
-        console.log('WS msg:', data.type, 'isGM:', S.isGM, 'hasPlayer:', !!data.state?.player);
         if (data.type === 'state') {
             S.state = data.state;
             render();
