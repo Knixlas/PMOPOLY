@@ -426,6 +426,7 @@ function renderPlayer() {
     const isPhase1 = phase === 'phase1';
     const isPhase2 = phase === 'phase2';
     const isPhase3 = phase === 'phase3';
+    const isPhase4 = phase === 'phase4';
 
     const PH1_STEPS = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
     const PH2_STEPS = ['choose_ac', 'planning', 'planning_summary'];
@@ -435,18 +436,18 @@ function renderPlayer() {
     const ph3Idx = PH3_STEPS.indexOf(step);
 
     // Phase 1 visibility
-    const showPC = ph1Idx >= 0 || isPhase2 || isPhase3;
+    const showPC = ph1Idx >= 0 || isPhase2 || isPhase3 || isPhase4;
     const editPC = step === 'choose_pc';
-    const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3;
+    const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3 || isPhase4;
     const editProjects = step === 'projects';
     const editProjectsRemove = step === 'namndbeslut';
     const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
     const showRbInvest = step === 'rb_invest';
 
     // Phase 2 visibility
-    const showAC = ph2Idx >= 0 || isPhase3;
+    const showAC = ph2Idx >= 0 || isPhase3 || isPhase4;
     const editAC = step === 'choose_ac';
-    const showPlanning = ph2Idx >= 1 || isPhase3;
+    const showPlanning = ph2Idx >= 1 || isPhase3 || isPhase4;
     const editPlanning = step === 'planning';
 
     // Phase 3 visibility
@@ -456,7 +457,7 @@ function renderPlayer() {
 
     // PC Card
     if (showPC) {
-        var pcCollapsed = isPhase2 || isPhase3;
+        var pcCollapsed = isPhase2 || isPhase3 || isPhase4;
         html += '<div class="asset-card pc">';
         html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="pc-detail">';
         html += 'Projektchef' + (p.projektchef ? ': ' + p.projektchef.namn : '') + ' <span style="float:right;font-size:11px;color:#666">' + (pcCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
@@ -479,7 +480,7 @@ function renderPlayer() {
 
     // Projects
     if (showProjects) {
-        var projCollapsed = (isPhase2 || isPhase3) && !editProjects && !editProjectsRemove;
+        var projCollapsed = (isPhase2 || isPhase3 || isPhase4) && !editProjects && !editProjectsRemove;
         html += '<div class="asset-card projects">';
         html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="proj-list">';
         html += 'Projekt (' + p.projects.length + ') <span style="float:right;font-size:11px;color:#666">' + (projCollapsed ? '\u25b6 visa' : '\u25bc d\u00f6lj') + '</span></div>';
@@ -650,11 +651,11 @@ function renderPlayer() {
         html += '</div>';
     }
 
-    // Phase 3: Garantibesiktning
+    // Phase 3: Garantibesiktning — only cost impact
     if (step === 'gf_garanti') {
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
         html += '<div class="asset-label">Garantibesiktning \u2014 registrera ABT-kostnad</div>';
-        html += counterRow('Garanti (kort)', p.gf_phases?.garanti || 0, 'gf_garanti_abt', true);
+        html += counterRow('ABT-kostnad garanti (Mkr)', p.gf_garanti_abt, 'gf_garanti_abt', true);
         html += '</div>';
     }
 
@@ -666,8 +667,42 @@ function renderPlayer() {
         html += '</div>';
     }
 
+    // Phase 4: Förvaltning
+    if (isPhase4) {
+        if (step === 'f4_forbered') {
+            html += '<div class="asset-card" style="border-left-color:#16a085">';
+            html += '<div class="asset-label">F\u00f6rbered f\u00f6rvaltning</div>';
+            html += '<div style="font-size:14px">Ta bort BRF-projekt (redan s\u00e5lda). Registrera driftnetto och energiklasser.</div>';
+            html += counterRow('EK (Mkr)', p.eget_kapital, 'eget_kapital', true);
+            html += '</div>';
+        }
+        if (step === 'f4_kvartal') {
+            var f4Q = p.f4_quarters || {};
+            html += '<div class="asset-card" style="border-left-color:#16a085">';
+            html += '<div class="asset-label">Kvartalsvis f\u00f6rvaltning</div>';
+            for (var qi = 1; qi <= 4; qi++) {
+                var qk = '' + qi;
+                var qd = f4Q[qk] || {};
+                html += '<div style="border-bottom:1px solid #1a2736;padding:6px 0">';
+                html += '<div style="font-weight:600;font-size:14px">Kvartal ' + qi + '</div>';
+                html += '<div style="display:flex;gap:8px;margin-top:4px;font-size:13px;flex-wrap:wrap">';
+                html += '<span>EK\u00e4ndr: <span class="f4-btn" data-q="' + qk + '" data-field="ek" data-dir="-1">\u2212</span> <strong>' + (qd.ek||0) + '</strong> <span class="f4-btn" data-q="' + qk + '" data-field="ek" data-dir="1">+</span></span>';
+                html += '</div></div>';
+            }
+            html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
+            html += '</div>';
+        }
+        if (step === 'f4_slut') {
+            html += '<div class="asset-card" style="border-left-color:#f0c929">';
+            html += '<div class="asset-label">Slutv\u00e4rdering</div>';
+            html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
+            html += counterRow('Slutpo\u00e4ng (kr/kvm)', p.f4_final_score, 'f4_final_score', true);
+            html += '</div>';
+        }
+    }
+
     // Info summary (always visible from step 1+)
-    if (ph1Idx >= 0 || ph2Idx >= 0) {
+    if (ph1Idx >= 0 || ph2Idx >= 0 || ph3Idx >= 0 || isPhase4) {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
@@ -835,6 +870,20 @@ function attachPlayerEvents(container) {
             gf[field] = (gf[field] || 0) + dir;
             gfPhases[fas] = gf;
             send({ type: 'update_assets', assets: { gf_phases: gfPhases } });
+        });
+    });
+    // Phase 4 quarter +/- buttons
+    container.querySelectorAll('.f4-btn').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var q = el.dataset.q;
+            var field = el.dataset.field;
+            var dir = parseInt(el.dataset.dir);
+            var f4Q = Object.assign({}, S.state.player.f4_quarters || {});
+            var qd = Object.assign({}, f4Q[q] || {});
+            qd[field] = (qd[field] || 0) + dir;
+            f4Q[q] = qd;
+            send({ type: 'update_assets', assets: { f4_quarters: f4Q } });
         });
     });
     container.querySelectorAll('[data-action="choose-planning"]').forEach(el => {

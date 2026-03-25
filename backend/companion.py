@@ -115,6 +115,31 @@ PHASES = [
             "• Övriga: bara tärning → EK\n\n"
             "Registrera ditt slutliga EK."},
     ]},
+    {"id": "phase4", "name": "Fas 4: Förvaltning", "steps": [
+        {"id": "f4_forbered", "name": "4.1 Förbered förvaltning", "help":
+            "BRF-projekt tas bort (redan sålda vid förskott).\n"
+            "Kvarvarande projekt = förvaltningsportfölj.\n\n"
+            "• Bestäm energiklasser per fastighet\n"
+            "• Beräkna driftnetto per fastighet\n\n"
+            "Ta bort BRF-projekt och registrera driftnetto."},
+        {"id": "f4_kvartal", "name": "4.2–4.9 Kvartalsvis förvaltning", "help":
+            "4 kvartal. Per kvartal:\n\n"
+            "• Yield-förändring (bostäder/kommersiellt)\n"
+            "• Omvärldskort (alla påverkas)\n"
+            "• Driftnetto + lön inkasseras/betalas\n"
+            "• Hyresförhandling (Q2 & Q4, om hyresrätt)\n"
+            "• Händelsekort per fastighet\n"
+            "• Personal — anställ/avskeda\n"
+            "• Energiuppgraderingar (valfritt)\n"
+            "• Fastighetsmarknad — köp/sälj\n\n"
+            "Registrera EK-förändringar per kvartal."},
+        {"id": "f4_slut", "name": "5.1–5.2 Slutvärdering", "help":
+            "Beräkna slutpoäng:\n\n"
+            "FV = DN/yield × energiklassmodifier per fastighet\n"
+            "FV × 30% = ägarandel\n\n"
+            "Slutpoäng = (FV×30% + EK + TB) / BTA × 1000 [kr/kvm]\n\n"
+            "Högst poäng vinner!"},
+    ]},
 ]
 
 
@@ -170,6 +195,9 @@ class CompanionPlayer:
     gf_kons_h: int = 0   # Konsekvenskort ABT for hållbarhet
     gf_kons_t: int = 0   # Konsekvenskort ABT for tid
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
+    # Phase 4 assets
+    f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change, dn, yield_change}
+    f4_final_score: float = 0.0
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -188,7 +216,9 @@ class CompanionPlayer:
         elif step_id == "planning_summary":
             return True
         elif step_id in ("gf_byggfaser", "gf_konsekvens", "gf_garanti", "gf_abt_ek"):
-            return True  # GM judges progress
+            return True
+        elif step_id in ("f4_forbered", "f4_kvartal", "f4_slut"):
+            return True
         return False
 
     @property
@@ -240,6 +270,8 @@ class CompanionPlayer:
             "gf_kons_h": self.gf_kons_h,
             "gf_kons_t": self.gf_kons_t,
             "gf_garanti_abt": self.gf_garanti_abt,
+            "f4_quarters": self.f4_quarters,
+            "f4_final_score": round(self.f4_final_score, 1),
             "profit_score": self.profit_score,
         }
 
@@ -555,6 +587,10 @@ class CompanionManager:
                 player.gf_kons_t = int(assets["gf_kons_t"])
             if "gf_garanti_abt" in assets:
                 player.gf_garanti_abt = int(assets["gf_garanti_abt"])
+            if "f4_quarters" in assets:
+                player.f4_quarters = assets["f4_quarters"]
+            if "f4_final_score" in assets:
+                player.f4_final_score = float(assets["f4_final_score"])
             # Update GM dashboard
             await self.broadcast_state(room)
 
