@@ -166,6 +166,10 @@ class CompanionPlayer:
     pl_events: Dict[str, dict] = field(default_factory=dict)  # step_id -> {q, h, abt} event card effects
     # Phase 3 assets - per byggfas (1-8)
     gf_phases: Dict[str, dict] = field(default_factory=dict)  # "1"-"8" -> {q, h, t, abt}
+    gf_kons_q: int = 0   # Konsekvenskort ABT for kvalitet
+    gf_kons_h: int = 0   # Konsekvenskort ABT for hållbarhet
+    gf_kons_t: int = 0   # Konsekvenskort ABT for tid
+    gf_garanti_abt: int = 0  # Garantibesiktning ABT
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -232,6 +236,10 @@ class CompanionPlayer:
             "pl_choices": self.pl_choices,
             "pl_events": self.pl_events,
             "gf_phases": self.gf_phases,
+            "gf_kons_q": self.gf_kons_q,
+            "gf_kons_h": self.gf_kons_h,
+            "gf_kons_t": self.gf_kons_t,
+            "gf_garanti_abt": self.gf_garanti_abt,
             "profit_score": self.profit_score,
         }
 
@@ -539,6 +547,14 @@ class CompanionManager:
                 player.pl_events = assets["pl_events"]
             if "gf_phases" in assets:
                 player.gf_phases = assets["gf_phases"]
+            if "gf_kons_q" in assets:
+                player.gf_kons_q = int(assets["gf_kons_q"])
+            if "gf_kons_h" in assets:
+                player.gf_kons_h = int(assets["gf_kons_h"])
+            if "gf_kons_t" in assets:
+                player.gf_kons_t = int(assets["gf_kons_t"])
+            if "gf_garanti_abt" in assets:
+                player.gf_garanti_abt = int(assets["gf_garanti_abt"])
             # Update GM dashboard
             await self.broadcast_state(room)
 
