@@ -673,36 +673,47 @@ function renderPlayer() {
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
         html += '</div>';
 
-        // Kvalitet: antal kort + ABT-kostnad + Q-p\u00e5verkan
+        // Kvalitet: antal kort + ABT-kostnad only
         html += '<div style="border-bottom:1px solid #1a2736;padding:8px 0">';
         html += '<div style="font-weight:600">Kvalitet (' + konsKortQ + ' kort)</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
-        html += counterRow('Q-p\u00e5verkan (s\u00e4nker krav)', p.gf_kons_q_adj || 0, 'gf_kons_q_adj', true);
         html += '</div>';
 
-        // H\u00e5llbarhet: antal kort + ABT-kostnad + H-p\u00e5verkan
+        // H\u00e5llbarhet: antal kort + ABT-kostnad only
         html += '<div style="padding:8px 0">';
         html += '<div style="font-weight:600">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
-        html += counterRow('H-p\u00e5verkan (s\u00e4nker krav)', p.gf_kons_h_adj || 0, 'gf_kons_h_adj', true);
         html += '</div>';
         html += '</div>';
     }
 
     // Phase 3: Garantibesiktning
     if (step === 'gf_garanti') {
-        // Garanti cards = number based on energiklass — worse class = more cards
-        var garantiKort = 0;
-        for (var _pr of p.projects) {
-            var ek = (_pr.energiklass || 'D').toUpperCase();
-            if (ek === 'F') garantiKort += 3;
-            else if (ek === 'E') garantiKort += 2;
-            else if (ek === 'D') garantiKort += 1;
-            // A/B/C = 0 kort
-        }
+        // Garanti cards = konsekvenskort drawn + suppliers below level 3
+        var _chc = p.pl_choices || {};
+        var _plEv2 = p.pl_events || {};
+        var _plQ2 = 0, _plH2 = 0, _plT2 = 0;
+        for (var _k2 in _chc) { var _c2 = _chc[_k2]; _plQ2 += _c2.q||0; _plH2 += _c2.h||0; _plT2 += _c2.t||0; }
+        for (var _k2 in _plEv2) { var _e2 = _plEv2[_k2]; _plQ2 += _e2.q||0; _plH2 += _e2.h||0; }
+        var _gfP2 = p.gf_phases || {};
+        var _gfQ2 = 0, _gfH2 = 0, _gfT2 = 0;
+        for (var _f2 in _gfP2) { _gfQ2 += _gfP2[_f2].q||0; _gfH2 += _gfP2[_f2].h||0; _gfT2 += _gfP2[_f2].t||0; }
+        var _pQ2 = p.projects.reduce(function(s,pr){return s+(pr.kvalitet||0);},0);
+        var _pH2 = p.projects.reduce(function(s,pr){return s+(pr.hallbarhet||0);},0);
+        var _mT2 = p.projects.reduce(function(m,pr){return Math.max(m,pr.tid||0);},0);
+        var _tQ2 = 4 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
+        var _tH2 = 4 + _pH2 + p.h_krav - (p.rb_spent_h||0);
+        var _bT2 = 12 + _mT2;
+        var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2);
+        var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2)) + Math.max(0,_tH2-(_plH2+_gfH2)) + Math.max(0,_cT2-12);
+        // Suppliers below level 3
+        var lowLevSupp = 0;
+        for (var _sk in _chc) { if ((_chc[_sk].niva||1) < 3) lowLevSupp++; }
+        var garantiKort = konsKort + lowLevSupp;
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
         html += '<div class="asset-label">GARANTIBESIKTNING</div>';
-        html += '<div style="font-size:14px;margin-bottom:8px">Antal garantikort: <strong>' + garantiKort + ' kort</strong></div>';
+        html += '<div style="font-size:14px;margin-bottom:8px">Antal garantikort: <strong>' + garantiKort + ' kort</strong>'
+            + ' <span style="color:#999;font-size:12px">(konsekv: ' + konsKort + ' + lev &lt;niv\u00e5 3: ' + lowLevSupp + ')</span></div>';
         html += counterRow('ABT-kostnad garanti (Mkr)', p.gf_garanti_abt, 'gf_garanti_abt', true);
         html += '</div>';
     }
@@ -729,6 +740,31 @@ function renderPlayer() {
     if (isPhase4) {
         var fasts = p.fastigheter || [];
         var EKLASS = ['A','B','C','D','E','F'];
+
+        // Auto-convert projects to fastigheter if not done yet
+        if (fasts.length === 0 && p.projects.length > 0) {
+            var autoFasts = [];
+            var brfEk = 0;
+            for (var _ap of p.projects) {
+                if (_ap.typ === 'BRF') {
+                    brfEk += (_ap.marknadsvarde || _ap.anskaffning) - _ap.anskaffning;
+                } else {
+                    autoFasts.push({
+                        id: _ap.id, namn: _ap.namn, typ: _ap.typ, bta: _ap.bta,
+                        anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'D',
+                        marknadsvarde: _ap.marknadsvarde || _ap.anskaffning,
+                        events: [], sold: false, kopeskilling: 0
+                    });
+                }
+            }
+            // Send conversion to server
+            send({ type: 'update_assets', assets: {
+                fastigheter: autoFasts,
+                eget_kapital: (p.eget_kapital || 0) + brfEk
+            }});
+            fasts = autoFasts;
+            p.fastigheter = autoFasts;
+        }
 
         // FC/FS selection (always visible in phase 4)
         html += '<div class="asset-card" style="border-left-color:#16a085">';
@@ -813,9 +849,15 @@ function renderPlayer() {
         if (isQuarter || step === 'f4_slut') {
             html += '<div class="asset-card" style="border-left-color:#3498db">';
             html += '<div class="asset-label">YIELD</div>';
-            html += '<div style="display:flex;gap:16px;align-items:center;font-size:14px">';
-            html += '<span>Bost\u00e4der: <span class="f4-yield-btn" data-type="bostader" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_bostader.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="bostader" data-d="0.25">+</span></span>';
-            html += '<span>Kommersiellt: <span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.25">+</span></span>';
+            html += '<div style="font-size:14px">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
+            html += '<span>Yield Bost\u00e4der</span>';
+            html += '<span><span class="f4-yield-btn" data-type="bostader" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_bostader.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="bostader" data-d="0.25">+</span></span>';
+            html += '</div>';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
+            html += '<span>Yield Kommersiellt</span>';
+            html += '<span><span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.25">+</span></span>';
+            html += '</div>';
             html += '</div></div>';
         }
 
@@ -891,6 +933,15 @@ function renderPlayer() {
             var konsT = Math.max(0, curT - 12);
             html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:4px;margin-top:4px">';
             html += 'Konsekv.kort: Q:' + konsQ + ' H:' + konsH + ' T:' + konsT + ' = <strong>' + (konsQ+konsH+konsT) + ' kort</strong></div>';
+        }
+        // TB & TG (after genomförande)
+        if (isPhase3 || isPhase4) {
+            var tb = anskKvar;
+            var tg = (totalAnsk > 0) ? Math.round((tb / totalAnsk) * 100) : 0;
+            html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:4px;margin-top:4px">';
+            html += 'TB: <strong style="color:' + (tb >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(tb) + ' Mkr</strong>';
+            html += ' &nbsp; TG: <strong style="color:' + (tg >= 20 ? '#27ae60' : (tg >= 0 ? '#f0c929' : '#e74c3c')) + '">' + tg + '%</strong>';
+            html += '</div>';
         }
         html += '</div></div>';
     }
