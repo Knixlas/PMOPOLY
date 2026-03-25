@@ -408,32 +408,38 @@ function renderPlayer() {
     const phase = st.phase || '';
     const isPhase1 = phase === 'phase1';
     const isPhase2 = phase === 'phase2';
+    const isPhase3 = phase === 'phase3';
 
     const PH1_STEPS = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
     const PH2_STEPS = ['choose_ac', 'planning', 'planning_summary'];
+    const PH3_STEPS = ['gf_byggfaser', 'gf_konsekvens', 'gf_garanti', 'gf_abt_ek'];
     const ph1Idx = PH1_STEPS.indexOf(step);
     const ph2Idx = PH2_STEPS.indexOf(step);
+    const ph3Idx = PH3_STEPS.indexOf(step);
 
     // Phase 1 visibility
-    const showPC = ph1Idx >= 0 || isPhase2;
+    const showPC = ph1Idx >= 0 || isPhase2 || isPhase3;
     const editPC = step === 'choose_pc';
-    const showProjects = ph1Idx >= 1 || isPhase2;
+    const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3;
     const editProjects = step === 'projects';
     const editProjectsRemove = step === 'namndbeslut';
     const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
     const showRbInvest = step === 'rb_invest';
 
     // Phase 2 visibility
-    const showAC = ph2Idx >= 0;
+    const showAC = ph2Idx >= 0 || isPhase3;
     const editAC = step === 'choose_ac';
-    const showPlanning = ph2Idx >= 1;
+    const showPlanning = ph2Idx >= 1 || isPhase3;
     const editPlanning = step === 'planning';
+
+    // Phase 3 visibility
+    const showGF = ph3Idx >= 0;
 
     let html = '';
 
     // PC Card
     if (showPC) {
-        var pcCollapsed = isPhase2;
+        var pcCollapsed = isPhase2 || isPhase3;
         html += '<div class="asset-card pc">';
         html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="pc-detail">';
         html += 'Projektchef' + (p.projektchef ? ': ' + p.projektchef.namn : '') + ' <span style="float:right;font-size:11px;color:#666">' + (pcCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
@@ -456,7 +462,7 @@ function renderPlayer() {
 
     // Projects
     if (showProjects) {
-        var projCollapsed = isPhase2 && !editProjects && !editProjectsRemove;
+        var projCollapsed = (isPhase2 || isPhase3) && !editProjects && !editProjectsRemove;
         html += '<div class="asset-card projects">';
         html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="proj-list">';
         html += 'Projekt (' + p.projects.length + ') <span style="float:right;font-size:11px;color:#666">' + (projCollapsed ? '\u25b6 visa' : '\u25bc d\u00f6lj') + '</span></div>';
@@ -577,6 +583,17 @@ function renderPlayer() {
         html += '</div>';
     }
 
+    // Phase 3: Genomförande
+    if (showGF) {
+        html += '<div class="asset-card" style="border-left-color:#e67e22">';
+        html += '<div class="asset-label">Genomf\u00f6rande \u2014 \u00e4ndringar</div>';
+        html += counterRow('Q fr\u00e5n faskort/h\u00e4ndelser', p.gf_q_changes, 'gf_q_changes', true);
+        html += counterRow('H fr\u00e5n faskort/h\u00e4ndelser', p.gf_h_changes, 'gf_h_changes', true);
+        html += counterRow('T fr\u00e5n faskort/h\u00e4ndelser', p.gf_t_changes, 'gf_t_changes', true);
+        html += counterRow('ABT \u00e4ndringar (Mkr)', p.gf_abt_changes, 'gf_abt_changes', true);
+        html += '</div>';
+    }
+
     // Info summary (always visible from step 1+)
     if (ph1Idx >= 0 || ph2Idx >= 0) {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
@@ -623,6 +640,20 @@ function renderPlayer() {
             html += '<div>Erf: <strong>' + plErf + '</strong></div>';
             html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
             html += '<div>H\u00e4nd: <strong>' + (p.pl_event_abt || 0) + ' Mkr</strong></div>';
+        }
+        if (isPhase3) {
+            // Show Phase 2 values (locked) + Phase 3 changes
+            var choices = p.pl_choices || {};
+            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0;
+            for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
+            var gfQ = totalQ + plQ + (p.pl_event_q||0) + (p.gf_q_changes||0);
+            var gfH = totalH + plH + (p.pl_event_h||0) + (p.gf_h_changes||0);
+            var gfT = totalT + plT + (p.gf_t_changes||0);
+            html += '<div>Q: <strong>(' + gfQ + ')' + totalQ + '</strong></div>';
+            html += '<div>H: <strong>(' + gfH + ')' + totalH + '</strong></div>';
+            html += '<div>T: <strong>' + gfT + '(' + baseT + ') m\u00e5n</strong></div>';
+            html += '<div>Erf: <strong>' + plErf + '</strong></div>';
+            html += '<div>ABT \u00e4ndr: <strong>' + ((p.gf_abt_changes||0) + (p.pl_event_abt||0)) + ' Mkr</strong></div>';
         }
         html += '</div></div>';
     }

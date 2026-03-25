@@ -78,6 +78,43 @@ PHASES = [
             "• Erfarenhet — påverkar fas 3\n\n"
             "Alla leverantörs- och organisationskort sparas som kompetenskort för fas 3."},
     ]},
+    {"id": "phase3", "name": "Fas 3: Genomförande", "steps": [
+        {"id": "gf_byggfaser", "name": "3.1–3.4 Byggfaser (8 st)", "help":
+            "8 byggfaser. Per fas:\n\n"
+            "1. Köp företagskulturkort (valfritt)\n"
+            "   Kostnad ökar per fas: 2–7 Mkr. Ger kompetenspoäng.\n\n"
+            "2. Dra händelsekort\n"
+            "   D20 + erfarenhet (inkl. AC). Effekt på ABT.\n\n"
+            "3. Välj utfallsnivå på faskort\n"
+            "   • Negativt — gratis, straff (Q/H/T-förlust)\n"
+            "   • Neutralt — kräver kompetenskort\n"
+            "   • Positivt — högre krav, minimal kostnad\n"
+            "   • Bonus — högsta krav, kan ge vinst\n\n"
+            "4. Spela kompetenskort (om Neutralt+)\n"
+            "   Leverantörs-, org-, AC- eller kulturkort.\n"
+            "   D-klass: +2 bonus, C-klass: +1.\n\n"
+            "Tips: Planera alla 8 faser! Spela inte allt på fas 1–3."},
+        {"id": "gf_konsekvens", "name": "3.5 Konsekvenskort", "help":
+            "Kontrollera Q, H och T:\n\n"
+            "• Q under krav → 1 konsekvenskort per poäng under\n"
+            "• H under krav → 1 konsekvenskort per poäng under\n"
+            "• T > 12 → 1 konsekvenskort per månad över\n\n"
+            "Per kort: slå D20 + erfarenhet. Effekt = ABT-kostnad.\n\n"
+            "Registrera ABT-ändringar med +/- knapparna."},
+        {"id": "gf_garanti", "name": "3.6 Garantibesiktning", "help":
+            "Trigger:\n"
+            "• Leverantörer nivå 1–2: 1 kort per styck\n"
+            "• Organisationer nivå 1–2: 1 kort per styck\n"
+            "• Q under krav: extra kort\n\n"
+            "Per kort: slå D20. Effekt = ABT-kostnad.\n\n"
+            "Registrera ABT-ändringar med +/- knapparna."},
+        {"id": "gf_abt_ek", "name": "3.7–3.8 ABT→EK & Förskott", "help":
+            "Kvarvarande ABT-budget överförs till EK.\n\n"
+            "Förskott (projektvinster):\n"
+            "• BRF: (Marknadsvärde − Anskaffning) + tärning → EK\n"
+            "• Övriga: bara tärning → EK\n\n"
+            "Registrera ditt slutliga EK."},
+    ]},
 ]
 
 
@@ -129,6 +166,11 @@ class CompanionPlayer:
     pl_event_q: int = 0   # Q changes from event cards
     pl_event_h: int = 0   # H changes from event cards
     pl_event_abt: float = 0.0  # ABT changes from event cards
+    # Phase 3 assets
+    gf_abt_changes: float = 0.0  # ABT changes during genomförande
+    gf_q_changes: int = 0  # Q changes during genomförande
+    gf_h_changes: int = 0  # H changes during genomförande
+    gf_t_changes: int = 0  # T changes during genomförande
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -146,6 +188,8 @@ class CompanionPlayer:
             return self.pl_kostnad > 0
         elif step_id == "planning_summary":
             return True
+        elif step_id in ("gf_byggfaser", "gf_konsekvens", "gf_garanti", "gf_abt_ek"):
+            return True  # GM judges progress
         return False
 
     @property
@@ -194,6 +238,10 @@ class CompanionPlayer:
             "pl_event_q": self.pl_event_q,
             "pl_event_h": self.pl_event_h,
             "pl_event_abt": round(self.pl_event_abt, 1),
+            "gf_abt_changes": round(self.gf_abt_changes, 1),
+            "gf_q_changes": self.gf_q_changes,
+            "gf_h_changes": self.gf_h_changes,
+            "gf_t_changes": self.gf_t_changes,
             "profit_score": self.profit_score,
         }
 
@@ -503,6 +551,14 @@ class CompanionManager:
                 player.pl_event_h = int(assets["pl_event_h"])
             if "pl_event_abt" in assets:
                 player.pl_event_abt = float(assets["pl_event_abt"])
+            if "gf_abt_changes" in assets:
+                player.gf_abt_changes = float(assets["gf_abt_changes"])
+            if "gf_q_changes" in assets:
+                player.gf_q_changes = int(assets["gf_q_changes"])
+            if "gf_h_changes" in assets:
+                player.gf_h_changes = int(assets["gf_h_changes"])
+            if "gf_t_changes" in assets:
+                player.gf_t_changes = int(assets["gf_t_changes"])
             # Update GM dashboard
             await self.broadcast_state(room)
 
