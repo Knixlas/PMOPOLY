@@ -115,7 +115,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <div class="lobby-card">
         <h2>Game Master</h2>
         <input type="number" id="gm-quarters" value="4" min="1" max="20" placeholder="Antal kvarter">
-        <button class="btn-primary" id="btn-create-room">Skapa rum</button>
+        <button class="btn-primary" id="btn-create-room">Skapa kvarter</button>
     </div>
 
     <div class="or-divider">— eller —</div>
@@ -123,9 +123,8 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <div class="lobby-card">
         <h2>Spelare</h2>
         <input type="text" id="player-name" placeholder="Ditt namn" maxlength="20">
-        <input type="text" id="room-code" placeholder="Rumskod (6 tecken)" maxlength="6" style="text-transform:uppercase">
-        <button class="btn-secondary" id="btn-lookup-room">Hitta rum</button>
-        <div id="quarter-select" class="quarter-select"></div>
+        <input type="text" id="room-code" placeholder="Kvarterskod (4 tecken)" maxlength="4" style="text-transform:uppercase">
+        <button class="btn-secondary" id="btn-join-quarter">Gå med</button>
     </div>
 </div>
 
@@ -215,41 +214,27 @@ document.getElementById('btn-create-room').addEventListener('click', async () =>
     showView('view-gm');
 });
 
-document.getElementById('btn-lookup-room').addEventListener('click', async () => {
-    const code = document.getElementById('room-code').value.trim().toUpperCase();
+document.getElementById('btn-join-quarter').addEventListener('click', async () => {
+    const quarterCode = document.getElementById('room-code').value.trim().toUpperCase();
     const name = document.getElementById('player-name').value.trim();
-    if (!code || !name) { alert('Ange namn och rumskod'); return; }
+    if (!quarterCode || !name) { alert('Ange namn och kvarterskod'); return; }
 
-    const res = await fetch(`/api/companion/rooms/${code}`);
-    if (!res.ok) { alert('Rum hittades inte'); return; }
-    const room = await res.json();
-
-    // Show quarter selection
-    const container = document.getElementById('quarter-select');
-    container.className = 'quarter-select show';
-    container.innerHTML = '<p style="margin-bottom:8px;color:#999">Välj kvarter:</p>';
-    for (let i = 0; i < room.num_quarters; i++) {
-        const qName = room.quarter_names[i] || `Kvarter ${i+1}`;
-        const btn = document.createElement('button');
-        btn.className = 'quarter-btn';
-        btn.innerHTML = `${qName}`;
-        btn.addEventListener('click', async () => {
-            const joinRes = await fetch(`/api/companion/rooms/${code}/join`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, quarter_idx: i }),
-            });
-            if (!joinRes.ok) { alert('Kunde inte gå med (kvarteret fullt?)'); return; }
-            const joinData = await joinRes.json();
-            S.roomCode = code;
-            S.playerId = joinData.player_id;
-            S.isGM = false;
-            // Load reference data
-            await loadReferenceData();
-            connectWs(code, joinData.player_id);
-            showView('view-player');
-        });
-        container.appendChild(btn);
+    const res = await fetch('/api/companion/join-quarter', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, quarter_code: quarterCode }),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Kunde inte gå med');
+        return;
     }
+    const data = await res.json();
+    S.roomCode = data.code;
+    S.playerId = data.player_id;
+    S.isGM = false;
+    await loadReferenceData();
+    connectWs(data.code, data.player_id);
+    showView('view-player');
 });
 
 async function loadReferenceData() {
@@ -463,6 +448,7 @@ function renderGM() {
     for (const q of (st.quarters || [])) {
         html += `<div class="quarter-card">
             <h3>${q.name} <span style="color:#888;font-size:13px">(${q.num_players}/4)</span></h3>
+            <div class="quarter-stat" style="margin-bottom:6px"><span>Kvarterskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
             <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
             <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
             <div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">${q.avg_q_krav}</span></div>

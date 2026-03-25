@@ -53,10 +53,11 @@ class CompanionPlayer:
 
 @dataclass
 class CompanionRoom:
-    code: str
+    code: str  # GM session code
     gm_id: str
     num_quarters: int
     quarter_names: List[str] = field(default_factory=list)
+    quarter_codes: List[str] = field(default_factory=list)  # one code per quarter
     players: Dict[str, CompanionPlayer] = field(default_factory=dict)
     phase_idx: int = 0
     step_idx: int = 0
@@ -83,6 +84,7 @@ class CompanionRoom:
         return {
             "quarter_idx": quarter_idx,
             "name": self.quarter_names[quarter_idx] if quarter_idx < len(self.quarter_names) else f"Kvarter {quarter_idx + 1}",
+            "code": self.quarter_codes[quarter_idx] if quarter_idx < len(self.quarter_codes) else "",
             "num_players": len(qp),
             "total_projects": total_projects,
             "total_bta": total_bta,
@@ -98,6 +100,7 @@ class CompanionRoom:
             "code": self.code,
             "num_quarters": self.num_quarters,
             "quarter_names": self.quarter_names,
+            "quarter_codes": self.quarter_codes,
             "phase": phase["id"] if phase else None,
             "phase_name": phase["name"] if phase else None,
             "step": step["id"] if step else None,
@@ -136,11 +139,26 @@ class CompanionManager:
         code = uuid.uuid4().hex[:6].upper()
         gm_id = uuid.uuid4().hex[:8]
         names = [f"Kvarter {chr(65 + i)}" for i in range(num_quarters)]
-        room = CompanionRoom(code=code, gm_id=gm_id, num_quarters=num_quarters, quarter_names=names)
+        # Generate unique code per quarter
+        q_codes = []
+        for _ in range(num_quarters):
+            qc = uuid.uuid4().hex[:4].upper()
+            q_codes.append(qc)
+        room = CompanionRoom(code=code, gm_id=gm_id, num_quarters=num_quarters,
+                             quarter_names=names, quarter_codes=q_codes)
         gm = CompanionPlayer(id=gm_id, name="Game Master", quarter_idx=-1, is_gm=True)
         room.players[gm_id] = gm
         self.rooms[code] = room
         return room, gm_id
+
+    def find_room_by_quarter_code(self, quarter_code: str) -> Optional[tuple]:
+        """Find room and quarter_idx by quarter code. Returns (room, quarter_idx) or None."""
+        quarter_code = quarter_code.upper()
+        for room in self.rooms.values():
+            for i, qc in enumerate(room.quarter_codes):
+                if qc == quarter_code:
+                    return room, i
+        return None
 
     def join_room(self, code: str, name: str, quarter_idx: int) -> Optional[tuple]:
         """Returns (room, player_id) or None."""

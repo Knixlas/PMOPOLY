@@ -187,6 +187,25 @@ async def companion_join_room(code: str, body: dict):
     return {"code": room.code, "player_id": player_id}
 
 
+@app.post("/api/companion/join-quarter")
+async def companion_join_quarter(body: dict):
+    """Join by quarter code (4 chars) instead of room code."""
+    name = body.get("name", "Spelare")
+    quarter_code = body.get("quarter_code", "").strip().upper()
+    if not quarter_code:
+        return JSONResponse({"error": "Ange kvarterskod"}, status_code=400)
+    result = companion_manager.find_room_by_quarter_code(quarter_code)
+    if not result:
+        return JSONResponse({"error": "Kvarterskoden hittades inte"}, status_code=404)
+    room, quarter_idx = result
+    join_result = companion_manager.join_room(room.code, name, quarter_idx)
+    if not join_result:
+        return JSONResponse({"error": "Kvarteret är fullt (max 4 spelare)"}, status_code=400)
+    _, player_id = join_result
+    await companion_manager.broadcast_state(room)
+    return {"code": room.code, "player_id": player_id, "quarter_name": room.quarter_names[quarter_idx]}
+
+
 @app.get("/api/companion/data/pc")
 async def companion_pc_data():
     return {"pc": game_data.pc_staff}
