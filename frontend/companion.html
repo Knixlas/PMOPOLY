@@ -643,27 +643,85 @@ function renderPlayer() {
 
     // Phase 3: Konsekvenskort — Tid, Kvalitet, Hållbarhet
     if (step === 'gf_konsekvens') {
+        // Calculate how many cards per category
+        var _choices = p.pl_choices || {};
+        var _plEvts = p.pl_events || {};
+        var _plQ = 0, _plH = 0, _plT = 0;
+        for (var _k in _choices) { var _ch = _choices[_k]; _plQ += _ch.q||0; _plH += _ch.h||0; _plT += _ch.t||0; }
+        for (var _k in _plEvts) { var _ev = _plEvts[_k]; _plQ += _ev.q||0; _plH += _ev.h||0; }
+        var _gfP = p.gf_phases || {};
+        var _gfQ = 0, _gfH = 0, _gfT = 0;
+        for (var _f in _gfP) { _gfQ += _gfP[_f].q||0; _gfH += _gfP[_f].h||0; _gfT += _gfP[_f].t||0; }
+        var _projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
+        var _projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
+        var _maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
+        var _totQ = 4 + _projQ + p.q_krav - (p.rb_spent_q || 0);
+        var _totH = 4 + _projH + p.h_krav - (p.rb_spent_h || 0);
+        var _baseT = 12 + _maxProjT;
+        var _curT = Math.max(8, _baseT - (p.rb_spent_t || 0) + _plT + _gfT);
+        var konsKortT = Math.max(0, _curT - 12);
+        var konsKortQ = Math.max(0, _totQ - (_plQ + _gfQ));
+        var konsKortH = Math.max(0, _totH - (_plH + _gfH));
+
         html += '<div class="asset-card" style="border-left-color:#c0392b">';
-        html += '<div class="asset-label">Konsekvenskort \u2014 registrera ABT-kostnad</div>';
-        html += counterRow('Kvalitet (kort)', p.gf_phases?.kons_q || 0, 'gf_kons_q', true);
-        html += counterRow('H\u00e5llbarhet (kort)', p.gf_phases?.kons_h || 0, 'gf_kons_h', true);
-        html += counterRow('Tid (kort)', p.gf_phases?.kons_t || 0, 'gf_kons_t', true);
+        html += '<div class="asset-label">KONSEKVENSKORT</div>';
+        html += '<div style="font-size:14px;margin-bottom:8px">Antal kort: T:' + konsKortT + ' Q:' + konsKortQ + ' H:' + konsKortH + ' = <strong>' + (konsKortT+konsKortQ+konsKortH) + ' kort</strong></div>';
+
+        // Tid: antal kort + ABT-kostnad
+        html += '<div style="border-bottom:1px solid #1a2736;padding:8px 0">';
+        html += '<div style="font-weight:600">Tid (' + konsKortT + ' kort)</div>';
+        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
+        html += '</div>';
+
+        // Kvalitet: antal kort + ABT-kostnad + Q-p\u00e5verkan
+        html += '<div style="border-bottom:1px solid #1a2736;padding:8px 0">';
+        html += '<div style="font-weight:600">Kvalitet (' + konsKortQ + ' kort)</div>';
+        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += counterRow('Q-p\u00e5verkan (s\u00e4nker krav)', p.gf_kons_q_adj || 0, 'gf_kons_q_adj', true);
+        html += '</div>';
+
+        // H\u00e5llbarhet: antal kort + ABT-kostnad + H-p\u00e5verkan
+        html += '<div style="padding:8px 0">';
+        html += '<div style="font-weight:600">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
+        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += counterRow('H-p\u00e5verkan (s\u00e4nker krav)', p.gf_kons_h_adj || 0, 'gf_kons_h_adj', true);
+        html += '</div>';
         html += '</div>';
     }
 
-    // Phase 3: Garantibesiktning — only cost impact
+    // Phase 3: Garantibesiktning
     if (step === 'gf_garanti') {
+        // Garanti cards = number based on energiklass — worse class = more cards
+        var garantiKort = 0;
+        for (var _pr of p.projects) {
+            var ek = (_pr.energiklass || 'D').toUpperCase();
+            if (ek === 'F') garantiKort += 3;
+            else if (ek === 'E') garantiKort += 2;
+            else if (ek === 'D') garantiKort += 1;
+            // A/B/C = 0 kort
+        }
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
-        html += '<div class="asset-label">Garantibesiktning \u2014 registrera ABT-kostnad</div>';
+        html += '<div class="asset-label">GARANTIBESIKTNING</div>';
+        html += '<div style="font-size:14px;margin-bottom:8px">Antal garantikort: <strong>' + garantiKort + ' kort</strong></div>';
         html += counterRow('ABT-kostnad garanti (Mkr)', p.gf_garanti_abt, 'gf_garanti_abt', true);
         html += '</div>';
     }
 
-    // Phase 3: ABT→EK
+    // Phase 3: ABT→EK (rörlig intäkt BRF + moderbolagslån)
     if (step === 'gf_abt_ek') {
+        // Fast intäkt = sum of anskaffning for non-BRF
+        var fastIntakt = p.projects.reduce(function(s, pr) { return s + (pr.typ !== 'BRF' ? (pr.anskaffning||0) : 0); }, 0);
+        // BRF rörlig
+        var brfProj = p.projects.filter(function(pr) { return pr.typ === 'BRF'; });
+
         html += '<div class="asset-card" style="border-left-color:#27ae60">';
-        html += '<div class="asset-label">ABT \u2192 EK & F\u00f6rskott</div>';
-        html += counterRow('EK fr\u00e5n ABT + t\u00e4rning (Mkr)', p.eget_kapital, 'eget_kapital', true);
+        html += '<div class="asset-label">R\u00d6RLIG INTÄKT BRF & EKONOMI</div>';
+        if (brfProj.length > 0) {
+            html += '<div style="font-size:13px;color:#999;margin-bottom:6px">BRF-projekt (' + brfProj.length + ' st): sl\u00e5 t\u00e4rning f\u00f6r r\u00f6rlig int\u00e4kt</div>';
+        }
+        html += counterRow('R\u00f6rlig int\u00e4kt BRF (Mkr)', p.gf_brf_rorlig || 0, 'gf_brf_rorlig', true);
+        html += counterRow('Moderbolags\u00e5n (Mkr)', p.gf_moderbolagslan || 0, 'gf_moderbolagslan', true);
+        html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
         html += '</div>';
     }
 
@@ -1406,9 +1464,12 @@ function renderGMQuarters(st) {
 // GM controls
 document.getElementById('btn-next-step').addEventListener('click', () => {
     send({ type: 'advance_step' });
+    // Force refresh state after short delay in case broadcast missed
+    setTimeout(() => send({ type: 'get_state' }), 300);
 });
 document.getElementById('btn-prev-step').addEventListener('click', () => {
     send({ type: 'prev_step' });
+    setTimeout(() => send({ type: 'get_state' }), 300);
 });
 
 // Tab switching

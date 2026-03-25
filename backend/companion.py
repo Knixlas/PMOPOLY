@@ -206,7 +206,11 @@ class CompanionPlayer:
     gf_kons_q: int = 0   # Konsekvenskort ABT for kvalitet
     gf_kons_h: int = 0   # Konsekvenskort ABT for hållbarhet
     gf_kons_t: int = 0   # Konsekvenskort ABT for tid
+    gf_kons_q_adj: int = 0   # Konsekvenskort Q-adjustment (lowers requirement)
+    gf_kons_h_adj: int = 0   # Konsekvenskort H-adjustment (lowers requirement)
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
+    gf_brf_rorlig: float = 0.0  # Rörlig intäkt BRF
+    gf_moderbolagslan: float = 0.0  # Moderbolagslån
     # Phase 4 assets
     fastighetschef: Optional[dict] = None  # FC
     fastighetsskotare: Optional[dict] = None  # FS
@@ -289,7 +293,11 @@ class CompanionPlayer:
             "gf_kons_q": self.gf_kons_q,
             "gf_kons_h": self.gf_kons_h,
             "gf_kons_t": self.gf_kons_t,
+            "gf_kons_q_adj": self.gf_kons_q_adj,
+            "gf_kons_h_adj": self.gf_kons_h_adj,
             "gf_garanti_abt": self.gf_garanti_abt,
+            "gf_brf_rorlig": round(self.gf_brf_rorlig, 1),
+            "gf_moderbolagslan": round(self.gf_moderbolagslan, 1),
             "fastighetschef": self.fastighetschef,
             "fastighetsskotare": self.fastighetsskotare,
             "fastigheter": self.fastigheter,
@@ -610,8 +618,16 @@ class CompanionManager:
                 player.gf_kons_h = int(assets["gf_kons_h"])
             if "gf_kons_t" in assets:
                 player.gf_kons_t = int(assets["gf_kons_t"])
+            if "gf_kons_q_adj" in assets:
+                player.gf_kons_q_adj = int(assets["gf_kons_q_adj"])
+            if "gf_kons_h_adj" in assets:
+                player.gf_kons_h_adj = int(assets["gf_kons_h_adj"])
             if "gf_garanti_abt" in assets:
                 player.gf_garanti_abt = int(assets["gf_garanti_abt"])
+            if "gf_brf_rorlig" in assets:
+                player.gf_brf_rorlig = float(assets["gf_brf_rorlig"])
+            if "gf_moderbolagslan" in assets:
+                player.gf_moderbolagslan = float(assets["gf_moderbolagslan"])
             if "fastighetschef" in assets:
                 player.fastighetschef = assets["fastighetschef"]
             if "fastighetsskotare" in assets:
