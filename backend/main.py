@@ -14,6 +14,7 @@ from config import FRONTEND_DIR
 from data_loader import GameData
 from room_manager import RoomManager
 from ws_handler import manager, handle_ws_message
+from companion import companion_manager
 
 
 # Global state
@@ -145,6 +146,87 @@ app.mount("/img", StaticFiles(directory=os.path.join(FRONTEND_DIR, "img")), name
 @app.get("/")
 async def index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+
+@app.get("/companion")
+async def companion_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"))
+
+
+# ── Companion API ──
+
+@app.post("/api/companion/rooms")
+async def companion_create_room(body: dict):
+    num_quarters = int(body.get("num_quarters", 4))
+    room, gm_id = companion_manager.create_room(num_quarters)
+    return {"code": room.code, "gm_id": gm_id}
+
+
+@app.get("/api/companion/rooms/{code}")
+async def companion_get_room(code: str):
+    room = companion_manager.get_room(code)
+    if not room:
+        return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
+    return {
+        "code": room.code,
+        "num_quarters": room.num_quarters,
+        "quarter_names": room.quarter_names,
+        "num_players": len([p for p in room.players.values() if not p.is_gm]),
+    }
+
+
+@app.post("/api/companion/rooms/{code}/join")
+async def companion_join_room(code: str, body: dict):
+    name = body.get("name", "Spelare")
+    quarter_idx = int(body.get("quarter_idx", 0))
+    result = companion_manager.join_room(code, name, quarter_idx)
+    if not result:
+        return JSONResponse({"error": "Kunde inte gå med (kvarteret fullt eller rummet finns ej)"}, status_code=400)
+    room, player_id = result
+    await companion_manager.broadcast_state(room)
+    return {"code": room.code, "player_id": player_id}
+
+
+@app.get("/api/companion/data/pc")
+async def companion_pc_data():
+    return {"pc": game_data.pc_staff}
+
+
+@app.get("/api/companion/data/projects")
+async def companion_project_data():
+    result = {}
+    for typ, stack in game_data.projects.items():
+        result[typ] = [p.to_dict() for p in stack]
+    return {"projects": result}
+
+
+@app.websocket("/companion/ws/{code}/{player_id}")
+async def companion_ws(ws: WebSocket, code: str, player_id: str):
+    room = companion_manager.get_room(code)
+    if not room:
+        await ws.close(code=4004, reason="Room not found")
+        return
+    player = room.players.get(player_id)
+    if not player:
+        await ws.close(code=4003, reason="Player not found")
+        return
+
+    await companion_manager.connect(code, player_id, ws)
+    try:
+        # Send initial state
+        if player.is_gm:
+            await ws.send_json({"type": "state", "state": room.to_dict()})
+        else:
+            await ws.send_json({"type": "state", "state": room.player_state(player_id)})
+
+        while True:
+            message = await ws.receive_text()
+            import json
+            data = json.loads(message)
+            await companion_manager.handle_message(code, player_id, data)
+
+    except WebSocketDisconnect:
+        companion_manager.disconnect(code, player_id)
 
 
 @app.get("/health")

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PMOPOLY Companion</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; }
+
+/* Views */
+.view { display: none; }
+.view.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Lobby ── */
+.lobby { align-items: center; justify-content: center; padding: 20px; gap: 20px; }
+.lobby h1 { color: #f0c929; font-size: 28px; }
+.lobby p { color: #999; margin-bottom: 10px; }
+.lobby-card { background: #1a2736; border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; }
+.lobby-card h2 { color: #f0c929; margin-bottom: 12px; font-size: 18px; }
+.lobby-card input, .lobby-card select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334; background: #0f1923; color: #e0e0e0; font-size: 16px; margin-bottom: 10px; }
+.lobby-card button { width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+.btn-primary { background: #f0c929; color: #1a1a2e; }
+.btn-secondary { background: #2a3a4a; color: #e0e0e0; }
+.or-divider { text-align: center; color: #666; margin: 10px 0; font-size: 14px; }
+.quarter-select { display: none; margin-top: 10px; }
+.quarter-select.show { display: block; }
+.quarter-btn { display: block; width: 100%; padding: 12px; margin-bottom: 6px; border-radius: 8px; border: 2px solid #334; background: #1a2736; color: #e0e0e0; font-size: 15px; cursor: pointer; text-align: left; }
+.quarter-btn:hover { border-color: #f0c929; }
+.quarter-btn .count { float: right; color: #888; font-size: 13px; }
+
+/* ── Player View ── */
+.player-view { padding: 12px; padding-bottom: 80px; }
+.phase-header { background: linear-gradient(135deg, #1a2736, #243447); border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: center; }
+.phase-header .phase-name { color: #f0c929; font-size: 18px; font-weight: 700; }
+.phase-header .step-name { color: #4db8ff; font-size: 14px; margin-top: 4px; }
+
+.assets-grid { display: flex; flex-direction: column; gap: 10px; }
+
+/* Asset card */
+.asset-card { background: #1a2736; border-radius: 10px; padding: 14px; border-left: 4px solid #444; }
+.asset-card.pc { border-left-color: #8B7355; }
+.asset-card.projects { border-left-color: #2E7D32; }
+.asset-card.counters { border-left-color: #1565C0; }
+.asset-card.economy { border-left-color: #f0c929; }
+
+.asset-label { color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.asset-value { font-size: 16px; font-weight: 600; }
+.asset-empty { color: #555; font-style: italic; cursor: pointer; padding: 8px 0; }
+.asset-empty:hover { color: #f0c929; }
+
+/* Chosen PC/project display */
+.chosen-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; }
+.chosen-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.chosen-item .name { font-weight: 600; }
+.chosen-item .detail { color: #888; font-size: 13px; }
+.chosen-item .remove-btn { margin-left: auto; color: #c0392b; cursor: pointer; font-size: 18px; padding: 0 4px; }
+
+/* Counter row */
+.counter-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+.counter-row .label { font-size: 14px; }
+.counter-controls { display: flex; align-items: center; gap: 8px; }
+.counter-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #444; background: transparent; color: #e0e0e0; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.counter-btn:active { background: #334; }
+.counter-val { font-size: 20px; font-weight: 700; min-width: 30px; text-align: center; }
+
+/* Project type buttons */
+.proj-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+.proj-type-btn { padding: 10px 6px; border-radius: 8px; border: 2px solid #334; background: #0f1923; color: #e0e0e0; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
+.proj-type-btn:hover { border-color: #f0c929; }
+
+/* ── GM Dashboard ── */
+.gm-view { padding: 12px; }
+.gm-header { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a2736; border-radius: 10px; margin-bottom: 12px; }
+.gm-header .room-code { font-size: 24px; font-weight: 900; color: #f0c929; letter-spacing: 4px; }
+.gm-controls { display: flex; gap: 8px; }
+.gm-controls button { padding: 10px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; }
+.btn-prev { background: #2a3a4a; color: #e0e0e0; }
+.btn-next { background: #27ae60; color: white; }
+
+.gm-phase-bar { text-align: center; padding: 8px; margin-bottom: 12px; }
+.gm-phase-bar .phase { color: #f0c929; font-size: 16px; font-weight: 700; }
+.gm-phase-bar .step { color: #4db8ff; font-size: 14px; }
+
+.quarters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.quarter-card { background: #1a2736; border-radius: 10px; padding: 14px; border-top: 3px solid #f0c929; }
+.quarter-card h3 { color: #f0c929; margin-bottom: 8px; }
+.quarter-stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+.quarter-stat .val { font-weight: 700; }
+.quarter-players { margin-top: 8px; font-size: 13px; color: #888; }
+.quarter-players span { display: inline-block; background: #243447; padding: 2px 8px; border-radius: 4px; margin: 2px; }
+
+/* ── Modal ── */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { background: #1a2736; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; }
+.modal-header { padding: 16px; border-bottom: 1px solid #334; }
+.modal-header h3 { color: #f0c929; }
+.modal-body { padding: 16px; }
+.modal-item { padding: 12px; border-radius: 8px; border: 2px solid #334; margin-bottom: 8px; cursor: pointer; }
+.modal-item:hover { border-color: #f0c929; background: #243447; }
+.modal-item.selected { border-color: #27ae60; background: #1a3a2a; }
+.modal-item .item-name { font-weight: 700; font-size: 15px; }
+.modal-item .item-detail { color: #999; font-size: 13px; margin-top: 4px; }
+.modal-footer { padding: 12px 16px; border-top: 1px solid #334; display: flex; gap: 8px; }
+.modal-footer button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="view-lobby" class="view active lobby">
+    <h1>PMOPOLY</h1>
+    <p>Companion App</p>
+
+    <div class="lobby-card">
+        <h2>Game Master</h2>
+        <input type="number" id="gm-quarters" value="4" min="1" max="20" placeholder="Antal kvarter">
+        <button class="btn-primary" id="btn-create-room">Skapa rum</button>
+    </div>
+
+    <div class="or-divider">— eller —</div>
+
+    <div class="lobby-card">
+        <h2>Spelare</h2>
+        <input type="text" id="player-name" placeholder="Ditt namn" maxlength="20">
+        <input type="text" id="room-code" placeholder="Rumskod (6 tecken)" maxlength="6" style="text-transform:uppercase">
+        <button class="btn-secondary" id="btn-lookup-room">Hitta rum</button>
+        <div id="quarter-select" class="quarter-select"></div>
+    </div>
+</div>
+
+<!-- PLAYER VIEW -->
+<div id="view-player" class="view player-view">
+    <div class="phase-header">
+        <div class="phase-name" id="p-phase-name">—</div>
+        <div class="step-name" id="p-step-name">Väntar på Game Master...</div>
+    </div>
+    <div class="assets-grid" id="player-assets"></div>
+</div>
+
+<!-- GM VIEW -->
+<div id="view-gm" class="view gm-view">
+    <div class="gm-header">
+        <div>
+            <div style="color:#888;font-size:12px">RUMSKOD</div>
+            <div class="room-code" id="gm-room-code">—</div>
+        </div>
+        <div class="gm-controls">
+            <button class="btn-prev" id="btn-prev-step">◀ Föregående</button>
+            <button class="btn-next" id="btn-next-step">Nästa steg ▶</button>
+        </div>
+    </div>
+    <div class="gm-phase-bar">
+        <div class="phase" id="gm-phase-name">—</div>
+        <div class="step" id="gm-step-name">—</div>
+    </div>
+    <div class="quarters-grid" id="gm-quarters"></div>
+</div>
+
+<!-- MODAL CONTAINER -->
+<div id="modal-container"></div>
+
+<script type="module">
+// ── State ──
+const S = {
+    ws: null,
+    playerId: null,
+    roomCode: null,
+    isGM: false,
+    state: null,
+    pcData: [],
+    projectData: {},
+};
+
+function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+// ── WebSocket ──
+function connectWs(code, playerId) {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${proto}//${location.host}/companion/ws/${code}/${playerId}`;
+    const ws = new WebSocket(url);
+    ws.onopen = () => console.log('WS connected');
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.type === 'state') {
+            S.state = data.state;
+            render();
+        }
+    };
+    ws.onclose = () => setTimeout(() => connectWs(code, playerId), 3000);
+    S.ws = ws;
+}
+
+function send(data) {
+    if (S.ws && S.ws.readyState === WebSocket.OPEN) {
+        S.ws.send(JSON.stringify(data));
+    }
+}
+
+// ── Lobby ──
+document.getElementById('btn-create-room').addEventListener('click', async () => {
+    const num = parseInt(document.getElementById('gm-quarters').value) || 4;
+    const res = await fetch('/api/companion/rooms', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ num_quarters: num }),
+    });
+    const data = await res.json();
+    S.roomCode = data.code;
+    S.playerId = data.gm_id;
+    S.isGM = true;
+    connectWs(data.code, data.gm_id);
+    showView('view-gm');
+});
+
+document.getElementById('btn-lookup-room').addEventListener('click', async () => {
+    const code = document.getElementById('room-code').value.trim().toUpperCase();
+    const name = document.getElementById('player-name').value.trim();
+    if (!code || !name) { alert('Ange namn och rumskod'); return; }
+
+    const res = await fetch(`/api/companion/rooms/${code}`);
+    if (!res.ok) { alert('Rum hittades inte'); return; }
+    const room = await res.json();
+
+    // Show quarter selection
+    const container = document.getElementById('quarter-select');
+    container.className = 'quarter-select show';
+    container.innerHTML = '<p style="margin-bottom:8px;color:#999">Välj kvarter:</p>';
+    for (let i = 0; i < room.num_quarters; i++) {
+        const qName = room.quarter_names[i] || `Kvarter ${i+1}`;
+        const btn = document.createElement('button');
+        btn.className = 'quarter-btn';
+        btn.innerHTML = `${qName}`;
+        btn.addEventListener('click', async () => {
+            const joinRes = await fetch(`/api/companion/rooms/${code}/join`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, quarter_idx: i }),
+            });
+            if (!joinRes.ok) { alert('Kunde inte gå med (kvarteret fullt?)'); return; }
+            const joinData = await joinRes.json();
+            S.roomCode = code;
+            S.playerId = joinData.player_id;
+            S.isGM = false;
+            // Load reference data
+            await loadReferenceData();
+            connectWs(code, joinData.player_id);
+            showView('view-player');
+        });
+        container.appendChild(btn);
+    }
+});
+
+async function loadReferenceData() {
+    const [pcRes, projRes] = await Promise.all([
+        fetch('/api/companion/data/pc'),
+        fetch('/api/companion/data/projects'),
+    ]);
+    S.pcData = (await pcRes.json()).pc;
+    S.projectData = (await projRes.json()).projects;
+}
+
+// ── Render ──
+function render() {
+    if (S.isGM) renderGM();
+    else renderPlayer();
+}
+
+// ── Player Rendering ──
+function renderPlayer() {
+    const st = S.state;
+    if (!st) return;
+    document.getElementById('p-phase-name').textContent = st.phase_name || '—';
+    document.getElementById('p-step-name').textContent = st.step_name || 'Väntar...';
+
+    const p = st.player;
+    const container = document.getElementById('player-assets');
+
+    let html = '';
+
+    // PC Card
+    html += '<div class="asset-card pc">';
+    html += '<div class="asset-label">Projektchef</div>';
+    if (p.projektchef) {
+        html += `<div class="chosen-item">
+            <div class="dot" style="background:#8B7355"></div>
+            <div><div class="name">${p.projektchef.namn}</div>
+            <div class="detail">${p.projektchef.specialisering} | Lön: ${p.projektchef.lon} Mkr</div></div>
+            <div class="remove-btn" data-action="remove-pc">✕</div>
+        </div>`;
+    } else {
+        html += '<div class="asset-empty" data-action="choose-pc">+ Välj Projektchef</div>';
+    }
+    html += '</div>';
+
+    // Projects
+    html += '<div class="asset-card projects">';
+    html += '<div class="asset-label">Projekt</div>';
+    if (p.projects.length > 0) {
+        for (const proj of p.projects) {
+            const color = { BRF: '#DAA520', FÖRSKOLOR: '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', Hyresrätt: '#C62828' }[proj.typ] || '#888';
+            html += `<div class="chosen-item">
+                <div class="dot" style="background:${color}"></div>
+                <div><div class="name">${proj.namn}</div>
+                <div class="detail">${proj.typ} | BTA: ${proj.bta} | Anskaff: ${proj.anskaffning} Mkr</div></div>
+                <div class="remove-btn" data-action="remove-project" data-id="${proj.id}">✕</div>
+            </div>`;
+        }
+    }
+    html += '<div class="proj-type-grid">';
+    for (const typ of ['BRF', 'FÖRSKOLOR', 'LOKAL', 'KONTOR', 'Hyresrätt']) {
+        html += `<button class="proj-type-btn" data-action="add-project-type" data-typ="${typ}">${typ}</button>`;
+    }
+    html += '</div></div>';
+
+    // Counters
+    html += '<div class="asset-card counters">';
+    html += '<div class="asset-label">Krav & Resurser</div>';
+    html += counterRow('Kvalitetskrav', p.q_krav, 'q_krav');
+    html += counterRow('Hållbarhetskrav', p.h_krav, 'h_krav');
+    html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
+    html += counterRow('Markexpansion', p.mark_expansions, 'mark_expansions');
+    html += '</div>';
+
+    // Economy
+    html += '<div class="asset-card economy">';
+    html += '<div class="asset-label">Ekonomi</div>';
+    html += counterRow('Eget kapital (Mkr)', p.eget_kapital, 'eget_kapital');
+    html += counterRow('ABT-budget (Mkr)', p.abt_budget, 'abt_budget');
+    html += '</div>';
+
+    container.innerHTML = html;
+    attachPlayerEvents(container);
+}
+
+function counterRow(label, val, key) {
+    return `<div class="counter-row">
+        <div class="label">${label}</div>
+        <div class="counter-controls">
+            <button class="counter-btn" data-action="decr" data-key="${key}">−</button>
+            <div class="counter-val">${val}</div>
+            <button class="counter-btn" data-action="incr" data-key="${key}">+</button>
+        </div>
+    </div>`;
+}
+
+function attachPlayerEvents(container) {
+    container.querySelectorAll('[data-action="choose-pc"]').forEach(el => {
+        el.addEventListener('click', () => openPCModal());
+    });
+    container.querySelectorAll('[data-action="remove-pc"]').forEach(el => {
+        el.addEventListener('click', () => {
+            send({ type: 'update_assets', assets: { projektchef: null } });
+        });
+    });
+    container.querySelectorAll('[data-action="add-project-type"]').forEach(el => {
+        el.addEventListener('click', () => openProjectModal(el.dataset.typ));
+    });
+    container.querySelectorAll('[data-action="remove-project"]').forEach(el => {
+        el.addEventListener('click', () => {
+            const id = el.dataset.id;
+            const projects = S.state.player.projects.filter(p => p.id !== id);
+            send({ type: 'update_assets', assets: { projects } });
+        });
+    });
+    container.querySelectorAll('[data-action="incr"]').forEach(el => {
+        el.addEventListener('click', () => {
+            const key = el.dataset.key;
+            const cur = S.state.player[key] || 0;
+            send({ type: 'update_assets', assets: { [key]: cur + 1 } });
+        });
+    });
+    container.querySelectorAll('[data-action="decr"]').forEach(el => {
+        el.addEventListener('click', () => {
+            const key = el.dataset.key;
+            const cur = S.state.player[key] || 0;
+            send({ type: 'update_assets', assets: { [key]: Math.max(0, cur - 1) } });
+        });
+    });
+}
+
+// ── PC Modal ──
+function openPCModal() {
+    const mc = document.getElementById('modal-container');
+    let html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header"><h3>Välj Projektchef</h3></div>';
+    html += '<div class="modal-body">';
+    for (const pc of S.pcData) {
+        const motstand = pc.handelsemotstand || 'ingen';
+        const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        html += `<div class="modal-item" data-pc-id="${pc.id}">
+            <div class="item-name">${pc.namn}</div>
+            <div class="item-detail">${pc.specialisering} | Lindring: +${pc.kapacitet} (${motstand})${namnd} | Lön: ${pc.lon} Mkr</div>
+            <div class="item-detail" style="margin-top:4px;color:#777">${pc.not_text || ''}</div>
+        </div>`;
+    }
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const pc = S.pcData.find(p => p.id === el.dataset.pcId);
+            if (pc) send({ type: 'update_assets', assets: { projektchef: pc } });
+            mc.innerHTML = '';
+        });
+    });
+    mc.querySelector('#modal-cancel').addEventListener('click', () => { mc.innerHTML = ''; });
+}
+
+// ── Project Modal ──
+function openProjectModal(typ) {
+    const mc = document.getElementById('modal-container');
+    const available = S.projectData[typ] || [];
+    const currentIds = new Set((S.state.player.projects || []).map(p => p.id));
+
+    let html = '<div class="modal-overlay"><div class="modal">';
+    html += `<div class="modal-header"><h3>${typ}-projekt</h3></div>`;
+    html += '<div class="modal-body">';
+    for (const proj of available) {
+        const sel = currentIds.has(proj.id) ? ' selected' : '';
+        html += `<div class="modal-item${sel}" data-proj='${JSON.stringify(proj).replace(/'/g, "&#39;")}'>
+            <div class="item-name">${proj.namn || proj.id}</div>
+            <div class="item-detail">BTA: ${proj.bta} | Form: ${proj.formfaktor} | Anskaff: ${proj.anskaffning} Mkr | Kostnad: ${proj.kostnad} Mkr</div>
+        </div>`;
+    }
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-close">Stäng</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const proj = JSON.parse(el.dataset.proj);
+            const current = [...(S.state.player.projects || [])];
+            const idx = current.findIndex(p => p.id === proj.id);
+            if (idx >= 0) {
+                current.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                current.push(proj);
+                el.classList.add('selected');
+            }
+            send({ type: 'update_assets', assets: { projects: current } });
+        });
+    });
+    mc.querySelector('#modal-close').addEventListener('click', () => { mc.innerHTML = ''; });
+}
+
+// ── GM Rendering ──
+function renderGM() {
+    const st = S.state;
+    if (!st) return;
+
+    document.getElementById('gm-room-code').textContent = st.code;
+    document.getElementById('gm-phase-name').textContent = st.phase_name || '—';
+    document.getElementById('gm-step-name').textContent = st.step_name || '—';
+
+    const grid = document.getElementById('gm-quarters');
+    let html = '';
+    for (const q of (st.quarters || [])) {
+        html += `<div class="quarter-card">
+            <h3>${q.name} <span style="color:#888;font-size:13px">(${q.num_players}/4)</span></h3>
+            <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
+            <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
+            <div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">${q.avg_q_krav}</span></div>
+            <div class="quarter-stat"><span>Snitt H-krav</span><span class="val">${q.avg_h_krav}</span></div>
+            <div class="quarter-players">${q.players.map(p => `<span>${p.name}${p.projektchef ? ' ✓' : ''}</span>`).join('')}</div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+}
+
+// GM controls
+document.getElementById('btn-next-step').addEventListener('click', () => {
+    send({ type: 'advance_step' });
+});
+document.getElementById('btn-prev-step').addEventListener('click', () => {
+    send({ type: 'prev_step' });
+});
+</script>
+</body>
+</html>
