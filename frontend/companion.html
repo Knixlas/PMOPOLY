@@ -531,9 +531,9 @@ function renderPlayer() {
     // Planning counters (Phase 2)
     if (showPlanning) {
         html += '<div class="asset-card" style="border-left-color:#1565C0">';
-        html += '<div class="asset-label">Planeringssteg \u2014 registrera \u00e4ndringar</div>';
-        html += counterRow('Kvalitet (Q)', p.pl_q, 'pl_q', true);
-        html += counterRow('H\u00e5llbarhet (H)', p.pl_h, 'pl_h', true);
+        html += '<div class="asset-label">Planeringssteg \u2014 registrera v\u00e4rden</div>';
+        html += counterRow('Kvalitet (Q) uppn\u00e5tt', p.q_achieved, 'q_achieved');
+        html += counterRow('H\u00e5llbarhet (H) uppn\u00e5tt', p.h_achieved, 'h_achieved');
         html += counterRow('Byggtid (T) m\u00e5n', p.pl_t, 'pl_t', true);
         html += counterRow('Erfarenhet', p.pl_erfarenhet, 'pl_erfarenhet');
         html += counterRow('ABT anv\u00e4nt (Mkr)', p.pl_kostnad, 'pl_kostnad');
@@ -564,9 +564,9 @@ function renderPlayer() {
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
         if (isPhase2) {
-            html += '<div>Q (plan): <strong>' + (totalQ + p.pl_q) + '</strong></div>';
-            html += '<div>H (plan): <strong>' + (totalH + p.pl_h) + '</strong></div>';
-            html += '<div>T (plan): <strong>' + (totalT + p.pl_t) + ' m\u00e5n</strong></div>';
+            html += '<div>Q: <strong>(' + (p.q_achieved || 0) + ')' + totalQ + '</strong></div>';
+            html += '<div>H: <strong>(' + (p.h_achieved || 0) + ')' + totalH + '</strong></div>';
+            html += '<div>T: <strong>' + (totalT + p.pl_t) + '(' + baseT + ') m\u00e5n</strong></div>';
             html += '<div>Erf: <strong>' + p.pl_erfarenhet + '</strong></div>';
             html += '<div>ABT anv: <strong>' + p.pl_kostnad + ' Mkr</strong></div>';
         }

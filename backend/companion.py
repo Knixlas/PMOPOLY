@@ -114,6 +114,8 @@ class CompanionPlayer:
     q_krav: int = 0
     h_krav: int = 0
     riskbuffertar: int = 0
+    q_achieved: int = 0  # Q points earned (PC, AC, suppliers)
+    h_achieved: int = 0  # H points earned
     rb_spent_q: int = 0
     rb_spent_h: int = 0
     rb_spent_t: int = 0
@@ -179,6 +181,8 @@ class CompanionPlayer:
             "q_krav": self.q_krav,
             "h_krav": self.h_krav,
             "riskbuffertar": self.riskbuffertar,
+            "q_achieved": self.q_achieved,
+            "h_achieved": self.h_achieved,
             "rb_spent_q": self.rb_spent_q,
             "rb_spent_h": self.rb_spent_h,
             "rb_spent_t": self.rb_spent_t,
@@ -475,6 +479,10 @@ class CompanionManager:
                 player.h_krav = int(assets["h_krav"])
             if "riskbuffertar" in assets:
                 player.riskbuffertar = int(assets["riskbuffertar"])
+            if "q_achieved" in assets:
+                player.q_achieved = int(assets["q_achieved"])
+            if "h_achieved" in assets:
+                player.h_achieved = int(assets["h_achieved"])
             if "rb_spent_q" in assets:
                 player.rb_spent_q = int(assets["rb_spent_q"])
             if "rb_spent_h" in assets:
