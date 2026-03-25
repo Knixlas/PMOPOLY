@@ -113,6 +113,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 .status-done { color: #27ae60; font-weight: 700; }
 .status-wait { color: #c0392b; }
 .score-bar { display: inline-block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #27ae60, #f0c929); min-width: 4px; vertical-align: middle; margin-right: 6px; }
+.help-icon { cursor: pointer; margin-left: 6px; font-size: 16px; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -345,6 +346,25 @@ function render() {
     }
 }
 
+function showHelpPopup(title, text) {
+    const mc = document.getElementById('modal-container');
+    const lines = text.split('\n').map(function(l) {
+        if (l.startsWith('•')) return '<div style="padding:2px 0 2px 12px">' + l + '</div>';
+        if (l.trim() === '') return '<br>';
+        if (l.startsWith('Tips:')) return '<div style="color:#f0c929;margin-top:8px;font-style:italic">' + l + '</div>';
+        return '<div>' + l + '</div>';
+    }).join('');
+    mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
+        '<div class="modal-header"><h3>' + (title || 'Hjälp') + '</h3></div>' +
+        '<div class="modal-body" style="font-size:14px;line-height:1.6">' + lines + '</div>' +
+        '<div class="modal-footer"><button class="btn-primary" id="modal-ok">Förstått!</button></div>' +
+        '</div></div>';
+    mc.querySelector('#modal-ok').addEventListener('click', function() { mc.innerHTML = ''; });
+    mc.querySelector('.modal-overlay').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) mc.innerHTML = '';
+    });
+}
+
 // ── Player Rendering ──
 function renderPlayer() {
     const st = S.state;
@@ -352,7 +372,18 @@ function renderPlayer() {
     const p = st.player;
     if (!p) return;
     document.getElementById('p-phase-name').textContent = st.phase_name || '—';
-    document.getElementById('p-step-name').textContent = st.step_name || 'Väntar...';
+
+    // Step name + info icon
+    const stepEl = document.getElementById('p-step-name');
+    stepEl.innerHTML = (st.step_name || 'Väntar...') +
+        (st.step_help ? ' <span class="help-icon" id="btn-help-step" title="Visa hjälp">ℹ️</span>' : '');
+
+    // Show help popup on step change
+    if (st.step && st.step !== S._lastStep && st.step_help) {
+        S._lastStep = st.step;
+        showHelpPopup(st.step_name, st.step_help);
+    }
+    if (!S._lastStep) S._lastStep = st.step;
     const blockEl = document.getElementById('p-block-name');
     blockEl.textContent = p.block_name || '—';
     blockEl.onclick = () => {
@@ -364,13 +395,15 @@ function renderPlayer() {
     const step = st.step || '';
 
     // Determine visibility and editability per step
-    const STEP_ORDER = ['choose_pc', 'projects', 'namndbeslut'];
+    const STEP_ORDER = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
     const stepIdx = STEP_ORDER.indexOf(step);
     const showPC = stepIdx >= 0;
     const editPC = step === 'choose_pc';
     const showProjects = stepIdx >= 1;
     const editProjects = step === 'projects';
+    const editProjectsRemove = step === 'namndbeslut';
     const showCounters = stepIdx >= 1;
+    const showRbInvest = step === 'rb_invest';
 
     let html = '';
 
@@ -404,7 +437,7 @@ function renderPlayer() {
                 html += '<div class="dot" style="background:' + color + '"></div>';
                 html += '<div><div class="name">' + (proj.namn || proj.id) + '</div>';
                 html += '<div class="detail">' + proj.typ + ' | BTA: ' + proj.bta + ' | Anskaff: ' + proj.anskaffning + ' Mkr</div></div>';
-                if (editProjects) html += '<div class="remove-btn" data-action="remove-project" data-id="' + proj.id + '">\u2715</div>';
+                if (editProjects || editProjectsRemove) html += '<div class="remove-btn" data-action="remove-project" data-id="' + proj.id + '">\u2715</div>';
                 html += '</div>';
             }
         }
@@ -421,16 +454,24 @@ function renderPlayer() {
     // Counters
     if (showCounters) {
         html += '<div class="asset-card counters">';
-        html += '<div class="asset-label">Krav & Resurser</div>';
-        html += counterRow('Kvalitetskrav', p.q_krav, 'q_krav');
-        html += counterRow('H\u00e5llbarhetskrav', p.h_krav, 'h_krav');
+        html += '<div class="asset-label">\u00c4ndringar fr\u00e5n kort & spelbr\u00e4de</div>';
+        html += counterRow('Kvalitet (Q)', p.q_krav, 'q_krav');
+        html += counterRow('H\u00e5llbarhet (H)', p.h_krav, 'h_krav');
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
-        html += counterRow('Markexpansion', p.mark_expansions, 'mark_expansions');
+        html += counterRow('Markexpansioner', p.mark_expansions, 'mark_expansions');
         html += '</div>';
     }
 
     container.innerHTML = html;
     attachPlayerEvents(container);
+
+    // Help icon click
+    const helpBtn = document.getElementById('btn-help-step');
+    if (helpBtn) {
+        helpBtn.addEventListener('click', function() {
+            showHelpPopup(st.step_name, st.step_help);
+        });
+    }
 }
 
 function counterRow(label, val, key) {

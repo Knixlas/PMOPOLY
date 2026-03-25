@@ -10,9 +10,43 @@ from fastapi import WebSocket
 
 PHASES = [
     {"id": "phase1", "name": "Fas 1: Projektutveckling", "steps": [
-        {"id": "choose_pc", "name": "1.1 Välj Projektchef"},
-        {"id": "projects", "name": "1.2 Projektval & Brädspel"},
-        {"id": "namndbeslut", "name": "1.3 Nämndbeslut"},
+        {"id": "choose_pc", "name": "1.2 Välj Projektchef", "help":
+            "Varje spelare väljer 1 av 10 projektchefer. Gratis.\n\n"
+            "Attribut att jämföra:\n"
+            "• Riskbuffertar (Rb) — säkerhetsmarginal\n"
+            "• Lindring — bonus på politik/dialogkort under PU-brädet\n"
+            "• Nämndbonus — bonus vid nämndbeslut (steg 1.8)\n"
+            "• Q/H/T-bonus — tillämpas i fas 2\n"
+            "• Kompetens — spelbar som kort i fas 3\n\n"
+            "Tips: Hög lindring = bra under PU-brädet. Hög nämndbonus = tryggare med BRF. "
+            "Hög Rb = mer flexibilitet senare."},
+        {"id": "projects", "name": "1.4–1.6 Projektval & Brädspel", "help":
+            "Välj ett startprojekt (1.4), sedan spelas PU-brädet (1.5–1.6).\n\n"
+            "Under brädspelet:\n"
+            "• Projektrutor — ta ett projekt av typen\n"
+            "• Stadshuset — ta, byt eller lämna tillbaka\n"
+            "• Stjärna — +1 riskbuffert\n"
+            "• Skönhetsrådet — −2 Q-krav\n"
+            "• Länsstyrelsen — −2 H-krav\n"
+            "• Dialogkort — slå D20 + PC-lindring\n"
+            "• Politikkort — slå D20 + PC-lindring\n"
+            "• Stadsbyggnadskontoret — markexpansion (+5 Mkr)\n\n"
+            "Registrera dina projekt och uppdatera Q/H/Rb med +/- knapparna.\n"
+            "Tips: Max 9 projekt. KOMPLEX kvarter (bostäder + 2 andra typer) ger svårast händelsekort."},
+        {"id": "namndbeslut", "name": "1.8 Nämndbeslut", "help":
+            "Projekt med nämndkrav > 1: slå D20 + PC:s nämndbonus.\n\n"
+            "• Resultat ≥ krav = godkänt\n"
+            "• Misslyckat: använd Rb för omslag, eller ta bort projektet\n"
+            "• Utvecklingskostnaden är redan betald\n\n"
+            "Ta bort underkända projekt med ✕-knappen.\n"
+            "Tips: Rb kan rädda ett misslyckat projekt — värt det för dyra projekt!"},
+        {"id": "rb_invest", "name": "1.12 Rb-investering", "help":
+            "Fördela kvarvarande riskbuffertar:\n\n"
+            "• −1 Q-krav per Rb\n"
+            "• −1 H-krav per Rb\n"
+            "• −1 T (byggtid) per Rb\n\n"
+            "Resterande Rb sparas till fas 3 (omslag på händelsekort).\n"
+            "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i fas 2."},
     ]},
 ]
 
@@ -47,8 +81,8 @@ class CompanionPlayer:
     # Phase 1 assets
     projektchef: Optional[dict] = None
     projects: List[dict] = field(default_factory=list)
-    q_krav: int = 4
-    h_krav: int = 4
+    q_krav: int = 0
+    h_krav: int = 0
     riskbuffertar: int = 0
     mark_expansions: int = 0
     eget_kapital: float = 0.0
@@ -62,8 +96,8 @@ class CompanionPlayer:
             return len(self.projects) >= 1
         elif step_id == "namndbeslut":
             return len(self.projects) >= 1  # GM judges manually
-        elif step_id == "ekonomi":
-            return self.abt_budget > 0
+        elif step_id == "rb_invest":
+            return True  # Always "done" — voluntary step
         return False
 
     @property
@@ -204,6 +238,7 @@ class CompanionRoom:
             "phase_name": phase["name"] if phase else None,
             "step": step["id"] if step else None,
             "step_name": step["name"] if step else None,
+            "step_help": step.get("help", "") if step else "",
             "phase_idx": self.phase_idx,
             "step_idx": self.step_idx,
             "quarters": [self.quarter_summary(i) for i in range(self.num_quarters)],
@@ -222,6 +257,7 @@ class CompanionRoom:
             "phase_name": phase["name"] if phase else None,
             "step": step["id"] if step else None,
             "step_name": step["name"] if step else None,
+            "step_help": step.get("help", "") if step else "",
             "player": player.to_dict(),
         }
 
