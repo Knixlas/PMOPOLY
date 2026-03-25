@@ -270,16 +270,18 @@ if (location.pathname.endsWith('/gm')) {
 }
 
 // ── WebSocket ──
+var _wsRetries = 0;
 function connectWs(code, playerId) {
     // Close any existing connection
-    if (S.ws && S.ws.readyState <= 1) {
-        S.ws.onclose = null;  // Prevent reconnect loop
-        S.ws.close();
+    if (S.ws) {
+        S.ws.onclose = null;
+        S.ws.onerror = null;
+        if (S.ws.readyState <= 1) S.ws.close();
     }
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${proto}//${location.host}/companion/ws/${code}/${playerId}`;
     const ws = new WebSocket(url);
-    ws.onopen = () => console.log('WS connected');
+    ws.onopen = () => { console.log('WS connected'); _wsRetries = 0; };
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.type === 'state') {
@@ -287,7 +289,16 @@ function connectWs(code, playerId) {
             render();
         }
     };
-    ws.onclose = () => setTimeout(() => connectWs(code, playerId), 3000);
+    ws.onclose = (e) => {
+        // Don't reconnect on auth errors or too many retries
+        if (e.code >= 4000 || _wsRetries >= 5) {
+            console.warn('WS closed permanently:', e.code, e.reason);
+            return;
+        }
+        _wsRetries++;
+        setTimeout(() => connectWs(code, playerId), 3000);
+    };
+    ws.onerror = () => {}; // Suppress error logging (onclose handles it)
     S.ws = ws;
 }
 
@@ -295,12 +306,7 @@ function send(data) {
     if (S.ws && S.ws.readyState === WebSocket.OPEN) {
         S.ws.send(JSON.stringify(data));
     } else {
-        console.warn('WS not open, state:', S.ws?.readyState, '- reconnecting...');
-        if (S.roomCode && S.playerId) {
-            connectWs(S.roomCode, S.playerId);
-            // Retry after reconnect
-            setTimeout(function() { send(data); }, 1000);
-        }
+        console.warn('WS not open, message dropped');
     }
 }
 

@@ -316,6 +316,11 @@ async def companion_ws(ws: WebSocket, code: str, player_id: str):
 
     except WebSocketDisconnect:
         companion_manager.disconnect(code, player_id)
+    except Exception as e:
+        print(f"COMPANION WS ERROR [{code}/{player_id}]: {e}")
+        import traceback
+        traceback.print_exc()
+        companion_manager.disconnect(code, player_id)
 
 
 @app.get("/health")

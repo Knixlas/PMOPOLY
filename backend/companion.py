@@ -230,8 +230,6 @@ class CompanionPlayer:
             "abt_budget": round(self.abt_budget, 1),
             "arbetschef": self.arbetschef,
             "pl_choices": self.pl_choices,
-            "pl_event_q": self.pl_event_q,
-            "pl_event_h": self.pl_event_h,
             "pl_events": self.pl_events,
             "gf_phases": self.gf_phases,
             "profit_score": self.profit_score,
@@ -537,10 +535,6 @@ class CompanionManager:
                 player.arbetschef = assets["arbetschef"]
             if "pl_choices" in assets:
                 player.pl_choices = assets["pl_choices"]
-            if "pl_event_q" in assets:
-                player.pl_event_q = int(assets["pl_event_q"])
-            if "pl_event_h" in assets:
-                player.pl_event_h = int(assets["pl_event_h"])
             if "pl_events" in assets:
                 player.pl_events = assets["pl_events"]
             if "gf_phases" in assets:
