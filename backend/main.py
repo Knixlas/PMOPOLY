@@ -245,7 +245,14 @@ async def companion_pc_data():
 async def companion_project_data():
     result = {}
     for typ, stack in game_data.projects.items():
-        result[typ] = [p.to_dict() for p in stack]
+        # Deduplicate by namn — show each unique project once
+        seen = set()
+        unique = []
+        for p in stack:
+            if p.namn not in seen:
+                seen.add(p.namn)
+                unique.append(p.to_dict())
+        result[typ] = unique
     return {"projects": result}
 
 
