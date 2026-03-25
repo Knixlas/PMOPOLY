@@ -117,22 +117,34 @@ PHASES = [
     ]},
     {"id": "phase4", "name": "Fas 4: Förvaltning", "steps": [
         {"id": "f4_forbered", "name": "4.1 Förbered förvaltning", "help":
-            "BRF-projekt tas bort (redan sålda vid förskott).\n"
-            "Kvarvarande projekt = förvaltningsportfölj.\n\n"
-            "• Bestäm energiklasser per fastighet\n"
-            "• Beräkna driftnetto per fastighet\n\n"
-            "Ta bort BRF-projekt och registrera driftnetto."},
-        {"id": "f4_kvartal", "name": "4.2–4.9 Kvartalsvis förvaltning", "help":
-            "4 kvartal. Per kvartal:\n\n"
-            "• Yield-förändring (bostäder/kommersiellt)\n"
-            "• Omvärldskort (alla påverkas)\n"
-            "• Driftnetto + lön inkasseras/betalas\n"
-            "• Hyresförhandling (Q2 & Q4, om hyresrätt)\n"
+            "Projekt blir fastigheter. BRF säljs och ökar EK med (MV − Anskaffning).\n"
+            "Kvarvarande = förvaltningsportfölj.\n\n"
+            "• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n"
+            "• Sätt energiklass per fastighet (A–F)\n"
+            "• Köp/sälj fastigheter om önskat"},
+        {"id": "f4_q1", "name": "4.2–4.3 Kvartal 1", "help":
+            "Kvartal 1:\n"
+            "• Ange yield (bostäder + kommersiellt) → marknadsvärde uppdateras\n"
+            "• Dra händelsekort per fastighet → registrera EK/energi-effekter\n"
+            "• Lön FC+FS dras automatiskt\n"
+            "• Köp/sälj fastigheter"},
+        {"id": "f4_q2", "name": "4.4–4.5 Kvartal 2", "help":
+            "Kvartal 2:\n"
+            "• Ange yield → marknadsvärde uppdateras\n"
             "• Händelsekort per fastighet\n"
-            "• Personal — anställ/avskeda\n"
-            "• Energiuppgraderingar (valfritt)\n"
-            "• Fastighetsmarknad — köp/sälj\n\n"
-            "Registrera EK-förändringar per kvartal."},
+            "• Hyresförhandling (om hyresrätt)\n"
+            "• Lön, köp/sälj"},
+        {"id": "f4_q3", "name": "4.6–4.7 Kvartal 3", "help":
+            "Kvartal 3:\n"
+            "• Ange yield → marknadsvärde uppdateras\n"
+            "• Händelsekort per fastighet\n"
+            "• Lön, köp/sälj"},
+        {"id": "f4_q4", "name": "4.8–4.9 Kvartal 4", "help":
+            "Kvartal 4:\n"
+            "• Ange yield → marknadsvärde uppdateras\n"
+            "• Händelsekort per fastighet\n"
+            "• Hyresförhandling (om hyresrätt)\n"
+            "• Lön, köp/sälj"},
         {"id": "f4_slut", "name": "5.1–5.2 Slutvärdering", "help":
             "Beräkna slutpoäng:\n\n"
             "FV = DN/yield × energiklassmodifier per fastighet\n"
@@ -196,7 +208,15 @@ class CompanionPlayer:
     gf_kons_t: int = 0   # Konsekvenskort ABT for tid
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
     # Phase 4 assets
-    f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change, dn, yield_change}
+    fastighetschef: Optional[dict] = None  # FC
+    fastighetsskotare: Optional[dict] = None  # FS
+    fastigheter: List[dict] = field(default_factory=list)  # Projects converted to properties
+    # Each fastighet: {id, namn, typ, bta, anskaffning, energiklass, marknadsvarde,
+    #                   events: [{kvartal, ek, energi}], sold: bool, kopeskilling: float}
+    f4_yield_bostader: float = 4.5  # Current yield % for bostäder
+    f4_yield_kommersiellt: float = 5.5  # Current yield % for kommersiellt
+    f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
+    f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
 
     def step_done(self, step_id: str) -> bool:
@@ -270,6 +290,11 @@ class CompanionPlayer:
             "gf_kons_h": self.gf_kons_h,
             "gf_kons_t": self.gf_kons_t,
             "gf_garanti_abt": self.gf_garanti_abt,
+            "fastighetschef": self.fastighetschef,
+            "fastighetsskotare": self.fastighetsskotare,
+            "fastigheter": self.fastigheter,
+            "f4_yield_bostader": self.f4_yield_bostader,
+            "f4_yield_kommersiellt": self.f4_yield_kommersiellt,
             "f4_quarters": self.f4_quarters,
             "f4_final_score": round(self.f4_final_score, 1),
             "profit_score": self.profit_score,
@@ -587,6 +612,16 @@ class CompanionManager:
                 player.gf_kons_t = int(assets["gf_kons_t"])
             if "gf_garanti_abt" in assets:
                 player.gf_garanti_abt = int(assets["gf_garanti_abt"])
+            if "fastighetschef" in assets:
+                player.fastighetschef = assets["fastighetschef"]
+            if "fastighetsskotare" in assets:
+                player.fastighetsskotare = assets["fastighetsskotare"]
+            if "fastigheter" in assets:
+                player.fastigheter = assets["fastigheter"]
+            if "f4_yield_bostader" in assets:
+                player.f4_yield_bostader = float(assets["f4_yield_bostader"])
+            if "f4_yield_kommersiellt" in assets:
+                player.f4_yield_kommersiellt = float(assets["f4_yield_kommersiellt"])
             if "f4_quarters" in assets:
                 player.f4_quarters = assets["f4_quarters"]
             if "f4_final_score" in assets:

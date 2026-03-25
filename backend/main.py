@@ -289,6 +289,14 @@ async def companion_project_data():
     return {"projects": result}
 
 
+@app.get("/api/companion/data/fcfs")
+async def companion_fcfs_data():
+    """Return FC and FS staff for Phase 4."""
+    fc = [s.to_dict() for s in game_data.staff if s.roll == "FC"]
+    fs = [s.to_dict() for s in game_data.staff if s.roll == "FS"]
+    return {"fc": fc, "fs": fs}
+
+
 @app.websocket("/companion/ws/{code}/{player_id}")
 async def companion_ws(ws: WebSocket, code: str, player_id: str):
     room = companion_manager.get_room(code)

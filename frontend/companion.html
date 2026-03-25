@@ -669,33 +669,107 @@ function renderPlayer() {
 
     // Phase 4: Förvaltning
     if (isPhase4) {
-        if (step === 'f4_forbered') {
-            html += '<div class="asset-card" style="border-left-color:#16a085">';
-            html += '<div class="asset-label">F\u00f6rbered f\u00f6rvaltning</div>';
-            html += '<div style="font-size:14px">Ta bort BRF-projekt (redan s\u00e5lda). Registrera driftnetto och energiklasser.</div>';
-            html += counterRow('EK (Mkr)', p.eget_kapital, 'eget_kapital', true);
-            html += '</div>';
+        var fasts = p.fastigheter || [];
+        var EKLASS = ['A','B','C','D','E','F'];
+
+        // FC/FS selection (always visible in phase 4)
+        html += '<div class="asset-card" style="border-left-color:#16a085">';
+        html += '<div class="asset-label">FASTIGHETSCHEF (FC)</div>';
+        if (p.fastighetschef) {
+            html += '<div><strong>' + p.fastighetschef.namn + '</strong><br>'
+                + '<span style="color:#999">' + (p.fastighetschef.specialisering||'') + ' | L\u00f6n: ' + (p.fastighetschef.lon||0) + ' Mkr/kv</span></div>';
+        } else {
+            html += '<div class="choose-btn" data-choose="fc" style="cursor:pointer;color:#f0c929">+ V\u00e4lj Fastighetschef</div>';
         }
-        if (step === 'f4_kvartal') {
-            var f4Q = p.f4_quarters || {};
-            html += '<div class="asset-card" style="border-left-color:#16a085">';
-            html += '<div class="asset-label">Kvartalsvis f\u00f6rvaltning</div>';
-            for (var qi = 1; qi <= 4; qi++) {
-                var qk = '' + qi;
-                var qd = f4Q[qk] || {};
-                html += '<div style="border-bottom:1px solid #1a2736;padding:6px 0">';
-                html += '<div style="font-weight:600;font-size:14px">Kvartal ' + qi + '</div>';
-                html += '<div style="display:flex;gap:8px;margin-top:4px;font-size:13px;flex-wrap:wrap">';
-                html += '<span>EK\u00e4ndr: <span class="f4-btn" data-q="' + qk + '" data-field="ek" data-dir="-1">\u2212</span> <strong>' + (qd.ek||0) + '</strong> <span class="f4-btn" data-q="' + qk + '" data-field="ek" data-dir="1">+</span></span>';
-                html += '</div></div>';
+        html += '</div>';
+
+        html += '<div class="asset-card" style="border-left-color:#16a085">';
+        html += '<div class="asset-label">FASTIGHETSSKÖTARE (FS)</div>';
+        if (p.fastighetsskotare) {
+            html += '<div><strong>' + p.fastighetsskotare.namn + '</strong><br>'
+                + '<span style="color:#999">' + (p.fastighetsskotare.specialisering||'') + ' | L\u00f6n: ' + (p.fastighetsskotare.lon||0) + ' Mkr/kv</span></div>';
+        } else {
+            html += '<div class="choose-btn" data-choose="fs" style="cursor:pointer;color:#f0c929">+ V\u00e4lj Fastighetsskötare</div>';
+        }
+        html += '</div>';
+
+        // Fastigheter (each as own card)
+        html += '<div class="asset-card" style="border-left-color:#e67e22">';
+        html += '<div class="asset-label">FASTIGHETER (' + fasts.length + ')</div>';
+        if (fasts.length === 0) {
+            html += '<div style="color:#999;font-size:13px">Inga fastigheter \u00e4nnu. Projekt konverteras vid 4.1.</div>';
+            // Button to convert projects to fastigheter
+            if (step === 'f4_forbered' && p.projects.length > 0) {
+                html += '<div class="choose-btn" data-action="convert_projects" style="cursor:pointer;color:#f0c929;margin-top:8px">Konvertera projekt till fastigheter</div>';
             }
-            html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
+        }
+        for (var fi = 0; fi < fasts.length; fi++) {
+            var f = fasts[fi];
+            if (f.sold) continue;
+            var isBostader = (f.typ === 'Hyresr\u00e4tt' || f.typ === 'BRF');
+            var yieldPct = isBostader ? p.f4_yield_bostader : p.f4_yield_kommersiellt;
+            var mv = yieldPct > 0 ? Math.round(f.anskaffning / (yieldPct / 100)) : 0;
+            html += '<div style="border:1px solid #334;border-radius:8px;padding:10px;margin:6px 0;background:#1a2736">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+            html += '<strong style="color:' + (TYPE_COLORS[f.typ]||'#999') + '">' + f.namn + '</strong>';
+            html += '<span style="font-size:12px;color:#999">' + f.typ + ' | BTA: ' + f.bta + '</span>';
+            html += '</div>';
+            // Energiklass
+            html += '<div style="display:flex;gap:6px;align-items:center;margin:6px 0;font-size:13px">';
+            html += '<span>Energiklass:</span>';
+            for (var ei = 0; ei < EKLASS.length; ei++) {
+                var ek = EKLASS[ei];
+                var isActive = (f.energiklass||'D') === ek;
+                html += '<span class="f4-eklass-btn" data-fi="' + fi + '" data-eklass="' + ek + '" '
+                    + 'style="cursor:pointer;padding:2px 6px;border-radius:4px;font-weight:700;'
+                    + (isActive ? 'background:#f0c929;color:#1a1a2e' : 'background:#2a3a4a;color:#888')
+                    + '">' + ek + '</span>';
+            }
+            html += '</div>';
+            // Marknadsvärde
+            html += '<div style="font-size:13px;color:#999">Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:#27ae60">' + mv + ' Mkr</strong></div>';
+            // Händelsekort per kvartal (collapsed)
+            var events = f.events || [];
+            html += '<div style="margin-top:6px">';
+            html += '<div style="font-size:12px;color:#f0c929;cursor:pointer" class="f4-toggle-events" data-fi="' + fi + '">H\u00e4ndelsekort (' + events.length + ') \u25B8</div>';
+            html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="display:none;margin-top:4px">';
+            for (var qi = 1; qi <= 4; qi++) {
+                var ev = events.find(function(e) { return e.kvartal === qi; }) || {};
+                html += '<div style="display:flex;gap:8px;font-size:12px;padding:2px 0">';
+                html += '<span style="color:#999;width:30px">Q' + qi + ':</span>';
+                html += '<span>EK: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="-1">\u2212</span> <strong>' + (ev.ek||0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="1">+</span></span>';
+                html += '<span>Energi: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="-1">\u25BC</span> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="1">\u25B2</span></span>';
+                html += '</div>';
+            }
+            html += '</div></div>';
+            // Sell button
+            html += '<div class="f4-sell-btn" data-fi="' + fi + '" style="cursor:pointer;color:#e74c3c;font-size:12px;margin-top:4px">S\u00e4lj fastighet</div>';
             html += '</div>';
         }
+        // Buy new property
+        html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:#27ae60;margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
+        html += '</div>';
+
+        // Yield input (quarterly)
+        var isQuarter = ['f4_q1','f4_q2','f4_q3','f4_q4'].indexOf(step) >= 0;
+        if (isQuarter || step === 'f4_slut') {
+            html += '<div class="asset-card" style="border-left-color:#3498db">';
+            html += '<div class="asset-label">YIELD</div>';
+            html += '<div style="display:flex;gap:16px;align-items:center;font-size:14px">';
+            html += '<span>Bost\u00e4der: <span class="f4-yield-btn" data-type="bostader" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_bostader.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="bostader" data-d="0.25">+</span></span>';
+            html += '<span>Kommersiellt: <span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.25">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(2) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.25">+</span></span>';
+            html += '</div></div>';
+        }
+
+        // EK counter
+        html += '<div class="asset-card" style="border-left-color:#27ae60">';
+        html += counterRow('EK (Mkr)', p.eget_kapital, 'eget_kapital', true);
+        html += '</div>';
+
+        // Slutvärdering
         if (step === 'f4_slut') {
             html += '<div class="asset-card" style="border-left-color:#f0c929">';
-            html += '<div class="asset-label">Slutv\u00e4rdering</div>';
-            html += counterRow('EK totalt (Mkr)', p.eget_kapital, 'eget_kapital', true);
+            html += '<div class="asset-label">SLUTV\u00c4RDERING</div>';
             html += counterRow('Slutpo\u00e4ng (kr/kvm)', p.f4_final_score, 'f4_final_score', true);
             html += '</div>';
         }
@@ -915,6 +989,130 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { [key]: Math.max(min, cur - 1) } });
         });
     });
+    // Phase 4: FC/FS choose
+    container.querySelectorAll('[data-choose="fc"]').forEach(el => {
+        el.addEventListener('click', () => openFCFSModal('fc'));
+    });
+    container.querySelectorAll('[data-choose="fs"]').forEach(el => {
+        el.addEventListener('click', () => openFCFSModal('fs'));
+    });
+    // Phase 4: Convert projects to fastigheter
+    container.querySelectorAll('[data-action="convert_projects"]').forEach(el => {
+        el.addEventListener('click', () => {
+            var p = S.state.player;
+            var fasts = [];
+            var brfEk = 0;
+            for (var pr of (p.projects || [])) {
+                if (pr.typ === 'BRF') {
+                    // BRF sold: EK += MV - anskaffning
+                    brfEk += (pr.marknadsvarde || pr.anskaffning) - pr.anskaffning;
+                } else {
+                    fasts.push({
+                        id: pr.id, namn: pr.namn, typ: pr.typ, bta: pr.bta,
+                        anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'D',
+                        marknadsvarde: pr.marknadsvarde || pr.anskaffning,
+                        events: [], sold: false, kopeskilling: 0
+                    });
+                }
+            }
+            send({ type: 'update_assets', assets: {
+                fastigheter: fasts,
+                eget_kapital: (p.eget_kapital || 0) + brfEk
+            }});
+        });
+    });
+    // Phase 4: Energiklass buttons
+    container.querySelectorAll('.f4-eklass-btn').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var fi = parseInt(el.dataset.fi);
+            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+            if (fasts[fi]) {
+                fasts[fi].energiklass = el.dataset.eklass;
+                send({ type: 'update_assets', assets: { fastigheter: fasts } });
+            }
+        });
+    });
+    // Phase 4: Toggle events per fastighet
+    container.querySelectorAll('.f4-toggle-events').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var list = document.getElementById('f4-events-' + el.dataset.fi);
+            if (list) list.style.display = list.style.display === 'none' ? '' : 'none';
+        });
+    });
+    // Phase 4: Event +/- per fastighet per kvartal
+    container.querySelectorAll('.f4-ev-btn').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var fi = parseInt(el.dataset.fi);
+            var q = parseInt(el.dataset.q);
+            var field = el.dataset.f;
+            var dir = parseInt(el.dataset.d);
+            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+            if (!fasts[fi]) return;
+            if (!fasts[fi].events) fasts[fi].events = [];
+            var ev = fasts[fi].events.find(function(e) { return e.kvartal === q; });
+            if (!ev) { ev = { kvartal: q, ek: 0, energi: 0 }; fasts[fi].events.push(ev); }
+            if (field === 'energi') {
+                // Shift energiklass
+                var klasser = ['A','B','C','D','E','F'];
+                var idx = klasser.indexOf(fasts[fi].energiklass || 'D');
+                idx = Math.max(0, Math.min(5, idx - dir)); // up=better=lower idx
+                fasts[fi].energiklass = klasser[idx];
+            } else {
+                ev[field] = (ev[field] || 0) + dir;
+            }
+            send({ type: 'update_assets', assets: { fastigheter: fasts } });
+        });
+    });
+    // Phase 4: Yield +/-
+    container.querySelectorAll('.f4-yield-btn').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var typ = el.dataset.type;
+            var dir = parseFloat(el.dataset.d);
+            var key = 'f4_yield_' + typ;
+            var cur = S.state.player[key] || 4.5;
+            send({ type: 'update_assets', assets: { [key]: Math.max(0.25, cur + dir) } });
+        });
+    });
+    // Phase 4: Sell fastighet
+    container.querySelectorAll('.f4-sell-btn').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var fi = parseInt(el.dataset.fi);
+            var kopeskilling = prompt('Ange köpeskilling (Mkr):');
+            if (kopeskilling === null) return;
+            kopeskilling = parseFloat(kopeskilling.replace(',','.')) || 0;
+            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+            if (fasts[fi]) {
+                fasts[fi].sold = true;
+                fasts[fi].kopeskilling = kopeskilling;
+                send({ type: 'update_assets', assets: {
+                    fastigheter: fasts,
+                    eget_kapital: (S.state.player.eget_kapital || 0) + kopeskilling
+                }});
+            }
+        });
+    });
+    // Phase 4: Buy fastighet
+    container.querySelectorAll('[data-action="buy_fastighet"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var namn = prompt('Fastighetsnamn:');
+            if (!namn) return;
+            var typ = prompt('Typ (Hyresrätt/LOKAL/KONTOR/FÖRSKOLOR):') || 'LOKAL';
+            var bta = parseInt(prompt('BTA (kvm):') || '1000');
+            var anskaff = parseInt(prompt('Köpeskilling (Mkr):') || '50');
+            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+            fasts.push({
+                id: 'KOP-' + Date.now(), namn: namn, typ: typ, bta: bta,
+                anskaffning: anskaff, energiklass: 'D',
+                marknadsvarde: anskaff, events: [], sold: false, kopeskilling: 0
+            });
+            send({ type: 'update_assets', assets: {
+                fastigheter: fasts,
+                eget_kapital: (S.state.player.eget_kapital || 0) - anskaff
+            }});
+        });
+    });
 }
 
 // ── PC Modal ──
@@ -1022,6 +1220,45 @@ function openACModal() {
         el.addEventListener('click', function() {
             var ac = S.acData.find(function(a) { return a.id === el.dataset.acId; });
             if (ac) send({ type: 'update_assets', assets: { arbetschef: ac } });
+            mc.innerHTML = '';
+        });
+    });
+    mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
+}
+
+// ── FC/FS Modal ──
+async function openFCFSModal(type) {
+    const mc = document.getElementById('modal-container');
+    if (!S.fcfsData) {
+        try {
+            const r = await fetch('/api/companion/data/fcfs');
+            S.fcfsData = await r.json();
+        } catch(e) { return; }
+    }
+    const items = type === 'fc' ? (S.fcfsData.fc || []) : (S.fcfsData.fs || []);
+    const title = type === 'fc' ? 'Välj Fastighetschef (FC)' : 'Välj Fastighetsskötare (FS)';
+    const assetKey = type === 'fc' ? 'fastighetschef' : 'fastighetsskotare';
+
+    let html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header"><h3>' + title + '</h3></div>';
+    html += '<div class="modal-body">';
+    for (const s of items) {
+        html += '<div class="modal-item" data-staff=\'' + JSON.stringify(s).replace(/'/g,"&#39;") + '\'>'
+            + '<div class="item-name">' + s.namn + '</div>'
+            + '<div class="item-detail">' + (s.specialisering||'') + ' | Kap: ' + (s.kapacitet||0)
+            + ' | Lön: ' + (s.lon||0) + ' Mkr/kv</div>'
+            + '<div class="item-detail" style="color:#999">' + (s.not_text||s.forhandling||'') + '</div>'
+            + '</div>';
+    }
+    html += '</div>';
+    html += '<button id="modal-cancel" class="btn-secondary" style="width:100%;padding:12px;margin-top:8px;border:none;border-radius:8px;cursor:pointer">Avbryt</button>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var staff = JSON.parse(el.dataset.staff);
+            send({ type: 'update_assets', assets: { [assetKey]: staff } });
             mc.innerHTML = '';
         });
     });
