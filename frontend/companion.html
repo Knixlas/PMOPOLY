@@ -264,6 +264,8 @@ if (location.pathname.endsWith('/gm')) {
             if (ok) { loadReferenceData().then(() => { connectWs(S.roomCode, S.playerId); showView('view-player'); }); }
             else showView('view-lobby');
         });
+    } else {
+        showView('view-lobby');
     }
 }
 
