@@ -125,11 +125,10 @@ class CompanionPlayer:
     abt_budget: float = 0.0
     # Phase 2 assets
     arbetschef: Optional[dict] = None
-    pl_q: int = 0
-    pl_h: int = 0
-    pl_t: int = 0
-    pl_erfarenhet: int = 0
-    pl_kostnad: float = 0.0
+    pl_choices: Dict[str, dict] = field(default_factory=dict)  # step_id -> {name, niva, q, h, t, erf, cost}
+    pl_event_q: int = 0   # Q changes from event cards
+    pl_event_h: int = 0   # H changes from event cards
+    pl_event_abt: float = 0.0  # ABT changes from event cards
 
     def step_done(self, step_id: str) -> bool:
         """Check if player appears done with a given step."""
@@ -191,11 +190,10 @@ class CompanionPlayer:
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
             "arbetschef": self.arbetschef,
-            "pl_q": self.pl_q,
-            "pl_h": self.pl_h,
-            "pl_t": self.pl_t,
-            "pl_erfarenhet": self.pl_erfarenhet,
-            "pl_kostnad": round(self.pl_kostnad, 1),
+            "pl_choices": self.pl_choices,
+            "pl_event_q": self.pl_event_q,
+            "pl_event_h": self.pl_event_h,
+            "pl_event_abt": round(self.pl_event_abt, 1),
             "profit_score": self.profit_score,
         }
 
@@ -497,16 +495,14 @@ class CompanionManager:
                 player.abt_budget = float(assets["abt_budget"])
             if "arbetschef" in assets:
                 player.arbetschef = assets["arbetschef"]
-            if "pl_q" in assets:
-                player.pl_q = int(assets["pl_q"])
-            if "pl_h" in assets:
-                player.pl_h = int(assets["pl_h"])
-            if "pl_t" in assets:
-                player.pl_t = int(assets["pl_t"])
-            if "pl_erfarenhet" in assets:
-                player.pl_erfarenhet = int(assets["pl_erfarenhet"])
-            if "pl_kostnad" in assets:
-                player.pl_kostnad = float(assets["pl_kostnad"])
+            if "pl_choices" in assets:
+                player.pl_choices = assets["pl_choices"]
+            if "pl_event_q" in assets:
+                player.pl_event_q = int(assets["pl_event_q"])
+            if "pl_event_h" in assets:
+                player.pl_event_h = int(assets["pl_event_h"])
+            if "pl_event_abt" in assets:
+                player.pl_event_abt = float(assets["pl_event_abt"])
             # Update GM dashboard
             await self.broadcast_state(room)
 

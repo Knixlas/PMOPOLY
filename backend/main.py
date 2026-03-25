@@ -246,6 +246,34 @@ async def companion_ac_data():
     return {"ac": game_data.ac_staff}
 
 
+@app.get("/api/companion/data/planning")
+async def companion_planning_data():
+    """Return all suppliers and organisations for planning steps."""
+    suppliers = {}
+    for namn, levels in game_data.suppliers.items():
+        suppliers[namn] = [s.to_dict("C") for s in levels]  # Default to class C
+    orgs = {}
+    for namn, levels in game_data.organisations.items():
+        orgs[namn] = [o.to_dict() for o in levels]
+    # Planning step order with type info
+    steps = [
+        {"id": "stodfunktioner", "name": "St\u00f6dfunktioner", "type": "org", "key": "St\u00f6dfunktioner"},
+        {"id": "mark", "name": "MARK", "type": "supplier", "key": "MARK"},
+        {"id": "husunderbyggnad", "name": "HUSUNDERBYGGNAD", "type": "supplier", "key": "HUSUNDERBYGGNAD"},
+        {"id": "digitalisering", "name": "Digitalisering", "type": "org", "key": "Digitalisering"},
+        {"id": "stomme", "name": "STOMME", "type": "supplier", "key": "STOMME"},
+        {"id": "installationer", "name": "INSTALLATIONER", "type": "supplier", "key": "INSTALLATIONER"},
+        {"id": "opteam", "name": "Operativt team", "type": "org", "key": "Operativt team"},
+        {"id": "gemarbeten", "name": "GEM. ARBETEN", "type": "supplier", "key": "GEMENSAMMA ARBETEN"},
+        {"id": "yttertak", "name": "YTTERTAK", "type": "supplier", "key": "YTTERTAK"},
+        {"id": "fasader", "name": "FASADER", "type": "supplier", "key": "FASADER"},
+        {"id": "marknadsteam", "name": "Marknadsteam", "type": "org", "key": "Marknadsteam"},
+        {"id": "stomkomp", "name": "STOMKOMPLETTERING", "type": "supplier", "key": "STOMKOMPLETTERING"},
+        {"id": "invytskikt", "name": "INV YTSKIKT", "type": "supplier", "key": "INV YTSKIKT"},
+    ]
+    return {"suppliers": suppliers, "organisations": orgs, "steps": steps}
+
+
 @app.get("/api/companion/data/projects")
 async def companion_project_data():
     result = {}

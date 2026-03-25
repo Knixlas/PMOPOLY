@@ -203,6 +203,7 @@ const S = {
     pcData: [],
     acData: [],
     projectData: {},
+    planningData: null,
 };
 
 function showView(id) {
@@ -329,14 +330,16 @@ document.getElementById('btn-join-quarter').addEventListener('click', async () =
 });
 
 async function loadReferenceData() {
-    const [pcRes, projRes, acRes] = await Promise.all([
+    const [pcRes, projRes, acRes, planRes] = await Promise.all([
         fetch('/api/companion/data/pc'),
         fetch('/api/companion/data/projects'),
         fetch('/api/companion/data/ac'),
+        fetch('/api/companion/data/planning'),
     ]);
     S.pcData = (await pcRes.json()).pc;
     S.projectData = (await projRes.json()).projects;
     S.acData = (await acRes.json()).ac;
+    S.planningData = await planRes.json();
 }
 
 // ── Render ──
@@ -528,15 +531,37 @@ function renderPlayer() {
         html += '</div>';
     }
 
-    // Planning counters (Phase 2)
-    if (showPlanning) {
+    // Planning steps (Phase 2)
+    if (showPlanning && S.planningData) {
+        var choices = p.pl_choices || {};
         html += '<div class="asset-card" style="border-left-color:#1565C0">';
-        html += '<div class="asset-label">Planeringssteg \u2014 registrera v\u00e4rden</div>';
-        html += counterRow('Kvalitet (Q) uppn\u00e5tt', p.q_achieved, 'q_achieved');
-        html += counterRow('H\u00e5llbarhet (H) uppn\u00e5tt', p.h_achieved, 'h_achieved');
-        html += counterRow('Byggtid (T) m\u00e5n', p.pl_t, 'pl_t', true);
-        html += counterRow('Erfarenhet', p.pl_erfarenhet, 'pl_erfarenhet');
-        html += counterRow('ABT anv\u00e4nt (Mkr)', p.pl_kostnad, 'pl_kostnad');
+        html += '<div class="asset-label">Planeringssteg \u2014 v\u00e4lj leverant\u00f6r/organisation</div>';
+        for (var si = 0; si < S.planningData.steps.length; si++) {
+            var ps = S.planningData.steps[si];
+            var chosen = choices[ps.id];
+            var typeLabel = ps.type === 'supplier' ? 'Lev' : 'Org';
+            if (chosen) {
+                html += '<div class="chosen-item" data-action="choose-planning" data-step-id="' + ps.id + '" style="cursor:pointer">';
+                html += '<div class="dot" style="background:' + (ps.type === 'supplier' ? '#1565C0' : '#2E7D32') + '"></div>';
+                html += '<div><div class="name">' + ps.name + ' \u2014 Niv\u00e5 ' + chosen.niva + '</div>';
+                html += '<div class="detail">Q:' + (chosen.q||0) + ' H:' + (chosen.h||0) + ' T:' + (chosen.t||0) + ' Erf:' + (chosen.erf||0) + ' | ' + chosen.cost + ' Mkr</div></div>';
+                if (editPlanning) html += '<div class="remove-btn" data-action="remove-planning" data-step-id="' + ps.id + '">\u2715</div>';
+                html += '</div>';
+            } else if (editPlanning) {
+                html += '<div class="asset-empty" data-action="choose-planning" data-step-id="' + ps.id + '" style="padding:4px 0">';
+                html += '<span style="color:#888">' + (si+1) + '.</span> ' + ps.name + ' <span style="color:#555">(' + typeLabel + ')</span></div>';
+            } else {
+                html += '<div style="padding:4px 0;color:#555">' + (si+1) + '. ' + ps.name + ' \u2014 ej vald</div>';
+            }
+        }
+        html += '</div>';
+
+        // Event card effects (manual +/-)
+        html += '<div class="asset-card" style="border-left-color:#e67e22">';
+        html += '<div class="asset-label">H\u00e4ndelsekort \u2014 manuella \u00e4ndringar</div>';
+        html += counterRow('Q fr\u00e5n kort', p.pl_event_q, 'pl_event_q', true);
+        html += counterRow('H fr\u00e5n kort', p.pl_event_h, 'pl_event_h', true);
+        html += counterRow('ABT fr\u00e5n kort (Mkr)', p.pl_event_abt, 'pl_event_abt', true);
         html += '</div>';
     }
 
@@ -564,11 +589,25 @@ function renderPlayer() {
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
         if (isPhase2) {
-            html += '<div>Q: <strong>(' + (p.q_achieved || 0) + ')' + totalQ + '</strong></div>';
-            html += '<div>H: <strong>(' + (p.h_achieved || 0) + ')' + totalH + '</strong></div>';
-            html += '<div>T: <strong>' + (totalT + p.pl_t) + '(' + baseT + ') m\u00e5n</strong></div>';
-            html += '<div>Erf: <strong>' + p.pl_erfarenhet + '</strong></div>';
-            html += '<div>ABT anv: <strong>' + p.pl_kostnad + ' Mkr</strong></div>';
+            // Calculate totals from pl_choices
+            var choices = p.pl_choices || {};
+            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0;
+            for (var k in choices) {
+                var ch = choices[k];
+                plQ += ch.q || 0;
+                plH += ch.h || 0;
+                plT += ch.t || 0;
+                plErf += ch.erf || 0;
+                plCost += ch.cost || 0;
+            }
+            var achievedQ = plQ + (p.pl_event_q || 0);
+            var achievedH = plH + (p.pl_event_h || 0);
+            html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
+            html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
+            html += '<div>T: <strong>' + (totalT + plT) + '(' + baseT + ') m\u00e5n</strong></div>';
+            html += '<div>Erf: <strong>' + plErf + '</strong></div>';
+            html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
+            html += '<div>H\u00e4nd: <strong>' + (p.pl_event_abt || 0) + ' Mkr</strong></div>';
         }
         html += '</div></div>';
     }
@@ -643,6 +682,17 @@ function attachPlayerEvents(container) {
             if (cur > 0) send({ type: 'update_assets', assets: { [key]: cur - 1 } });
         });
     });
+    container.querySelectorAll('[data-action="choose-planning"]').forEach(el => {
+        el.addEventListener('click', function() { openPlanningModal(el.dataset.stepId); });
+    });
+    container.querySelectorAll('[data-action="remove-planning"]').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var choices = Object.assign({}, S.state.player.pl_choices || {});
+            delete choices[el.dataset.stepId];
+            send({ type: 'update_assets', assets: { pl_choices: choices } });
+        });
+    });
     container.querySelectorAll('[data-action="buy-project-3x"]').forEach(el => {
         el.addEventListener('click', () => openProjectModal(el.dataset.typ, true));
     });
@@ -691,6 +741,58 @@ function openPCModal() {
         });
     });
     mc.querySelector('#modal-cancel').addEventListener('click', () => { mc.innerHTML = ''; });
+}
+
+// ── Planning Modal ──
+function openPlanningModal(stepId) {
+    if (!S.planningData) return;
+    var mc = document.getElementById('modal-container');
+    var stepDef = S.planningData.steps.find(function(s) { return s.id === stepId; });
+    if (!stepDef) return;
+    var isSupplier = stepDef.type === 'supplier';
+    var source = isSupplier ? S.planningData.suppliers : S.planningData.organisations;
+    var levels = source[stepDef.key] || [];
+    var currentChoice = (S.state.player.pl_choices || {})[stepId];
+
+    var html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header"><h3>' + stepDef.name + '</h3></div>';
+    html += '<div class="modal-body">';
+    for (var i = 0; i < levels.length; i++) {
+        var lv = levels[i];
+        var sel = currentChoice && currentChoice.niva === lv.niva ? ' selected' : '';
+        var cost = isSupplier ? (lv.kostnad || lv.klass_priser?.C || 0) : (lv.kostnad_mkr || lv.kostnad || 0);
+        html += '<div class="modal-item' + sel + '" data-idx="' + i + '">';
+        html += '<div class="item-name">Niv\u00e5 ' + lv.niva + '</div>';
+        html += '<div class="item-detail">';
+        html += 'Q:' + (lv.q || 0) + ' H:' + (lv.h || 0) + ' T:' + (lv.t || 0) + ' Erf:' + (lv.erfarenhet || 0);
+        html += ' | ' + cost + ' Mkr';
+        if (lv.riskbuffert) html += ' | +' + lv.riskbuffert + ' Rb';
+        html += '</div>';
+        if (lv.beskrivning) html += '<div class="item-detail" style="color:#777;margin-top:2px">' + lv.beskrivning + '</div>';
+        html += '</div>';
+    }
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var idx = parseInt(el.dataset.idx);
+            var lv = levels[idx];
+            var cost = isSupplier ? (lv.kostnad || lv.klass_priser?.C || 0) : (lv.kostnad_mkr || lv.kostnad || 0);
+            var choices = Object.assign({}, S.state.player.pl_choices || {});
+            choices[stepId] = {
+                name: stepDef.name, niva: lv.niva,
+                q: lv.q || 0, h: lv.h || 0, t: lv.t || 0,
+                erf: lv.erfarenhet || 0, cost: cost,
+                rb: lv.riskbuffert || 0,
+            };
+            send({ type: 'update_assets', assets: { pl_choices: choices } });
+            mc.innerHTML = '';
+        });
+    });
+    mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
 }
 
 // ── AC Modal ──
