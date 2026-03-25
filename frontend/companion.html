@@ -322,6 +322,8 @@ function render() {
 function renderPlayer() {
     const st = S.state;
     if (!st) return;
+    const p = st.player;
+    if (!p) return;
     document.getElementById('p-phase-name').textContent = st.phase_name || '—';
     document.getElementById('p-step-name').textContent = st.step_name || 'Väntar...';
     const blockEl = document.getElementById('p-block-name');
@@ -331,7 +333,6 @@ function renderPlayer() {
         if (newName && newName.trim()) send({ type: 'rename_block', name: newName.trim() });
     };
 
-    const p = st.player;
     const container = document.getElementById('player-assets');
 
     let html = '';
