@@ -290,6 +290,13 @@ function connectWs(code, playerId) {
 function send(data) {
     if (S.ws && S.ws.readyState === WebSocket.OPEN) {
         S.ws.send(JSON.stringify(data));
+    } else {
+        console.warn('WS not open, state:', S.ws?.readyState, '- reconnecting...');
+        if (S.roomCode && S.playerId) {
+            connectWs(S.roomCode, S.playerId);
+            // Retry after reconnect
+            setTimeout(function() { send(data); }, 1000);
+        }
     }
 }
 
