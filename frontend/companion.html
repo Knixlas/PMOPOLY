@@ -464,10 +464,9 @@ function renderPlayer() {
     if (showCounters) {
         html += '<div class="asset-card counters">';
         html += '<div class="asset-label">\u00c4ndringar fr\u00e5n kort & spelbr\u00e4de</div>';
-        html += counterRow('Kvalitet (Q)', p.q_krav, 'q_krav');
-        html += counterRow('H\u00e5llbarhet (H)', p.h_krav, 'h_krav');
+        html += counterRow('Kvalitet (Q)', p.q_krav, 'q_krav', true);
+        html += counterRow('H\u00e5llbarhet (H)', p.h_krav, 'h_krav', true);
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
-        html += counterRow('Markexpansioner', p.mark_expansions, 'mark_expansions');
         html += '</div>';
     }
 
@@ -483,15 +482,16 @@ function renderPlayer() {
     }
 }
 
-function counterRow(label, val, key) {
-    return `<div class="counter-row">
-        <div class="label">${label}</div>
-        <div class="counter-controls">
-            <button class="counter-btn" data-action="decr" data-key="${key}">−</button>
-            <div class="counter-val">${val}</div>
-            <button class="counter-btn" data-action="incr" data-key="${key}">+</button>
-        </div>
-    </div>`;
+function counterRow(label, val, key, allowNeg) {
+    return '<div class="counter-row">' +
+        '<div class="label">' + label + '</div>' +
+        '<div class="counter-controls">' +
+            '<button class="counter-btn" data-action="decr" data-key="' + key + '"' +
+                (allowNeg ? ' data-allow-neg="1"' : '') + '>\u2212</button>' +
+            '<div class="counter-val">' + val + '</div>' +
+            '<button class="counter-btn" data-action="incr" data-key="' + key + '">+</button>' +
+        '</div>' +
+    '</div>';
 }
 
 function attachPlayerEvents(container) {
@@ -527,7 +527,8 @@ function attachPlayerEvents(container) {
         el.addEventListener('click', () => {
             const key = el.dataset.key;
             const cur = S.state.player[key] || 0;
-            send({ type: 'update_assets', assets: { [key]: Math.max(0, cur - 1) } });
+            const min = el.dataset.allowNeg ? -99 : 0;
+            send({ type: 'update_assets', assets: { [key]: Math.max(min, cur - 1) } });
         });
     });
 }
