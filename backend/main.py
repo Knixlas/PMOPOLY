@@ -186,7 +186,7 @@ async def companion_join_room(code: str, body: dict):
     quarter_idx = int(body.get("quarter_idx", 0))
     result = companion_manager.join_room(code, name, quarter_idx)
     if not result:
-        return JSONResponse({"error": "Kunde inte gå med (kvarteret fullt eller rummet finns ej)"}, status_code=400)
+        return JSONResponse({"error": "Kunde inte gå med (stadsdelen full eller rummet finns ej)"}, status_code=400)
     room, player_id = result
     await companion_manager.broadcast_state(room)
     return {"code": room.code, "player_id": player_id}
@@ -198,14 +198,14 @@ async def companion_join_quarter(body: dict):
     name = body.get("name", "Spelare")
     quarter_code = body.get("quarter_code", "").strip().upper()
     if not quarter_code:
-        return JSONResponse({"error": "Ange kvarterskod"}, status_code=400)
+        return JSONResponse({"error": "Ange stadsdelskod"}, status_code=400)
     result = companion_manager.find_room_by_quarter_code(quarter_code)
     if not result:
-        return JSONResponse({"error": "Kvarterskoden hittades inte"}, status_code=404)
+        return JSONResponse({"error": "Stadsdelskoden hittades inte"}, status_code=404)
     room, quarter_idx = result
     join_result = companion_manager.join_room(room.code, name, quarter_idx)
     if not join_result:
-        return JSONResponse({"error": "Kvarteret är fullt (max 4 spelare)"}, status_code=400)
+        return JSONResponse({"error": "Stadsdelen är full (max 4 spelare)"}, status_code=400)
     _, player_id = join_result
     await companion_manager.broadcast_state(room)
     return {"code": room.code, "player_id": player_id, "quarter_name": room.quarter_names[quarter_idx]}
@@ -224,11 +224,12 @@ async def companion_leaderboard(code: str):
         return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
     phase = room.current_phase
     step = room.current_step
+    lb = room.leaderboard()
     return {
         "phase_name": phase["name"] if phase else "—",
         "step_name": step["name"] if step else "—",
-        "leaderboard": room.leaderboard(),
-        "quarters": [room.quarter_summary(i) for i in range(room.num_quarters)],
+        "players": lb["players"],
+        "districts": lb["districts"],
     }
 
 

@@ -18,12 +18,12 @@ PHASES = [
 ]
 
 
-QUARTER_NAMES = [
+DISTRICT_NAMES = [
     "Solbacken", "Ekudden", "Björkhagen", "Tallåsen",
     "Sjöängen", "Strandliden", "Bergslund", "Ängslyckan",
     "Åkervallen", "Parkvillan", "Havsutsikten", "Skogsdungen",
     "Klippudden", "Furuliden", "Mossängen", "Kastanjegården",
-    "Vintergatans", "Sommarbo", "Strömsborg", "Klockelund",
+    "Vintergatan", "Sommarbo", "Strömsborg", "Klockelund",
 ]
 
 
@@ -141,17 +141,17 @@ class CompanionRoom:
         d["step_done"] = p.step_done(step["id"]) if step else False
         return d
 
-    def leaderboard(self) -> list:
-        """All players ranked by profit_score for external dashboard."""
+    def leaderboard(self) -> dict:
+        """All players and districts ranked by profit_score."""
         all_p = [p for p in self.players.values() if not p.is_gm and p.projects]
         ranked = sorted(all_p, key=lambda p: p.profit_score, reverse=True)
-        result = []
+        players = []
         for i, p in enumerate(ranked):
             q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
-            result.append({
+            players.append({
                 "rank": i + 1,
                 "name": p.name,
-                "quarter": q_name,
+                "district": q_name,
                 "profit_score": p.profit_score,
                 "num_projects": len(p.projects),
                 "total_bta": sum(pr.get("bta", 0) for pr in p.projects),
@@ -160,7 +160,25 @@ class CompanionRoom:
                 "riskbuffertar": p.riskbuffertar,
                 "pc_name": p.projektchef.get("namn", "") if p.projektchef else "—",
             })
-        return result
+
+        # District ranking (average profit_score of players)
+        districts = []
+        for i in range(self.num_quarters):
+            qp = [p for p in self.players.values() if p.quarter_idx == i and not p.is_gm and p.projects]
+            if not qp:
+                continue
+            avg_score = round(sum(p.profit_score for p in qp) / len(qp), 1)
+            name = self.quarter_names[i] if i < len(self.quarter_names) else f"Stadsdel {i+1}"
+            districts.append({
+                "name": name,
+                "avg_score": avg_score,
+                "num_players": len(qp),
+            })
+        districts.sort(key=lambda d: d["avg_score"], reverse=True)
+        for i, d in enumerate(districts):
+            d["rank"] = i + 1
+
+        return {"players": players, "districts": districts}
 
     def to_dict(self):
         phase = self.current_phase
@@ -208,9 +226,9 @@ class CompanionManager:
         import random
         code = uuid.uuid4().hex[:6].upper()
         gm_id = uuid.uuid4().hex[:8]
-        names = random.sample(QUARTER_NAMES, min(num_quarters, len(QUARTER_NAMES)))
-        if num_quarters > len(QUARTER_NAMES):
-            names += [f"Kvarter {i+1}" for i in range(len(QUARTER_NAMES), num_quarters)]
+        names = random.sample(DISTRICT_NAMES, min(num_quarters, len(DISTRICT_NAMES)))
+        if num_quarters > len(DISTRICT_NAMES):
+            names += [f"Stadsdel {i+1}" for i in range(len(DISTRICT_NAMES), num_quarters)]
         # Generate unique code per quarter
         q_codes = []
         for _ in range(num_quarters):

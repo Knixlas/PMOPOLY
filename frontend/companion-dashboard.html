@@ -44,8 +44,10 @@ h1 { color: #f0c929; text-align: center; font-size: 28px; margin-bottom: 4px; }
     <div class="phase" id="db-phase">—</div>
     <div class="step" id="db-step">—</div>
 </div>
+<h2 style="color:#f0c929;max-width:800px;margin:20px auto 10px;font-size:18px">Stadsdelar</h2>
+<div class="leaderboard" id="db-districts"></div>
+<h2 style="color:#f0c929;max-width:800px;margin:20px auto 10px;font-size:18px">Spelare</h2>
 <div class="leaderboard" id="db-leaderboard"></div>
-<div class="quarters-row" id="db-quarters"></div>
 <div class="refresh-note">Uppdateras var 5:e sekund</div>
 
 <script>
@@ -60,16 +62,36 @@ async function refresh() {
         document.getElementById('db-phase').textContent = data.phase_name || '—';
         document.getElementById('db-step').textContent = data.step_name || '—';
 
-        const lb = data.leaderboard || [];
-        const maxScore = Math.max(1, ...lb.map(e => e.profit_score));
+        // District ranking
+        const districts = data.districts || [];
+        let dHtml = '';
+        for (const d of districts) {
+            dHtml += `<div class="lb-entry">
+                <div class="lb-rank">${d.rank}</div>
+                <div class="lb-info">
+                    <div class="lb-name">${d.name}</div>
+                    <div class="lb-detail">${d.num_players} spelare</div>
+                </div>
+                <div class="lb-score">
+                    <div class="lb-score-val">${d.avg_score}</div>
+                    <div class="lb-score-label">snitt</div>
+                </div>
+            </div>`;
+        }
+        if (districts.length === 0) dHtml = '<div style="text-align:center;color:#666;padding:20px">Inga stadsdelar med projekt ännu...</div>';
+        document.getElementById('db-districts').innerHTML = dHtml;
+
+        // Player ranking
+        const players = data.players || [];
+        const maxScore = Math.max(1, ...players.map(e => e.profit_score));
         let html = '';
-        for (const e of lb) {
+        for (const e of players) {
             const barW = Math.round((e.profit_score / maxScore) * 100);
             html += `<div class="lb-entry">
                 <div class="lb-rank">${e.rank}</div>
                 <div class="lb-info">
                     <div class="lb-name">${e.name}</div>
-                    <div class="lb-detail">${e.quarter} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
+                    <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
                 </div>
                 <div class="lb-score">
                     <div class="lb-score-val">${e.profit_score}</div>
@@ -78,17 +100,8 @@ async function refresh() {
                 </div>
             </div>`;
         }
-        if (lb.length === 0) html = '<div style="text-align:center;color:#666;padding:40px">Inga spelare med projekt ännu...</div>';
+        if (players.length === 0) html = '<div style="text-align:center;color:#666;padding:20px">Inga spelare med projekt ännu...</div>';
         document.getElementById('db-leaderboard').innerHTML = html;
-
-        let qHtml = '';
-        for (const q of (data.quarters || [])) {
-            qHtml += `<div class="q-mini">
-                <h4>${q.name}</h4>
-                <div class="stat">${q.num_players} spelare | ${q.total_projects} proj</div>
-            </div>`;
-        }
-        document.getElementById('db-quarters').innerHTML = qHtml;
     } catch (e) {}
 }
 

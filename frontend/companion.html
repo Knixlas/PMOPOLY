@@ -123,9 +123,9 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <p>Companion App</p>
 
     <div class="lobby-card">
-        <h2>Gå med i kvarter</h2>
+        <h2>Gå med i stadsdel</h2>
         <input type="text" id="player-name" placeholder="Ditt namn" maxlength="20">
-        <input type="text" id="room-code" placeholder="Kvarterskod (4 tecken)" maxlength="4" style="text-transform:uppercase">
+        <input type="text" id="room-code" placeholder="Stadsdelskod (4 tecken)" maxlength="4" style="text-transform:uppercase">
         <button class="btn-primary" id="btn-join-quarter">Gå med</button>
     </div>
 </div>
@@ -136,9 +136,9 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <p>Game Master</p>
 
     <div class="lobby-card">
-        <h2>Skapa kvarter</h2>
-        <input type="number" id="gm-quarters" value="4" min="1" max="20" placeholder="Antal kvarter">
-        <button class="btn-primary" id="btn-create-room">Skapa kvarter</button>
+        <h2>Skapa stadsdelar</h2>
+        <input type="number" id="gm-quarters" value="4" min="1" max="20" placeholder="Antal stadsdelar">
+        <button class="btn-primary" id="btn-create-room">Skapa stadsdelar</button>
     </div>
 </div>
 
@@ -172,7 +172,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
     <!-- Tab switcher -->
     <div style="display:flex;gap:8px;margin-bottom:12px">
         <button class="btn-secondary gm-tab active" data-tab="table" style="flex:1;padding:8px">Spelaröversikt</button>
-        <button class="btn-secondary gm-tab" data-tab="quarters" style="flex:1;padding:8px">Kvarter</button>
+        <button class="btn-secondary gm-tab" data-tab="quarters" style="flex:1;padding:8px">Stadsdelar</button>
     </div>
 
     <!-- Table view -->
@@ -252,7 +252,7 @@ document.getElementById('btn-create-room').addEventListener('click', async () =>
 document.getElementById('btn-join-quarter').addEventListener('click', async () => {
     const quarterCode = document.getElementById('room-code').value.trim().toUpperCase();
     const name = document.getElementById('player-name').value.trim();
-    if (!quarterCode || !name) { alert('Ange namn och kvarterskod'); return; }
+    if (!quarterCode || !name) { alert('Ange namn och stadsdelskod'); return; }
 
     const res = await fetch('/api/companion/join-quarter', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -486,12 +486,12 @@ function renderGM() {
 function renderGMTable(st) {
     const table = document.getElementById('gm-player-table');
     const allPlayers = (st.quarters || []).flatMap(q =>
-        q.players.map(p => ({ ...p, quarter: q.name }))
+        q.players.map(p => ({ ...p, district: q.name }))
     );
     const maxScore = Math.max(1, ...allPlayers.map(p => p.profit_score || 0));
 
     let html = `<thead><tr>
-        <th>Kvarter</th><th>Spelare</th><th>Status</th>
+        <th>Stadsdel</th><th>Spelare</th><th>Status</th>
         <th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>
         <th>Vinstchans</th>
     </tr></thead><tbody>`;
@@ -504,7 +504,7 @@ function renderGMTable(st) {
         const numProj = p.projects?.length || 0;
         const barW = Math.round((p.profit_score / maxScore) * 60);
         html += `<tr>
-            <td>${p.quarter}</td>
+            <td>${p.district}</td>
             <td><strong>${p.name}</strong></td>
             <td class="${statusCls}">${statusTxt}</td>
             <td>${pcName}</td>
@@ -532,7 +532,7 @@ function renderGMQuarters(st) {
                 <span style="color:#888;font-size:13px">(${total}/4)</span>
                 <span style="float:right;font-size:13px;color:${done===total && total>0 ? '#27ae60' : '#c0392b'}">${done}/${total} klara</span>
             </h3>
-            <div class="quarter-stat" style="margin-bottom:6px"><span>Kvarterskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
+            <div class="quarter-stat" style="margin-bottom:6px"><span>Stadsdelskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">${q.code || '—'}</span></div>
             <div class="quarter-stat"><span>Projekt</span><span class="val">${q.total_projects}</span></div>
             <div class="quarter-stat"><span>Total BTA</span><span class="val">${q.total_bta} kvm</span></div>
             <div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">${q.avg_q_krav}</span></div>
@@ -547,7 +547,7 @@ function renderGMQuarters(st) {
         el.addEventListener('click', () => {
             const qi = parseInt(el.dataset.qi);
             const current = el.textContent;
-            const newName = prompt('Nytt kvartersnamn:', current);
+            const newName = prompt('Nytt stadsdelsnamn:', current);
             if (newName && newName.trim()) {
                 send({ type: 'rename_quarter', quarter_idx: qi, name: newName.trim() });
             }
