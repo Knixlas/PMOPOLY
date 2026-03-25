@@ -206,9 +206,38 @@ function showView(id) {
     document.getElementById(id).classList.add('active');
 }
 
+// Persist session across refresh
+function saveSession() {
+    sessionStorage.setItem('pmopoly_companion', JSON.stringify({
+        playerId: S.playerId, roomCode: S.roomCode, isGM: S.isGM
+    }));
+}
+function restoreSession() {
+    const saved = sessionStorage.getItem('pmopoly_companion');
+    if (!saved) return false;
+    const data = JSON.parse(saved);
+    if (!data.playerId || !data.roomCode) return false;
+    S.playerId = data.playerId;
+    S.roomCode = data.roomCode;
+    S.isGM = data.isGM;
+    return true;
+}
+
 // Show GM lobby if URL is /companion/gm
 if (location.pathname.endsWith('/gm')) {
-    showView('view-gm-lobby');
+    if (restoreSession() && S.isGM) {
+        connectWs(S.roomCode, S.playerId);
+        showView('view-gm');
+    } else {
+        showView('view-gm-lobby');
+    }
+} else {
+    if (restoreSession() && !S.isGM) {
+        loadReferenceData().then(() => {
+            connectWs(S.roomCode, S.playerId);
+            showView('view-player');
+        });
+    }
 }
 
 // ── WebSocket ──
@@ -245,6 +274,7 @@ document.getElementById('btn-create-room').addEventListener('click', async () =>
     S.roomCode = data.code;
     S.playerId = data.gm_id;
     S.isGM = true;
+    saveSession();
     connectWs(data.code, data.gm_id);
     showView('view-gm');
 });
@@ -267,6 +297,7 @@ document.getElementById('btn-join-quarter').addEventListener('click', async () =
     S.roomCode = data.code;
     S.playerId = data.player_id;
     S.isGM = false;
+    saveSession();
     await loadReferenceData();
     connectWs(data.code, data.player_id);
     showView('view-player');
