@@ -150,12 +150,14 @@ async def index():
 
 @app.get("/companion")
 async def companion_index():
-    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 @app.get("/companion/gm")
 async def companion_gm():
-    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 # ── Companion API ──
@@ -214,7 +216,8 @@ async def companion_join_quarter(body: dict):
 @app.get("/companion/dashboard/{code}")
 async def companion_dashboard(code: str):
     """External public dashboard."""
-    return FileResponse(os.path.join(FRONTEND_DIR, "companion-dashboard.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion-dashboard.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 @app.get("/api/companion/leaderboard/{code}")
