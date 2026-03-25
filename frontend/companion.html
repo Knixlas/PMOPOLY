@@ -619,6 +619,20 @@ function renderPlayer() {
         html += '</div></div>';
     }
 
+    // Phase 3: Konsekvens/Garanti/ABT→EK specific UI
+    if (step === 'gf_konsekvens' || step === 'gf_garanti') {
+        html += '<div class="asset-card" style="border-left-color:#c0392b">';
+        html += '<div class="asset-label">' + (step === 'gf_konsekvens' ? 'Konsekvenskort' : 'Garantibesiktning') + '</div>';
+        html += '<div style="font-size:14px;margin-bottom:8px">Registrera ABT-kostnad per kort med +/- nedan p\u00e5 respektive byggfas.</div>';
+        html += '</div>';
+    }
+    if (step === 'gf_abt_ek') {
+        html += '<div class="asset-card" style="border-left-color:#27ae60">';
+        html += '<div class="asset-label">ABT \u2192 EK & F\u00f6rskott</div>';
+        html += counterRow('EK fr\u00e5n ABT + t\u00e4rning (Mkr)', p.eget_kapital, 'eget_kapital', true);
+        html += '</div>';
+    }
+
     // Phase 3: Genomförande — 8 numbered phases
     if (showGF) {
         var gfPhases = p.gf_phases || {};
@@ -648,7 +662,7 @@ function renderPlayer() {
         const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
         const totalH = 4 + projH + p.h_krav - (p.rb_spent_h || 0);
         const baseT = 12 + maxProjT;
-        const totalT = baseT - (p.rb_spent_t || 0);
+        const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
         const projKost = p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
         const markKost = 15;
@@ -658,44 +672,43 @@ function renderPlayer() {
         html += '<div class="asset-card" style="border-left-color:#4db8ff;background:#0f1923">';
         html += '<div class="asset-label" style="color:#4db8ff">Sammanst\u00e4llning</div>';
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:14px">';
+        // Calculate planning totals (reusable across phases)
+        var choices = p.pl_choices || {};
+        var plEvts = p.pl_events || {};
+        var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0, plEvQ = 0, plEvH = 0, plEvAbt = 0;
+        for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
+        for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvAbt += ev.abt||0; }
+        var gfP = p.gf_phases || {};
+        var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
+        for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
+
+        var curQ = plQ + plEvQ + gfQ;
+        var curH = plH + plEvH + gfH;
+        var curT = Math.max(8, totalT + plT + gfT);
+        var totalAbtUsed = plCost + plEvAbt + gfAbt;
+        var anskKvar = totalAnsk - totalKost - totalAbtUsed;
+
         html += '<div>Q-krav: <strong>' + totalQ + '</strong></div>';
         html += '<div>H-krav: <strong>' + totalH + '</strong></div>';
-        html += '<div>T: <strong>' + totalT + '(' + baseT + ') m\u00e5n</strong></div>';
+        if (isPhase2 || isPhase3) {
+            html += '<div>Q: <strong style="color:' + (curQ >= totalQ ? '#27ae60' : '#e74c3c') + '">(' + curQ + ')' + totalQ + '</strong></div>';
+            html += '<div>H: <strong style="color:' + (curH >= totalH ? '#27ae60' : '#e74c3c') + '">(' + curH + ')' + totalH + '</strong></div>';
+        }
+        html += '<div>T: <strong>' + curT + '(' + baseT + ') m\u00e5n</strong></div>';
         html += '<div>Rb: <strong>' + p.riskbuffertar + '</strong></div>';
+        html += '<div>Erf: <strong>' + plErf + '</strong></div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
+        html += '<div>Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
-        if (isPhase2 || isPhase3) {
-            // Sum from pl_choices + pl_events
-            var choices = p.pl_choices || {};
-            var plEvts = p.pl_events || {};
-            var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0, plEvQ = 0, plEvH = 0, plEvAbt = 0;
-            for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
-            for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvAbt += ev.abt||0; }
-            var achievedQ = plQ + plEvQ;
-            var achievedH = plH + plEvH;
-
-            if (isPhase3) {
-                // Add Phase 3 changes
-                var gfP = p.gf_phases || {};
-                var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
-                for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
-                achievedQ += gfQ; achievedH += gfH;
-                html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
-                html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
-                html += '<div>T: <strong>' + (totalT + plT + gfT) + '(' + baseT + ') m\u00e5n</strong></div>';
-                html += '<div>Erf: <strong>' + plErf + '</strong></div>';
-                html += '<div>ABT \u00e4ndr: <strong>' + (plEvAbt + gfAbt) + ' Mkr</strong></div>';
-                html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
-            } else {
-                html += '<div>Q: <strong>(' + achievedQ + ')' + totalQ + '</strong></div>';
-                html += '<div>H: <strong>(' + achievedH + ')' + totalH + '</strong></div>';
-                html += '<div>T: <strong>' + (totalT + plT) + '(' + baseT + ') m\u00e5n</strong></div>';
-                html += '<div>Erf: <strong>' + plErf + '</strong></div>';
-                html += '<div>Lev/org: <strong>' + plCost + ' Mkr</strong></div>';
-                html += '<div>H\u00e4nd.ABT: <strong>' + plEvAbt + ' Mkr</strong></div>';
-            }
+        if (isPhase3) {
+            // Konsekvenskort count
+            var konsQ = Math.max(0, totalQ - curQ);
+            var konsH = Math.max(0, totalH - curH);
+            var konsT = Math.max(0, curT - 12);
+            html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:4px;margin-top:4px">';
+            html += 'Konsekv.kort: Q:' + konsQ + ' H:' + konsH + ' T:' + konsT + ' = <strong>' + (konsQ+konsH+konsT) + ' kort</strong></div>';
         }
         html += '</div></div>';
     }

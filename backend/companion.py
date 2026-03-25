@@ -180,7 +180,7 @@ class CompanionPlayer:
         elif step_id == "choose_ac":
             return self.arbetschef is not None
         elif step_id == "planning":
-            return self.pl_kostnad > 0
+            return len(self.pl_choices) > 0
         elif step_id == "planning_summary":
             return True
         elif step_id in ("gf_byggfaser", "gf_konsekvens", "gf_garanti", "gf_abt_ek"):
