@@ -429,8 +429,11 @@ function renderPlayer() {
 
     // PC Card
     if (showPC) {
+        var pcCollapsed = isPhase2;
         html += '<div class="asset-card pc">';
-        html += '<div class="asset-label">Projektchef</div>';
+        html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="pc-detail">';
+        html += 'Projektchef' + (p.projektchef ? ': ' + p.projektchef.namn : '') + ' <span style="float:right;font-size:11px;color:#666">' + (pcCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
+        html += '<div id="pc-detail" style="' + (pcCollapsed ? 'display:none' : '') + '">';
         if (p.projektchef) {
             html += '<div class="chosen-item">';
             html += '<div class="dot" style="background:#8B7355"></div>';
@@ -443,13 +446,17 @@ function renderPlayer() {
         } else {
             html += '<div style="color:#555;font-style:italic">Ingen vald</div>';
         }
-        html += '</div>';
+        html += '</div>';  // close pc-detail
+        html += '</div>';  // close asset-card
     }
 
     // Projects
     if (showProjects) {
+        var projCollapsed = isPhase2 && !editProjects && !editProjectsRemove;
         html += '<div class="asset-card projects">';
-        html += '<div class="asset-label">Projekt</div>';
+        html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="proj-list">';
+        html += 'Projekt (' + p.projects.length + ') <span style="float:right;font-size:11px;color:#666">' + (projCollapsed ? '\u25b6 visa' : '\u25bc d\u00f6lj') + '</span></div>';
+        html += '<div id="proj-list" style="' + (projCollapsed ? 'display:none' : '') + '">';
         if (p.projects.length > 0) {
             for (const proj of p.projects) {
                 const color = { BRF: '#DAA520', 'F\u00d6RSKOLOR': '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', 'Hyresr\u00e4tt': '#C62828' }[proj.typ] || '#888';
@@ -477,7 +484,8 @@ function renderPlayer() {
             }
             html += '</div></div>';
         }
-        html += '</div>';
+        html += '</div>';  // close proj-list
+        html += '</div>';  // close asset-card
     }
 
     // Counters (during projects and namndbeslut)
@@ -680,6 +688,17 @@ function attachPlayerEvents(container) {
             const key = 'rb_spent_' + target;
             const cur = S.state.player[key] || 0;
             if (cur > 0) send({ type: 'update_assets', assets: { [key]: cur - 1 } });
+        });
+    });
+    container.querySelectorAll('[data-action="toggle-section"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var target = document.getElementById(el.dataset.target);
+            if (target) {
+                var hidden = target.style.display === 'none';
+                target.style.display = hidden ? '' : 'none';
+                var arrow = el.querySelector('span');
+                if (arrow) arrow.textContent = hidden ? '\u25bc' : '\u25b6';
+            }
         });
     });
     container.querySelectorAll('[data-action="choose-planning"]').forEach(el => {
