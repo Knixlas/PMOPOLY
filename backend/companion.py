@@ -10,10 +10,9 @@ from fastapi import WebSocket
 
 PHASES = [
     {"id": "phase1", "name": "Fas 1: Projektutveckling", "steps": [
-        {"id": "choose_pc", "name": "Välj Projektchef"},
-        {"id": "projects", "name": "Projektval & Brädspel"},
-        {"id": "namndbeslut", "name": "Nämndbeslut"},
-        {"id": "ekonomi", "name": "Ekonomi"},
+        {"id": "choose_pc", "name": "1.1 Välj Projektchef"},
+        {"id": "projects", "name": "1.2 Projektval & Brädspel"},
+        {"id": "namndbeslut", "name": "1.3 Nämndbeslut"},
     ]},
 ]
 

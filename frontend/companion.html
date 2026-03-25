@@ -361,59 +361,73 @@ function renderPlayer() {
     };
 
     const container = document.getElementById('player-assets');
+    const step = st.step || '';
+
+    // Determine visibility and editability per step
+    const STEP_ORDER = ['choose_pc', 'projects', 'namndbeslut'];
+    const stepIdx = STEP_ORDER.indexOf(step);
+    const showPC = stepIdx >= 0;
+    const editPC = step === 'choose_pc';
+    const showProjects = stepIdx >= 1;
+    const editProjects = step === 'projects';
+    const showCounters = stepIdx >= 1;
 
     let html = '';
 
     // PC Card
-    html += '<div class="asset-card pc">';
-    html += '<div class="asset-label">Projektchef</div>';
-    if (p.projektchef) {
-        html += `<div class="chosen-item">
-            <div class="dot" style="background:#8B7355"></div>
-            <div><div class="name">${p.projektchef.namn}</div>
-            <div class="detail">${p.projektchef.specialisering} | Lön: ${p.projektchef.lon} Mkr</div></div>
-            <div class="remove-btn" data-action="remove-pc">✕</div>
-        </div>`;
-    } else {
-        html += '<div class="asset-empty" data-action="choose-pc">+ Välj Projektchef</div>';
+    if (showPC) {
+        html += '<div class="asset-card pc">';
+        html += '<div class="asset-label">Projektchef</div>';
+        if (p.projektchef) {
+            html += '<div class="chosen-item">';
+            html += '<div class="dot" style="background:#8B7355"></div>';
+            html += '<div><div class="name">' + p.projektchef.namn + '</div>';
+            html += '<div class="detail">' + p.projektchef.specialisering + ' | L\u00f6n: ' + p.projektchef.lon + ' Mkr</div></div>';
+            if (editPC) html += '<div class="remove-btn" data-action="remove-pc">\u2715</div>';
+            html += '</div>';
+        } else if (editPC) {
+            html += '<div class="asset-empty" data-action="choose-pc">+ V\u00e4lj Projektchef</div>';
+        } else {
+            html += '<div style="color:#555;font-style:italic">Ingen vald</div>';
+        }
+        html += '</div>';
     }
-    html += '</div>';
 
     // Projects
-    html += '<div class="asset-card projects">';
-    html += '<div class="asset-label">Projekt</div>';
-    if (p.projects.length > 0) {
-        for (const proj of p.projects) {
-            const color = { BRF: '#DAA520', FÖRSKOLOR: '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', Hyresrätt: '#C62828' }[proj.typ] || '#888';
-            html += `<div class="chosen-item">
-                <div class="dot" style="background:${color}"></div>
-                <div><div class="name">${proj.namn}</div>
-                <div class="detail">${proj.typ} | BTA: ${proj.bta} | Anskaff: ${proj.anskaffning} Mkr</div></div>
-                <div class="remove-btn" data-action="remove-project" data-id="${proj.id}">✕</div>
-            </div>`;
+    if (showProjects) {
+        html += '<div class="asset-card projects">';
+        html += '<div class="asset-label">Projekt</div>';
+        if (p.projects.length > 0) {
+            for (const proj of p.projects) {
+                const color = { BRF: '#DAA520', 'F\u00d6RSKOLOR': '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', 'Hyresr\u00e4tt': '#C62828' }[proj.typ] || '#888';
+                html += '<div class="chosen-item">';
+                html += '<div class="dot" style="background:' + color + '"></div>';
+                html += '<div><div class="name">' + (proj.namn || proj.id) + '</div>';
+                html += '<div class="detail">' + proj.typ + ' | BTA: ' + proj.bta + ' | Anskaff: ' + proj.anskaffning + ' Mkr</div></div>';
+                if (editProjects) html += '<div class="remove-btn" data-action="remove-project" data-id="' + proj.id + '">\u2715</div>';
+                html += '</div>';
+            }
         }
+        if (editProjects) {
+            html += '<div class="proj-type-grid">';
+            for (const typ of ['BRF', 'F\u00d6RSKOLOR', 'LOKAL', 'KONTOR', 'Hyresr\u00e4tt']) {
+                html += '<button class="proj-type-btn" data-action="add-project-type" data-typ="' + typ + '">' + typ + '</button>';
+            }
+            html += '</div>';
+        }
+        html += '</div>';
     }
-    html += '<div class="proj-type-grid">';
-    for (const typ of ['BRF', 'FÖRSKOLOR', 'LOKAL', 'KONTOR', 'Hyresrätt']) {
-        html += `<button class="proj-type-btn" data-action="add-project-type" data-typ="${typ}">${typ}</button>`;
-    }
-    html += '</div></div>';
 
     // Counters
-    html += '<div class="asset-card counters">';
-    html += '<div class="asset-label">Krav & Resurser</div>';
-    html += counterRow('Kvalitetskrav', p.q_krav, 'q_krav');
-    html += counterRow('Hållbarhetskrav', p.h_krav, 'h_krav');
-    html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
-    html += counterRow('Markexpansion', p.mark_expansions, 'mark_expansions');
-    html += '</div>';
-
-    // Economy
-    html += '<div class="asset-card economy">';
-    html += '<div class="asset-label">Ekonomi</div>';
-    html += counterRow('Eget kapital (Mkr)', p.eget_kapital, 'eget_kapital');
-    html += counterRow('ABT-budget (Mkr)', p.abt_budget, 'abt_budget');
-    html += '</div>';
+    if (showCounters) {
+        html += '<div class="asset-card counters">';
+        html += '<div class="asset-label">Krav & Resurser</div>';
+        html += counterRow('Kvalitetskrav', p.q_krav, 'q_krav');
+        html += counterRow('H\u00e5llbarhetskrav', p.h_krav, 'h_krav');
+        html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
+        html += counterRow('Markexpansion', p.mark_expansions, 'mark_expansions');
+        html += '</div>';
+    }
 
     container.innerHTML = html;
     attachPlayerEvents(container);
