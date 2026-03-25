@@ -448,6 +448,15 @@ function renderPlayer() {
             }
             html += '</div>';
         }
+        if (editProjectsRemove) {
+            html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #334">';
+            html += '<div style="color:#f0c929;font-size:13px;margin-bottom:6px">K\u00f6p nytt projekt (3\u00d7 pris)</div>';
+            html += '<div class="proj-type-grid">';
+            for (const typ of ['BRF', 'F\u00d6RSKOLOR', 'LOKAL', 'KONTOR', 'Hyresr\u00e4tt']) {
+                html += '<button class="proj-type-btn" data-action="buy-project-3x" data-typ="' + typ + '" style="border-color:#e67e22;color:#e67e22">' + typ + '</button>';
+            }
+            html += '</div></div>';
+        }
         html += '</div>';
     }
 
@@ -504,6 +513,9 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { projects } });
         });
     });
+    container.querySelectorAll('[data-action="buy-project-3x"]').forEach(el => {
+        el.addEventListener('click', () => openProjectModal(el.dataset.typ, true));
+    });
     container.querySelectorAll('[data-action="incr"]').forEach(el => {
         el.addEventListener('click', () => {
             const key = el.dataset.key;
@@ -551,20 +563,25 @@ function openPCModal() {
 }
 
 // ── Project Modal ──
-function openProjectModal(typ) {
+function openProjectModal(typ, triplePrice) {
     const mc = document.getElementById('modal-container');
     const available = S.projectData[typ] || [];
     const currentIds = new Set((S.state.player.projects || []).map(p => p.id));
+    const priceLabel = triplePrice ? ' (3\u00d7 pris!)' : '';
 
     let html = '<div class="modal-overlay"><div class="modal">';
-    html += `<div class="modal-header"><h3>${typ}-projekt</h3></div>`;
+    html += '<div class="modal-header"><h3>' + typ + '-projekt' + priceLabel + '</h3></div>';
     html += '<div class="modal-body">';
     for (const proj of available) {
         const sel = currentIds.has(proj.id) ? ' selected' : '';
-        html += `<div class="modal-item${sel}" data-proj='${JSON.stringify(proj).replace(/'/g, "&#39;")}'>
-            <div class="item-name">${proj.namn || proj.id}</div>
-            <div class="item-detail">BTA: ${proj.bta} | Form: ${proj.formfaktor} | Anskaff: ${proj.anskaffning} Mkr | Kostnad: ${proj.kostnad} Mkr</div>
-        </div>`;
+        const kostnad = triplePrice ? proj.kostnad * 3 : proj.kostnad;
+        const projData = JSON.stringify(proj).replace(/'/g, "&#39;");
+        html += '<div class="modal-item' + sel + '" data-proj=\'' + projData + '\'>' +
+            '<div class="item-name">' + (proj.namn || proj.id) + '</div>' +
+            '<div class="item-detail">BTA: ' + proj.bta + ' | Form: ' + proj.formfaktor +
+            ' | Anskaff: ' + proj.anskaffning + ' Mkr | Kostnad: ' + kostnad + ' Mkr' +
+            (triplePrice ? ' <span style="color:#e67e22">(3\u00d7)</span>' : '') + '</div>' +
+            '</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-close">Stäng</button></div>';

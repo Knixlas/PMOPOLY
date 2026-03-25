@@ -38,7 +38,8 @@ PHASES = [
             "• Resultat ≥ krav = godkänt\n"
             "• Misslyckat: använd Rb för omslag, eller ta bort projektet\n"
             "• Utvecklingskostnaden är redan betald\n\n"
-            "Ta bort underkända projekt med ✕-knappen.\n"
+            "Ta bort underkända projekt med ✕-knappen.\n\n"
+            "Du kan också köpa nya projekt från projektbanken — men de kostar 3× utvecklingskostnad!\n\n"
             "Tips: Rb kan rädda ett misslyckat projekt — värt det för dyra projekt!"},
         {"id": "rb_invest", "name": "1.12 Rb-investering", "help":
             "Fördela kvarvarande riskbuffertar:\n\n"
