@@ -226,7 +226,8 @@ class CompanionPlayer:
     gf_kons_h_adj: int = 0   # Konsekvenskort H-adjustment (lowers requirement)
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
     gf_brf_rorlig: float = 0.0  # Rörlig intäkt BRF
-    gf_moderbolagslan: float = 0.0  # Moderbolagslån
+    gf_moderbolagslan: float = 0.0  # Moderbolagslån (legacy)
+    gf_moderbolagslan_antal: int = 0  # Number of moderbolagslån
     # Phase 4 assets
     fastighetschef: Optional[dict] = None  # FC
     fastighetsskotare: Optional[dict] = None  # FS
@@ -334,6 +335,7 @@ class CompanionPlayer:
             "gf_garanti_abt": self.gf_garanti_abt,
             "gf_brf_rorlig": round(self.gf_brf_rorlig, 1),
             "gf_moderbolagslan": round(self.gf_moderbolagslan, 1),
+            "gf_moderbolagslan_antal": self.gf_moderbolagslan_antal,
             "fastighetschef": self.fastighetschef,
             "fastighetsskotare": self.fastighetsskotare,
             "fastigheter": self.fastigheter,
@@ -668,6 +670,8 @@ class CompanionManager:
                 player.gf_brf_rorlig = float(assets["gf_brf_rorlig"])
             if "gf_moderbolagslan" in assets:
                 player.gf_moderbolagslan = float(assets["gf_moderbolagslan"])
+            if "gf_moderbolagslan_antal" in assets:
+                player.gf_moderbolagslan_antal = int(assets["gf_moderbolagslan_antal"])
             if "fastighetschef" in assets:
                 player.fastighetschef = assets["fastighetschef"]
             if "fastighetsskotare" in assets:

@@ -972,11 +972,20 @@ function renderPlayer() {
         var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
         for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
 
-        // AC experience bonus
-        var acErf = (p.arbetschef && p.arbetschef.kapacitet) ? p.arbetschef.kapacitet : 0;
-        var curQ = plQ + plEvQ + gfQ;
-        var curH = plH + plEvH + gfH;
-        var curT = Math.max(8, totalT + plT + gfT);
+        // PC/AC direct bonuses (Q, H, T, Rb, Erfarenhet)
+        var pcQ = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
+        var pcH = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
+        var pcT = p.projektchef ? (p.projektchef.t_bonus || 0) : 0;
+        var pcRb = p.projektchef ? (p.projektchef.rb || 0) : 0;
+        var pcErf = p.projektchef ? (p.projektchef.erfarenhet || 0) : 0;
+        var acQ = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
+        var acH = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
+        var acT = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
+        var acRb = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
+        var acErf = p.arbetschef ? (p.arbetschef.erfarenhet || 0) : 0;
+        var curQ = plQ + plEvQ + gfQ + pcQ + acQ;
+        var curH = plH + plEvH + gfH + pcH + acH;
+        var curT = Math.max(8, totalT + plT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
         var anskKvar = totalAnsk - totalKost - totalAbtUsed;
@@ -988,8 +997,10 @@ function renderPlayer() {
             html += '<div>H: <strong style="color:' + (curH >= totalH ? '#27ae60' : '#e74c3c') + '">(' + curH + ')' + totalH + '</strong></div>';
         }
         html += '<div>T: <strong style="color:' + (curT <= 12 ? '#27ae60' : '#e74c3c') + '">' + curT + '</strong> m\u00e5n <span style="color:#999">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
-        html += '<div>Rb: <strong>' + p.riskbuffertar + '</strong></div>';
-        html += '<div>Erf: <strong>' + plErf + '</strong></div>';
+        var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
+        var totalErf = plErf + pcErf + acErf;
+        html += '<div>Rb: <strong>' + totalRb + '</strong></div>';
+        html += '<div>Erf: <strong>' + totalErf + '</strong></div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
