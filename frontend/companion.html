@@ -211,6 +211,32 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 <div id="modal-container"></div>
 
 <script type="module">
+// ── Tier & Ranking helpers ──
+var TIERS = [
+    { min: 80, label: 'Dominant', color: '#9b59b6', emoji: '\uD83D\uDFE3' },
+    { min: 60, label: 'Stark position', color: '#27ae60', emoji: '\uD83D\uDFE2' },
+    { min: 30, label: 'Medel', color: '#f0c929', emoji: '\uD83D\uDFE1' },
+    { min: -999, label: 'Riskfylld', color: '#e74c3c', emoji: '\uD83D\uDD34' },
+];
+function getTier(score) {
+    return TIERS.find(function(t) { return score >= t.min; }) || TIERS[TIERS.length - 1];
+}
+function rankBadge(rank, total) {
+    var medals = {1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49'};
+    var medal = medals[rank] || '';
+    return medal + ' #' + rank + ' av ' + total;
+}
+function tierBadge(score) {
+    var t = getTier(score);
+    return '<span style="color:' + t.color + '">' + t.emoji + ' ' + t.label + '</span>';
+}
+function rankColor(rank) {
+    if (rank === 1) return '#f0c929';
+    if (rank === 2) return '#bdc3c7';
+    if (rank === 3) return '#cd7f32';
+    return '#888';
+}
+
 // ── State ──
 const S = {
     ws: null,
@@ -222,6 +248,8 @@ const S = {
     acData: [],
     projectData: {},
     planningData: null,
+    lastLeaderboard: null,
+    _leaderboardTimer: null,
 };
 
 function showView(id) {
@@ -515,6 +543,16 @@ function renderTrendScore(score, prevScore) {
     else if (prevScore && score < prevScore - 0.5) { arrow = '\u25BC'; trendClass = 'trend-down'; }
     return '<span class="projected-score"><span>' + score + '</span>' +
         (arrow ? '<span class="' + trendClass + '">' + arrow + '</span>' : '') + '</span>';
+}
+
+// ── Leaderboard fetcher ──
+function _fetchLeaderboard() {
+    if (!S.roomCode) return;
+    fetch('/api/companion/leaderboard/' + S.roomCode).then(function(r) { return r.json(); }).then(function(data) {
+        S.lastLeaderboard = data;
+        // Re-render to update ranking display
+        render();
+    }).catch(function() {});
 }
 
 // ── Lobby ──
@@ -1329,10 +1367,21 @@ function renderPlayer() {
                 html += '</div>';
             }
         }
-        // Projected score indicator
+        // Projected score indicator with ranking + tier
         if (_projScore) {
+            var _tier = getTier(_projScore);
             html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:6px;margin-top:6px">';
             html += 'Vinstchans: ' + renderTrendScore(_projScore, _prevScore);
+            // Show cached ranking if available
+            if (S.lastLeaderboard) {
+                var _lb = S.lastLeaderboard;
+                var _myEntry = (_lb.players || []).find(function(e) { return e.id === S.playerId; });
+                if (_myEntry) {
+                    html += ' <span style="color:' + rankColor(_myEntry.rank) + ';font-weight:700;margin-left:6px">';
+                    html += '#' + _myEntry.rank + ' av ' + (_lb.total_players || _lb.players.length) + '</span>';
+                }
+            }
+            html += ' ' + tierBadge(_projScore);
             html += '</div>';
         }
         html += '</div></div>';
@@ -1341,28 +1390,10 @@ function renderPlayer() {
     container.innerHTML = html;
     attachPlayerEvents(container);
 
-    // Fetch ranking for slutvärdering
-    var rankEl = document.getElementById('player-ranking');
-    if (rankEl && S.roomCode) {
-        fetch('/api/companion/leaderboard/' + S.roomCode).then(r => r.json()).then(data => {
-            var players = data.players || [];
-            var myIdx = players.findIndex(p => p.id === S.playerId);
-            var myRank = myIdx >= 0 ? myIdx + 1 : '?';
-            var total = players.length;
-            // Find my quarter/district
-            var myQ = players[myIdx]?.quarter || '';
-            var districts = data.districts || [];
-            var myDist = districts.find(d => d.quarters?.includes(myQ));
-            var distRank = myDist ? (districts.indexOf(myDist) + 1) : '?';
-            var distTotal = districts.length;
-
-            var rhtml = '<div style="font-size:15px;color:#f0c929;font-weight:700;margin-bottom:6px">Din placering</div>';
-            rhtml += '<div>Kvarter: <strong>#' + myRank + '</strong> av ' + total + ' spelare</div>';
-            if (distTotal > 1) {
-                rhtml += '<div>Stadsdel (' + (myDist?.name||myQ) + '): <strong>#' + distRank + '</strong> av ' + distTotal + ' stadsdelar</div>';
-            }
-            rankEl.innerHTML = rhtml;
-        }).catch(() => { rankEl.innerHTML = ''; });
+    // Periodically fetch leaderboard for ranking data
+    if (S.roomCode && !S._leaderboardTimer) {
+        _fetchLeaderboard();
+        S._leaderboardTimer = setInterval(_fetchLeaderboard, 10000);
     }
 
     // Help icon click
@@ -1961,10 +1992,22 @@ function renderGMTable(st) {
         q.players.map(p => ({ ...p, district: q.name }))
     );
 
-    // Calculate projected scores for all players
+    // Calculate projected scores for all players and rank them
     for (const p of allPlayers) {
         p._projScore = projectedScore(p, currentPhase);
     }
+    // Sort a copy by score to assign ranks
+    var ranked = allPlayers.slice().filter(function(p) { return p._projScore > 0; }).sort(function(a, b) { return b._projScore - a._projScore; });
+    var totalRanked = ranked.length;
+    for (var ri = 0; ri < ranked.length; ri++) {
+        ranked[ri]._rank = ri + 1;
+    }
+    // Map rank back to allPlayers by id
+    var rankMap = {};
+    for (var ri = 0; ri < ranked.length; ri++) {
+        rankMap[ranked[ri].id] = ranked[ri]._rank;
+    }
+
     const maxScore = Math.max(1, ...allPlayers.map(p => p._projScore || 0));
 
     let html = '<thead><tr>' +
@@ -1985,6 +2028,23 @@ function renderGMTable(st) {
         var score = p._projScore || 0;
         var barW = Math.round((score / maxScore) * 60);
         var prevScore = p.prev_profit_score || 0;
+        var pRank = rankMap[p.id] || 0;
+        var tier = getTier(score);
+
+        // Build enhanced VINSTCHANS cell: #1 medal score arrow tier-dot
+        var vinstHtml = '';
+        if (pRank > 0) {
+            var medals = {1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49'};
+            var medal = medals[pRank] || '';
+            vinstHtml += '<span style="color:' + rankColor(pRank) + ';font-weight:700">#' + pRank + '</span> ';
+            if (medal) vinstHtml += medal + ' ';
+        }
+        vinstHtml += '<span class="score-bar" style="width:' + barW + 'px"></span>';
+        vinstHtml += renderTrendScore(score, prevScore);
+        if (score > 0) {
+            vinstHtml += ' <span style="color:' + tier.color + '" title="' + tier.label + '">' + tier.emoji + '</span>';
+        }
+
         html += '<tr>' +
             '<td>' + p.district + '</td>' +
             '<td style="color:#f0c929">' + (p.block_name || '\u2014') + '</td>' +
@@ -1995,7 +2055,7 @@ function renderGMTable(st) {
             '<td>' + p.q_krav + '</td>' +
             '<td>' + p.h_krav + '</td>' +
             '<td>' + p.riskbuffertar + '</td>' +
-            '<td><span class="score-bar" style="width:' + barW + 'px"></span>' + renderTrendScore(score, prevScore) + '</td>' +
+            '<td>' + vinstHtml + '</td>' +
             '</tr>';
     }
     html += '</tbody>';
@@ -2006,6 +2066,28 @@ function renderGMQuarters(st) {
     const grid = document.getElementById('gm-quarters');
     if (!grid) return;
     const quarters = st.quarters || [];
+    const currentPhase = st.phase || 'phase1';
+
+    // Compute average projected score per quarter for district ranking
+    var distScores = [];
+    for (var di = 0; di < quarters.length; di++) {
+        var dps = (quarters[di].players || []).filter(function(p) { return p.projects && p.projects.length > 0; });
+        var avgS = 0;
+        if (dps.length > 0) {
+            var sum = 0;
+            for (var dj = 0; dj < dps.length; dj++) { sum += projectedScore(dps[dj], currentPhase); }
+            avgS = Math.round(sum / dps.length * 10) / 10;
+        }
+        distScores.push({ idx: di, avgScore: avgS });
+    }
+    // Rank districts
+    var distRanked = distScores.slice().filter(function(d) { return d.avgScore > 0; }).sort(function(a, b) { return b.avgScore - a.avgScore; });
+    var distRankMap = {};
+    var totalDistricts = distRanked.length;
+    for (var dri = 0; dri < distRanked.length; dri++) {
+        distRankMap[distRanked[dri].idx] = dri + 1;
+    }
+
     const cards = [];
     for (let i = 0; i < quarters.length; i++) {
         const q = quarters[i];
@@ -2020,12 +2102,27 @@ function renderGMQuarters(st) {
             else { icon = '\uD83D\uDD34'; c = '#c0392b'; }
             return '<span style="color:' + c + '">' + icon + ' ' + p.name + '</span>';
         }).join('');
+
+        // District ranking info
+        var dAvg = distScores[i].avgScore;
+        var dRank = distRankMap[i] || 0;
+        var dTier = getTier(dAvg);
+        var distRankHtml = '';
+        if (dAvg > 0) {
+            distRankHtml = '<div class="quarter-stat"><span>Vinstchans (snitt)</span><span class="val">' +
+                '<span style="color:' + rankColor(dRank) + ';font-weight:700">#' + dRank + ' av ' + totalDistricts + '</span> ' +
+                '<span style="font-weight:700">' + dAvg + '</span> ' +
+                '<span style="color:' + dTier.color + '">' + dTier.emoji + '</span>' +
+                '</span></div>';
+        }
+
         cards.push(
             '<div class="quarter-card">' +
             '<h3><span class="q-name" data-qi="' + q.quarter_idx + '" style="cursor:pointer;border-bottom:1px dashed #666">' + q.name + '</span> ' +
             '<span style="color:#888;font-size:13px">(' + total + '/4)</span>' +
             '<span style="float:right;font-size:13px;color:' + doneColor + '">' + done + '/' + total + ' klara</span></h3>' +
             '<div class="quarter-stat" style="margin-bottom:6px"><span>Stadsdelskod</span><span class="val" style="color:#f0c929;letter-spacing:2px;font-size:16px">' + (q.code || '\u2014') + '</span></div>' +
+            distRankHtml +
             '<div class="quarter-stat"><span>Projekt</span><span class="val">' + q.total_projects + '</span></div>' +
             '<div class="quarter-stat"><span>Total BTA</span><span class="val">' + q.total_bta + ' kvm</span></div>' +
             '<div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">' + q.avg_q_krav + '</span></div>' +

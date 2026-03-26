@@ -15,19 +15,25 @@ h1 { color: #f0c929; text-align: center; font-size: 28px; margin-bottom: 4px; }
 
 .leaderboard { max-width: 800px; margin: 0 auto; }
 .lb-entry { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 6px; border-radius: 10px; background: #1a2736; }
-.lb-entry:nth-child(1) { border-left: 4px solid #f0c929; background: #1f2d3d; }
-.lb-entry:nth-child(2) { border-left: 4px solid #bdc3c7; }
-.lb-entry:nth-child(3) { border-left: 4px solid #cd7f32; }
-.lb-rank { font-size: 22px; font-weight: 900; color: #f0c929; min-width: 30px; text-align: center; }
-.lb-entry:nth-child(1) .lb-rank { font-size: 28px; }
+.lb-entry.lb-gold { border-left: 4px solid #f0c929; background: #1f2d3d; }
+.lb-entry.lb-silver { border-left: 4px solid #bdc3c7; }
+.lb-entry.lb-bronze { border-left: 4px solid #cd7f32; }
+.lb-rank { font-size: 22px; font-weight: 900; min-width: 36px; text-align: center; }
+.lb-entry.lb-gold .lb-rank { font-size: 28px; color: #f0c929; }
+.lb-entry.lb-silver .lb-rank { color: #bdc3c7; }
+.lb-entry.lb-bronze .lb-rank { color: #cd7f32; }
 .lb-info { flex: 1; }
 .lb-name { font-size: 16px; font-weight: 700; }
 .lb-detail { font-size: 12px; color: #888; margin-top: 2px; }
 .lb-score { text-align: right; }
-.lb-score-val { font-size: 22px; font-weight: 900; color: #27ae60; }
+.lb-score-val { font-size: 22px; font-weight: 900; }
 .lb-score-label { font-size: 11px; color: #888; }
 .lb-bar-bg { width: 100px; height: 8px; background: #0f1923; border-radius: 4px; margin-top: 4px; }
 .lb-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #27ae60, #f0c929); }
+.lb-tier { font-size: 13px; margin-top: 2px; }
+.lb-medal { font-size: 18px; margin-right: 4px; }
+.lb-trend-up { color: #27ae60; }
+.lb-trend-down { color: #e74c3c; }
 
 .quarters-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
 .q-mini { background: #1a2736; border-radius: 8px; padding: 10px; text-align: center; }
@@ -51,6 +57,16 @@ h1 { color: #f0c929; text-align: center; font-size: 28px; margin-bottom: 4px; }
 <div class="refresh-note">Uppdateras var 5:e sekund</div>
 
 <script>
+var TIERS = [
+    { min: 80, label: 'Dominant', color: '#9b59b6', emoji: '\uD83D\uDFE3' },
+    { min: 60, label: 'Stark position', color: '#27ae60', emoji: '\uD83D\uDFE2' },
+    { min: 30, label: 'Medel', color: '#f0c929', emoji: '\uD83D\uDFE1' },
+    { min: -999, label: 'Riskfylld', color: '#e74c3c', emoji: '\uD83D\uDD34' },
+];
+function getTier(score) {
+    return TIERS.find(function(t) { return score >= t.min; }) || TIERS[TIERS.length - 1];
+}
+
 const code = window.location.pathname.split('/').pop();
 
 async function refresh() {
@@ -66,14 +82,19 @@ async function refresh() {
         const districts = data.districts || [];
         let dHtml = '';
         for (const d of districts) {
-            dHtml += `<div class="lb-entry">
-                <div class="lb-rank">${d.rank}</div>
+            var dTier = getTier(d.avg_score);
+            var dMedals = {1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49'};
+            var dMedal = dMedals[d.rank] || '';
+            var dTopClass = d.rank === 1 ? 'lb-gold' : (d.rank === 2 ? 'lb-silver' : (d.rank === 3 ? 'lb-bronze' : ''));
+            dHtml += `<div class="lb-entry ${dTopClass}">
+                <div class="lb-rank">${dMedal || d.rank}</div>
                 <div class="lb-info">
                     <div class="lb-name">${d.name}</div>
-                    <div class="lb-detail">${d.num_players} spelare</div>
+                    <div class="lb-detail">${d.num_players} spelare | #${d.rank} av ${data.total_districts || districts.length} stadsdelar</div>
+                    <div class="lb-tier" style="color:${dTier.color}">${dTier.emoji} ${dTier.label}</div>
                 </div>
                 <div class="lb-score">
-                    <div class="lb-score-val">${d.avg_score}</div>
+                    <div class="lb-score-val" style="color:${dTier.color}">${d.avg_score}</div>
                     <div class="lb-score-label">snitt</div>
                 </div>
             </div>`;
@@ -87,15 +108,29 @@ async function refresh() {
         let html = '';
         for (const e of players) {
             const barW = Math.round((e.profit_score / maxScore) * 100);
-            html += `<div class="lb-entry">
-                <div class="lb-rank">${e.rank}</div>
+            var pTier = getTier(e.profit_score);
+            var pMedals = {1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49'};
+            var pMedal = pMedals[e.rank] || '';
+            var topClass = e.rank === 1 ? 'lb-gold' : (e.rank === 2 ? 'lb-silver' : (e.rank === 3 ? 'lb-bronze' : ''));
+
+            // Trend arrow
+            var trendHtml = '';
+            if (e.prev_profit_score && e.profit_score > e.prev_profit_score + 0.5) {
+                trendHtml = '<span class="lb-trend-up"> \u25B2</span>';
+            } else if (e.prev_profit_score && e.profit_score < e.prev_profit_score - 0.5) {
+                trendHtml = '<span class="lb-trend-down"> \u25BC</span>';
+            }
+
+            html += `<div class="lb-entry ${topClass}">
+                <div class="lb-rank">${pMedal || e.rank}</div>
                 <div class="lb-info">
                     <div class="lb-name">${e.block_name || e.name}</div>
                     <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
+                    <div class="lb-tier" style="color:${pTier.color}">${pTier.emoji} ${pTier.label}</div>
                 </div>
                 <div class="lb-score">
-                    <div class="lb-score-val">${e.profit_score}</div>
-                    <div class="lb-score-label">poäng</div>
+                    <div class="lb-score-val" style="color:${pTier.color}">${e.profit_score}${trendHtml}</div>
+                    <div class="lb-score-label">#${e.rank} av ${data.total_players || players.length}</div>
                     <div class="lb-bar-bg"><div class="lb-bar" style="width:${barW}%"></div></div>
                 </div>
             </div>`;

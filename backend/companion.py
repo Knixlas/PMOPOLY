@@ -434,21 +434,37 @@ class CompanionRoom:
         d["step_has_data"] = p.step_has_data(step_id) if step_id else False
         return d
 
+    @staticmethod
+    def _tier(score: float) -> str:
+        """Return tier label based on score thresholds."""
+        if score > 80:
+            return "dominant"
+        elif score > 60:
+            return "stark"
+        elif score >= 30:
+            return "medel"
+        else:
+            return "risk"
+
     def leaderboard(self) -> dict:
         """All players and districts ranked by profit_score."""
         all_p = [p for p in self.players.values() if not p.is_gm and p.projects]
         ranked = sorted(all_p, key=lambda p: p.profit_score, reverse=True)
+        total_players = len(ranked)
         players = []
         for i, p in enumerate(ranked):
             q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
+            score = p.profit_score
             players.append({
                 "rank": i + 1,
+                "total_players": total_players,
+                "tier": self._tier(score),
                 "id": p.id,
                 "name": p.name,
                 "block_name": p.block_name,
                 "quarter": q_name,
                 "district": q_name,
-                "profit_score": p.profit_score,
+                "profit_score": score,
                 "prev_profit_score": round(p.prev_profit_score, 1),
                 "num_projects": len(p.projects),
                 "total_bta": sum(pr.get("bta", 0) for pr in p.projects),
@@ -470,14 +486,18 @@ class CompanionRoom:
             districts.append({
                 "name": name,
                 "avg_score": avg_score,
+                "district_tier": self._tier(avg_score),
                 "num_players": len(qp),
                 "quarters": [name],
             })
         districts.sort(key=lambda d: d["avg_score"], reverse=True)
+        total_districts = len(districts)
         for i, d in enumerate(districts):
             d["rank"] = i + 1
+            d["district_rank"] = i + 1
+            d["total_districts"] = total_districts
 
-        return {"players": players, "districts": districts}
+        return {"players": players, "districts": districts, "total_players": total_players, "total_districts": total_districts}
 
     def to_dict(self):
         phase = self.current_phase

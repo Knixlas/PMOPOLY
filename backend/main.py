@@ -233,6 +233,8 @@ async def companion_leaderboard(code: str):
         "step_name": step["name"] if step else "—",
         "players": lb["players"],
         "districts": lb["districts"],
+        "total_players": lb["total_players"],
+        "total_districts": lb["total_districts"],
     }
 
 
