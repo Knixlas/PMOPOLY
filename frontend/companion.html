@@ -1089,6 +1089,17 @@ function renderPlayer() {
             }
             html += '<div style="grid-column:1/-1">';
             html += 'Eget Kapital: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
+            if ((p.eget_kapital||0) < 0) {
+                var _ownedCount = (p.fastigheter||[]).filter(function(f){return !f.sold;}).length;
+                html += '<div style="grid-column:1/-1;background:#e74c3c;color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
+                html += '\u26a0\ufe0f EK \u00e4r negativt! ';
+                if (_ownedCount > 1) {
+                    html += 'Antingen har du r\u00e4knat fel eller beg\u00e5tt ett regelbrott \u2014 EK f\u00e5r inte bli under 0 om du \u00e4ger mer \u00e4n en fastighet.';
+                } else {
+                    html += 'Du \u00e4ger bara en fastighet \u2014 ta moderbola\u200dgs\u00e5n f\u00f6r att t\u00e4cka underskottet.';
+                }
+                html += '</div>';
+            }
         }
         html += '</div></div>';
     }
