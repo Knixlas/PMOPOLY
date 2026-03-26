@@ -574,7 +574,7 @@ function renderPlayer() {
         var plEvents = p.pl_events || {};
         html += '<div class="asset-card" style="border-left-color:#1565C0">';
         html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="planning-list">';
-        html += 'Planeringssteg <span style="float:right;font-size:11px;color:#666">' + (plCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
+        html += 'Leverant\u00f6rer och organisation <span style="float:right;font-size:11px;color:#666">' + (plCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
         html += '<div id="planning-list" style="' + (plCollapsed ? 'display:none' : '') + '">';
         for (var si = 0; si < S.planningData.steps.length; si++) {
             var ps = S.planningData.steps[si];
@@ -602,11 +602,15 @@ function renderPlayer() {
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="h" data-dir="1">+</span> | ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="-1">\u2212</span>';
                     html += ' ABT:' + evAbt + ' ';
-                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="1">+</span>';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="1">+</span> | ';
+                    var evT = ev.t || 0;
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="t" data-dir="-1">\u2212</span>';
+                    html += ' T:' + evT + ' ';
+                    html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="t" data-dir="1">+</span>';
                     html += '</div>';
-                } else if (ev.q || ev.h || ev.abt) {
+                } else if (ev.q || ev.h || ev.abt || ev.t) {
                     html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:#e67e22">';
-                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' ABT:' + (ev.abt||0);
+                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' T:' + (ev.t||0) + ' ABT:' + (ev.abt||0);
                     html += '</div>';
                 }
                 html += '</div>';
@@ -779,8 +783,7 @@ function renderPlayer() {
         var EKLASS = ['A','B','C','D','E','F'];
 
         // Auto-convert projects to fastigheter if not done yet
-        if (fasts.length === 0 && p.projects.length > 0 && !S._convertingSent) {
-            S._convertingSent = true;
+        if (fasts.length === 0 && p.projects.length > 0) {
             var autoFasts = [];
             var brfEk = 0;
             for (var _ap of p.projects) {
@@ -798,13 +801,10 @@ function renderPlayer() {
             }
             fasts = autoFasts;
             p.fastigheter = autoFasts;
-            // Send conversion to server (delayed to avoid re-render loop)
-            setTimeout(function() {
-                send({ type: 'update_assets', assets: {
-                    fastigheter: autoFasts,
-                    eget_kapital: (p.eget_kapital || 0) + brfEk
-                }});
-            }, 100);
+            send({ type: 'update_assets', assets: {
+                fastigheter: autoFasts,
+                eget_kapital: (p.eget_kapital || 0) + brfEk
+            }});
         }
 
         // FC/FS selection (always visible in phase 4)
@@ -970,9 +970,9 @@ function renderPlayer() {
         // Calculate planning totals (reusable across phases)
         var choices = p.pl_choices || {};
         var plEvts = p.pl_events || {};
-        var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0, plEvQ = 0, plEvH = 0, plEvAbt = 0;
+        var plQ = 0, plH = 0, plT = 0, plErf = 0, plCost = 0, plEvQ = 0, plEvH = 0, plEvT = 0, plEvAbt = 0;
         for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
-        for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvAbt += ev.abt||0; }
+        for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvT += ev.t||0; plEvAbt += ev.abt||0; }
         var gfP = p.gf_phases || {};
         var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
         for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
@@ -992,7 +992,7 @@ function renderPlayer() {
         var konsTimeH = p.gf_kons_t_h || 0;  // H reduction from time consequence cards
         var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ;
         var curH = plH + plEvH + gfH + pcH + acH + konsTimeH;
-        var curT = Math.max(8, totalT + plT + gfT - pcT - acT);
+        var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
         var anskKvar = totalAnsk - totalKost - totalAbtUsed;
