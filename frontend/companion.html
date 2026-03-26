@@ -666,6 +666,7 @@ function renderPlayer() {
     const container = document.getElementById('player-assets');
     const step = st.step || '';
     const isFinished = (step === 'f4_slut');
+    _playerLocked = isFinished;
 
     // Determine visibility and editability per step
     const phase = st.phase || '';
@@ -1094,6 +1095,16 @@ function renderPlayer() {
         html += '<div class="choose-btn" data-choose="fs" style="cursor:pointer;color:#f0c929;margin-top:4px">+ L\u00e4gg till FS</div>';
         html += '</div>';
 
+        // FC/FS capacity warning
+        var _fcCap = p.fastighetschef ? (p.fastighetschef.kapacitet || 1) : 0;
+        var _fsList = Array.isArray(p.fastighetsskotare) ? p.fastighetsskotare : (p.fastighetsskotare ? [p.fastighetsskotare] : []);
+        var _fsCap = _fsList.reduce(function(s, fs) { return s + (fs.kapacitet || 1); }, 0);
+        var _totalCap = _fcCap + _fsCap;
+        var _numFast = fasts.filter(function(f) { return !f.sold; }).length;
+        if (_totalCap < _numFast && _numFast > 0) {
+            html += '<div style="background:#e74c3c22;border:1px solid #e74c3c;padding:8px;border-radius:6px;margin:8px 0;color:#e74c3c">\u26a0 Personalkapacitet (' + _totalCap + ') r\u00e4cker inte f\u00f6r ' + _numFast + ' fastigheter!</div>';
+        }
+
         // Moderbolagslån warnings
         var _modLan = p.gf_moderbolagslan_antal || 0;
         var _ownedCount = fasts.filter(function(f){return !f.sold;}).length;
@@ -1322,7 +1333,7 @@ function renderPlayer() {
         html += '<div>T: <strong style="color:' + (curT <= 12 ? '#27ae60' : '#e74c3c') + '">' + curT + '</strong> m\u00e5n <span style="color:#999">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
         var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
         var totalErf = plErf + pcErf + acErf;
-        html += '<div>Rb: <strong>' + totalRb + '</strong></div>';
+        html += '<div style="grid-column:1/-1">' + counterRow('Riskbuffertar (Rb)', p.riskbuffertar || 0, 'riskbuffertar', false) + '</div>';
         html += '<div>Erf: <strong>' + totalErf + '</strong></div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
@@ -1332,12 +1343,21 @@ function renderPlayer() {
         }
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
         if (isPhase3) {
+            // Tidskort Q/H impact: reduce krav
+            var tidQAdj = p.gf_kons_t_q_adj || 0;
+            var tidHAdj = p.gf_kons_t_h_adj || 0;
+            var adjTotalQ = totalQ - tidQAdj;
+            var adjTotalH = totalH - tidHAdj;
             // Konsekvenskort count
-            var konsQ = Math.max(0, totalQ - curQ);
-            var konsH = Math.max(0, totalH - curH);
+            var konsQ = Math.max(0, adjTotalQ - curQ);
+            var konsH = Math.max(0, adjTotalH - curH);
             var konsT = Math.max(0, curT - 12);
             html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:4px;margin-top:4px">';
-            html += 'Konsekv.kort: Q:' + konsQ + ' H:' + konsH + ' T:' + konsT + ' = <strong>' + (konsQ+konsH+konsT) + ' kort</strong></div>';
+            html += 'Konsekv.kort: Q:' + konsQ + ' H:' + konsH + ' T:' + konsT + ' = <strong>' + (konsQ+konsH+konsT) + ' kort</strong>';
+            if (tidQAdj || tidHAdj) {
+                html += ' <span style="color:#e67e22;font-size:12px">(tidskort: Q-' + tidQAdj + ' H-' + tidHAdj + ')</span>';
+            }
+            html += '</div>';
         }
         // TB & TG (after genomförande)
         if (isPhase3 || isPhase4) {
@@ -1405,7 +1425,16 @@ function renderPlayer() {
     }
 }
 
+var _playerLocked = false;
 function counterRow(label, val, key, allowNeg) {
+    if (_playerLocked) {
+        return '<div class="counter-row">' +
+            '<div class="label">' + label + '</div>' +
+            '<div class="counter-controls">' +
+                '<div class="counter-val">' + val + '</div>' +
+            '</div>' +
+        '</div>';
+    }
     return '<div class="counter-row">' +
         '<div class="label">' + label + '</div>' +
         '<div class="counter-controls">' +
@@ -2147,12 +2176,14 @@ function renderGMQuarters(st) {
 // GM controls
 document.getElementById('btn-next-step').addEventListener('click', () => {
     send({ type: 'advance_step' });
-    // Force refresh state after short delay in case broadcast missed
-    setTimeout(() => send({ type: 'get_state' }), 300);
+    // Force refresh state with retries to catch missed broadcasts
+    setTimeout(() => send({ type: 'get_state' }), 200);
+    setTimeout(() => send({ type: 'get_state' }), 800);
 });
 document.getElementById('btn-prev-step').addEventListener('click', () => {
     send({ type: 'prev_step' });
-    setTimeout(() => send({ type: 'get_state' }), 300);
+    setTimeout(() => send({ type: 'get_state' }), 200);
+    setTimeout(() => send({ type: 'get_state' }), 800);
 });
 
 // GM Reset
@@ -2160,7 +2191,7 @@ document.getElementById('btn-gm-reset').addEventListener('click', () => {
     if (!confirm('Vill du nollställa hela sessionen? Alla spelare kopplas bort och all data raderas.')) return;
     if (!confirm('Är du säker? Detta kan inte ångras.')) return;
     sessionStorage.removeItem('companion_session');
-    send({ type: 'gm_reset' });
+    send({ type: 'reset_room' });
     setTimeout(() => { window.location.reload(); }, 500);
 });
 

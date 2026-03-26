@@ -2,6 +2,7 @@
 import uuid
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from fastapi import WebSocket
@@ -295,10 +296,27 @@ class CompanionPlayer:
         return False
 
     @property
+    def _calc_tb(self) -> float:
+        """Calculate TB (Täckningsbidrag) = anskaffning - kostnader - ABT-förbrukning."""
+        total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
+        total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
+        abt_used = 0
+        for ch in (self.pl_choices or {}).values():
+            abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
+        for ev in (self.pl_events or {}).values():
+            abt_used += ev.get("abt", 0) if isinstance(ev, dict) else 0
+        for gf in (self.gf_phases or {}).values():
+            abt_used += gf.get("abt", 0) if isinstance(gf, dict) else 0
+        abt_used += getattr(self, 'gf_kons_q', 0) + getattr(self, 'gf_kons_h', 0) + getattr(self, 'gf_kons_t', 0) + getattr(self, 'gf_garanti_abt', 0)
+        return total_ansk - total_kost - abt_used
+
+    @property
     def profit_score(self) -> float:
-        """Score = (0.30 × FV + 0.10 × EK) / ägd_BTA × 1000 + TG
-        Before Phase 4: estimate from project data.
-        During/after Phase 4: use actual fastigheter."""
+        """Projected final score. Becomes more accurate each phase.
+        Score = (0.30 × FV + EK_factor × EK) / ägd_BTA × 1000 + TB
+        Phase 1: estimate from anskaffning + Q/H-risk bonus
+        Phase 2-3: add TB projection + planning quality
+        Phase 4+: actual FV from yield + real EK + real TB"""
         fasts = self.fastigheter or []
         owned = [f for f in fasts if not f.get("sold")]
 
@@ -307,33 +325,28 @@ class CompanionPlayer:
             fv = sum(f.get("marknadsvarde", f.get("anskaffning", 0)) for f in owned)
             bta = sum(f.get("bta", 0) for f in owned)
             ek = self.eget_kapital
-            # TG from phase 3
-            total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
-            total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
-            # Sum all ABT usage
-            abt_used = 0
-            for ch in (self.pl_choices or {}).values():
-                abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
-            for ev in (self.pl_events or {}).values():
-                abt_used += ev.get("abt", 0) if isinstance(ev, dict) else 0
-            for gf in (self.gf_phases or {}).values():
-                abt_used += gf.get("abt", 0) if isinstance(gf, dict) else 0
-            abt_used += getattr(self, 'gf_kons_q', 0) + getattr(self, 'gf_kons_h', 0) + getattr(self, 'gf_kons_t', 0) + getattr(self, 'gf_garanti_abt', 0)
-            tb = total_ansk - total_kost - abt_used
-            tg = (tb / total_ansk * 100) if total_ansk > 0 else 0
+            tb = self._calc_tb()
         elif self.projects:
-            # Pre-Phase 4: estimate from projects
+            # Phase 1-3: project-based estimate
             fv = sum(p.get("marknadsvarde", p.get("anskaffning", 0)) for p in self.projects)
             bta = sum(p.get("bta", 0) for p in self.projects)
             ek = self.eget_kapital
-            tg = 0
+            tb = self._calc_tb() if self.pl_choices else 0
+            # Phase 1 bonus: lower Q/H = less risk
+            if not self.pl_choices:
+                risk_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
+                pc_bonus = 0
+                if self.projektchef:
+                    pc_bonus = self.projektchef.get("lindring", 0) * 2
+                    pc_bonus += self.projektchef.get("namnd_bonus", 0) * 3
+                tb = risk_bonus + pc_bonus + self.riskbuffertar * 3
         else:
             return 0
 
         if bta > 0:
             ek_factor = 0.10 if ek >= 0 else 2.00
-            return round((0.30 * fv + ek_factor * ek) / bta * 1000 + tg, 1)
-        return round(tg, 1)
+            return round((0.30 * fv + ek_factor * ek) / bta * 1000 + tb, 1)
+        return round(tb, 1)
 
     def to_dict(self):
         return {
@@ -384,6 +397,57 @@ class CompanionPlayer:
         }
 
 
+class GameLogger:
+    """Logs game events to a JSON file for serious (analytics) games."""
+
+    def __init__(self, room_code: str, room_config: dict):
+        self.room_code = room_code
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "data", "game_logs")
+        os.makedirs(log_dir, exist_ok=True)
+        self.filepath = os.path.join(log_dir, f"{room_code}_{ts}.json")
+        self.events: list = []
+        self.log("room_created", None, room_config)
+
+    def log(self, event_type: str, player_id: Optional[str], data: dict):
+        self.events.append({
+            "ts": time.time(),
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "event": event_type,
+            "player_id": player_id,
+            "data": data,
+        })
+        if len(self.events) % 10 == 0:
+            self.flush()
+
+    def flush(self):
+        try:
+            with open(self.filepath, "w", encoding="utf-8") as f:
+                json.dump({"events": self.events}, f, ensure_ascii=False, indent=1)
+        except Exception as e:
+            print(f"GameLogger flush error: {e}")
+
+    def snapshot(self, room):
+        """Take full state snapshot of all players."""
+        for p in room.players.values():
+            if not p.is_gm:
+                self.log("state_snapshot", p.id, p.to_dict())
+        self.flush()
+
+    def finalize(self, room):
+        """Write final summary at game end."""
+        summary = {
+            "num_players": sum(1 for p in room.players.values() if not p.is_gm),
+            "final_scores": {
+                p.id: {"name": p.name, "score": p.profit_score}
+                for p in room.players.values() if not p.is_gm
+            },
+        }
+        self.log("game_finished", None, summary)
+        self.flush()
+
+
 @dataclass
 class CompanionRoom:
     code: str  # GM session code
@@ -394,6 +458,8 @@ class CompanionRoom:
     players: Dict[str, CompanionPlayer] = field(default_factory=dict)
     phase_idx: int = 0
     step_idx: int = 0
+    game_mode: str = "test"  # "test" or "serious"
+    logger: Optional[object] = None  # GameLogger instance for serious games
 
     @property
     def current_phase(self):
@@ -515,6 +581,8 @@ class CompanionRoom:
             "phase_idx": self.phase_idx,
             "step_idx": self.step_idx,
             "quarters": [self.quarter_summary(i) for i in range(self.num_quarters)],
+            "game_mode": self.game_mode,
+            "log_event_count": len(self.logger.events) if self.logger else 0,
         }
 
     def player_state(self, player_id: str) -> dict:
@@ -542,7 +610,7 @@ class CompanionManager:
         self.rooms: Dict[str, CompanionRoom] = {}
         self.connections: Dict[str, Dict[str, WebSocket]] = {}  # code -> {player_id -> ws}
 
-    def create_room(self, num_quarters: int) -> tuple:
+    def create_room(self, num_quarters: int, game_mode: str = "test") -> tuple:
         """Returns (room, gm_id)."""
         import random
         code = uuid.uuid4().hex[:6].upper()
@@ -556,7 +624,15 @@ class CompanionManager:
             qc = uuid.uuid4().hex[:4].upper()
             q_codes.append(qc)
         room = CompanionRoom(code=code, gm_id=gm_id, num_quarters=num_quarters,
-                             quarter_names=names, quarter_codes=q_codes)
+                             quarter_names=names, quarter_codes=q_codes,
+                             game_mode=game_mode)
+        # Set up logger for serious games
+        if game_mode == "serious":
+            room.logger = GameLogger(code, {
+                "num_quarters": num_quarters,
+                "quarter_names": names,
+                "game_mode": game_mode,
+            })
         gm = CompanionPlayer(id=gm_id, name="Game Master", quarter_idx=-1, is_gm=True)
         room.players[gm_id] = gm
         self.rooms[code] = room
@@ -588,6 +664,10 @@ class CompanionManager:
         block = random.choice(available_blocks) if available_blocks else f"Kvarter {len(room.players)}"
         player = CompanionPlayer(id=player_id, name=name, quarter_idx=quarter_idx, block_name=block)
         room.players[player_id] = player
+        # Log player join for serious games
+        if room.game_mode == "serious" and room.logger:
+            q_name = room.quarter_names[quarter_idx] if quarter_idx < len(room.quarter_names) else f"Kvarter {quarter_idx + 1}"
+            room.logger.log("player_joined", player_id, {"name": name, "quarter": q_name})
         return room, player_id
 
     def get_room(self, code: str) -> Optional[CompanionRoom]:
@@ -649,12 +729,27 @@ class CompanionManager:
             for p in room.players.values():
                 if not p.is_gm:
                     p.prev_profit_score = p.profit_score
+            old_phase, old_step = room.phase_idx, room.step_idx
             phase = room.current_phase
             if phase and room.step_idx < len(phase["steps"]) - 1:
                 room.step_idx += 1
             elif room.phase_idx < len(PHASES) - 1:
                 room.phase_idx += 1
                 room.step_idx = 0
+            # Log step advance + snapshot for serious games
+            if room.game_mode == "serious" and room.logger:
+                new_step = room.current_step
+                room.logger.log("step_advanced", None, {
+                    "from_phase": old_phase, "from_step": old_step,
+                    "to_phase": room.phase_idx, "to_step": room.step_idx,
+                    "step_name": new_step["name"] if new_step else None,
+                })
+                room.logger.snapshot(room)
+                # Check if this is the final step — finalize
+                if room.phase_idx == len(PHASES) - 1:
+                    last_phase = PHASES[-1]
+                    if room.step_idx == len(last_phase["steps"]) - 1:
+                        room.logger.finalize(room)
             await self.broadcast_state(room)
 
         elif msg_type == "prev_step" and player.is_gm:
@@ -670,7 +765,7 @@ class CompanionManager:
                 room.step_idx = len(phase["steps"]) - 1
             await self.broadcast_state(room)
 
-        elif msg_type == "gm_reset" and player.is_gm:
+        elif msg_type in ("gm_reset", "reset_room") and player.is_gm:
             # Delete room entirely
             code = room.code
             if code in self.rooms:
