@@ -116,6 +116,20 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 .help-icon { cursor: pointer; margin-left: 6px; font-size: 16px; vertical-align: middle; }
 .ev-btn, .gf-btn { cursor: pointer; padding: 0 4px; color: #f0c929; font-weight: 700; user-select: none; }
 .ev-btn:active, .gf-btn:active { opacity: 0.5; }
+
+/* Klar button */
+.klar-section { margin: 12px 0; text-align: center; }
+.klar-btn { display: block; width: 100%; padding: 16px; border-radius: 10px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
+.klar-btn.not-done { background: #27ae60; color: white; }
+.klar-btn.not-done:active { background: #219a52; }
+.klar-btn.is-done { background: #243447; color: #888; cursor: default; }
+.klar-undo { color: #4db8ff; cursor: pointer; font-size: 13px; margin-left: 8px; text-decoration: underline; }
+
+/* Projected score indicator */
+.projected-score { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: #243447; font-size: 14px; font-weight: 700; }
+.projected-score .trend-up { color: #27ae60; }
+.projected-score .trend-down { color: #e74c3c; }
+.projected-score .trend-flat { color: #888; }
 </style>
 </head>
 <body>
@@ -310,6 +324,120 @@ function send(data) {
     } else {
         console.warn('WS not open, message dropped');
     }
+}
+
+// ── Step Done / Klar logic ──
+function isStepAutoDone(p, stepId) {
+    if (stepId === 'choose_pc') return p.projektchef != null;
+    if (stepId === 'choose_ac') return p.arbetschef != null;
+    if (stepId === 'projects') return (p.projects || []).length > 0;
+    if (stepId === 'planning') return Object.keys(p.pl_choices || {}).length >= 13;
+    if (stepId === 'gf_abt_ek') return (p.eget_kapital || 0) !== 0;
+    if (stepId === 'f4_forbered') return (p.fastigheter || []).length > 0;
+    return false;
+}
+
+function isStepDone(p, stepId) {
+    if (isStepAutoDone(p, stepId)) return true;
+    return (p.steps_done || {})[stepId] === true;
+}
+
+// ── Projected Score ──
+function projectedScore(p, phase) {
+    if (!p || !p.projects || p.projects.length === 0) return 0;
+
+    var totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
+    var totalBTA = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
+    var projKost = (p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0));
+    var markKost = 15 + (p.mark_expansions || 0) * 5;
+    var totalKost = projKost + markKost;
+
+    // Planning totals
+    var choices = p.pl_choices || {};
+    var plEvts = p.pl_events || {};
+    var plCost = 0, plEvAbt = 0, plErf = 0;
+    var plQ = 0, plH = 0, plT = 0;
+    for (var k in choices) { var ch = choices[k]; plCost += ch.cost||0; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; }
+    for (var k in plEvts) { var ev = plEvts[k]; plEvAbt += ev.abt||0; }
+
+    // Byggfas totals
+    var gfP = p.gf_phases || {};
+    var gfAbt = 0;
+    for (var f in gfP) { gfAbt += gfP[f].abt||0; }
+    var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
+    var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
+    var anskKvar = totalAnsk - totalKost - totalAbtUsed;
+
+    // PC/AC bonuses
+    var pcBonus = p.projektchef ? ((p.projektchef.kapacitet || 0) + (p.projektchef.namnd_bonus || 0)) : 0;
+    var rbTotal = (p.riskbuffertar || 0) + (p.projektchef ? (p.projektchef.rb || 0) : 0) + (p.arbetschef ? (p.arbetschef.rb || 0) : 0);
+    var totalQ = p.q_krav || 0;
+    var totalH = p.h_krav || 0;
+
+    // Leverantörsnivå snitt
+    var levNiva = 0, levCount = 0;
+    for (var k in choices) { levNiva += choices[k].niva || 0; levCount++; }
+    var levSnitt = levCount > 0 ? levNiva / levCount : 2;
+
+    if (totalBTA <= 0) return 0;
+
+    if (phase === 'phase1') {
+        // Phase 1: rough estimate
+        var projected = (totalAnsk * 0.7 * 0.30) / totalBTA * 1000
+            + pcBonus * 2
+            + rbTotal * 3
+            - (totalQ + totalH) * 1.5;
+        return Math.round(projected * 10) / 10;
+    }
+
+    if (phase === 'phase2') {
+        // Phase 2: planning-aware estimate
+        var projectedEK = anskKvar;
+        var projectedTB = anskKvar;
+        var projected = (totalAnsk * 0.30 + 0.10 * projectedEK) / totalBTA * 1000
+            + projectedTB * 0.5
+            + (levSnitt - 2) * 5;
+        return Math.round(projected * 10) / 10;
+    }
+
+    if (phase === 'phase3') {
+        // Phase 3: near-real formula
+        var projectedFV = p.projects.reduce(function(s, pr) { return s + (pr.marknadsvarde || pr.anskaffning || 0); }, 0);
+        var projectedEK = p.eget_kapital || anskKvar;
+        var ekFactor = projectedEK >= 0 ? 0.10 : 2.00;
+        var tb = anskKvar;
+        var projected = (projectedFV * 0.30 + ekFactor * projectedEK) / totalBTA * 1000 + tb;
+        return Math.round(projected * 10) / 10;
+    }
+
+    if (phase === 'phase4') {
+        // Phase 4: real formula using fastigheter
+        var fasts = p.fastigheter || [];
+        var owned = fasts.filter(function(f) { return !f.sold; });
+        if (owned.length === 0) {
+            // Fallback to projects if no fastigheter yet
+            owned = p.projects;
+        }
+        var fv = owned.reduce(function(s, f) { return s + (f.marknadsvarde || f.anskaffning || 0); }, 0);
+        var ownedBTA = owned.reduce(function(s, f) { return s + (f.bta || 0); }, 0);
+        var actualEK = p.eget_kapital || 0;
+        var ekFactor = actualEK >= 0 ? 0.10 : 2.00;
+        var tb = anskKvar;
+        if (ownedBTA <= 0) return 0;
+        var projected = (0.30 * fv + ekFactor * actualEK) / ownedBTA * 1000 + tb;
+        return Math.round(projected * 10) / 10;
+    }
+
+    return 0;
+}
+
+function renderTrendScore(score, prevScore) {
+    var arrow = '';
+    var trendClass = 'trend-flat';
+    if (prevScore && score > prevScore + 0.5) { arrow = '\u25B2'; trendClass = 'trend-up'; }
+    else if (prevScore && score < prevScore - 0.5) { arrow = '\u25BC'; trendClass = 'trend-down'; }
+    return '<span class="projected-score"><span>' + score + '</span>' +
+        (arrow ? '<span class="' + trendClass + '">' + arrow + '</span>' : '') + '</span>';
 }
 
 // ── Lobby ──
@@ -1001,6 +1129,27 @@ function renderPlayer() {
     } catch(e) { console.error('[F4 render error]', e); html += '<div style="color:red">Fas 4 renderingsfel: ' + e.message + '</div>'; }
     }
 
+    // ── "Klar med detta steg" button ──
+    if (step) {
+        var _isDone = isStepDone(p, step);
+        var _isAutoDone = isStepAutoDone(p, step);
+        html += '<div class="klar-section">';
+        if (_isDone) {
+            html += '<div class="klar-btn is-done">\u2713 Markerad som klar';
+            if (!_isAutoDone) {
+                html += '<span class="klar-undo" data-action="unmark-done" data-step="' + step + '">\u00c5ngra</span>';
+            }
+            html += '</div>';
+        } else {
+            html += '<button class="klar-btn not-done" data-action="mark-done" data-step="' + step + '">\u2713 Klar med detta steg</button>';
+        }
+        html += '</div>';
+    }
+
+    // ── Projected score indicator in summary ──
+    var _projScore = projectedScore(p, phase);
+    var _prevScore = p.prev_profit_score || 0;
+
     // Info summary (always visible from step 1+)
     if (ph1Idx >= 0 || ph2Idx >= 0 || ph3Idx >= 0 || isPhase4) {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
@@ -1103,6 +1252,12 @@ function renderPlayer() {
                 html += '</div>';
             }
         }
+        // Projected score indicator
+        if (_projScore) {
+            html += '<div style="grid-column:1/-1;border-top:1px solid #334;padding-top:6px;margin-top:6px">';
+            html += 'Vinstchans: ' + renderTrendScore(_projScore, _prevScore);
+            html += '</div>';
+        }
         html += '</div></div>';
     }
 
@@ -1155,6 +1310,18 @@ function counterRow(label, val, key, allowNeg) {
 }
 
 function attachPlayerEvents(container) {
+    // Klar / Undo buttons
+    container.querySelectorAll('[data-action="mark-done"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            send({ type: 'mark_done', step: el.dataset.step });
+        });
+    });
+    container.querySelectorAll('[data-action="unmark-done"]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            send({ type: 'unmark_done', step: el.dataset.step });
+        });
+    });
     container.querySelectorAll('[data-action="choose-pc"]').forEach(el => {
         el.addEventListener('click', () => openPCModal());
     });
@@ -1712,36 +1879,47 @@ function renderGM() {
 
 function renderGMTable(st) {
     const table = document.getElementById('gm-player-table');
+    const currentPhase = st.phase || 'phase1';
     const allPlayers = (st.quarters || []).flatMap(q =>
         q.players.map(p => ({ ...p, district: q.name }))
     );
-    const maxScore = Math.max(1, ...allPlayers.map(p => p.profit_score || 0));
 
-    let html = `<thead><tr>
-        <th>Stadsdel</th><th>Kvarter</th><th>Spelare</th><th>Status</th>
-        <th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>
-        <th>Vinstchans</th>
-    </tr></thead><tbody>`;
+    // Calculate projected scores for all players
+    for (const p of allPlayers) {
+        p._projScore = projectedScore(p, currentPhase);
+    }
+    const maxScore = Math.max(1, ...allPlayers.map(p => p._projScore || 0));
+
+    let html = '<thead><tr>' +
+        '<th>Stadsdel</th><th>Kvarter</th><th>Spelare</th><th>Status</th>' +
+        '<th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>' +
+        '<th>Vinstchans</th>' +
+        '</tr></thead><tbody>';
 
     for (const p of allPlayers) {
-        const done = p.step_done;
-        const statusCls = done ? 'status-done' : 'status-wait';
-        const statusTxt = done ? '✓ Klar' : '○ Väntar';
-        const pcName = p.projektchef ? p.projektchef.namn : '—';
-        const numProj = p.projects?.length || 0;
-        const barW = Math.round((p.profit_score / maxScore) * 60);
-        html += `<tr>
-            <td>${p.district}</td>
-            <td style="color:#f0c929">${p.block_name || '—'}</td>
-            <td>${p.name}</td>
-            <td class="${statusCls}">${statusTxt}</td>
-            <td>${pcName}</td>
-            <td>${numProj}</td>
-            <td>${p.q_krav}</td>
-            <td>${p.h_krav}</td>
-            <td>${p.riskbuffertar}</td>
-            <td><span class="score-bar" style="width:${barW}px"></span>${p.profit_score}</td>
-        </tr>`;
+        var done = p.step_done;
+        var hasData = p.step_has_data;
+        var statusIcon, statusColor;
+        if (done) { statusIcon = '\uD83D\uDFE2'; statusColor = '#27ae60'; }
+        else if (hasData) { statusIcon = '\uD83D\uDFE1'; statusColor = '#f0c929'; }
+        else { statusIcon = '\uD83D\uDD34'; statusColor = '#c0392b'; }
+        var pcName = p.projektchef ? p.projektchef.namn : '\u2014';
+        var numProj = p.projects ? p.projects.length : 0;
+        var score = p._projScore || 0;
+        var barW = Math.round((score / maxScore) * 60);
+        var prevScore = p.prev_profit_score || 0;
+        html += '<tr>' +
+            '<td>' + p.district + '</td>' +
+            '<td style="color:#f0c929">' + (p.block_name || '\u2014') + '</td>' +
+            '<td>' + p.name + '</td>' +
+            '<td style="color:' + statusColor + '">' + statusIcon + '</td>' +
+            '<td>' + pcName + '</td>' +
+            '<td>' + numProj + '</td>' +
+            '<td>' + p.q_krav + '</td>' +
+            '<td>' + p.h_krav + '</td>' +
+            '<td>' + p.riskbuffertar + '</td>' +
+            '<td><span class="score-bar" style="width:' + barW + 'px"></span>' + renderTrendScore(score, prevScore) + '</td>' +
+            '</tr>';
     }
     html += '</tbody>';
     table.innerHTML = html;
@@ -1757,11 +1935,13 @@ function renderGMQuarters(st) {
         const ps = q.players || [];
         const done = ps.filter(function(p) { return p.step_done; }).length;
         const total = ps.length;
-        const doneColor = (done === total && total > 0) ? '#27ae60' : '#c0392b';
+        const doneColor = (done === total && total > 0) ? '#27ae60' : (done > 0 ? '#f0c929' : '#c0392b');
         const playerSpans = ps.map(function(p) {
-            const c = p.step_done ? '#27ae60' : '#ccc';
-            const check = p.step_done ? ' \u2713' : '';
-            return '<span style="color:' + c + '">' + p.name + check + '</span>';
+            var icon, c;
+            if (p.step_done) { icon = '\uD83D\uDFE2'; c = '#27ae60'; }
+            else if (p.step_has_data) { icon = '\uD83D\uDFE1'; c = '#f0c929'; }
+            else { icon = '\uD83D\uDD34'; c = '#c0392b'; }
+            return '<span style="color:' + c + '">' + icon + ' ' + p.name + '</span>';
         }).join('');
         cards.push(
             '<div class="quarter-card">' +

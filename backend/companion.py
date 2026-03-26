@@ -241,27 +241,57 @@ class CompanionPlayer:
     f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
+    steps_done: Dict[str, bool] = field(default_factory=dict)
+    prev_profit_score: float = 0.0  # Previous projected score for trend arrow
+
+    def step_auto_done(self, step_id: str) -> bool:
+        """Check if player is auto-done with a given step based on data."""
+        if step_id == "choose_pc":
+            return self.projektchef is not None
+        elif step_id == "choose_ac":
+            return self.arbetschef is not None
+        elif step_id == "projects":
+            return len(self.projects) > 0
+        elif step_id == "planning":
+            return len(self.pl_choices) >= 13
+        elif step_id == "gf_abt_ek":
+            return self.eget_kapital != 0
+        elif step_id == "f4_forbered":
+            return len(self.fastigheter or []) > 0
+        return False
 
     def step_done(self, step_id: str) -> bool:
-        """Check if player appears done with a given step."""
+        """Check if player is done with a given step (auto or manual)."""
+        if self.step_auto_done(step_id):
+            return True
+        return self.steps_done.get(step_id, False)
+
+    def step_has_data(self, step_id: str) -> bool:
+        """Check if player has some data for a step (but not necessarily done)."""
         if step_id == "choose_pc":
             return self.projektchef is not None
         elif step_id == "projects":
-            return len(self.projects) >= 1
+            return len(self.projects) > 0
         elif step_id == "namndbeslut":
-            return len(self.projects) >= 1  # GM judges manually
-        elif step_id == "rb_invest":
-            return True  # Always "done" — voluntary step
+            return len(self.projects) > 0
         elif step_id == "choose_ac":
             return self.arbetschef is not None
         elif step_id == "planning":
             return len(self.pl_choices) > 0
-        elif step_id == "planning_summary":
-            return True
-        elif step_id in ("gf_byggfaser", "gf_konsekvens", "gf_garanti", "gf_abt_ek"):
-            return True
-        elif step_id in ("f4_forbered", "f4_kvartal", "f4_slut"):
-            return True
+        elif step_id == "gf_byggfaser":
+            return len(self.gf_phases) > 0
+        elif step_id == "gf_konsekvens":
+            return self.gf_kons_q != 0 or self.gf_kons_h != 0 or self.gf_kons_t != 0
+        elif step_id == "gf_garanti":
+            return self.gf_garanti_abt != 0
+        elif step_id == "gf_abt_ek":
+            return self.eget_kapital != 0
+        elif step_id == "f4_forbered":
+            return len(self.fastigheter or []) > 0
+        elif step_id in ("f4_q1", "f4_q2", "f4_q3", "f4_q4"):
+            return len(self.fastigheter or []) > 0
+        elif step_id == "f4_slut":
+            return self.f4_final_score != 0
         return False
 
     @property
@@ -348,6 +378,8 @@ class CompanionPlayer:
             "f4_yield_kommersiellt": self.f4_yield_kommersiellt,
             "f4_quarters": self.f4_quarters,
             "f4_final_score": round(self.f4_final_score, 1),
+            "steps_done": self.steps_done,
+            "prev_profit_score": round(self.prev_profit_score, 1),
             "profit_score": self.profit_score,
         }
 
@@ -397,7 +429,9 @@ class CompanionRoom:
     def _player_with_status(self, p: CompanionPlayer) -> dict:
         d = p.to_dict()
         step = self.current_step
-        d["step_done"] = p.step_done(step["id"]) if step else False
+        step_id = step["id"] if step else None
+        d["step_done"] = p.step_done(step_id) if step_id else False
+        d["step_has_data"] = p.step_has_data(step_id) if step_id else False
         return d
 
     def leaderboard(self) -> dict:
@@ -415,13 +449,14 @@ class CompanionRoom:
                 "quarter": q_name,
                 "district": q_name,
                 "profit_score": p.profit_score,
+                "prev_profit_score": round(p.prev_profit_score, 1),
                 "num_projects": len(p.projects),
                 "total_bta": sum(pr.get("bta", 0) for pr in p.projects),
                 "q_krav": p.q_krav,
                 "h_krav": p.h_krav,
                 "riskbuffertar": p.riskbuffertar,
                 "eget_kapital": round(p.eget_kapital, 1),
-                "pc_name": p.projektchef.get("namn", "") if p.projektchef else "—",
+                "pc_name": p.projektchef.get("namn", "") if p.projektchef else "\u2014",
             })
 
         # District ranking (average profit_score of players)
@@ -590,6 +625,10 @@ class CompanionManager:
         msg_type = data.get("type")
 
         if msg_type == "advance_step" and player.is_gm:
+            # Save current profit_score as prev for trend arrows
+            for p in room.players.values():
+                if not p.is_gm:
+                    p.prev_profit_score = p.profit_score
             phase = room.current_phase
             if phase and room.step_idx < len(phase["steps"]) - 1:
                 room.step_idx += 1
@@ -599,6 +638,10 @@ class CompanionManager:
             await self.broadcast_state(room)
 
         elif msg_type == "prev_step" and player.is_gm:
+            # Save current profit_score as prev for trend arrows
+            for p in room.players.values():
+                if not p.is_gm:
+                    p.prev_profit_score = p.profit_score
             if room.step_idx > 0:
                 room.step_idx -= 1
             elif room.phase_idx > 0:
@@ -711,6 +754,18 @@ class CompanionManager:
             if "f4_final_score" in assets:
                 player.f4_final_score = float(assets["f4_final_score"])
             # Update GM dashboard
+            await self.broadcast_state(room)
+
+        elif msg_type == "mark_done" and not player.is_gm:
+            step = data.get("step", "")
+            if step:
+                player.steps_done[step] = True
+            await self.broadcast_state(room)
+
+        elif msg_type == "unmark_done" and not player.is_gm:
+            step = data.get("step", "")
+            if step and step in player.steps_done:
+                del player.steps_done[step]
             await self.broadcast_state(room)
 
         elif msg_type == "get_state":
