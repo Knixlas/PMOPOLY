@@ -1266,7 +1266,7 @@ def _draw_planning_event(room: GameRoom, player: Player, events: list) -> dict:
         return _advance_planering_step(room, events)
 
     # Calculate experience
-    exp = player.relevant_erfarenhet(card.summering)
+    exp = player.total_erfarenhet
 
     # Show card and ask player to roll D20
     room.sub_state = "planning_event_roll"
@@ -2122,7 +2122,7 @@ def _gf_draw_event(room: GameRoom, player: Player, events: list) -> dict:
         room.events_log.extend(events[-1:])
         return _gf_setup_resolve_faskort(room, player, events)
 
-    exp = player.relevant_erfarenhet(card.summering)
+    exp = player.total_erfarenhet
     d20 = roll("D20")
     total = d20 + exp
     effect = card.get_effect(total)
