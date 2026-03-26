@@ -346,86 +346,163 @@ function isStepDone(p, stepId) {
 function projectedScore(p, phase) {
     if (!p || !p.projects || p.projects.length === 0) return 0;
 
-    var totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
-    var totalBTA = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
-    var projKost = (p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0));
+    var projects = p.projects;
+    var totalAnsk = projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
+    var totalBta = projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
+    var projKost = (p.dev_cost_total || projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0));
     var markKost = 15 + (p.mark_expansions || 0) * 5;
     var totalKost = projKost + markKost;
+    var totalQ = p.q_krav || 0;
+    var totalH = p.h_krav || 0;
 
     // Planning totals
     var choices = p.pl_choices || {};
     var plEvts = p.pl_events || {};
     var plCost = 0, plEvAbt = 0, plErf = 0;
-    var plQ = 0, plH = 0, plT = 0;
-    for (var k in choices) { var ch = choices[k]; plCost += ch.cost||0; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; }
-    for (var k in plEvts) { var ev = plEvts[k]; plEvAbt += ev.abt||0; }
+    var curQ = 0, curH = 0, curT = 0;
+    for (var k in choices) { var ch = choices[k]; plCost += ch.cost||0; curQ += ch.q||0; curH += ch.h||0; curT += ch.t||0; plErf += ch.erf||0; }
+    for (var k2 in plEvts) { var ev = plEvts[k2]; plEvAbt += ev.abt||0; }
 
     // Byggfas totals
     var gfP = p.gf_phases || {};
     var gfAbt = 0;
     for (var f in gfP) { gfAbt += gfP[f].abt||0; }
     var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
-    var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
-    var anskKvar = totalAnsk - totalKost - totalAbtUsed;
 
-    // PC/AC bonuses
-    var pcBonus = p.projektchef ? ((p.projektchef.kapacitet || 0) + (p.projektchef.namnd_bonus || 0)) : 0;
-    var rbTotal = (p.riskbuffertar || 0) + (p.projektchef ? (p.projektchef.rb || 0) : 0) + (p.arbetschef ? (p.arbetschef.rb || 0) : 0);
-    var totalQ = p.q_krav || 0;
-    var totalH = p.h_krav || 0;
+    // BRF values (used in multiple phases)
+    var brfProj = projects.filter(function(pr) { return pr.typ === 'BRF'; });
+    var brfValue = brfProj.reduce(function(s, pr) { return s + ((pr.marknadsvarde||pr.anskaffning) - pr.anskaffning); }, 0);
 
-    // Leverantörsnivå snitt
-    var levNiva = 0, levCount = 0;
-    for (var k in choices) { levNiva += choices[k].niva || 0; levCount++; }
-    var levSnitt = levCount > 0 ? levNiva / levCount : 2;
+    // Estimated FV from driftnetto (non-BRF only)
+    var estFV = projects.reduce(function(s, pr) {
+        var dn = pr.driftnetto || 0;
+        var isBost = (pr.typ === 'Hyresrätt' || pr.typ === 'BRF');
+        var yld = isBost ? 4.0 : 5.0;
+        return s + (dn > 0 ? (4 * dn) / (yld / 100) : (pr.marknadsvarde || pr.anskaffning || 0));
+    }, 0);
+    var nonBrfFV = estFV - brfProj.reduce(function(s, pr) { return s + (pr.marknadsvarde || pr.anskaffning || 0); }, 0);
+    var rorlig = p.gf_brf_rorlig || 0;
 
-    if (totalBTA <= 0) return 0;
+    // Safeguard
+    if (totalBta <= 0) return 0;
 
+    // ── Phase 1: Projektutveckling ──
     if (phase === 'phase1') {
-        // Phase 1: rough estimate
-        var projected = (totalAnsk * 0.7 * 0.30) / totalBTA * 1000
-            + pcBonus * 2
-            + rbTotal * 3
-            - (totalQ + totalH) * 1.5;
-        return Math.round(projected * 10) / 10;
+        var _margin = totalAnsk / Math.max(totalKost, 1);
+        var _avgForm = projects.reduce(function(s, pr) { return s + (pr.formfaktor || 3); }, 0) / Math.max(projects.length, 1);
+        var _uniqueTypes = 0;
+        var _seenTypes = {};
+        projects.forEach(function(pr) { if (pr.typ && !_seenTypes[pr.typ]) { _seenTypes[pr.typ] = true; _uniqueTypes++; } });
+        var _qhBurden = totalQ + totalH;
+        var _rb = p.riskbuffertar || 0;
+
+        // Estimate TB: optimistic but reasonable
+        var _estTB = totalAnsk * 0.20 - totalKost;
+        // Estimate FV from driftnetto and default yields (already computed as nonBrfFV)
+        // BRF projects sell: value goes to EK not FV
+        var _estEK = brfValue + _estTB;
+
+        var _baseScore = (0.30 * nonBrfFV + 0.10 * Math.max(0, _estEK)) / totalBta * 1000 + Math.max(0, _estTB);
+
+        // Adjustments
+        var _formPenalty = _avgForm > 4 ? -(_avgForm - 4) * 3 : (4 - _avgForm) * 1;
+        var _diversityBonus = _uniqueTypes >= 3 ? 3 : _uniqueTypes === 1 ? -3 : 0;
+        var _qhPenalty = -_qhBurden * 0.3;
+        var _rbBonus = _rb * 2;
+
+        var projected = _baseScore + _formPenalty + _diversityBonus + _qhPenalty + _rbBonus;
+        return isFinite(projected) ? Math.round(projected * 10) / 10 : 0;
     }
 
+    // ── Phase 2: Planering ──
     if (phase === 'phase2') {
-        // Phase 2: planning-aware estimate
-        var projectedEK = anskKvar;
-        var projectedTB = anskKvar;
-        var projected = (totalAnsk * 0.30 + 0.10 * projectedEK) / totalBTA * 1000
-            + projectedTB * 0.5
-            + (levSnitt - 2) * 5;
-        return Math.round(projected * 10) / 10;
+        var _numChoices = Object.keys(choices).length;
+        var _avgNiva = _numChoices > 0 ? Object.values(choices).reduce(function(s, c) { return s + (c.niva || 1); }, 0) / _numChoices : 2;
+
+        // Q/H/T gaps
+        var _qGap = Math.max(0, totalQ - curQ);
+        var _hGap = Math.max(0, totalH - curH);
+        var _tGap = Math.max(0, curT - 12);
+
+        // Estimated konsekvenskort cost
+        var _estKonsKort = _qGap + _hGap + _tGap;
+        var _estKonsCost = _estKonsKort * 4;
+
+        // Garanti from low-level suppliers
+        var _lowLevelCount = Object.values(choices).filter(function(c) { return (c.niva || 1) < 3; }).length;
+        var _estGarantiCost = (_estKonsKort + _lowLevelCount) * 2;
+
+        // Projected ABT usage
+        var _abtUsed = plCost + plEvAbt;
+        var _estTotalAbtUsed = _abtUsed + (13 - _numChoices) * (_abtUsed / Math.max(_numChoices, 1)) + _estKonsCost + _estGarantiCost;
+        var _estTB2 = totalAnsk - totalKost - _estTotalAbtUsed;
+
+        // Projected EK
+        var _estEK2 = brfValue + _estTB2 + rorlig;
+        var _ekFactor2 = _estEK2 >= 0 ? 0.10 : 2.00;
+
+        var projected = totalBta > 0 ? (0.30 * nonBrfFV + _ekFactor2 * _estEK2) / totalBta * 1000 + Math.max(0, _estTB2) : 0;
+        // Adjustments
+        projected += (_avgNiva - 2) * 3;
+        projected += plErf * 0.5;
+        return isFinite(projected) ? Math.round(projected * 10) / 10 : 0;
     }
 
+    // ── Phase 3: Genomförande ──
     if (phase === 'phase3') {
-        // Phase 3: near-real formula
-        var projectedFV = p.projects.reduce(function(s, pr) { return s + (pr.marknadsvarde || pr.anskaffning || 0); }, 0);
-        var projectedEK = p.eget_kapital || anskKvar;
-        var ekFactor = projectedEK >= 0 ? 0.10 : 2.00;
-        var tb = anskKvar;
-        var projected = (projectedFV * 0.30 + ekFactor * projectedEK) / totalBTA * 1000 + tb;
-        return Math.round(projected * 10) / 10;
+        // Real Q/H/T gaps
+        var _konsQ = Math.max(0, totalQ - curQ);
+        var _konsH = Math.max(0, totalH - curH);
+        var _konsT = Math.max(0, curT - 12);
+
+        // Real costs
+        var _realAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
+        var _realTB = totalAnsk - totalKost - _realAbtUsed;
+
+        // EK estimation
+        var _realEK = brfValue + _realTB + rorlig;
+        var _modLanSkuld = (p.gf_moderbolagslan_antal || 0) * 100;
+        var _modLanTillskott = (p.gf_moderbolagslan_antal || 0) * 95;
+        _realEK += _modLanTillskott - _modLanSkuld;
+
+        var _ekFactor3 = _realEK >= 0 ? 0.10 : 2.00;
+        var projected = totalBta > 0 ? (0.30 * nonBrfFV + _ekFactor3 * _realEK) / totalBta * 1000 + Math.max(0, _realTB) : 0;
+        return isFinite(projected) ? Math.round(projected * 10) / 10 : 0;
     }
 
+    // ── Phase 4: Förvaltning ──
     if (phase === 'phase4') {
-        // Phase 4: real formula using fastigheter
-        var fasts = p.fastigheter || [];
-        var owned = fasts.filter(function(f) { return !f.sold; });
-        if (owned.length === 0) {
+        var _ownedFasts = (p.fastigheter || []).filter(function(ff) { return !ff.sold; });
+        if (_ownedFasts.length === 0) {
             // Fallback to projects if no fastigheter yet
-            owned = p.projects;
+            _ownedFasts = projects.map(function(pr) { return pr; });
         }
-        var fv = owned.reduce(function(s, f) { return s + (f.marknadsvarde || f.anskaffning || 0); }, 0);
-        var ownedBTA = owned.reduce(function(s, f) { return s + (f.bta || 0); }, 0);
-        var actualEK = p.eget_kapital || 0;
-        var ekFactor = actualEK >= 0 ? 0.10 : 2.00;
-        var tb = anskKvar;
-        if (ownedBTA <= 0) return 0;
-        var projected = (0.30 * fv + ekFactor * actualEK) / ownedBTA * 1000 + tb;
-        return Math.round(projected * 10) / 10;
+        var _actualFV = _ownedFasts.reduce(function(s, ff) {
+            var isBost = ff.typ === 'Hyresrätt';
+            var yld = isBost ? (p.f4_yield_bostader || 4.0) : (p.f4_yield_kommersiellt || 5.0);
+            var dn = ff.driftnetto || 0;
+            var eklMap = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0.90,'F':0.85};
+            var eklF = eklMap[(ff.energiklass || 'C').toUpperCase()] || 1.0;
+            return s + (yld > 0 ? (4 * dn) / (yld / 100) * eklF : 0);
+        }, 0);
+        var _ownedBTA = _ownedFasts.reduce(function(s, ff) { return s + (ff.bta || 0); }, 0);
+        var _actualEK = p.eget_kapital || 0;
+
+        // Energy upgrade potential
+        var _energyPotential = _ownedFasts.reduce(function(s, ff) {
+            var eklIdx = 'FEDCBA'.indexOf((ff.energiklass || 'D').toUpperCase());
+            var stepsToA = Math.max(0, 5 - eklIdx);
+            return s + stepsToA * 0.02 * (ff.marknadsvarde || 0);
+        }, 0);
+
+        // TB from earlier phases
+        var _realAbtUsed4 = plCost + plEvAbt + gfAbt + konsAbt;
+        var _realTB4 = totalAnsk - totalKost - _realAbtUsed4;
+
+        var _ekFactor4 = _actualEK >= 0 ? 0.10 : 2.00;
+        var projected = _ownedBTA > 0 ? (0.30 * _actualFV + _ekFactor4 * _actualEK) / _ownedBTA * 1000 + _realTB4 : 0;
+        projected += _energyPotential * 0.01;
+        return isFinite(projected) ? Math.round(projected * 10) / 10 : 0;
     }
 
     return 0;
