@@ -778,12 +778,14 @@ function renderPlayer() {
     }
 
     // Phase 4: Förvaltning
-    if (isPhase4) {
+    console.log('[render] phase=' + phase + ' isPhase4=' + isPhase4 + ' step=' + step + ' fasts=' + (p.fastigheter||[]).length + ' projs=' + p.projects.length);
+    if (isPhase4) { try {
         var fasts = p.fastigheter || [];
         var EKLASS = ['A','B','C','D','E','F'];
 
         // Auto-convert projects to fastigheter if not done yet
-        if (fasts.length === 0 && p.projects.length > 0) {
+        if (fasts.length === 0 && p.projects.length > 0 && !S._f4converted) {
+            S._f4converted = true;
             var autoFasts = [];
             var brfEk = 0;
             for (var _ap of p.projects) {
@@ -801,10 +803,15 @@ function renderPlayer() {
             }
             fasts = autoFasts;
             p.fastigheter = autoFasts;
+            console.log('[F4] Auto-converting ' + p.projects.length + ' projects → ' + autoFasts.length + ' fastigheter, BRF EK: ' + brfEk);
             send({ type: 'update_assets', assets: {
                 fastigheter: autoFasts,
                 eget_kapital: (p.eget_kapital || 0) + brfEk
             }});
+        }
+        // Use locally set fastigheter if server hasn't responded yet
+        if (fasts.length === 0 && p.fastigheter && p.fastigheter.length > 0) {
+            fasts = p.fastigheter;
         }
 
         // FC/FS selection (always visible in phase 4)
@@ -947,6 +954,7 @@ function renderPlayer() {
                 send({ type: 'update_assets', assets: { f4_final_score: Math.round(_score*10)/10 } });
             }
         }
+    } catch(e) { console.error('[F4 render error]', e); html += '<div style="color:red">Fas 4 renderingsfel: ' + e.message + '</div>'; }
     }
 
     // Info summary (always visible from step 1+)
