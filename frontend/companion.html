@@ -1662,7 +1662,13 @@ function openProjectModal(typ, triplePrice) {
                 current.splice(idx, 1);
                 el.classList.remove('selected');
             } else {
-                current.push(proj);
+                // If triple price: save modified project with 3× kostnad
+                if (triplePrice) {
+                    const modProj = Object.assign({}, proj, { kostnad: proj.kostnad * 3, triple_price: true });
+                    current.push(modProj);
+                } else {
+                    current.push(proj);
+                }
                 el.classList.add('selected');
             }
             send({ type: 'update_assets', assets: { projects: current } });
