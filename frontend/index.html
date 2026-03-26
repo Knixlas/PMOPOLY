@@ -58,7 +58,19 @@
                         <span id="phase-name">Fas 1: Projektutveckling</span>
                         <span id="phase-sub" class="muted"></span>
                     </div>
-                    <div id="turn-indicator" class="turn-indicator"></div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <button id="btn-companion-toggle" title="Visa/dölj companion" style="background:#1a2736;border:1px solid #334;color:#f0c929;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:14px">📊</button>
+                        <div id="turn-indicator" class="turn-indicator"></div>
+                    </div>
+                </div>
+
+                <!-- Companion overlay panel -->
+                <div id="companion-panel" style="display:none;position:fixed;top:0;right:0;width:360px;height:100vh;background:#0d1926;border-left:2px solid #f0c929;z-index:50;overflow-y:auto;padding:16px;font-size:13px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="color:#f0c929;font-weight:700;font-size:15px">📊 Companion</span>
+                        <span id="btn-companion-close" style="cursor:pointer;color:#e74c3c;font-size:18px">✕</span>
+                    </div>
+                    <div id="companion-content"></div>
                 </div>
 
                 <!-- Left: Current square info (zoomed) -->

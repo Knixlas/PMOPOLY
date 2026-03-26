@@ -106,6 +106,9 @@ export function handleGameState(gs) {
 
     // Render action panel
     renderActionPanel(gs);
+
+    // Update companion panel if visible
+    updateCompanionIfVisible();
 }
 
 export function handleEvents(events) {
@@ -748,4 +751,156 @@ function showAssetDetail(card, player) {
     body.innerHTML = html;
     modal.style.display = 'flex';
     closeBtn.onclick = () => { modal.style.display = 'none'; };
+}
+
+// ══════════════════════════════════════
+// Companion Panel (toggle overlay)
+// ══════════════════════════════════════
+
+let companionVisible = false;
+
+function toggleCompanion() {
+    companionVisible = !companionVisible;
+    const panel = document.getElementById('companion-panel');
+    if (panel) panel.style.display = companionVisible ? 'block' : 'none';
+    if (companionVisible) renderCompanion();
+}
+
+function renderCompanion() {
+    const el = document.getElementById('companion-content');
+    if (!el || !state.gameState) return;
+
+    const gs = state.gameState;
+    const me = gs.players?.find(p => p.id === state.playerId);
+    if (!me) { el.innerHTML = '<p style="color:#999">Ingen spelardata.</p>'; return; }
+
+    const phase = gs.phase || '';
+    let html = '';
+
+    // Phase indicator
+    const phaseNames = {
+        'phase1_mark_tomt': 'Fas 1: Mark & Tomt',
+        'phase1_pc_hire': 'Fas 1: Välj PC',
+        'phase1_board': 'Fas 1: Brädspel',
+        'phase1_namndbeslut': 'Fas 1: Nämndbeslut',
+        'phase1_placement': 'Fas 1: Placering',
+        'phase1_ekonomi': 'Fas 1: Ekonomi',
+        'puzzle_placement': 'Kvartersplanering',
+        'phase2_ac_hire': 'Fas 2: Välj AC',
+        'phase2_planering': 'Fas 2: Planering',
+        'phase3_genomforande': 'Fas 3: Genomförande',
+        'phase4_forvaltning': 'Fas 4: Förvaltning',
+    };
+    html += '<div style="color:#f0c929;font-weight:700;margin-bottom:8px">' + (phaseNames[phase] || phase) + '</div>';
+
+    // PC
+    if (me.projektchef) {
+        const pc = me.projektchef;
+        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
+        html += '<div style="font-size:11px;color:#999">PROJEKTCHEF</div>';
+        html += '<div style="font-weight:600">' + pc.namn + '</div>';
+        html += '<div style="font-size:12px;color:#aaa">' + (pc.specialisering || '') + ' | Lindring: +' + (pc.lindring || pc.kapacitet || 0) + ' | Nämnd: +' + (pc.namnd_bonus || 0) + '</div>';
+        html += '</div>';
+    }
+
+    // AC
+    if (me.arbetschef) {
+        const ac = me.arbetschef;
+        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #4A6FA5">';
+        html += '<div style="font-size:11px;color:#999">ARBETSCHEF</div>';
+        html += '<div style="font-weight:600">' + ac.namn + '</div>';
+        html += '<div style="font-size:12px;color:#aaa">' + (ac.specialisering || '') + ' | Erf: +' + (ac.erfarenhet || ac.kapacitet || 0) + '</div>';
+        html += '</div>';
+    }
+
+    // Projects
+    const projs = me.projects || [];
+    if (projs.length > 0) {
+        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #27ae60">';
+        html += '<div style="font-size:11px;color:#999">PROJEKT (' + projs.length + ')</div>';
+        const TYPE_COLORS = {'BRF':'#cc9b1a','FÖRSKOLOR':'#1d6b35','Hyresrätt':'#8b2252','LOKAL':'#1565C0','KONTOR':'#6A1B9A'};
+        for (const p of projs) {
+            const col = TYPE_COLORS[p.typ] || '#555';
+            html += '<div style="padding:2px 0;border-left:2px solid ' + col + ';padding-left:6px;margin:2px 0">';
+            html += '<span style="font-weight:600;font-size:12px">' + p.namn + '</span>';
+            html += ' <span style="color:#999;font-size:11px">' + p.typ + ' | BTA:' + p.bta + ' | Anskaff:' + p.anskaffning + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    // Summary
+    const totalQ = me.q_krav || 0;
+    const totalH = me.h_krav || 0;
+    const totalBta = projs.reduce((s, p) => s + (p.bta || 0), 0);
+    const totalAnsk = projs.reduce((s, p) => s + (p.anskaffning || 0), 0);
+
+    html += '<div style="background:#0f1923;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #4db8ff">';
+    html += '<div style="font-size:11px;color:#4db8ff;font-weight:600">SAMMANSTÄLLNING</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12px;margin-top:4px">';
+
+    // Q/H with achieved vs target
+    const plQ = me.pl_q || 0;
+    const plH = me.pl_h || 0;
+    const plT = me.pl_t || 0;
+    html += '<div>Q: <strong style="color:' + (plQ >= totalQ ? '#27ae60' : '#e74c3c') + '">(' + plQ + ')' + totalQ + '</strong></div>';
+    html += '<div>H: <strong style="color:' + (plH >= totalH ? '#27ae60' : '#e74c3c') + '">(' + plH + ')' + totalH + '</strong></div>';
+    html += '<div>Rb: <strong>' + (me.riskbuffertar || 0) + '</strong></div>';
+    html += '<div>Erf: <strong>' + (me.total_erfarenhet || 0) + '</strong></div>';
+    html += '<div>BTA: <strong>' + totalBta + '</strong></div>';
+    html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
+
+    // EK & ABT
+    html += '<div>EK: <strong style="color:' + ((me.eget_kapital || 0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(me.eget_kapital || 0) + ' Mkr</strong></div>';
+    html += '<div>ABT: <strong>' + Math.round(me.abt_budget || 0) + ' Mkr</strong></div>';
+
+    html += '</div></div>';
+
+    // Suppliers/Orgs (if in phase 2+)
+    const suppliers = me.pl_suppliers || {};
+    const orgs = me.pl_orgs || {};
+    if (Object.keys(suppliers).length > 0 || Object.keys(orgs).length > 0) {
+        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #e67e22">';
+        html += '<div style="font-size:11px;color:#999">LEVERANTÖRER & ORG</div>';
+        for (const [name, s] of Object.entries(suppliers)) {
+            const niva = typeof s === 'object' ? (s.niva || '?') : '?';
+            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:#3498db">Nivå ' + niva + '</span></div>';
+        }
+        for (const [name, o] of Object.entries(orgs)) {
+            const niva = typeof o === 'object' ? (o.niva || '?') : '?';
+            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:#e67e22">Nivå ' + niva + '</span></div>';
+        }
+        html += '</div>';
+    }
+
+    // Phase 4: Fastigheter
+    const fasts = me.fastigheter || [];
+    if (fasts.length > 0) {
+        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #16a085">';
+        html += '<div style="font-size:11px;color:#999">FASTIGHETER (' + fasts.length + ')</div>';
+        for (const f of fasts) {
+            if (f.sold) continue;
+            html += '<div style="font-size:12px;padding:2px 0">';
+            html += '<span style="font-weight:600">' + f.namn + '</span>';
+            html += ' <span style="color:#999">' + f.typ + ' | EK: ' + (f.energiklass || '?') + ' | MV: ' + Math.round(f.marknadsvarde || 0) + ' Mkr</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    el.innerHTML = html;
+}
+
+// Wire up toggle button
+document.getElementById('btn-companion-toggle')?.addEventListener('click', toggleCompanion);
+document.getElementById('btn-companion-close')?.addEventListener('click', () => {
+    companionVisible = false;
+    const panel = document.getElementById('companion-panel');
+    if (panel) panel.style.display = 'none';
+});
+
+// Update companion when game state changes
+const _origUpdateGame = window._pmopolyUpdateGame;
+export function updateCompanionIfVisible() {
+    if (companionVisible) renderCompanion();
 }
