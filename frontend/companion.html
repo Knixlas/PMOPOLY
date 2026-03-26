@@ -782,6 +782,7 @@ function renderPlayer() {
     if (isPhase4) { try {
         var fasts = p.fastigheter || [];
         var EKLASS = ['A','B','C','D','E','F'];
+        var TYPE_COLORS = {'BRF':'#d4a017','Hyresrätt':'#c0392b','FÖRSKOLOR':'#27ae60','LOKAL':'#2980b9','KONTOR':'#8e44ad'};
 
         // Auto-convert projects to fastigheter if not done yet
         if (fasts.length === 0 && p.projects.length > 0 && !S._f4converted) {
