@@ -780,6 +780,19 @@ class CompanionManager:
             self.connections.pop(code, None)
             return  # Don't broadcast — room is gone
 
+        elif msg_type == "finalize_game" and player.is_gm:
+            # Create logger if not exists (test mode converting to save)
+            if not room.logger:
+                room.logger = GameLogger(room.code, {
+                    "num_quarters": room.num_quarters,
+                    "quarter_names": room.quarter_names,
+                    "game_mode": room.game_mode or "test",
+                })
+            # Snapshot all players, then finalize
+            room.logger.snapshot(room)
+            room.logger.finalize(room)
+            await self.broadcast_state(room)
+
         elif msg_type == "rename_quarter" and player.is_gm:
             idx = data.get("quarter_idx")
             new_name = data.get("name", "").strip()
@@ -868,6 +881,14 @@ class CompanionManager:
                 player.f4_quarters = assets["f4_quarters"]
             if "f4_final_score" in assets:
                 player.f4_final_score = float(assets["f4_final_score"])
+            # Log asset changes for serious games
+            if room.game_mode == "serious" and room.logger:
+                step = room.current_step
+                room.logger.log("asset_update", player_id, {
+                    "step": step["id"] if step else None,
+                    "changes": list(assets.keys()),
+                    "profit_score": player.profit_score,
+                })
             # Update GM dashboard
             await self.broadcast_state(room)
 

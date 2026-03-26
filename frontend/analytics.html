@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PMOPOLY Analytics</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a1628;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px}
+h1{color:#f0c929;text-align:center;margin-bottom:8px}
+.subtitle{text-align:center;color:#999;margin-bottom:24px}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;max-width:1200px;margin:0 auto}
+.game-card{background:#111d2e;border:1px solid #1a2736;border-radius:12px;padding:16px;cursor:pointer;transition:border-color .2s}
+.game-card:hover{border-color:#f0c929}
+.game-card.finished{border-left:3px solid #27ae60}
+.game-card.ongoing{border-left:3px solid #f0c929}
+.game-code{font-size:20px;font-weight:700;color:#f0c929}
+.game-date{color:#999;font-size:13px}
+.game-stats{display:flex;gap:16px;margin-top:8px;font-size:14px}
+.game-stat{color:#3498db}
+.game-stat strong{color:#e0e0e0}
+.scores{margin-top:12px;border-top:1px solid #1a2736;padding-top:8px}
+.score-row{display:flex;justify-content:space-between;padding:2px 0;font-size:13px}
+.score-row .rank{color:#f0c929;width:24px}
+.score-row .name{flex:1}
+.score-row .score{color:#27ae60;font-weight:700}
+.detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:100;overflow-y:auto;padding:20px;display:none}
+.detail-panel{max-width:900px;margin:0 auto;background:#111d2e;border-radius:12px;padding:24px}
+.detail-close{float:right;cursor:pointer;color:#e74c3c;font-size:20px;padding:4px 12px}
+.timeline{margin-top:16px}
+.tl-event{padding:6px 0;border-bottom:1px solid #0a1628;font-size:13px}
+.tl-time{color:#999;width:140px;display:inline-block}
+.tl-type{color:#3498db;font-weight:600;width:120px;display:inline-block}
+.tl-data{color:#ccc}
+.back-link{text-align:center;margin-bottom:16px}
+.back-link a{color:#f0c929;text-decoration:none}
+.no-games{text-align:center;color:#999;margin-top:40px;font-size:18px}
+.filter-bar{max-width:1200px;margin:0 auto 16px;display:flex;gap:12px;align-items:center}
+.filter-bar select,.filter-bar input{background:#1a2736;color:#e0e0e0;border:1px solid #334;padding:8px 12px;border-radius:6px;font-size:14px}
+</style>
+</head>
+<body>
+<h1>PMOPOLY Analytics</h1>
+<div class="subtitle">Spelhistorik och resultat</div>
+<div class="back-link"><a href="/companion">← Tillbaka till Companion</a></div>
+
+<div class="filter-bar">
+    <select id="filter-status">
+        <option value="all">Alla spel</option>
+        <option value="finished">Avslutade</option>
+        <option value="ongoing">Pågående</option>
+    </select>
+</div>
+
+<div id="games-list" class="games-grid"></div>
+<div id="no-games" class="no-games" style="display:none">Inga sparade spel hittade.</div>
+
+<div id="detail-overlay" class="detail-overlay">
+    <div class="detail-panel">
+        <span class="detail-close" id="detail-close">✕</span>
+        <h2 id="detail-title" style="color:#f0c929"></h2>
+        <div id="detail-content"></div>
+    </div>
+</div>
+
+<script>
+var allGames = [];
+
+async function loadGames() {
+    try {
+        const r = await fetch('/api/companion/analytics/games');
+        const data = await r.json();
+        allGames = data.games || [];
+        renderGames();
+    } catch(e) {
+        document.getElementById('no-games').style.display = '';
+        document.getElementById('no-games').textContent = 'Kunde inte ladda speldata.';
+    }
+}
+
+function renderGames() {
+    const filter = document.getElementById('filter-status').value;
+    const filtered = allGames.filter(g => {
+        if (filter === 'finished') return g.finished;
+        if (filter === 'ongoing') return !g.finished;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        document.getElementById('games-list').innerHTML = '';
+        document.getElementById('no-games').style.display = '';
+        return;
+    }
+    document.getElementById('no-games').style.display = 'none';
+
+    let html = '';
+    for (const g of filtered) {
+        html += '<div class="game-card ' + (g.finished ? 'finished' : 'ongoing') + '" data-file="' + g.file + '">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
+        html += '<span class="game-code">' + g.code + '</span>';
+        html += '<span class="game-date">' + g.date + '</span>';
+        html += '</div>';
+        html += '<div class="game-stats">';
+        html += '<span class="game-stat"><strong>' + g.num_players + '</strong> spelare</span>';
+        html += '<span class="game-stat"><strong>' + g.num_events + '</strong> händelser</span>';
+        html += '<span class="game-stat">' + (g.finished ? '✅ Avslutat' : '⏳ Pågående') + '</span>';
+        html += '</div>';
+
+        if (g.final_scores) {
+            const scores = Object.entries(g.final_scores).sort((a,b) => b[1].score - a[1].score);
+            html += '<div class="scores">';
+            scores.forEach(([id, s], i) => {
+                html += '<div class="score-row"><span class="rank">#' + (i+1) + '</span><span class="name">' + s.name + '</span><span class="score">' + s.score + '</span></div>';
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    const el = document.getElementById('games-list');
+    el.innerHTML = html;
+    el.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('click', () => openDetail(card.dataset.file));
+    });
+}
+
+async function openDetail(filename) {
+    const overlay = document.getElementById('detail-overlay');
+    overlay.style.display = 'block';
+    document.getElementById('detail-title').textContent = 'Laddar...';
+    document.getElementById('detail-content').innerHTML = '';
+
+    try {
+        const r = await fetch('/api/companion/analytics/game/' + filename);
+        const data = await r.json();
+        const events = data.events || [];
+
+        document.getElementById('detail-title').textContent = filename.replace('.json', '');
+
+        // Summary
+        const players = events.filter(e => e.event === 'player_joined');
+        const snapshots = events.filter(e => e.event === 'state_snapshot');
+        const steps = events.filter(e => e.event === 'step_advanced');
+        const finished = events.find(e => e.event === 'game_finished');
+
+        let html = '<div style="display:flex;gap:20px;margin:12px 0;font-size:14px">';
+        html += '<span>Spelare: <strong>' + players.length + '</strong></span>';
+        html += '<span>Steg: <strong>' + steps.length + '</strong></span>';
+        html += '<span>Snapshots: <strong>' + snapshots.length + '</strong></span>';
+        html += '<span>Status: ' + (finished ? '✅ Avslutat' : '⏳') + '</span>';
+        html += '</div>';
+
+        // Score progression per player
+        if (snapshots.length > 0) {
+            html += '<h3 style="color:#3498db;margin:16px 0 8px">Poängutveckling per steg</h3>';
+            const byPlayer = {};
+            snapshots.forEach(s => {
+                const pid = s.player_id;
+                if (!byPlayer[pid]) byPlayer[pid] = [];
+                byPlayer[pid].push({ time: s.time, score: s.data?.profit_score || s.data?.f4_final_score || 0, name: s.data?.name || pid });
+            });
+
+            html += '<div style="font-size:13px">';
+            for (const [pid, entries] of Object.entries(byPlayer)) {
+                const name = entries[0]?.name || pid;
+                const scoreStr = entries.map((e, i) => '<span style="color:' + (e.score >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(e.score) + '</span>').join(' → ');
+                html += '<div style="padding:4px 0"><strong>' + name + ':</strong> ' + scoreStr + '</div>';
+            }
+            html += '</div>';
+        }
+
+        // Event timeline
+        html += '<h3 style="color:#3498db;margin:16px 0 8px">Händelselogg (' + events.length + ' händelser)</h3>';
+        html += '<div class="timeline">';
+        const displayEvents = events.filter(e => e.event !== 'state_snapshot').slice(0, 200);
+        for (const ev of displayEvents) {
+            html += '<div class="tl-event">';
+            html += '<span class="tl-time">' + ev.time + '</span>';
+            html += '<span class="tl-type">' + ev.event + '</span>';
+            let detail = '';
+            if (ev.event === 'player_joined') detail = ev.data?.name || '';
+            else if (ev.event === 'step_advanced') detail = ev.data?.step_name || '';
+            else if (ev.event === 'asset_update') detail = (ev.data?.changes || []).join(', ');
+            else if (ev.event === 'game_finished') detail = 'Spelet avslutat';
+            html += '<span class="tl-data">' + detail + '</span>';
+            html += '</div>';
+        }
+        if (events.length > 200) html += '<div style="color:#999;padding:8px">... och ' + (events.length - 200) + ' till</div>';
+        html += '</div>';
+
+        document.getElementById('detail-content').innerHTML = html;
+    } catch(e) {
+        document.getElementById('detail-content').innerHTML = '<div style="color:#e74c3c">Kunde inte ladda speldata.</div>';
+    }
+}
+
+document.getElementById('detail-close').addEventListener('click', () => {
+    document.getElementById('detail-overlay').style.display = 'none';
+});
+document.getElementById('detail-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) document.getElementById('detail-overlay').style.display = 'none';
+});
+document.getElementById('filter-status').addEventListener('change', renderGames);
+
+loadGames();
+</script>
+</body>
+</html>

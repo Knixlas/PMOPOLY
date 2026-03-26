@@ -182,12 +182,17 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
         <div class="gm-controls">
             <button class="btn-prev" id="btn-prev-step">◀ Föregående</button>
             <button class="btn-next" id="btn-next-step">Nästa steg ▶</button>
+            <button id="btn-gm-finish" style="background:#27ae60;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">✓ Avsluta spel</button>
         </div>
     </div>
     <div class="gm-phase-bar">
         <div class="phase" id="gm-phase-name">—</div>
         <div class="step" id="gm-step-name">—</div>
-        <div style="margin-top:6px"><a id="gm-dashboard-link" href="#" target="_blank" style="color:#4db8ff;font-size:13px">Öppna extern dashboard</a></div>
+        <div style="margin-top:6px">
+            <a id="gm-dashboard-link" href="#" target="_blank" style="color:#4db8ff;font-size:13px">Öppna extern dashboard</a>
+            <span style="margin:0 8px;color:#334">|</span>
+            <a href="/companion/analytics" target="_blank" style="color:#4db8ff;font-size:13px">Analytics</a>
+        </div>
     </div>
 
     <!-- Tab switcher -->
@@ -2193,6 +2198,27 @@ document.getElementById('btn-gm-reset').addEventListener('click', () => {
     sessionStorage.removeItem('companion_session');
     send({ type: 'reset_room' });
     setTimeout(() => { window.location.reload(); }, 500);
+});
+
+// GM Finish Game
+document.getElementById('btn-gm-finish').addEventListener('click', () => {
+    var mode = S.state?.game_mode || 'test';
+    if (mode === 'serious') {
+        if (!confirm('Avsluta spelet och spara resultaten?')) return;
+        send({ type: 'finalize_game' });
+        alert('Spelet avslutat! Resultat sparade.\n\nSe Analytics för historik.');
+    } else {
+        var save = confirm('Vill du spara resultaten? (Avbryt = kasta)');
+        if (save) {
+            send({ type: 'finalize_game' });
+            alert('Resultat sparade i Analytics.');
+        } else {
+            if (!confirm('Kasta alla resultat?')) return;
+        }
+        sessionStorage.removeItem('companion_session');
+        send({ type: 'reset_room' });
+        setTimeout(() => { window.location.reload(); }, 500);
+    }
 });
 
 // Tab switching

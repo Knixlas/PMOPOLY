@@ -311,6 +311,57 @@ async def companion_texts():
         return {"phases": []}
 
 
+@app.get("/api/companion/analytics/games")
+async def analytics_games():
+    """List all logged games."""
+    import json as _json
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "game_logs")
+    if not os.path.exists(log_dir):
+        return {"games": []}
+    games = []
+    for fname in sorted(os.listdir(log_dir), reverse=True):
+        if not fname.endswith(".json"):
+            continue
+        fpath = os.path.join(log_dir, fname)
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                data = _json.load(f)
+            events = data.get("events", [])
+            created = next((e for e in events if e["event"] == "room_created"), None)
+            finished = next((e for e in events if e["event"] == "game_finished"), None)
+            players = [e for e in events if e["event"] == "player_joined"]
+            games.append({
+                "file": fname,
+                "code": created["data"].get("code") if created else fname[:6],
+                "date": created["time"] if created else "",
+                "num_players": len(players),
+                "finished": finished is not None,
+                "final_scores": finished["data"].get("final_scores") if finished else None,
+                "num_events": len(events),
+            })
+        except Exception:
+            continue
+    return {"games": games}
+
+
+@app.get("/api/companion/analytics/game/{filename}")
+async def analytics_game_detail(filename: str):
+    """Get full event log for a specific game."""
+    import json as _json
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "game_logs")
+    fpath = os.path.join(log_dir, filename)
+    if not os.path.exists(fpath):
+        return {"error": "Game not found"}
+    with open(fpath, "r", encoding="utf-8") as f:
+        return _json.load(f)
+
+
+@app.get("/companion/analytics")
+async def companion_analytics_page():
+    """Serve analytics dashboard page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "analytics.html"))
+
+
 @app.websocket("/companion/ws/{code}/{player_id}")
 async def companion_ws(ws: WebSocket, code: str, player_id: str):
     room = companion_manager.get_room(code)
