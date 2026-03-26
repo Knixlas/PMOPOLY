@@ -791,6 +791,7 @@ function renderPlayer() {
                         id: _ap.id, namn: _ap.namn, typ: _ap.typ, bta: _ap.bta,
                         anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'D',
                         marknadsvarde: _ap.marknadsvarde || _ap.anskaffning,
+                        driftnetto: _ap.driftnetto || 0,
                         events: [], sold: false, kopeskilling: 0
                     });
                 }
@@ -840,9 +841,10 @@ function renderPlayer() {
         for (var fi = 0; fi < fasts.length; fi++) {
             var f = fasts[fi];
             if (f.sold) continue;
-            var isBostader = (f.typ === 'Hyresr\u00e4tt' || f.typ === 'BRF');
+            var isBostader = (f.typ === 'Hyresr\u00e4tt');
             var yieldPct = isBostader ? p.f4_yield_bostader : p.f4_yield_kommersiellt;
-            var mv = yieldPct > 0 ? Math.round(f.anskaffning / (yieldPct / 100)) : 0;
+            var dn = f.driftnetto || 0;  // Mkr per kvartal
+            var mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100)) : 0;
             html += '<div style="border:1px solid #334;border-radius:8px;padding:10px;margin:6px 0;background:#1a2736">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center">';
             html += '<strong style="color:' + (TYPE_COLORS[f.typ]||'#999') + '">' + f.namn + '</strong>';
@@ -861,7 +863,7 @@ function renderPlayer() {
             }
             html += '</div>';
             // Marknadsvärde
-            html += '<div style="font-size:13px;color:#999">Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:#27ae60">' + mv + ' Mkr</strong></div>';
+            html += '<div style="font-size:13px;color:#999">DN: ' + dn + ' Mkr/kv | Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:#27ae60">' + mv + ' Mkr</strong></div>';
             // Händelsekort per kvartal (collapsed)
             var events = f.events || [];
             html += '<div style="margin-top:6px">';
@@ -1239,6 +1241,7 @@ function attachPlayerEvents(container) {
                         id: pr.id, namn: pr.namn, typ: pr.typ, bta: pr.bta,
                         anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'D',
                         marknadsvarde: pr.marknadsvarde || pr.anskaffning,
+                        driftnetto: pr.driftnetto || 0,
                         events: [], sold: false, kopeskilling: 0
                     });
                 }
