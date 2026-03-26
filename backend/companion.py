@@ -606,6 +606,21 @@ class CompanionManager:
                 room.step_idx = len(phase["steps"]) - 1
             await self.broadcast_state(room)
 
+        elif msg_type == "gm_reset" and player.is_gm:
+            # Delete room entirely
+            code = room.code
+            if code in self.rooms:
+                del self.rooms[code]
+            # Close all WebSocket connections for this room
+            for pid, ws_set in list(self.connections.get(code, {}).items()):
+                for ws in list(ws_set):
+                    try:
+                        await ws.close(1000, "Session reset by GM")
+                    except Exception:
+                        pass
+            self.connections.pop(code, None)
+            return  # Don't broadcast — room is gone
+
         elif msg_type == "rename_quarter" and player.is_gm:
             idx = data.get("quarter_idx")
             new_name = data.get("name", "").strip()

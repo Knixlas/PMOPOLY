@@ -161,7 +161,9 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 <div id="view-gm" class="view gm-view">
     <div class="gm-header">
         <div>
-            <div style="color:#555;font-size:10px">GM-session: <span id="gm-room-code" style="letter-spacing:2px">—</span></div>
+            <div style="color:#555;font-size:10px">GM-session: <span id="gm-room-code" style="letter-spacing:2px">—</span>
+                <span id="btn-gm-reset" style="cursor:pointer;color:#e74c3c;margin-left:16px;font-size:11px;text-decoration:underline">Nollställ</span>
+            </div>
         </div>
         <div class="gm-controls">
             <button class="btn-prev" id="btn-prev-step">◀ Föregående</button>
@@ -1772,6 +1774,15 @@ document.getElementById('btn-next-step').addEventListener('click', () => {
 document.getElementById('btn-prev-step').addEventListener('click', () => {
     send({ type: 'prev_step' });
     setTimeout(() => send({ type: 'get_state' }), 300);
+});
+
+// GM Reset
+document.getElementById('btn-gm-reset').addEventListener('click', () => {
+    if (!confirm('Vill du nollställa hela sessionen? Alla spelare kopplas bort och all data raderas.')) return;
+    if (!confirm('Är du säker? Detta kan inte ångras.')) return;
+    sessionStorage.removeItem('companion_session');
+    send({ type: 'gm_reset' });
+    setTimeout(() => { window.location.reload(); }, 500);
 });
 
 // Tab switching
