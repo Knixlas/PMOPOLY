@@ -1434,10 +1434,16 @@ function attachPlayerEvents(container) {
                     var html2 = '<div class="modal-overlay"><div class="modal">';
                     html2 += '<div class="modal-header"><h3>Välj ' + typ + '-projekt</h3></div>';
                     html2 += '<div class="modal-body">';
+                    var _p = S.state.player;
                     for (var pr of projs) {
+                        var _isBost = (pr.typ === 'Hyresrätt');
+                        var _yld = _isBost ? (_p.f4_yield_bostader||4.0) : (_p.f4_yield_kommersiellt||5.0);
+                        var _dn = pr.driftnetto || 0;
+                        var _eklF = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0.90,'F':0.85}[(pr.energiklass||'C').toUpperCase()] || 1.0;
+                        var _mv = _yld > 0 ? Math.round((4 * _dn) / (_yld / 100) * _eklF) : 0;
                         html2 += '<div class="modal-item" data-proj=\'' + JSON.stringify(pr).replace(/'/g,"&#39;") + '\'>';
                         html2 += '<div class="item-name">' + pr.namn + '</div>';
-                        html2 += '<div class="item-detail">BTA: ' + pr.bta + ' | DN: ' + (pr.driftnetto||0) + ' Mkr/kv | EK: ' + pr.energiklass + '</div>';
+                        html2 += '<div class="item-detail">BTA: ' + pr.bta + ' | DN: ' + _dn + ' Mkr/kv | EK: ' + pr.energiklass + ' | <strong style="color:#27ae60">MV: ' + _mv + ' Mkr</strong></div>';
                         html2 += '</div>';
                     }
                     html2 += '</div><button id="modal-cancel" class="btn-secondary" style="width:100%;padding:12px;margin-top:8px;border:none;border-radius:8px;cursor:pointer">Avbryt</button>';

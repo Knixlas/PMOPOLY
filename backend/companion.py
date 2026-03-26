@@ -236,8 +236,8 @@ class CompanionPlayer:
     fastigheter: List[dict] = field(default_factory=list)  # Projects converted to properties
     # Each fastighet: {id, namn, typ, bta, anskaffning, energiklass, marknadsvarde,
     #                   events: [{kvartal, ek, energi}], sold: bool, kopeskilling: float}
-    f4_yield_bostader: float = 4.5  # Current yield % for bostäder
-    f4_yield_kommersiellt: float = 5.5  # Current yield % for kommersiellt
+    f4_yield_bostader: float = 4.0  # Current yield % for bostäder
+    f4_yield_kommersiellt: float = 5.0  # Current yield % for kommersiellt
     f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
