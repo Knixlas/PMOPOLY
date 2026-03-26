@@ -1,0 +1,113 @@
+{
+  "phases": [
+    {
+      "id": "phase1",
+      "name": "Fas 1: Projektutveckling",
+      "steps": [
+        {
+          "id": "choose_pc",
+          "name": "1.2 Välj Projektchef",
+          "help": "Varje spelare väljer sin Projektchef (PC).\n\nPC:n påverkar:\n• Lindring vid politik/dialogkort\n• Nämndbonus vid nämndbeslut\n• Kompetenspoäng under planering\n\nTänk på: dyrare PC ger bättre skydd men minskar ABT."
+        },
+        {
+          "id": "projects",
+          "name": "1.4–1.6 Projektval & Brädspel",
+          "help": "Välj startprojekt och spela PU-brädet.\n\nPå brädet:\n• Projekt — ta nytt projekt\n• Dialog/Politik — dra kort, slå D20\n• Stjärna — +1 riskbuffert\n• Stadshuset — ta/lämna projekt\n• Länsstyrelsen — sänker H-krav med 2\n• Skönhetsrådet — sänker Q-krav med 2\n\nRegistrera alla projekt och ändringar i appen."
+        },
+        {
+          "id": "namndbeslut",
+          "name": "1.8 Nämndbeslut",
+          "help": "Varje projekt testas: slå D20 + PC:s nämndbonus.\n\nGodkänt = projektet är kvar.\nUnderkänt = projektet tas bort (använd X-knappen).\n\nRiskbuffertar kan användas för omslag.\n\nEfter nämndbeslut kan du köpa nya projekt till 3× ordinarie kostnad."
+        },
+        {
+          "id": "rb_invest",
+          "name": "1.12 Riskbuffertinvestering",
+          "help": "Fördela kvarvarande riskbuffertar:\n\n• −1 Kvalitetskrav (Q)\n• −1 Hållbarhetskrav (H)\n• −1 Byggtid (T)\n\nVarje riskbuffert kan bara användas en gång."
+        }
+      ]
+    },
+    {
+      "id": "phase2",
+      "name": "Fas 2: Projektplanering",
+      "steps": [
+        {
+          "id": "choose_ac",
+          "name": "2.1 Välj Arbetschef",
+          "help": "Varje spelare väljer sin Arbetschef (AC).\n\nAC:n påverkar:\n• Erfarenhetsbonus vid D20-slag\n• Kan spelas som kompetenskort (en gång)\n• Kostnad dras från ABT\n\nVälj efter dina behov — erfarenhet hjälper vid händelsekort."
+        },
+        {
+          "id": "planning",
+          "name": "2.3 Planeringssteg",
+          "help": "13 steg i ordning: Stödf. → Mark → Husund. → Dig. → Stomme → Install. → Op.team → Gem.arb → Yttertak → Fasader → Markn. → Stomkomp. → Inv.ytsk.\n\nPer steg:\n• Välj leverantör/organisation (nivå 1–4)\n• Pris beror på BYA/BTA-klass, dras från ABT\n• Q, H, T, erfarenhet uppdateras\n• Dra ett händelsekort → D20 + erfarenhet\n\nRegistrera dina leverantörsval och uppdatera ABT med +/- knapparna.\n\nTips: Kolla TG (täckningsgrad) varje steg. Under 20%? Dags att välja billigare."
+        },
+        {
+          "id": "planning_summary",
+          "name": "2.4 Planeringssammanfattning",
+          "help": "Kontrollera att allt stämmer:\n\n• Q uppfyllt?\n• H uppfyllt?\n• T ≤ 12?\n• ABT-budget kvar?\n\nDessa värden styr konsekvenskort i nästa fas."
+        }
+      ]
+    },
+    {
+      "id": "phase3",
+      "name": "Fas 3: Genomförande",
+      "steps": [
+        {
+          "id": "gf_byggfaser",
+          "name": "3.1–3.4 Byggfaser (8 st)",
+          "help": "8 byggfaser genomförs i ordning.\n\nPer fas:\n1. Välj utfallsnivå (faskort)\n   • Negativt — gratis men straff (Q/H/T-förlust)\n   • Neutralt — kräver kompetenskort\n   • Positivt — högre krav, minimal kostnad\n   • Bonus — högsta krav, kan ge vinst\n\n2. Spela kompetenskort om Neutralt+\n   Leverantörs-, org-, AC- eller kulturkort.\n\n3. Dra händelsekort per fas\n   D20 + erfarenhet. Effekt på ABT.\n\nRegistrera Q/H/T/ABT-ändringar per fas."
+        },
+        {
+          "id": "gf_konsekvens",
+          "name": "3.5 Konsekvenskort",
+          "help": "Först: TID\nAntal kort = månader över 12.\nKan påverka Q, H och ABT-kostnad.\n\nSedan: KVALITET\nAntal kort = Q-poäng under krav.\nPåverkar bara ABT-kostnad.\n\nSist: HÅLLBARHET\nAntal kort = H-poäng under krav.\nPåverkar bara ABT-kostnad.\n\nPer kort: slå D20 + erfarenhet."
+        },
+        {
+          "id": "gf_garanti",
+          "name": "3.6 Garantibesiktning",
+          "help": "Antal garantikort baseras på:\n• Konsekvenskort dragna\n• Leverantörer/organisationer under nivå 3\n\nPer kort: slå D20. Effekt = ABT-kostnad.\n\nRegistrera ABT-ändringar med +/- knapparna."
+        },
+        {
+          "id": "gf_abt_ek",
+          "name": "3.7–3.8 ABT→EK & Förskott",
+          "help": "Kvarvarande ABT-budget överförs till EK.\n\nBRF-vinst:\n• Fast intäkt: (Marknadsvärde − Anskaffning) per BRF → EK\n• Rörlig intäkt: slå tärning per BRF → EK\n\nModerbolagslån:\n• Ger 95 Mkr kontant, skapar 100 Mkr skuld\n• Används för att täcka negativt EK\n• Kan lösas senare: −100 Mkr från EK\n\nRegistrera slutligt EK och antal moderbolagslån."
+        }
+      ]
+    },
+    {
+      "id": "phase4",
+      "name": "Fas 4: Förvaltning",
+      "steps": [
+        {
+          "id": "f4_forbered",
+          "name": "4.1 Förbered förvaltning",
+          "help": "Projekt blir fastigheter.\n• BRF säljs: EK ökar med (MV − Anskaffning)\n• Kvarvarande projekt = förvaltningsportfölj\n\n• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n• Kontrollera energiklass per fastighet (A–F)\n• Köp/sälj fastigheter om önskat"
+        },
+        {
+          "id": "f4_q1",
+          "name": "4.2–4.3 Kvartal 1",
+          "help": "Kvartal 1:\n• Ange yield (bostäder + kommersiellt) → marknadsvärde uppdateras\n• Dra händelsekort per fastighet → registrera EK/energi-effekter\n• Lön FC+FS dras automatiskt\n• Köp/sälj fastigheter"
+        },
+        {
+          "id": "f4_q2",
+          "name": "4.4–4.5 Kvartal 2",
+          "help": "Kvartal 2:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Hyresförhandling (om hyresrätt)\n• Lön, köp/sälj"
+        },
+        {
+          "id": "f4_q3",
+          "name": "4.6–4.7 Kvartal 3",
+          "help": "Kvartal 3:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Lön, köp/sälj"
+        },
+        {
+          "id": "f4_q4",
+          "name": "4.8–4.9 Kvartal 4",
+          "help": "Kvartal 4:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Hyresförhandling (om hyresrätt)\n• Lön, köp/sälj"
+        },
+        {
+          "id": "f4_slut",
+          "name": "5.1–5.2 Slutvärdering",
+          "help": "Beräkna slutpoäng:\n\nFV = DN/yield × energiklassmodifier per fastighet\nFV × 30% = ägarandel\n\nSlutpoäng = (FV×30% + EK + TB) / BTA × 1000 [kr/kvm]\n\nHögst poäng vinner!"
+        }
+      ]
+    }
+  ]
+}

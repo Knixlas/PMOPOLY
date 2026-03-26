@@ -972,6 +972,8 @@ function renderPlayer() {
         var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
         for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
 
+        // AC experience bonus
+        var acErf = (p.arbetschef && p.arbetschef.kapacitet) ? p.arbetschef.kapacitet : 0;
         var curQ = plQ + plEvQ + gfQ;
         var curH = plH + plEvH + gfH;
         var curT = Math.max(8, totalT + plT + gfT);

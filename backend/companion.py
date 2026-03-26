@@ -1,12 +1,23 @@
 """Companion app — manual mode for physical board game sessions."""
 import uuid
 import json
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from fastapi import WebSocket
 
 
-# ── Phase/step definitions ──
+# ── Phase/step definitions (loaded from JSON, fallback to hardcoded) ──
+def _load_phases_from_json():
+    """Load phases from companion_texts.json if available."""
+    texts_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                              "data", "companion_texts.json")
+    try:
+        with open(texts_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("phases", [])
+    except Exception:
+        return None
 
 PHASES = [
     {"id": "phase1", "name": "Fas 1: Projektutveckling", "steps": [
@@ -153,6 +164,11 @@ PHASES = [
             "Högst poäng vinner!"},
     ]},
 ]
+
+# Try to load from JSON (overrides hardcoded if file exists)
+_json_phases = _load_phases_from_json()
+if _json_phases:
+    PHASES = _json_phases
 
 
 DISTRICT_NAMES = [

@@ -297,6 +297,18 @@ async def companion_fcfs_data():
     return {"fc": fc, "fs": fs}
 
 
+@app.get("/api/companion/data/texts")
+async def companion_texts():
+    """Return editable help texts from JSON file."""
+    import json
+    texts_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "companion_texts.json")
+    try:
+        with open(texts_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"phases": []}
+
+
 @app.websocket("/companion/ws/{code}/{player_id}")
 async def companion_ws(ws: WebSocket, code: str, player_id: str):
     room = companion_manager.get_room(code)
