@@ -421,14 +421,28 @@ class Player:
         return "BOSTÄDER"
 
     def relevant_erfarenhet(self, summering: str) -> int:
-        """Calculate experience from only relevant cards based on summering text."""
+        """Calculate experience from relevant cards based on summering text.
+        Uses prefix matching to handle variants (INSTALLATIONER vs Installatörer)."""
         exp = 0
         summering_upper = summering.upper()
+        # Split summering into words for matching
+        sum_words = [w.strip().rstrip(',') for w in summering_upper.split()]
+
         for namn, s in self.pl_suppliers.items():
-            if namn.upper() in summering_upper or f"{namn.upper()} (OM VALD)" in summering_upper:
+            namn_upper = namn.upper()
+            # Exact match, prefix match (first 6 chars), or word-start match
+            prefix = namn_upper[:6] if len(namn_upper) >= 6 else namn_upper
+            matched = (namn_upper in summering_upper
+                       or any(w.startswith(prefix) for w in sum_words)
+                       or f"{namn_upper} (OM VALD)" in summering_upper)
+            if matched:
                 exp += s.erfarenhet if hasattr(s, 'erfarenhet') else 0
         for namn, o in self.pl_orgs.items():
-            if namn.lower() in summering.lower():
+            namn_upper = namn.upper()
+            prefix = namn_upper[:6] if len(namn_upper) >= 6 else namn_upper
+            matched = (namn_upper in summering_upper
+                       or any(w.startswith(prefix) for w in sum_words))
+            if matched:
                 exp += o.erfarenhet if hasattr(o, 'erfarenhet') else 0
         return exp
 
