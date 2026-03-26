@@ -92,8 +92,11 @@ def calc_final_score(player, total_fv_30: float) -> dict:
     ek = real_ek
     owned_bta = player.total_bta
 
+    # EK: positive = 10%, negative = 200% penalty
+    ek_factor = 0.10 if ek >= 0 else 2.00
+
     if owned_bta > 0:
-        score = (0.30 * fv + 0.10 * ek) / owned_bta * 1000 + tg
+        score = (0.30 * fv + ek_factor * ek) / owned_bta * 1000 + tg
     else:
         score = tg
 

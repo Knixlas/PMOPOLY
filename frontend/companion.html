@@ -972,7 +972,9 @@ function renderPlayer() {
             var _gf4 = p.gf_phases||{}; for(var k in _gf4) _abt4 += _gf4[k].abt||0;
             _abt4 += (p.gf_kons_q||0)+(p.gf_kons_h||0)+(p.gf_kons_t||0)+(p.gf_garanti_abt||0);
             var _tb4 = _pAnsk4 - _pKost4 - _abt4;
-            var _score = _btaOwned > 0 ? (0.30*_fv + 0.10*_ek4)/_btaOwned*1000 + _tb4 : _tb4;
+            // EK: positive = 10%, negative = 200% penalty
+            var _ekFactor = _ek4 >= 0 ? 0.10 : 2.00;
+            var _score = _btaOwned > 0 ? (0.30*_fv + _ekFactor*_ek4)/_btaOwned*1000 + _tb4 : _tb4;
 
             html += '<div class="asset-card" style="border-left-color:#f0c929;background:#1a2736">';
             html += '<div class="asset-label" style="color:#f0c929;font-size:18px">\ud83c\udfc6 SLUTV\u00c4RDERING</div>';
@@ -980,7 +982,7 @@ function renderPlayer() {
             html += '<div>Fastighetsv\u00e4rde (FV): <strong>' + Math.round(_fv) + ' Mkr</strong></div>';
             html += '<div>30% av FV: <strong>' + Math.round(0.3*_fv) + ' Mkr</strong></div>';
             html += '<div>Eget kapital (EK): <strong>' + Math.round(_ek4) + ' Mkr</strong></div>';
-            html += '<div>10% av EK: <strong>' + Math.round(0.1*_ek4) + ' Mkr</strong></div>';
+            html += '<div>' + (_ek4 >= 0 ? '10%' : '<span style="color:#e74c3c">200%</span>') + ' av EK: <strong style="color:' + (_ek4 >= 0 ? 'inherit' : '#e74c3c') + '">' + Math.round(_ekFactor*_ek4) + ' Mkr</strong></div>';
             html += '<div>\u00c4gd BTA: <strong>' + _btaOwned + ' kvm</strong></div>';
             html += '<div>TB: <strong>' + Math.round(_tb4) + ' Mkr</strong></div>';
             html += '<div style="border-top:2px solid #f0c929;padding-top:8px;margin-top:8px;font-size:20px">';

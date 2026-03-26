@@ -301,7 +301,8 @@ class CompanionPlayer:
             return 0
 
         if bta > 0:
-            return round((0.30 * fv + 0.10 * ek) / bta * 1000 + tg, 1)
+            ek_factor = 0.10 if ek >= 0 else 2.00
+            return round((0.30 * fv + ek_factor * ek) / bta * 1000 + tg, 1)
         return round(tg, 1)
 
     def to_dict(self):
