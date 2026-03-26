@@ -383,13 +383,36 @@ def load_phase_cards() -> Dict[int, List[PhaseCard]]:
 def _get_threshold_cols(row):
     """Find threshold column values, trying various encoding variants."""
     effects = []
-    for suffix in ["_1_8", "_9_15", "_16_21", "_22_plus"]:
-        val = ""
-        for prefix in ["Troskel", "Tröskel", "Tr\xe4skel", "Tr\xf6skel"]:
-            val = safe_str(row.get(f"{prefix}{suffix}"))
+    # Try multiple naming conventions for threshold columns
+    suffix_sets = [
+        ["_1_8", "_9_20", "_21_26", "_27_plus"],     # Current (D20_THRESHOLDS = [8,20,26,9999])
+        ["_1_5", "_6_17", "_18_20", "_21_plus"],     # Legacy
+        ["_1_8", "_9_15", "_16_21", "_22_plus"],     # Alternate
+    ]
+    prefixes = ["Troskel", "Tröskel", "Tr\xe4skel", "Tr\xf6skel"]
+    for suffixes in suffix_sets:
+        found = False
+        for prefix in prefixes:
+            val = safe_str(row.get(f"{prefix}{suffixes[0]}"))
             if val:
+                found = True
                 break
-        effects.append(val)
+        if found:
+            for suffix in suffixes:
+                val = ""
+                for prefix in prefixes:
+                    val = safe_str(row.get(f"{prefix}{suffix}"))
+                    if val:
+                        break
+                effects.append(val)
+            break
+    # Fallback: try any 4 Tröskel columns in order
+    if not effects:
+        for prefix in prefixes:
+            cols = sorted([k for k in row.keys() if k.startswith(prefix)])
+            if len(cols) >= 4:
+                effects = [safe_str(row.get(c)) for c in cols[:4]]
+                break
     return effects
 
 

@@ -91,8 +91,9 @@ SLOT_TO_CARD_IDS = {
     "Digitalisering": ["DIGITALISERING"],
 }
 
-# D20 + experience thresholds for planning event cards [5, 17, 20, 9999]
-D20_THRESHOLDS = [5, 17, 20, 9999]
+# D20 + experience thresholds for planning event cards
+# High thresholds to balance total_erfarenhet bonus on all rolls
+D20_THRESHOLDS = [8, 20, 26, 9999]
 
 # Data file paths (relative to DATA_DIR)
 DATA_FILES = {
