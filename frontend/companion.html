@@ -420,6 +420,7 @@ function renderPlayer() {
 
     const container = document.getElementById('player-assets');
     const step = st.step || '';
+    const isFinished = (step === 'f4_slut');
 
     // Determine visibility and editability per step
     const phase = st.phase || '';
@@ -779,6 +780,7 @@ function renderPlayer() {
 
     // Phase 4: Förvaltning
     console.log('[render] phase=' + phase + ' isPhase4=' + isPhase4 + ' step=' + step + ' fasts=' + (p.fastigheter||[]).length + ' projs=' + p.projects.length);
+    S.expandedFastEvents = S.expandedFastEvents || new Set();
     if (isPhase4) { try {
         var fasts = p.fastigheter || [];
         var EKLASS = ['F','E','D','C','B','A'];
@@ -814,6 +816,12 @@ function renderPlayer() {
         if (fasts.length === 0 && p.fastigheter && p.fastigheter.length > 0) {
             fasts = p.fastigheter;
         }
+
+        // Lock message when game is finished
+        if (isFinished) {
+            html += '<div style="background:#2a3a2a;border:2px solid #f0c929;border-radius:8px;padding:12px;margin-bottom:10px;color:#f0c929;font-weight:700;text-align:center">Spelet \u00e4r slut \u2014 inga \u00e4ndringar till\u00e5tna</div>';
+        }
+        if (isFinished) html += '<div style="pointer-events:none;opacity:0.5">';
 
         // FC/FS selection (always visible in phase 4)
         html += '<div class="asset-card" style="border-left-color:#16a085">';
@@ -897,11 +905,13 @@ function renderPlayer() {
             html += '</div>';
             // Marknadsvärde
             html += '<div style="font-size:13px;color:#999">DN: ' + dn + ' Mkr/kv | Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:#27ae60">' + mv + ' Mkr</strong></div>';
-            // Händelsekort per kvartal (collapsed)
+            // Händelsekort per kvartal (persistent expand state)
             var events = f.events || [];
+            var _fastId = f.id || ('fi-' + fi);
+            var _evExpanded = S.expandedFastEvents.has(_fastId);
             html += '<div style="margin-top:6px">';
-            html += '<div style="font-size:12px;color:#f0c929;cursor:pointer" class="f4-toggle-events" data-fi="' + fi + '">H\u00e4ndelsekort (' + events.length + ') \u25B8</div>';
-            html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="display:none;margin-top:4px">';
+            html += '<div style="font-size:12px;color:#f0c929;cursor:pointer" class="f4-toggle-events" data-fi="' + fi + '" data-fid="' + _fastId + '">H\u00e4ndelsekort (' + events.length + ') ' + (_evExpanded ? '\u25BE' : '\u25B8') + '</div>';
+            html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="' + (_evExpanded ? '' : 'display:none') + ';margin-top:4px">';
             for (var qi = 1; qi <= 4; qi++) {
                 var ev = events.find(function(e) { return e.kvartal === qi; }) || {};
                 html += '<div style="display:flex;gap:8px;font-size:12px;padding:2px 0">';
@@ -942,6 +952,8 @@ function renderPlayer() {
         }
 
         // EK is calculated, no standalone counter needed
+
+        if (isFinished) html += '</div>'; // close lock wrapper
 
         // Slutvärdering
         if (step === 'f4_slut') {
@@ -1298,7 +1310,7 @@ function attachPlayerEvents(container) {
             }});
         });
     });
-    // Phase 4: Energiklass buttons
+    // Phase 4: Energiklass buttons (with cost confirmation)
     container.querySelectorAll('.f4-eklass-btn').forEach(function(el) {
         el.addEventListener('click', function() {
             var fi = parseInt(el.dataset.fi);
@@ -1306,28 +1318,36 @@ function attachPlayerEvents(container) {
             if (fasts[fi]) {
                 var oldEk = fasts[fi].energiklass || 'D';
                 var newEk = el.dataset.eklass;
+                if (oldEk === newEk) return;
                 var klasser = ['F','E','D','C','B','A'];
                 var oldIdx = klasser.indexOf(oldEk);
                 var newIdx = klasser.indexOf(newEk);
-                var steps = newIdx - oldIdx; // positive = upgrade (toward A)
-                var ekCost = 0;
-                if (steps > 0) {
-                    ekCost = steps * 5; // 5 Mkr per upgrade step
-                }
+                var stepsCount = Math.abs(newIdx - oldIdx);
+                var isUpgrade = newIdx > oldIdx;
+                var defaultCost = isUpgrade ? stepsCount * 5 : 0;
+                var costStr = prompt('\u00c4ndra energiklass fr\u00e5n ' + oldEk + ' till ' + newEk + '?\nKostnad f\u00f6r energiklass\u00e4ndring (Mkr):', defaultCost);
+                if (costStr === null) return; // cancelled
+                var cost = parseFloat(costStr.replace(',','.')) || 0;
                 fasts[fi].energiklass = newEk;
                 var assets = { fastigheter: fasts };
-                if (ekCost > 0) {
-                    assets.eget_kapital = (S.state.player.eget_kapital || 0) - ekCost;
+                if (cost > 0) {
+                    assets.eget_kapital = (S.state.player.eget_kapital || 0) - cost;
                 }
                 send({ type: 'update_assets', assets: assets });
             }
         });
     });
-    // Phase 4: Toggle events per fastighet
+    // Phase 4: Toggle events per fastighet (persistent state)
     container.querySelectorAll('.f4-toggle-events').forEach(function(el) {
         el.addEventListener('click', function() {
+            var fid = el.dataset.fid;
             var list = document.getElementById('f4-events-' + el.dataset.fi);
-            if (list) list.style.display = list.style.display === 'none' ? '' : 'none';
+            if (list) {
+                var showing = list.style.display === 'none';
+                list.style.display = showing ? '' : 'none';
+                if (showing) S.expandedFastEvents.add(fid);
+                else S.expandedFastEvents.delete(fid);
+            }
         });
     });
     // Phase 4: Event +/- per fastighet per kvartal
@@ -1389,7 +1409,7 @@ function attachPlayerEvents(container) {
         el.addEventListener('click', async function() {
             // Fetch projects if not cached
             if (!S._allProjects) {
-                try { var r = await fetch('/api/companion/data/projects'); S._allProjects = await r.json(); } catch(e) { return; }
+                try { var r = await fetch('/api/companion/data/projects'); var _pdata = await r.json(); S._allProjects = _pdata.projects || _pdata; } catch(e) { return; }
             }
             var mc = document.getElementById('modal-container');
             // Show type selection first (no BRF)
