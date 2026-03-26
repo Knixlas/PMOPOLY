@@ -224,6 +224,8 @@ class CompanionPlayer:
     gf_kons_t: int = 0   # Konsekvenskort ABT for tid
     gf_kons_q_adj: int = 0   # Konsekvenskort Q-adjustment (lowers requirement)
     gf_kons_h_adj: int = 0   # Konsekvenskort H-adjustment (lowers requirement)
+    gf_kons_t_q: int = 0    # Q-påverkan från tidskort (sänker Q)
+    gf_kons_t_h: int = 0    # H-påverkan från tidskort (sänker H)
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
     gf_brf_rorlig: float = 0.0  # Rörlig intäkt BRF
     gf_moderbolagslan: float = 0.0  # Moderbolagslån (legacy)
@@ -332,6 +334,8 @@ class CompanionPlayer:
             "gf_kons_t": self.gf_kons_t,
             "gf_kons_q_adj": self.gf_kons_q_adj,
             "gf_kons_h_adj": self.gf_kons_h_adj,
+            "gf_kons_t_q": self.gf_kons_t_q,
+            "gf_kons_t_h": self.gf_kons_t_h,
             "gf_garanti_abt": self.gf_garanti_abt,
             "gf_brf_rorlig": round(self.gf_brf_rorlig, 1),
             "gf_moderbolagslan": round(self.gf_moderbolagslan, 1),
@@ -664,6 +668,10 @@ class CompanionManager:
                 player.gf_kons_q_adj = int(assets["gf_kons_q_adj"])
             if "gf_kons_h_adj" in assets:
                 player.gf_kons_h_adj = int(assets["gf_kons_h_adj"])
+            if "gf_kons_t_q" in assets:
+                player.gf_kons_t_q = int(assets["gf_kons_t_q"])
+            if "gf_kons_t_h" in assets:
+                player.gf_kons_t_h = int(assets["gf_kons_t_h"])
             if "gf_garanti_abt" in assets:
                 player.gf_garanti_abt = int(assets["gf_garanti_abt"])
             if "gf_brf_rorlig" in assets:

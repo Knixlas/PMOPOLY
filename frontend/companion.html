@@ -672,8 +672,8 @@ function renderPlayer() {
         html += '<div style="font-weight:600;color:#e67e22">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
         html += '<div style="font-size:12px;color:#999;margin-bottom:4px">Tidskorten kan p\u00e5verka Q, H och kostnad</div>';
         html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
-        html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
-        html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
         html += '</div>';
 
         // KVALITET — bara kostnad
@@ -763,7 +763,7 @@ function renderPlayer() {
             html += '<div style="font-size:12px;color:#e74c3c;margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till EK: ' + modLanTillskott + ' Mkr</div>';
         }
         html += '<div style="border-top:1px solid #334;padding-top:6px;margin-top:6px;font-size:16px">';
-        html += '<strong style="color:' + (calcEK >= 0 ? '#27ae60' : '#e74c3c') + '">EK = ' + Math.round(calcEK) + ' Mkr</strong>';
+        html += '<strong style="color:' + (calcEK >= 0 ? '#27ae60' : '#e74c3c') + '">Eget Kapital = ' + Math.round(calcEK) + ' Mkr</strong>';
         html += '</div>';
         html += '</div></div>';
 
@@ -779,7 +779,8 @@ function renderPlayer() {
         var EKLASS = ['A','B','C','D','E','F'];
 
         // Auto-convert projects to fastigheter if not done yet
-        if (fasts.length === 0 && p.projects.length > 0) {
+        if (fasts.length === 0 && p.projects.length > 0 && !S._convertingSent) {
+            S._convertingSent = true;
             var autoFasts = [];
             var brfEk = 0;
             for (var _ap of p.projects) {
@@ -794,13 +795,15 @@ function renderPlayer() {
                     });
                 }
             }
-            // Send conversion to server
-            send({ type: 'update_assets', assets: {
-                fastigheter: autoFasts,
-                eget_kapital: (p.eget_kapital || 0) + brfEk
-            }});
             fasts = autoFasts;
             p.fastigheter = autoFasts;
+            // Send conversion to server (delayed to avoid re-render loop)
+            setTimeout(function() {
+                send({ type: 'update_assets', assets: {
+                    fastigheter: autoFasts,
+                    eget_kapital: (p.eget_kapital || 0) + brfEk
+                }});
+            }, 100);
         }
 
         // FC/FS selection (always visible in phase 4)
@@ -983,8 +986,10 @@ function renderPlayer() {
         var acT = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
         var acRb = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
         var acErf = p.arbetschef ? (p.arbetschef.erfarenhet || 0) : 0;
-        var curQ = plQ + plEvQ + gfQ + pcQ + acQ;
-        var curH = plH + plEvH + gfH + pcH + acH;
+        var konsTimeQ = p.gf_kons_t_q || 0;  // Q reduction from time consequence cards
+        var konsTimeH = p.gf_kons_t_h || 0;  // H reduction from time consequence cards
+        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ;
+        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH;
         var curT = Math.max(8, totalT + plT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -1024,6 +1029,14 @@ function renderPlayer() {
             html += 'TB: <strong style="color:' + (tb >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(tb) + ' Mkr</strong>';
             html += ' &nbsp; TG: <strong style="color:' + (tg >= 20 ? '#27ae60' : (tg >= 0 ? '#f0c929' : '#e74c3c')) + '">' + tg + '%</strong>';
             html += '</div>';
+            // Moderbolagslån
+            var _modAntal = p.gf_moderbolagslan_antal || 0;
+            if (_modAntal > 0) {
+                html += '<div style="grid-column:1/-1;color:#e74c3c;font-weight:600">';
+                html += '\ud83d\udfe5 Moderbolags\u00e5n: ' + _modAntal + ' st = <strong>' + (_modAntal * 100) + ' Mkr skuld</strong></div>';
+            }
+            html += '<div style="grid-column:1/-1">';
+            html += 'Eget Kapital: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
         }
         html += '</div></div>';
     }
