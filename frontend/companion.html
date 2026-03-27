@@ -193,6 +193,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
             <span style="margin:0 8px;color:#334">|</span>
             <a href="/companion/analytics" target="_blank" style="color:#4db8ff;font-size:13px">Analytics</a>
         </div>
+        <div id="gm-omvarld-panel" style="display:none"></div>
     </div>
 
     <!-- Tab switcher -->
@@ -255,6 +256,8 @@ const S = {
     planningData: null,
     lastLeaderboard: null,
     _leaderboardTimer: null,
+    ddData: [],
+    omvarldData: [],
 };
 
 function showView(id) {
@@ -301,7 +304,7 @@ async function tryReconnect() {
 if (location.pathname.endsWith('/gm')) {
     if (restoreSession() && S.isGM) {
         tryReconnect().then(ok => {
-            if (ok) { connectWs(S.roomCode, S.playerId); showView('view-gm'); }
+            if (ok) { loadReferenceData().then(() => { connectWs(S.roomCode, S.playerId); showView('view-gm'); }); }
             else showView('view-gm-lobby');
         });
     } else {
@@ -572,6 +575,7 @@ document.getElementById('btn-create-room').addEventListener('click', async () =>
     S.playerId = data.gm_id;
     S.isGM = true;
     saveSession();
+    await loadReferenceData();
     connectWs(data.code, data.gm_id);
     showView('view-gm');
 });
@@ -601,16 +605,20 @@ document.getElementById('btn-join-quarter').addEventListener('click', async () =
 });
 
 async function loadReferenceData() {
-    const [pcRes, projRes, acRes, planRes] = await Promise.all([
+    const [pcRes, projRes, acRes, planRes, ddRes, omRes] = await Promise.all([
         fetch('/api/companion/data/pc'),
         fetch('/api/companion/data/projects'),
         fetch('/api/companion/data/ac'),
         fetch('/api/companion/data/planning'),
+        fetch('/api/companion/data/dd'),
+        fetch('/api/companion/data/omvarld'),
     ]);
     S.pcData = (await pcRes.json()).pc;
     S.projectData = (await projRes.json()).projects;
     S.acData = (await acRes.json()).ac;
     S.planningData = await planRes.json();
+    S.ddData = (await ddRes.json()).dd || [];
+    S.omvarldData = (await omRes.json()).omvarld || [];
 }
 
 // ── Render ──
@@ -1194,16 +1202,26 @@ function renderPlayer() {
             }
             html += '</div>';
         }
-        // Market expansion info per quarter
-        var _marketExpansion = {'f4_q1':3,'f4_q2':2,'f4_q3':1,'f4_q4':0};
-        if (_canBuySell && _marketExpansion[step] !== undefined) {
-            html += '<div style="background:#243447;border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px;color:#4db8ff">';
-            html += 'Marknaden ut\u00f6kas med ' + _marketExpansion[step] + ' nya fastigheter detta kvartal.';
+        // Market expansion per quarter
+        var _marketMax = {'f4_q1':3,'f4_q2':2,'f4_q3':1,'f4_q4':0};
+        var _mktBought = ((p.f4_market_bought || {})[step] || 0);
+        var _mktMax = _marketMax[step] !== undefined ? _marketMax[step] : 0;
+        var _mktLeft = Math.max(0, _mktMax - _mktBought);
+        if (_canBuySell) {
+            html += '<div style="background:#243447;border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px">';
+            if (_mktMax === 0) {
+                html += '<span style="color:#888">Inga nya fastigheter kan k\u00f6pas detta kvartal (Q4).</span>';
+            } else {
+                var _mktColor = _mktLeft > 0 ? '#4db8ff' : '#888';
+                html += '<span style="color:' + _mktColor + '">Marknaden: <strong>' + _mktLeft + ' av ' + _mktMax + '</strong> fastigheter tillg\u00e4ngliga detta kvartal.</span>';
+            }
             html += '</div>';
         }
-        // Buy new property (only at buy/sell steps and no moderbolagslån)
-        if (_canBuySell && !_hasModLan) {
-            html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:#27ae60;margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
+        // Buy new property (only at buy/sell steps, no moderbolagslån, and market slots left)
+        if (_canBuySell && !_hasModLan && _mktLeft > 0) {
+            html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:#27ae60;margin-top:6px;font-size:13px">+ K\u00f6p fastighet (' + _mktLeft + ' kvar)</div>';
+        } else if (_canBuySell && !_hasModLan && _mktMax > 0 && _mktLeft === 0) {
+            html += '<div style="color:#888;font-size:12px;margin-top:6px">\u2713 Marknadskvot uppn\u00e5dd detta kvartal.</div>';
         } else if (_canBuySell && _hasModLan) {
             html += '<div style="color:#e74c3c;font-size:12px;margin-top:6px">Ej till\u00e5tet med aktivt moderbolags\u00e5n</div>';
         }
@@ -1215,39 +1233,61 @@ function renderPlayer() {
         if (_driftQIdx >= 0) {
             var _ownedForDN = fasts.filter(function(ff) { return !ff.sold; });
             var _totalDN = _ownedForDN.reduce(function(s, ff) { return s + (ff.driftnetto || 0); }, 0);
-            var _dnKey = 'f4_driftnetto_q' + (_driftQIdx + 1);
+            var _dnDoneKey = 'dn_' + step;
+            var _dnAdded = (p.steps_done || {})[_dnDoneKey] === true;
             html += '<div class="asset-card" style="border-left-color:#27ae60">';
-            html += '<div class="asset-label">DRIFTNETTO</div>';
-            html += '<div style="font-size:15px;font-weight:700;color:#27ae60">Driftnetto detta kvartal: ' + _totalDN + ' Mkr</div>';
-            html += '<div style="font-size:12px;color:#999;margin-top:4px">Summa fr\u00e5n ' + _ownedForDN.length + ' \u00e4gda fastigheter. L\u00e4ggs till EK automatiskt.</div>';
-            html += '</div>';
-            // Auto-add driftnetto to EK if not already done for this quarter
-            if (!p[_dnKey] && _totalDN !== 0) {
-                var _dnAssets = { eget_kapital: (p.eget_kapital || 0) + _totalDN };
-                _dnAssets[_dnKey] = _totalDN;
-                send({ type: 'update_assets', assets: _dnAssets });
+            html += '<div class="asset-label">DRIFTNETTO Q' + (_driftQIdx + 1) + '</div>';
+            // Per-fastighet breakdown
+            for (var _di = 0; _di < _ownedForDN.length; _di++) {
+                var _df = _ownedForDN[_di];
+                var _ddn = _df.driftnetto || 0;
+                html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;color:#aaa">';
+                html += '<span>' + _df.namn + ' <span style="color:' + (TYPE_COLORS[_df.typ]||'#888') + ';font-size:11px">' + _df.typ + '</span></span>';
+                html += '<span style="color:#27ae60;font-weight:600">+' + _ddn + ' Mkr</span></div>';
             }
-        }
-
-        // Kvartalsh\u00e4ndelser
-        var _kvartalsEvents = {
-            'f4_q1': 'Inga specifika kvartalsh\u00e4ndelser',
-            'f4_q2': 'Hyresf\u00f6rhandling sker detta kvartal',
-            'f4_q3': 'Inga specifika kvartalsh\u00e4ndelser',
-            'f4_q4': 'Inga specifika kvartalsh\u00e4ndelser'
-        };
-        if (_kvartalsEvents[step]) {
-            html += '<div class="asset-card" style="border-left-color:#e67e22">';
-            html += '<div class="asset-label">KVARTALSH\u00c4NDELSE</div>';
-            html += '<div style="font-size:14px;color:' + (step === 'f4_q2' ? '#f0c929' : '#888') + '">' + _kvartalsEvents[step] + '</div>';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334;margin-top:6px;padding-top:6px">';
+            html += '<span style="font-size:15px;font-weight:700;color:#27ae60">Totalt: +' + _totalDN + ' Mkr/kv</span>';
+            if (_dnAdded) {
+                html += '<span style="color:#27ae60;font-size:13px">\u2713 Tillagd i EK</span>';
+            } else {
+                html += '<button class="btn-primary" id="btn-add-dn" style="padding:8px 14px;font-size:13px;border-radius:6px;cursor:pointer">L\u00e4gg till i EK</button>';
+            }
+            html += '</div>';
             html += '</div>';
         }
 
-        // Omv\u00e4rldskort (informational)
+        // Kvartalshändelser (specific per quarter)
+        var _kvartalsEvents = {
+            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort detta kvartal', color: '#27ae60', icon: '\uD83C\uDFEB' },
+            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling detta kvartal', color: '#f0c929', icon: '\uD83D\uDCCB' },
+            'f4_q3': { text: 'Lokal: H\u00e4ndelsekort detta kvartal', color: '#2980b9', icon: '\uD83C\uDFEC' },
+            'f4_q4': { text: 'Kontor: H\u00e4ndelsekort detta kvartal', color: '#8e44ad', icon: '\uD83C\uDFE2' },
+        };
+        if (_kvartalsEvents[step] && _driftnettoQuarters.indexOf(step) >= 0) {
+            var _kev = _kvartalsEvents[step];
+            html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
+            html += '<div class="asset-label">KVARTALSH\u00c4NDELSE</div>';
+            html += '<div style="font-size:14px;color:' + _kev.color + '">' + _kev.icon + ' ' + _kev.text + '</div>';
+            html += '</div>';
+        }
+
+        // Omvärldskort — show drawn card if GM has drawn one for this quarter
         if (_driftnettoQuarters.indexOf(step) >= 0) {
+            var _omKort = (st.f4_omvarldskort || {})[step];
             html += '<div class="asset-card" style="border-left-color:#8e44ad">';
-            html += '<div class="asset-label">OMV\u00c4RLDSKORT</div>';
-            html += '<div style="font-size:14px;color:#999">Gemensamt f\u00f6r alla spelare. GM drar kortet.</div>';
+            html += '<div class="asset-label">OMV\u00c4RLDSKORT (GEMENSAMT)</div>';
+            if (_omKort) {
+                var _omColor = _omKort.effekt_mkr > 0 ? '#27ae60' : _omKort.effekt_mkr < 0 ? '#e74c3c' : '#888';
+                html += '<div style="font-weight:700;font-size:14px;color:#e0e0e0">' + _omKort.rubrik + '</div>';
+                html += '<div style="font-size:13px;color:#aaa;margin:4px 0">' + _omKort.beskrivning + '</div>';
+                html += '<div style="font-size:13px"><span style="color:#888">P\u00e5verkar: ' + (_omKort.paverkar || 'Alla') + '</span>';
+                if (_omKort.effekt_mkr !== 0) {
+                    html += ' &nbsp; <span style="color:' + _omColor + ';font-weight:700">' + (_omKort.effekt_mkr > 0 ? '+' : '') + _omKort.effekt_mkr + ' Mkr</span>';
+                }
+                html += '</div>';
+            } else {
+                html += '<div style="font-size:14px;color:#888">V\u00e4ntar p\u00e5 att GM drar kortet...</div>';
+            }
             html += '</div>';
         }
 
@@ -1805,6 +1845,19 @@ function attachPlayerEvents(container) {
             }
         });
     });
+    // Phase 4: Driftnetto — lägg till i EK manuellt
+    var _dnBtn = container.querySelector('#btn-add-dn');
+    if (_dnBtn) {
+        _dnBtn.addEventListener('click', function() {
+            var _step = S.state.step;
+            var _qIdx = ['f4_q1','f4_q2','f4_q3','f4_q4'].indexOf(_step);
+            if (_qIdx < 0) return;
+            var _fasts = (S.state.player.fastigheter || []).filter(function(ff) { return !ff.sold; });
+            var _totalDN = _fasts.reduce(function(s, ff) { return s + (ff.driftnetto || 0); }, 0);
+            send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + _totalDN } });
+            send({ type: 'mark_done', step: 'dn_' + _step });
+        });
+    }
     // Phase 4: Buy fastighet
     container.querySelectorAll('[data-action="buy_fastighet"]').forEach(function(el) {
         el.addEventListener('click', async function() {
@@ -1854,6 +1907,7 @@ function attachPlayerEvents(container) {
                             var proj = JSON.parse(pEl.dataset.proj);
                             var kopeskilling = parseFloat(prompt('Köpeskilling (Mkr):') || '0');
                             if (!kopeskilling) { mc.innerHTML = ''; return; }
+                            var _step = S.state.step;
                             var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
                             fasts.push({
                                 id: 'KOP-' + Date.now(), namn: proj.namn, typ: proj.typ, bta: proj.bta,
@@ -1861,21 +1915,16 @@ function attachPlayerEvents(container) {
                                 driftnetto: proj.driftnetto || 0,
                                 marknadsvarde: kopeskilling, events: [], sold: false, kopeskilling: kopeskilling
                             });
+                            // Track market slot used this quarter
+                            var _mktBought = Object.assign({}, S.state.player.f4_market_bought || {});
+                            _mktBought[_step] = (_mktBought[_step] || 0) + 1;
                             send({ type: 'update_assets', assets: {
                                 fastigheter: fasts,
-                                eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling
+                                eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling,
+                                f4_market_bought: _mktBought
                             }});
-                            // DD-kort reminder after purchase
-                            mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
-                                '<div class="modal-header"><h3>K\u00f6p genomf\u00f6rt!</h3></div>' +
-                                '<div class="modal-body">' +
-                                '<div style="font-size:15px;margin-bottom:12px"><strong>' + proj.namn + '</strong> k\u00f6pt f\u00f6r ' + kopeskilling + ' Mkr.</div>' +
-                                '<div style="background:#243447;border-radius:6px;padding:10px;color:#f0c929;font-weight:600">' +
-                                'Dra ett DD-kort (Due Diligence) f\u00f6r denna fastighet.' +
-                                '</div></div>' +
-                                '<div class="modal-footer"><button class="btn-primary" id="modal-dd-ok">Uppfattat!</button></div>' +
-                                '</div></div>';
-                            mc.querySelector('#modal-dd-ok').addEventListener('click', function() { mc.innerHTML = ''; });
+                            // Draw DD-kort
+                            showDDKortModal(proj.namn, kopeskilling);
                         });
                     });
                 });
@@ -1885,6 +1934,54 @@ function attachPlayerEvents(container) {
 }
 
 // ── PC Modal ──
+// ── DD-kort Modal ──
+function showDDKortModal(fastNamn, kopeskilling) {
+    var mc = document.getElementById('modal-container');
+    var cards = S.ddData.filter(function(c) { return c.id; });
+    var html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence \u2014 ' + fastNamn + '</h3></div>';
+    html += '<div class="modal-body">';
+    html += '<div style="color:#999;font-size:13px;margin-bottom:12px">K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>. Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
+    html += '<button id="btn-draw-dd" class="btn-primary" style="width:100%;padding:14px;font-size:16px;margin-bottom:12px">\uD83C\uDCCF Dra DD-kort</button>';
+    html += '<div id="dd-result"></div>';
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-dd-close" style="width:100%">St\u00e4ng</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+    mc.querySelector('#modal-dd-close').addEventListener('click', function() { mc.innerHTML = ''; });
+    mc.querySelector('#btn-draw-dd').addEventListener('click', function() {
+        if (!cards.length) { mc.innerHTML = ''; return; }
+        var card = cards[Math.floor(Math.random() * cards.length)];
+        var typColor = card.typ === 'Positiv' ? '#27ae60' : card.typ === 'Kostnad' ? '#e74c3c' : '#888';
+        var effektHtml = '';
+        if (card.effekt_mkr !== 0) {
+            effektHtml = '<div style="font-size:18px;font-weight:700;color:' + typColor + ';margin:8px 0">' +
+                (card.effekt_mkr > 0 ? '+' : '') + card.effekt_mkr + ' Mkr</div>';
+        }
+        var resultHtml = '<div style="background:#1a2736;border:2px solid ' + typColor + ';border-radius:8px;padding:12px">' +
+            '<div style="color:' + typColor + ';font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">' + card.id + ' \u2014 ' + card.typ + '</div>' +
+            '<div style="font-weight:700;font-size:16px;margin-bottom:6px">' + card.rubrik + '</div>' +
+            '<div style="color:#aaa;font-size:13px;margin-bottom:8px">' + card.beskrivning + '</div>' +
+            effektHtml +
+            '</div>';
+        if (card.effekt_mkr !== 0) {
+            resultHtml += '<button id="btn-apply-dd" style="margin-top:10px;width:100%;padding:12px;background:' + typColor + ';color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">' +
+                'Applicera (' + (card.effekt_mkr > 0 ? '+' : '') + card.effekt_mkr + ' Mkr i EK)</button>';
+        }
+        document.getElementById('dd-result').innerHTML = resultHtml;
+        document.getElementById('btn-draw-dd').style.display = 'none';
+        var applyBtn = document.getElementById('btn-apply-dd');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function() {
+                send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + card.effekt_mkr } });
+                applyBtn.textContent = '\u2713 Applicerad';
+                applyBtn.disabled = true;
+                applyBtn.style.opacity = '0.5';
+            });
+        }
+    });
+}
+
 function openPCModal() {
     const mc = document.getElementById('modal-container');
     let html = '<div class="modal-overlay"><div class="modal">';
@@ -2102,8 +2199,51 @@ function renderGM() {
     document.getElementById('gm-step-name').textContent = st.step_name || '—';
     document.getElementById('gm-dashboard-link').href = '/companion/dashboard/' + st.code;
 
+    // Omvärldskort panel — shown during quarterly steps
+    var _qSteps = ['f4_q1','f4_q2','f4_q3','f4_q4'];
+    var _omPanel = document.getElementById('gm-omvarld-panel');
+    if (_qSteps.indexOf(st.step) >= 0) {
+        var _drawnCard = (st.f4_omvarldskort || {})[st.step];
+        var _omHtml = '<div style="background:#2a1a3a;border:1px solid #8e44ad;border-radius:8px;padding:10px;margin-top:8px">';
+        _omHtml += '<div style="color:#8e44ad;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Omv\u00e4rldskort (gemensamt f\u00f6r alla)</div>';
+        if (_drawnCard) {
+            var _c = _drawnCard;
+            var _cc = _c.effekt_mkr > 0 ? '#27ae60' : _c.effekt_mkr < 0 ? '#e74c3c' : '#888';
+            _omHtml += '<div style="font-weight:700">' + _c.rubrik + '</div>';
+            _omHtml += '<div style="font-size:12px;color:#aaa;margin:3px 0">' + _c.beskrivning + '</div>';
+            _omHtml += '<div style="font-size:12px"><span style="color:#888">P\u00e5verkar: ' + (_c.paverkar||'Alla') + '</span>';
+            if (_c.effekt_mkr !== 0) _omHtml += ' &nbsp;<span style="color:' + _cc + ';font-weight:700">' + (_c.effekt_mkr>0?'+':'') + _c.effekt_mkr + ' Mkr</span>';
+            _omHtml += '</div>';
+            _omHtml += '<button id="btn-redraw-omvarld" style="margin-top:8px;padding:6px 14px;background:#2a3a4a;color:#e0e0e0;border:none;border-radius:6px;cursor:pointer;font-size:12px">Omdra kort</button>';
+        } else {
+            _omHtml += '<div style="color:#888;font-size:13px;margin-bottom:8px">Inget kort draget \u00e4nnu.</div>';
+        }
+        _omHtml += '<button id="btn-draw-omvarld" style="margin-top:4px;padding:8px 18px;background:#8e44ad;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">' + (_drawnCard ? 'Dra nytt kort' : '\uD83C\uDCCF Dra Omv\u00e4rldskort') + '</button>';
+        _omHtml += '</div>';
+        if (_omPanel) {
+            _omPanel.innerHTML = _omHtml;
+            _omPanel.style.display = 'block';
+        }
+        // Wire buttons (both "draw" and "redraw" call same function)
+        setTimeout(function() {
+            ['btn-draw-omvarld', 'btn-redraw-omvarld'].forEach(function(id) {
+                var btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', function() { gmDrawOmvarld(st.step); });
+            });
+        }, 0);
+    } else {
+        if (_omPanel) _omPanel.style.display = 'none';
+    }
+
     try { renderGMTable(st); } catch(e) { console.error('renderGMTable error:', e); }
     try { renderGMQuarters(st); } catch(e) { console.error('renderGMQuarters error:', e); }
+}
+
+function gmDrawOmvarld(stepId) {
+    var cards = S.omvarldData.filter(function(c) { return c.id; });
+    if (!cards.length) { alert('Omvärldskort ej laddade'); return; }
+    var card = cards[Math.floor(Math.random() * cards.length)];
+    send({ type: 'draw_omvarld', step_id: stepId, card: card });
 }
 
 function renderGMTable(st) {

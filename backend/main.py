@@ -291,6 +291,70 @@ async def companion_project_data():
     return {"projects": result}
 
 
+def _parse_csv_file(filename: str) -> list:
+    """Parse a CSV file from data/4_forvaltning/ with encoding detection."""
+    import csv
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "4_forvaltning")
+    filepath = os.path.join(data_dir, filename)
+    from data_loader import detect_encoding
+    enc = detect_encoding(filepath)
+    rows = []
+    try:
+        with open(filepath, "r", encoding=enc, errors="replace") as f:
+            reader = csv.DictReader(f, delimiter=";")
+            for row in reader:
+                if any(v.strip() for v in row.values() if v):
+                    rows.append({k: v.strip() for k, v in row.items() if k})
+    except Exception as e:
+        print(f"CSV parse error {filename}: {e}")
+    return rows
+
+
+@app.get("/api/companion/data/dd")
+async def companion_dd_data():
+    """Return Due Diligence cards."""
+    rows = _parse_csv_file("F_DD.csv")
+    cards = []
+    for r in rows:
+        if not r.get("ID"):
+            continue
+        try:
+            effekt = float(r.get("Effekt_Mkr", "0").replace(",", "."))
+        except ValueError:
+            effekt = 0.0
+        cards.append({
+            "id": r["ID"],
+            "typ": r.get("Typ", "Neutral"),
+            "rubrik": r.get("Rubrik", ""),
+            "effekt_mkr": effekt,
+            "beskrivning": r.get("Beskrivning", ""),
+        })
+    return {"dd": cards}
+
+
+@app.get("/api/companion/data/omvarld")
+async def companion_omvarld_data():
+    """Return Omvärldskort."""
+    rows = _parse_csv_file("F_omvärldskort.csv")
+    cards = []
+    for r in rows:
+        if not r.get("ID"):
+            continue
+        try:
+            effekt = float(r.get("Effekt_Mkr", "0").replace(",", ".") or "0")
+        except ValueError:
+            effekt = 0.0
+        cards.append({
+            "id": r["ID"],
+            "rubrik": r.get("Rubrik", ""),
+            "effekt_typ": r.get("Effekt_typ", ""),
+            "effekt_mkr": effekt,
+            "paverkar": r.get("Påverkar", r.get("Paverkar", "")),
+            "beskrivning": r.get("Beskrivning", ""),
+        })
+    return {"omvarld": cards}
+
+
 @app.get("/api/companion/data/fcfs")
 async def companion_fcfs_data():
     """Return FC and FS staff for Phase 4."""

@@ -242,6 +242,7 @@ class CompanionPlayer:
     f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
+    f4_market_bought: Dict[str, int] = field(default_factory=dict)  # step_id -> num bought this quarter
     steps_done: Dict[str, bool] = field(default_factory=dict)
     prev_profit_score: float = 0.0  # Previous projected score for trend arrow
 
@@ -391,6 +392,7 @@ class CompanionPlayer:
             "f4_yield_kommersiellt": self.f4_yield_kommersiellt,
             "f4_quarters": self.f4_quarters,
             "f4_final_score": round(self.f4_final_score, 1),
+            "f4_market_bought": self.f4_market_bought,
             "steps_done": self.steps_done,
             "prev_profit_score": round(self.prev_profit_score, 1),
             "profit_score": self.profit_score,
@@ -460,6 +462,7 @@ class CompanionRoom:
     step_idx: int = 0
     game_mode: str = "test"  # "test" or "serious"
     logger: Optional[object] = None  # GameLogger instance for serious games
+    f4_omvarldskort: Dict[str, dict] = field(default_factory=dict)  # step_id -> drawn omvärldskort
 
     @property
     def current_phase(self):
@@ -583,6 +586,7 @@ class CompanionRoom:
             "quarters": [self.quarter_summary(i) for i in range(self.num_quarters)],
             "game_mode": self.game_mode,
             "log_event_count": len(self.logger.events) if self.logger else 0,
+            "f4_omvarldskort": self.f4_omvarldskort,
         }
 
     def player_state(self, player_id: str) -> dict:
@@ -600,6 +604,7 @@ class CompanionRoom:
             "step_name": step["name"] if step else None,
             "step_help": step.get("help", "") if step else "",
             "player": player.to_dict(),
+            "f4_omvarldskort": self.f4_omvarldskort,
         }
 
 
@@ -881,6 +886,8 @@ class CompanionManager:
                 player.f4_quarters = assets["f4_quarters"]
             if "f4_final_score" in assets:
                 player.f4_final_score = float(assets["f4_final_score"])
+            if "f4_market_bought" in assets:
+                player.f4_market_bought = assets["f4_market_bought"]
             # Log asset changes for serious games
             if room.game_mode == "serious" and room.logger:
                 step = room.current_step
@@ -902,6 +909,14 @@ class CompanionManager:
             step = data.get("step", "")
             if step and step in player.steps_done:
                 del player.steps_done[step]
+            await self.broadcast_state(room)
+
+        elif msg_type == "draw_omvarld" and player.is_gm:
+            # GM draws omvärldskort for a given step
+            step_id = data.get("step_id")
+            card = data.get("card")
+            if step_id and card:
+                room.f4_omvarldskort[step_id] = card
             await self.broadcast_state(room)
 
         elif msg_type == "get_state":
