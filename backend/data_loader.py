@@ -100,6 +100,7 @@ def load_projects() -> Dict[str, List[Project]]:
                 namndbeslut=safe_int(row.get("Nämndbeslut", row.get("N\x84mndbeslut")), 1),
                 energiklass=safe_str(row.get("Energiklass"), "C"),
                 driftnetto=safe_float(row.get("Driftnetto")),
+                beskrivning=safe_str(row.get("Beskrivning")),
                 supplier_reqs=supplier_reqs,
                 led=safe_int(row.get("STA", row.get("LED"))),
                 kom=safe_int(row.get("KOM")),
