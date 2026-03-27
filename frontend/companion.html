@@ -605,20 +605,26 @@ document.getElementById('btn-join-quarter').addEventListener('click', async () =
 });
 
 async function loadReferenceData() {
-    const [pcRes, projRes, acRes, planRes, ddRes, omRes] = await Promise.all([
+    // Core data — must succeed
+    const [pcRes, projRes, acRes, planRes] = await Promise.all([
         fetch('/api/companion/data/pc'),
         fetch('/api/companion/data/projects'),
         fetch('/api/companion/data/ac'),
         fetch('/api/companion/data/planning'),
-        fetch('/api/companion/data/dd'),
-        fetch('/api/companion/data/omvarld'),
     ]);
     S.pcData = (await pcRes.json()).pc;
     S.projectData = (await projRes.json()).projects;
     S.acData = (await acRes.json()).ac;
     S.planningData = await planRes.json();
-    S.ddData = (await ddRes.json()).dd || [];
-    S.omvarldData = (await omRes.json()).omvarld || [];
+    // Optional data — failures don't block the game
+    try {
+        const ddRes = await fetch('/api/companion/data/dd');
+        S.ddData = (await ddRes.json()).dd || [];
+    } catch(e) { console.warn('DD data failed to load:', e); S.ddData = []; }
+    try {
+        const omRes = await fetch('/api/companion/data/omvarld');
+        S.omvarldData = (await omRes.json()).omvarld || [];
+    } catch(e) { console.warn('Omvarld data failed to load:', e); S.omvarldData = []; }
 }
 
 // ── Render ──
