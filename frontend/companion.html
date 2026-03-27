@@ -867,8 +867,14 @@ function renderPlayer() {
                 }
                 html += '</div>';
             } else if (editPlanning) {
-                html += '<div class="asset-empty" data-action="choose-planning" data-step-id="' + ps.id + '" style="padding:4px 0">';
-                html += '<span style="color:#888">' + (si+1) + '.</span> ' + ps.name + ' <span style="color:#555">(' + typeLabel + ')</span></div>';
+                // Lock: can only choose next step if previous is done
+                var _prevDone = (si === 0) || choices[S.planningData.steps[si-1].id];
+                if (_prevDone) {
+                    html += '<div class="asset-empty" data-action="choose-planning" data-step-id="' + ps.id + '" style="padding:4px 0;cursor:pointer">';
+                    html += '<span style="color:#888">' + (si+1) + '.</span> ' + ps.name + ' <span style="color:#555">(' + typeLabel + ')</span></div>';
+                } else {
+                    html += '<div style="padding:4px 0;color:#333;font-style:italic">' + (si+1) + '. ' + ps.name + ' <span style="color:#333">(\ud83d\udd12)</span></div>';
+                }
             } else {
                 html += '<div style="padding:4px 0;color:#555">' + (si+1) + '. ' + ps.name + ' \u2014 ej vald</div>';
             }
@@ -1188,6 +1194,13 @@ function renderPlayer() {
             }
             html += '</div>';
         }
+        // Market expansion info per quarter
+        var _marketExpansion = {'f4_q1':3,'f4_q2':2,'f4_q3':1,'f4_q4':0};
+        if (_canBuySell && _marketExpansion[step] !== undefined) {
+            html += '<div style="background:#243447;border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px;color:#4db8ff">';
+            html += 'Marknaden ut\u00f6kas med ' + _marketExpansion[step] + ' nya fastigheter detta kvartal.';
+            html += '</div>';
+        }
         // Buy new property (only at buy/sell steps and no moderbolagslån)
         if (_canBuySell && !_hasModLan) {
             html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:#27ae60;margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
@@ -1196,19 +1209,73 @@ function renderPlayer() {
         }
         html += '</div>';
 
-        // Yield input (always visible in phase 4)
+        // Driftnetto summary per quarter
+        var _driftnettoQuarters = ['f4_q1','f4_q2','f4_q3','f4_q4'];
+        var _driftQIdx = _driftnettoQuarters.indexOf(step);
+        if (_driftQIdx >= 0) {
+            var _ownedForDN = fasts.filter(function(ff) { return !ff.sold; });
+            var _totalDN = _ownedForDN.reduce(function(s, ff) { return s + (ff.driftnetto || 0); }, 0);
+            var _dnKey = 'f4_driftnetto_q' + (_driftQIdx + 1);
+            html += '<div class="asset-card" style="border-left-color:#27ae60">';
+            html += '<div class="asset-label">DRIFTNETTO</div>';
+            html += '<div style="font-size:15px;font-weight:700;color:#27ae60">Driftnetto detta kvartal: ' + _totalDN + ' Mkr</div>';
+            html += '<div style="font-size:12px;color:#999;margin-top:4px">Summa fr\u00e5n ' + _ownedForDN.length + ' \u00e4gda fastigheter. L\u00e4ggs till EK automatiskt.</div>';
+            html += '</div>';
+            // Auto-add driftnetto to EK if not already done for this quarter
+            if (!p[_dnKey] && _totalDN !== 0) {
+                var _dnAssets = { eget_kapital: (p.eget_kapital || 0) + _totalDN };
+                _dnAssets[_dnKey] = _totalDN;
+                send({ type: 'update_assets', assets: _dnAssets });
+            }
+        }
+
+        // Kvartalsh\u00e4ndelser
+        var _kvartalsEvents = {
+            'f4_q1': 'Inga specifika kvartalsh\u00e4ndelser',
+            'f4_q2': 'Hyresf\u00f6rhandling sker detta kvartal',
+            'f4_q3': 'Inga specifika kvartalsh\u00e4ndelser',
+            'f4_q4': 'Inga specifika kvartalsh\u00e4ndelser'
+        };
+        if (_kvartalsEvents[step]) {
+            html += '<div class="asset-card" style="border-left-color:#e67e22">';
+            html += '<div class="asset-label">KVARTALSH\u00c4NDELSE</div>';
+            html += '<div style="font-size:14px;color:' + (step === 'f4_q2' ? '#f0c929' : '#888') + '">' + _kvartalsEvents[step] + '</div>';
+            html += '</div>';
+        }
+
+        // Omv\u00e4rldskort (informational)
+        if (_driftnettoQuarters.indexOf(step) >= 0) {
+            html += '<div class="asset-card" style="border-left-color:#8e44ad">';
+            html += '<div class="asset-label">OMV\u00c4RLDSKORT</div>';
+            html += '<div style="font-size:14px;color:#999">Gemensamt f\u00f6r alla spelare. GM drar kortet.</div>';
+            html += '</div>';
+        }
+
+        // Yield input (visible in phase 4, but +/- buttons hidden in Q4)
+        var _yieldReadOnly = (step === 'f4_q4');
         if (true) {
             html += '<div class="asset-card" style="border-left-color:#3498db">';
             html += '<div class="asset-label">YIELD</div>';
             html += '<div style="font-size:14px">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
             html += '<span>Yield Bost\u00e4der</span>';
-            html += '<span><span class="f4-yield-btn" data-type="bostader" data-d="-0.5">\u2212</span> <strong>' + p.f4_yield_bostader.toFixed(1) + '%</strong> <span class="f4-yield-btn" data-type="bostader" data-d="0.5">+</span></span>';
+            if (_yieldReadOnly) {
+                html += '<span><strong>' + p.f4_yield_bostader.toFixed(1) + '%</strong></span>';
+            } else {
+                html += '<span><span class="f4-yield-btn" data-type="bostader" data-d="-0.5">\u2212</span> <strong>' + p.f4_yield_bostader.toFixed(1) + '%</strong> <span class="f4-yield-btn" data-type="bostader" data-d="0.5">+</span></span>';
+            }
             html += '</div>';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
             html += '<span>Yield Kommersiellt</span>';
-            html += '<span><span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.5">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(1) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.5">+</span></span>';
+            if (_yieldReadOnly) {
+                html += '<span><strong>' + p.f4_yield_kommersiellt.toFixed(1) + '%</strong></span>';
+            } else {
+                html += '<span><span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.5">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(1) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.5">+</span></span>';
+            }
             html += '</div>';
+            if (_yieldReadOnly) {
+                html += '<div style="font-size:12px;color:#888;margin-top:4px">Yield kan inte \u00e4ndras i Q4.</div>';
+            }
             html += '</div></div>';
         }
 
@@ -1272,7 +1339,17 @@ function renderPlayer() {
             }
             html += '</div>';
         } else {
-            html += '<button class="klar-btn not-done" data-action="mark-done" data-step="' + step + '">\u2713 Klar med detta steg</button>';
+            // Check if step requires specific action before marking done
+            var _canMark = true;
+            var _blockMsg = '';
+            if (step === 'choose_pc' && !p.projektchef) { _canMark = false; _blockMsg = 'Välj en Projektchef först'; }
+            if (step === 'choose_ac' && !p.arbetschef) { _canMark = false; _blockMsg = 'Välj en Arbetschef först'; }
+            if (step === 'projects' && (p.projects||[]).length === 0) { _canMark = false; _blockMsg = 'Lägg till minst ett projekt'; }
+            if (_canMark) {
+                html += '<button class="klar-btn not-done" data-action="mark-done" data-step="' + step + '">\u2713 Klar med detta steg</button>';
+            } else {
+                html += '<div class="klar-btn blocked" style="opacity:0.4;cursor:not-allowed;text-align:center;padding:12px;color:#e74c3c">' + _blockMsg + '</div>';
+            }
         }
         html += '</div>';
     }
@@ -1788,7 +1865,17 @@ function attachPlayerEvents(container) {
                                 fastigheter: fasts,
                                 eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling
                             }});
-                            mc.innerHTML = '';
+                            // DD-kort reminder after purchase
+                            mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
+                                '<div class="modal-header"><h3>K\u00f6p genomf\u00f6rt!</h3></div>' +
+                                '<div class="modal-body">' +
+                                '<div style="font-size:15px;margin-bottom:12px"><strong>' + proj.namn + '</strong> k\u00f6pt f\u00f6r ' + kopeskilling + ' Mkr.</div>' +
+                                '<div style="background:#243447;border-radius:6px;padding:10px;color:#f0c929;font-weight:600">' +
+                                'Dra ett DD-kort (Due Diligence) f\u00f6r denna fastighet.' +
+                                '</div></div>' +
+                                '<div class="modal-footer"><button class="btn-primary" id="modal-dd-ok">Uppfattat!</button></div>' +
+                                '</div></div>';
+                            mc.querySelector('#modal-dd-ok').addEventListener('click', function() { mc.innerHTML = ''; });
                         });
                     });
                 });
@@ -2192,16 +2279,20 @@ document.getElementById('btn-prev-step').addEventListener('click', () => {
 });
 
 // GM Reset
-document.getElementById('btn-gm-reset').addEventListener('click', () => {
+var _resetBtn = document.getElementById('btn-gm-reset');
+if (_resetBtn) _resetBtn.addEventListener('click', () => {
     if (!confirm('Vill du nollställa hela sessionen? Alla spelare kopplas bort och all data raderas.')) return;
     if (!confirm('Är du säker? Detta kan inte ångras.')) return;
+    try { send({ type: 'reset_room' }); } catch(e) {}
     sessionStorage.removeItem('companion_session');
-    send({ type: 'reset_room' });
-    setTimeout(() => { window.location.reload(); }, 500);
+    S.view = null; S.roomCode = null; S.playerId = null; S.isGM = false;
+    if (S.ws) { try { S.ws.close(); } catch(e) {} S.ws = null; }
+    window.location.href = '/companion';
 });
 
 // GM Finish Game
-document.getElementById('btn-gm-finish').addEventListener('click', () => {
+var _finishBtn = document.getElementById('btn-gm-finish');
+if (_finishBtn) _finishBtn.addEventListener('click', () => {
     var mode = S.state?.game_mode || 'test';
     if (mode === 'serious') {
         if (!confirm('Avsluta spelet och spara resultaten?')) return;
