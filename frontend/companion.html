@@ -1218,8 +1218,10 @@ function renderPlayer() {
         }
 
         // Fastigheter (each as own card)
+        var _unsoldFasts = fasts.filter(function(f) { return !f.sold; });
+        var _soldFasts = fasts.filter(function(f) { return f.sold; });
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
-        html += '<div class="asset-label">FASTIGHETER (' + fasts.length + ')</div>';
+        html += '<div class="asset-label">FASTIGHETER (' + _unsoldFasts.length + ')' + (_soldFasts.length > 0 ? ' <span style="color:#888;font-size:12px;font-weight:400">+ ' + _soldFasts.length + ' s\u00e5lda</span>' : '') + '</div>';
         if (fasts.length === 0) {
             html += '<div style="color:#999;font-size:13px">Inga fastigheter \u00e4nnu. Projekt konverteras vid 4.1.</div>';
             // Button to convert projects to fastigheter
@@ -1281,6 +1283,16 @@ function renderPlayer() {
             // Sell button (only at buy/sell steps)
             if (_canBuySell) {
                 html += '<div class="f4-sell-btn" data-fi="' + fi + '" style="cursor:pointer;color:#e74c3c;font-size:12px;margin-top:4px">S\u00e4lj fastighet</div>';
+            }
+            html += '</div>';
+        }
+        // Show sold fastigheter summary
+        if (_soldFasts.length > 0) {
+            html += '<div style="border-top:1px solid #334;padding-top:6px;margin-top:6px">';
+            html += '<div style="font-size:12px;color:#888;margin-bottom:4px">S\u00e5lda:</div>';
+            for (var _si2 = 0; _si2 < _soldFasts.length; _si2++) {
+                var _sf = _soldFasts[_si2];
+                html += '<div style="font-size:12px;color:#555">\u2713 ' + _sf.namn + ' (' + _sf.typ + ') \u2014 ' + (_sf.kopeskilling||0) + ' Mkr</div>';
             }
             html += '</div>';
         }
