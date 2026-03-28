@@ -556,6 +556,8 @@ function projectedScore(p, phase) {
         var _ekFactor4 = _actualEK >= 0 ? 0.10 : 2.00;
         var projected = _ownedBTA > 0 ? (0.30 * _actualFV + _ekFactor4 * _actualEK) / _ownedBTA * 1000 + _realTB4 : 0;
         projected += _energyPotential * 0.01;
+        // At f4_slut, use the exact final score if available
+        if (p.f4_final_score && p.f4_final_score !== 0) return p.f4_final_score;
         return isFinite(projected) ? Math.round(projected * 10) / 10 : 0;
     }
 
@@ -1377,25 +1379,31 @@ function renderPlayer() {
             }
         }
 
-        // Kvartalshändelser (specific per quarter) with Kassa adjustment
+        // Kvartalshändelser (specific per quarter) — only if player owns the relevant type
         var _kvartalsEvents = {
-            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort', color: '#27ae60', icon: '\uD83C\uDFEB' },
-            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling', color: '#f0c929', icon: '\uD83D\uDCCB' },
-            'f4_q3': { text: 'Lokal: H\u00e4ndelsekort', color: '#2980b9', icon: '\uD83C\uDFEC' },
-            'f4_q4': { text: 'Kontor: H\u00e4ndelsekort', color: '#8e44ad', icon: '\uD83C\uDFE2' },
+            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort', color: '#27ae60', icon: '\uD83C\uDFEB', typ: 'F\u00d6RSKOLOR' },
+            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling', color: '#f0c929', icon: '\uD83D\uDCCB', typ: 'Hyresr\u00e4tt' },
+            'f4_q3': { text: 'Lokal: H\u00e4ndelsekort', color: '#2980b9', icon: '\uD83C\uDFEC', typ: 'LOKAL' },
+            'f4_q4': { text: 'Kontor: H\u00e4ndelsekort', color: '#8e44ad', icon: '\uD83C\uDFE2', typ: 'KONTOR' },
         };
         if (_kvartalsEvents[step] && _driftnettoQuarters.indexOf(step) >= 0) {
             var _kev = _kvartalsEvents[step];
+            var _ownsType = _unsoldFasts.some(function(f) { return f.typ === _kev.typ; });
             var _hEk = ((_f4Q || {})[step] || {}).handelse_ek || 0;
             html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
             html += '<div class="asset-label">\uD83C\uDFB2 KVARTALSH\u00c4NDELSE</div>';
             html += '<div style="font-size:14px;color:' + _kev.color + ';margin-bottom:8px">' + _kev.icon + ' ' + _kev.text + '</div>';
-            html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
-            html += '<span>Kassa-effekt:</span>';
-            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="-1" style="cursor:pointer;color:#e74c3c;font-size:18px;padding:0 4px">\u2212</span>';
-            html += '<strong style="color:' + (_hEk >= 0 ? '#27ae60' : '#e74c3c') + '">' + _hEk + ' Mkr</strong>';
-            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="1" style="cursor:pointer;color:#27ae60;font-size:18px;padding:0 4px">+</span>';
-            html += '</div></div>';
+            if (_ownsType) {
+                html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
+                html += '<span>Kassa-effekt:</span>';
+                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="-1" style="cursor:pointer;color:#e74c3c;font-size:18px;padding:0 4px">\u2212</span>';
+                html += '<strong style="color:' + (_hEk >= 0 ? '#27ae60' : '#e74c3c') + '">' + _hEk + ' Mkr</strong>';
+                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="1" style="cursor:pointer;color:#27ae60;font-size:18px;padding:0 4px">+</span>';
+                html += '</div>';
+            } else {
+                html += '<div style="font-size:13px;color:#555;font-style:italic">Du f\u00f6rvaltar inga ' + _kev.typ.toLowerCase() + ' \u2014 detta kvartal p\u00e5verkas du inte.</div>';
+            }
+            html += '</div>';
         }
 
         // Omvärldskort — manual Kassa/energi adjustment per quarter
