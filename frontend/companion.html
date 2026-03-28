@@ -1054,10 +1054,10 @@ function renderPlayer() {
         html += counterRow('R\u00f6rlig int\u00e4kt BRF (Mkr)', rorlig, 'gf_brf_rorlig', true);
         html += counterRow('Moderbolags\u00e5n (antal)', modLanAntal, 'gf_moderbolagslan_antal', false);
         if (modLanAntal > 0) {
-            html += '<div style="font-size:12px;color:#e74c3c;margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till EK: ' + modLanTillskott + ' Mkr</div>';
+            html += '<div style="font-size:12px;color:#e74c3c;margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till Kassa: ' + modLanTillskott + ' Mkr</div>';
         }
         html += '<div style="border-top:1px solid #334;padding-top:6px;margin-top:6px;font-size:16px">';
-        html += '<strong style="color:' + (calcEK >= 0 ? '#27ae60' : '#e74c3c') + '">Eget Kapital = ' + Math.round(calcEK) + ' Mkr</strong>';
+        html += '<strong style="color:' + (calcEK >= 0 ? '#27ae60' : '#e74c3c') + '">Kassa = ' + Math.round(calcEK) + ' Mkr</strong>';
         html += '</div>';
         html += '</div></div>';
 
@@ -1159,6 +1159,23 @@ function renderPlayer() {
             html += '\u26a0\ufe0f Tv\u00e5ngsf\u00f6rs\u00e4ljning kr\u00e4vs! Du har moderbolags\u00e5n och fler \u00e4n 1 fastighet.</div>';
         }
 
+        // Quarter header for f4_q1-q4
+        var _qNum = {'f4_q1':1,'f4_q2':2,'f4_q3':3,'f4_q4':4}[step] || 0;
+        var _isQuarter = _qNum > 0;
+        if (_isQuarter) {
+            // Personal cost summary
+            var _fcLon = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
+            var _fsLonArr = Array.isArray(p.fastighetsskotare) ? p.fastighetsskotare : (p.fastighetsskotare ? [p.fastighetsskotare] : []);
+            var _fsLon = _fsLonArr.reduce(function(s, fs) { return s + (fs.lon || 0); }, 0);
+            var _totalLon = _fcLon + _fsLon;
+            html += '<div style="background:linear-gradient(135deg,#1a2736,#243447);border:2px solid #4db8ff;border-radius:10px;padding:14px;margin:10px 0">';
+            html += '<div style="font-size:20px;font-weight:900;color:#4db8ff;text-align:center;margin-bottom:8px">KVARTAL ' + _qNum + '</div>';
+            html += '<div style="display:flex;justify-content:space-between;font-size:13px;color:#aaa">';
+            html += '<span>Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></span>';
+            html += '<span>L\u00f6nekostnad: <strong style="color:#e74c3c">-' + _totalLon + ' Mkr/kv</strong></span>';
+            html += '</div></div>';
+        }
+
         // Fastigheter (each as own card)
         html += '<div class="asset-card" style="border-left-color:#e67e22">';
         html += '<div class="asset-label">FASTIGHETER (' + fasts.length + ')</div>';
@@ -1215,7 +1232,7 @@ function renderPlayer() {
                 var ev = events.find(function(e) { return e.kvartal === qi; }) || {};
                 html += '<div style="display:flex;gap:8px;font-size:12px;padding:2px 0">';
                 html += '<span style="color:#999;width:30px">Q' + qi + ':</span>';
-                html += '<span>EK: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="-0.5">\u2212</span> <strong>' + (ev.ek||0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="0.5">+</span></span>';
+                html += '<span>Kassa: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="-0.5">\u2212</span> <strong>' + (ev.ek||0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="0.5">+</span></span>';
                 html += '<span>Energi: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="-1">\u25BC</span> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="1">\u25B2</span></span>';
                 html += '</div>';
             }
@@ -1272,47 +1289,49 @@ function renderPlayer() {
             html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334;margin-top:6px;padding-top:6px">';
             html += '<span style="font-size:15px;font-weight:700;color:#27ae60">Totalt: +' + _totalDN + ' Mkr/kv</span>';
             if (_dnAdded) {
-                html += '<span style="color:#27ae60;font-size:13px">\u2713 Tillagd i EK</span>';
+                html += '<span style="color:#27ae60;font-size:13px">\u2713 Tillagd i Kassa</span>';
             } else {
-                html += '<button class="btn-primary" id="btn-add-dn" style="padding:8px 14px;font-size:13px;border-radius:6px;cursor:pointer">L\u00e4gg till i EK</button>';
+                html += '<button class="btn-primary" id="btn-add-dn" style="padding:8px 14px;font-size:13px;border-radius:6px;cursor:pointer">L\u00e4gg till i Kassa</button>';
             }
             html += '</div>';
             html += '</div>';
         }
 
-        // Kvartalshändelser (specific per quarter)
+        // Kvartalshändelser (specific per quarter) with Kassa adjustment
         var _kvartalsEvents = {
-            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort detta kvartal', color: '#27ae60', icon: '\uD83C\uDFEB' },
-            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling detta kvartal', color: '#f0c929', icon: '\uD83D\uDCCB' },
-            'f4_q3': { text: 'Lokal: H\u00e4ndelsekort detta kvartal', color: '#2980b9', icon: '\uD83C\uDFEC' },
-            'f4_q4': { text: 'Kontor: H\u00e4ndelsekort detta kvartal', color: '#8e44ad', icon: '\uD83C\uDFE2' },
+            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort', color: '#27ae60', icon: '\uD83C\uDFEB' },
+            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling', color: '#f0c929', icon: '\uD83D\uDCCB' },
+            'f4_q3': { text: 'Lokal: H\u00e4ndelsekort', color: '#2980b9', icon: '\uD83C\uDFEC' },
+            'f4_q4': { text: 'Kontor: H\u00e4ndelsekort', color: '#8e44ad', icon: '\uD83C\uDFE2' },
         };
         if (_kvartalsEvents[step] && _driftnettoQuarters.indexOf(step) >= 0) {
             var _kev = _kvartalsEvents[step];
+            var _hEk = ((_f4Q || {})[step] || {}).handelse_ek || 0;
             html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
-            html += '<div class="asset-label">KVARTALSH\u00c4NDELSE</div>';
-            html += '<div style="font-size:14px;color:' + _kev.color + '">' + _kev.icon + ' ' + _kev.text + '</div>';
-            html += '</div>';
+            html += '<div class="asset-label">\uD83C\uDFB2 KVARTALSH\u00c4NDELSE</div>';
+            html += '<div style="font-size:14px;color:' + _kev.color + ';margin-bottom:8px">' + _kev.icon + ' ' + _kev.text + '</div>';
+            html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
+            html += '<span>Kassa-effekt:</span>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="-1" style="cursor:pointer;color:#e74c3c;font-size:18px;padding:0 4px">\u2212</span>';
+            html += '<strong style="color:' + (_hEk >= 0 ? '#27ae60' : '#e74c3c') + '">' + _hEk + ' Mkr</strong>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="1" style="cursor:pointer;color:#27ae60;font-size:18px;padding:0 4px">+</span>';
+            html += '</div></div>';
         }
 
-        // Omvärldskort — show drawn card if GM has drawn one for this quarter
+        // Omvärldskort — manual Kassa/energi adjustment per quarter
         if (_driftnettoQuarters.indexOf(step) >= 0) {
-            var _omKort = (st.f4_omvarldskort || {})[step];
+            var _f4Q = p.f4_quarters || {};
+            var _qData = _f4Q[step] || {};
+            var _omEk = _qData.omvarld_ek || 0;
             html += '<div class="asset-card" style="border-left-color:#8e44ad">';
-            html += '<div class="asset-label">OMV\u00c4RLDSKORT (GEMENSAMT)</div>';
-            if (_omKort) {
-                var _omColor = _omKort.effekt_mkr > 0 ? '#27ae60' : _omKort.effekt_mkr < 0 ? '#e74c3c' : '#888';
-                html += '<div style="font-weight:700;font-size:14px;color:#e0e0e0">' + _omKort.rubrik + '</div>';
-                html += '<div style="font-size:13px;color:#aaa;margin:4px 0">' + _omKort.beskrivning + '</div>';
-                html += '<div style="font-size:13px"><span style="color:#888">P\u00e5verkar: ' + (_omKort.paverkar || 'Alla') + '</span>';
-                if (_omKort.effekt_mkr !== 0) {
-                    html += ' &nbsp; <span style="color:' + _omColor + ';font-weight:700">' + (_omKort.effekt_mkr > 0 ? '+' : '') + _omKort.effekt_mkr + ' Mkr</span>';
-                }
-                html += '</div>';
-            } else {
-                html += '<div style="font-size:14px;color:#888">V\u00e4ntar p\u00e5 att GM drar kortet...</div>';
-            }
-            html += '</div>';
+            html += '<div class="asset-label">\uD83C\uDF0D OMV\u00c4RLDSKORT</div>';
+            html += '<div style="font-size:13px;color:#aaa;margin-bottom:8px">Justera Kassa och energiklass enligt det dragna kortet. Energiklass \u00e4ndras per fastighet ovan.</div>';
+            html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
+            html += '<span>Kassa-effekt:</span>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="-1" style="cursor:pointer;color:#e74c3c;font-size:18px;padding:0 4px">\u2212</span>';
+            html += '<strong style="color:' + (_omEk >= 0 ? '#27ae60' : '#e74c3c') + '">' + _omEk + ' Mkr</strong>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="1" style="cursor:pointer;color:#27ae60;font-size:18px;padding:0 4px">+</span>';
+            html += '</div></div>';
         }
 
         // Yield input (visible in phase 4, but +/- buttons hidden in Q4)
@@ -1343,7 +1362,13 @@ function renderPlayer() {
             html += '</div></div>';
         }
 
-        // EK is calculated, no standalone counter needed
+        // Kassa summary at bottom of quarter
+        if (_isQuarter) {
+            html += '<div style="background:#0f1923;border:2px solid ' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + ';border-radius:10px;padding:12px;margin:10px 0;text-align:center">';
+            html += '<div style="font-size:13px;color:#aaa">Kassa efter kvartal ' + _qNum + '</div>';
+            html += '<div style="font-size:22px;font-weight:900;color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</div>';
+            html += '</div>';
+        }
 
         if (isFinished) html += '</div>'; // close lock wrapper
 
@@ -1371,8 +1396,8 @@ function renderPlayer() {
             html += '<div style="font-size:14px;line-height:2">';
             html += '<div>Fastighetsv\u00e4rde (FV): <strong>' + Math.round(_fv) + ' Mkr</strong></div>';
             html += '<div>30% av FV: <strong>' + Math.round(0.3*_fv) + ' Mkr</strong></div>';
-            html += '<div>Eget kapital (EK): <strong>' + Math.round(_ek4) + ' Mkr</strong></div>';
-            html += '<div>' + (_ek4 >= 0 ? '10%' : '<span style="color:#e74c3c">200%</span>') + ' av EK: <strong style="color:' + (_ek4 >= 0 ? 'inherit' : '#e74c3c') + '">' + Math.round(_ekFactor*_ek4) + ' Mkr</strong></div>';
+            html += '<div>Kassa: <strong>' + Math.round(_ek4) + ' Mkr</strong></div>';
+            html += '<div>' + (_ek4 >= 0 ? '10%' : '<span style="color:#e74c3c">200%</span>') + ' av Kassa: <strong style="color:' + (_ek4 >= 0 ? 'inherit' : '#e74c3c') + '">' + Math.round(_ekFactor*_ek4) + ' Mkr</strong></div>';
             html += '<div>\u00c4gd BTA: <strong>' + _btaOwned + ' kvm</strong></div>';
             html += '<div>TB: <strong>' + Math.round(_tb4) + ' Mkr</strong></div>';
             html += '<div style="border-top:2px solid #f0c929;padding-top:8px;margin-top:8px;font-size:20px">';
@@ -1520,13 +1545,13 @@ function renderPlayer() {
                 html += '\ud83d\udfe5 Moderbolags\u00e5n: ' + _modAntal + ' st = <strong>' + (_modAntal * 100) + ' Mkr skuld</strong></div>';
             }
             html += '<div style="grid-column:1/-1">';
-            html += 'Eget Kapital: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
+            html += 'Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
             if ((p.eget_kapital||0) < 0) {
                 var _ownedCount = (p.fastigheter||[]).filter(function(f){return !f.sold;}).length;
                 html += '<div style="grid-column:1/-1;background:#e74c3c;color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
-                html += '\u26a0\ufe0f EK \u00e4r negativt! ';
+                html += '\u26a0\ufe0f Kassan \u00e4r negativ! ';
                 if (_ownedCount > 1) {
-                    html += 'Antingen har du r\u00e4knat fel eller beg\u00e5tt ett regelbrott \u2014 EK f\u00e5r inte bli under 0 om du \u00e4ger mer \u00e4n en fastighet.';
+                    html += 'Antingen har du r\u00e4knat fel eller beg\u00e5tt ett regelbrott \u2014 Kassan f\u00e5r inte bli under 0 om du \u00e4ger mer \u00e4n en fastighet.';
                 } else {
                     html += 'Du \u00e4ger bara en fastighet \u2014 ta moderbola\u200dgs\u00e5n f\u00f6r att t\u00e4cka underskottet.';
                 }
@@ -1721,7 +1746,12 @@ function attachPlayerEvents(container) {
         el.addEventListener('click', () => {
             const key = el.dataset.key;
             const cur = S.state.player[key] || 0;
-            send({ type: 'update_assets', assets: { [key]: cur + 1 } });
+            var assets = { [key]: cur + 1 };
+            // Moderbolagslån: each loan adds 95 Mkr to Kassa
+            if (key === 'gf_moderbolagslan_antal') {
+                assets.eget_kapital = (S.state.player.eget_kapital || 0) + 95;
+            }
+            send({ type: 'update_assets', assets: assets });
         });
     });
     container.querySelectorAll('[data-action="decr"]').forEach(el => {
@@ -1729,7 +1759,13 @@ function attachPlayerEvents(container) {
             const key = el.dataset.key;
             const cur = S.state.player[key] || 0;
             const min = el.dataset.allowNeg ? -99 : 0;
-            send({ type: 'update_assets', assets: { [key]: Math.max(min, cur - 1) } });
+            var newVal = Math.max(min, cur - 1);
+            var assets = { [key]: newVal };
+            // Moderbolagslån: removing a loan subtracts 95 Mkr from Kassa
+            if (key === 'gf_moderbolagslan_antal' && newVal < cur) {
+                assets.eget_kapital = (S.state.player.eget_kapital || 0) - 95;
+            }
+            send({ type: 'update_assets', assets: assets });
         });
     });
     // Phase 4: FC/FS choose
@@ -1882,6 +1918,20 @@ function attachPlayerEvents(container) {
             send({ type: 'mark_done', step: 'dn_' + _step });
         });
     }
+    // Phase 4: Quarter adjustments (omvärldskort / kvartalshändelse Kassa effects)
+    container.querySelectorAll('.f4-q-adj-btn').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var _step = el.dataset.step;
+            var _field = el.dataset.field; // 'omvarld_ek' or 'handelse_ek'
+            var _delta = parseFloat(el.dataset.d) || 0;
+            var f4Q = JSON.parse(JSON.stringify(S.state.player.f4_quarters || {}));
+            if (!f4Q[_step]) f4Q[_step] = {};
+            f4Q[_step][_field] = (f4Q[_step][_field] || 0) + _delta;
+            // Also update Kassa (eget_kapital) directly
+            var newEk = (S.state.player.eget_kapital || 0) + _delta;
+            send({ type: 'update_assets', assets: { f4_quarters: f4Q, eget_kapital: newEk } });
+        });
+    });
     // Phase 4: Buy fastighet
     container.querySelectorAll('[data-action="buy_fastighet"]').forEach(function(el) {
         el.addEventListener('click', async function() {
