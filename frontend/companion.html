@@ -1310,10 +1310,11 @@ function renderPlayer() {
         if (_canBuySell) {
             html += '<div style="background:#243447;border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px">';
             if (_mktMax === 0) {
-                html += '<span style="color:#888">Inga nya fastigheter kan k\u00f6pas detta kvartal (Q4).</span>';
+                html += '<span style="color:#888">Inga fastigheter finns att k\u00f6pa p\u00e5 marknaden i nul\u00e4get.</span>';
+            } else if (_mktLeft > 0) {
+                html += '<span style="color:#4db8ff">Marknad: <strong>' + _mktLeft + '</strong> fastigheter tillg\u00e4ngliga.</span>';
             } else {
-                var _mktColor = _mktLeft > 0 ? '#4db8ff' : '#888';
-                html += '<span style="color:' + _mktColor + '">Marknaden: <strong>' + _mktLeft + ' av ' + _mktMax + '</strong> fastigheter tillg\u00e4ngliga detta kvartal.</span>';
+                html += '<span style="color:#888">Marknad: inga fler fastigheter tillg\u00e4ngliga detta kvartal.</span>';
             }
             html += '</div>';
         }
@@ -1327,17 +1328,24 @@ function renderPlayer() {
         }
         html += '</div>';
 
-        // Driftnetto summary per quarter
+        // Driftnetto & personalkostnad summary per quarter (auto-adds to Kassa)
         var _driftnettoQuarters = ['f4_q1','f4_q2','f4_q3','f4_q4'];
         var _driftQIdx = _driftnettoQuarters.indexOf(step);
         if (_driftQIdx >= 0) {
             var _ownedForDN = fasts.filter(function(ff) { return !ff.sold; });
             var _totalDN = _ownedForDN.reduce(function(s, ff) { return s + (ff.driftnetto || 0); }, 0);
+            // Personal cost this quarter
+            var _fcLonQ = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
+            var _fsListQ = Array.isArray(p.fastighetsskotare) ? p.fastighetsskotare : (p.fastighetsskotare ? [p.fastighetsskotare] : []);
+            var _fsLonQ = _fsListQ.reduce(function(s, fs) { return s + (fs.lon || 0); }, 0);
+            var _totalLonQ = _fcLonQ + _fsLonQ;
+            var _nettoKvartal = _totalDN - _totalLonQ;
+
             var _dnDoneKey = 'dn_' + step;
             var _dnAdded = (p.steps_done || {})[_dnDoneKey] === true;
             html += '<div class="asset-card" style="border-left-color:#27ae60">';
-            html += '<div class="asset-label">DRIFTNETTO Q' + (_driftQIdx + 1) + '</div>';
-            // Per-fastighet breakdown
+            html += '<div class="asset-label">\uD83D\uDCB0 RESULTAT Q' + (_driftQIdx + 1) + '</div>';
+            // Per-fastighet DN
             for (var _di = 0; _di < _ownedForDN.length; _di++) {
                 var _df = _ownedForDN[_di];
                 var _ddn = _df.driftnetto || 0;
@@ -1345,15 +1353,28 @@ function renderPlayer() {
                 html += '<span>' + _df.namn + ' <span style="color:' + (TYPE_COLORS[_df.typ]||'#888') + ';font-size:11px">' + _df.typ + '</span></span>';
                 html += '<span style="color:#27ae60;font-weight:600">+' + _ddn + ' Mkr</span></div>';
             }
+            html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;border-top:1px solid #334;margin-top:4px;padding-top:4px;color:#aaa">';
+            html += '<span>Driftnetto totalt</span><span style="color:#27ae60;font-weight:600">+' + _totalDN + ' Mkr</span></div>';
+            // Personal cost
+            html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;color:#aaa">';
+            html += '<span>Personalkostnad (FC + FS)</span><span style="color:#e74c3c;font-weight:600">\u2212' + _totalLonQ + ' Mkr</span></div>';
+            // Net result
             html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334;margin-top:6px;padding-top:6px">';
-            html += '<span style="font-size:15px;font-weight:700;color:#27ae60">Totalt: +' + _totalDN + ' Mkr/kv</span>';
+            html += '<span style="font-size:15px;font-weight:700;color:' + (_nettoKvartal >= 0 ? '#27ae60' : '#e74c3c') + '">Netto: ' + (_nettoKvartal >= 0 ? '+' : '') + _nettoKvartal + ' Mkr/kv</span>';
             if (_dnAdded) {
                 html += '<span style="color:#27ae60;font-size:13px">\u2713 Tillagd i Kassa</span>';
             } else {
-                html += '<button class="btn-primary" id="btn-add-dn" style="padding:8px 14px;font-size:13px;border-radius:6px;cursor:pointer">L\u00e4gg till i Kassa</button>';
+                html += '<span style="color:#f0c929;font-size:12px" id="dn-auto-pending">L\u00e4ggs till automatiskt...</span>';
             }
             html += '</div>';
             html += '</div>';
+            // Auto-add DN + personal cost to Kassa if not already done
+            if (!_dnAdded) {
+                setTimeout(function() {
+                    send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + _nettoKvartal } });
+                    send({ type: 'mark_done', step: 'dn_' + S.state.step });
+                }, 500);
+            }
         }
 
         // Kvartalshändelser (specific per quarter) with Kassa adjustment
@@ -1967,19 +1988,7 @@ function attachPlayerEvents(container) {
             }
         });
     });
-    // Phase 4: Driftnetto — lägg till i EK manuellt
-    var _dnBtn = container.querySelector('#btn-add-dn');
-    if (_dnBtn) {
-        _dnBtn.addEventListener('click', function() {
-            var _step = S.state.step;
-            var _qIdx = ['f4_q1','f4_q2','f4_q3','f4_q4'].indexOf(_step);
-            if (_qIdx < 0) return;
-            var _fasts = (S.state.player.fastigheter || []).filter(function(ff) { return !ff.sold; });
-            var _totalDN = _fasts.reduce(function(s, ff) { return s + (ff.driftnetto || 0); }, 0);
-            send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + _totalDN } });
-            send({ type: 'mark_done', step: 'dn_' + _step });
-        });
-    }
+    // Phase 4: Driftnetto now auto-added in render (no manual button needed)
     // Phase 4: Quarter adjustments (omvärldskort / kvartalshändelse Kassa effects)
     container.querySelectorAll('.f4-q-adj-btn').forEach(function(el) {
         el.addEventListener('click', function() {
@@ -1994,75 +2003,59 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { f4_quarters: f4Q, eget_kapital: newEk } });
         });
     });
-    // Phase 4: Buy fastighet
+    // Phase 4: Buy fastighet — single modal with all types grouped by header
     container.querySelectorAll('[data-action="buy_fastighet"]').forEach(function(el) {
         el.addEventListener('click', async function() {
-            // Fetch projects if not cached
             if (!S._allProjects) {
                 try { var r = await fetch('/api/companion/data/projects'); var _pdata = await r.json(); S._allProjects = _pdata.projects || _pdata; } catch(e) { return; }
             }
             var mc = document.getElementById('modal-container');
-            // Show type selection first (no BRF)
-            var types = ['FÖRSKOLOR','LOKAL','KONTOR','Hyresrätt'];
+            var types = ['F\u00d6RSKOLOR','LOKAL','KONTOR','Hyresr\u00e4tt'];
+            var _p = S.state.player;
             var html = '<div class="modal-overlay"><div class="modal">';
-            html += '<div class="modal-header"><h3>Köp fastighet — välj typ</h3></div>';
+            html += '<div class="modal-header"><h3>K\u00f6p fastighet fr\u00e5n marknaden</h3></div>';
             html += '<div class="modal-body">';
             for (var t of types) {
-                var count = (S._allProjects[t] || []).length;
-                html += '<div class="modal-item" data-buytyp="' + t + '"><div class="item-name">' + t + '</div><div class="item-detail">' + count + ' projekt</div></div>';
+                var projs = S._allProjects[t] || [];
+                if (projs.length === 0) continue;
+                html += '<div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;padding:8px 0 4px;border-bottom:1px solid #334;margin-top:4px">' + t + '</div>';
+                for (var pr of projs) {
+                    var _isBost = (pr.typ === 'Hyresr\u00e4tt');
+                    var _yld = _isBost ? (_p.f4_yield_bostader||4.0) : (_p.f4_yield_kommersiellt||5.0);
+                    var _dn = pr.driftnetto || 0;
+                    var _eklF = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0.90,'F':0.85}[(pr.energiklass||'C').toUpperCase()] || 1.0;
+                    var _mv = _yld > 0 ? Math.round((4 * _dn) / (_yld / 100) * _eklF) : 0;
+                    html += '<div class="modal-item" data-proj=\'' + JSON.stringify(pr).replace(/'/g,"&#39;") + '\'>';
+                    html += '<div class="item-name">' + pr.namn + '</div>';
+                    html += '<div class="item-detail">BTA: ' + pr.bta + ' | DN: ' + _dn + ' Mkr/kv | EK: ' + pr.energiklass + ' | <strong style="color:#27ae60">MV: ' + _mv + ' Mkr</strong></div>';
+                    html += '</div>';
+                }
             }
             html += '</div><button id="modal-cancel" class="btn-secondary" style="width:100%;padding:12px;margin-top:8px;border:none;border-radius:8px;cursor:pointer">Avbryt</button>';
             html += '</div></div>';
             mc.innerHTML = html;
             mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
-            mc.querySelectorAll('[data-buytyp]').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var typ = btn.dataset.buytyp;
-                    var projs = S._allProjects[typ] || [];
-                    var html2 = '<div class="modal-overlay"><div class="modal">';
-                    html2 += '<div class="modal-header"><h3>Välj ' + typ + '-projekt</h3></div>';
-                    html2 += '<div class="modal-body">';
-                    var _p = S.state.player;
-                    for (var pr of projs) {
-                        var _isBost = (pr.typ === 'Hyresrätt');
-                        var _yld = _isBost ? (_p.f4_yield_bostader||4.0) : (_p.f4_yield_kommersiellt||5.0);
-                        var _dn = pr.driftnetto || 0;
-                        var _eklF = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0.90,'F':0.85}[(pr.energiklass||'C').toUpperCase()] || 1.0;
-                        var _mv = _yld > 0 ? Math.round((4 * _dn) / (_yld / 100) * _eklF) : 0;
-                        html2 += '<div class="modal-item" data-proj=\'' + JSON.stringify(pr).replace(/'/g,"&#39;") + '\'>';
-                        html2 += '<div class="item-name">' + pr.namn + '</div>';
-                        html2 += '<div class="item-detail">BTA: ' + pr.bta + ' | DN: ' + _dn + ' Mkr/kv | EK: ' + pr.energiklass + ' | <strong style="color:#27ae60">MV: ' + _mv + ' Mkr</strong></div>';
-                        html2 += '</div>';
-                    }
-                    html2 += '</div><button id="modal-cancel" class="btn-secondary" style="width:100%;padding:12px;margin-top:8px;border:none;border-radius:8px;cursor:pointer">Avbryt</button>';
-                    html2 += '</div></div>';
-                    mc.innerHTML = html2;
-                    mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
-                    mc.querySelectorAll('[data-proj]').forEach(function(pEl) {
-                        pEl.addEventListener('click', function() {
-                            var proj = JSON.parse(pEl.dataset.proj);
-                            var kopeskilling = parseFloat(prompt('Köpeskilling (Mkr):') || '0');
-                            if (!kopeskilling) { mc.innerHTML = ''; return; }
-                            var _step = S.state.step;
-                            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
-                            fasts.push({
-                                id: 'KOP-' + Date.now(), namn: proj.namn, typ: proj.typ, bta: proj.bta,
-                                anskaffning: kopeskilling, energiklass: proj.energiklass || 'D',
-                                driftnetto: proj.driftnetto || 0,
-                                marknadsvarde: kopeskilling, events: [], sold: false, kopeskilling: kopeskilling
-                            });
-                            // Track market slot used this quarter
-                            var _mktBought = Object.assign({}, S.state.player.f4_market_bought || {});
-                            _mktBought[_step] = (_mktBought[_step] || 0) + 1;
-                            send({ type: 'update_assets', assets: {
-                                fastigheter: fasts,
-                                eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling,
-                                f4_market_bought: _mktBought
-                            }});
-                            // Draw DD-kort
-                            showDDKortModal(proj.namn, kopeskilling);
-                        });
+            mc.querySelectorAll('[data-proj]').forEach(function(pEl) {
+                pEl.addEventListener('click', function() {
+                    var proj = JSON.parse(pEl.dataset.proj);
+                    var kopeskilling = parseFloat(prompt('K\u00f6peskilling (Mkr):') || '0');
+                    if (!kopeskilling) { mc.innerHTML = ''; return; }
+                    var _step = S.state.step;
+                    var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+                    fasts.push({
+                        id: 'KOP-' + Date.now(), namn: proj.namn, typ: proj.typ, bta: proj.bta,
+                        anskaffning: kopeskilling, energiklass: proj.energiklass || 'D',
+                        driftnetto: proj.driftnetto || 0,
+                        marknadsvarde: kopeskilling, events: [], sold: false, kopeskilling: kopeskilling
                     });
+                    var _mktBought = Object.assign({}, S.state.player.f4_market_bought || {});
+                    _mktBought[_step] = (_mktBought[_step] || 0) + 1;
+                    send({ type: 'update_assets', assets: {
+                        fastigheter: fasts,
+                        eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling,
+                        f4_market_bought: _mktBought
+                    }});
+                    showDDKortModal(proj.namn, kopeskilling);
                 });
             });
         });
