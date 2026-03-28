@@ -54,6 +54,7 @@ class Project:
     namndbeslut: int
     energiklass: str
     driftnetto: float
+    beskrivning: str = ""
     # Supplier requirements: type -> min level description
     supplier_reqs: Dict[str, str] = field(default_factory=dict)
     # Competency requirements
