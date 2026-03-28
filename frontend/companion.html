@@ -323,6 +323,7 @@ if (location.pathname.endsWith('/gm')) {
 
 // ── WebSocket ──
 var _wsRetries = 0;
+var _wsSendQueue = []; // Buffer for messages sent while WS is not OPEN
 function connectWs(code, playerId) {
     // Close any existing connection
     if (S.ws) {
@@ -333,12 +334,27 @@ function connectWs(code, playerId) {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${proto}//${location.host}/companion/ws/${code}/${playerId}`;
     const ws = new WebSocket(url);
-    ws.onopen = () => { console.log('WS connected'); _wsRetries = 0; };
+    ws.onopen = () => {
+        console.log('WS connected');
+        _wsRetries = 0;
+        // Flush any messages queued while WS was down
+        var queued = _wsSendQueue.splice(0);
+        queued.forEach(function(msg) {
+            try { ws.send(JSON.stringify(msg)); } catch(e) {}
+        });
+    };
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.type === 'state') {
-            S.state = data.state;
-            render();
+            var plc = data.state && data.state.player ? data.state.player.pl_choices : (data.state ? '(GM state)' : null);
+            console.log('WS STATE rx, pl_choices:', JSON.stringify(plc), 'queue:', _wsSendQueue.length);
+            // Only update state if we have no pending (unacknowledged) sends
+            if (_wsSendQueue.length === 0) {
+                S.state = data.state;
+                render();
+            } else {
+                console.warn('WS STATE skipped (queue not empty)');
+            }
         }
     };
     ws.onclose = (e) => {
@@ -358,7 +374,9 @@ function send(data) {
     if (S.ws && S.ws.readyState === WebSocket.OPEN) {
         S.ws.send(JSON.stringify(data));
     } else {
-        console.warn('WS not open, message dropped');
+        // Queue message to send when WS reconnects
+        _wsSendQueue.push(data);
+        console.warn('WS not open, message queued (queue length:', _wsSendQueue.length, ')');
     }
 }
 
@@ -2054,7 +2072,8 @@ function openPlanningModal(stepId) {
         el.addEventListener('click', function() {
             var idx = parseInt(el.dataset.idx);
             var lv = levels[idx];
-            var cost = isSupplier ? (lv.kostnad || lv.klass_priser?.C || 0) : (lv.kostnad_mkr || lv.kostnad || 0);
+            if (!lv) { console.error('PL: no level at idx', idx); return; }
+            var cost = isSupplier ? (lv.kostnad || (lv.klass_priser && lv.klass_priser.C) || 0) : (lv.kostnad_mkr || lv.kostnad || 0);
             var choices = Object.assign({}, S.state.player.pl_choices || {});
             choices[stepId] = {
                 name: stepDef.name, niva: lv.niva,
@@ -2062,8 +2081,13 @@ function openPlanningModal(stepId) {
                 erf: lv.erfarenhet || 0, cost: cost,
                 rb: lv.riskbuffert || 0,
             };
-            send({ type: 'update_assets', assets: { pl_choices: choices } });
+            console.log('PL SELECT:', stepId, 'niva', lv.niva, 'choices now:', JSON.stringify(choices));
+            // Optimistic update — apply immediately so choice appears without waiting for WS roundtrip
+            S.state.player.pl_choices = choices;
             mc.innerHTML = '';
+            render();
+            console.log('PL after render, pl_choices:', JSON.stringify(S.state.player.pl_choices));
+            send({ type: 'update_assets', assets: { pl_choices: choices } });
         });
     });
     mc.querySelector('#modal-cancel').addEventListener('click', function() { mc.innerHTML = ''; });
@@ -2426,14 +2450,16 @@ document.getElementById('btn-prev-step').addEventListener('click', () => {
 
 // GM Reset
 var _resetBtn = document.getElementById('btn-gm-reset');
-if (_resetBtn) _resetBtn.addEventListener('click', () => {
+if (_resetBtn) _resetBtn.addEventListener('click', async () => {
     if (!confirm('Vill du nollställa hela sessionen? Alla spelare kopplas bort och all data raderas.')) return;
     if (!confirm('Är du säker? Detta kan inte ångras.')) return;
-    try { send({ type: 'reset_room' }); } catch(e) {}
-    sessionStorage.removeItem('companion_session');
-    S.view = null; S.roomCode = null; S.playerId = null; S.isGM = false;
+    const code = S.roomCode, gmId = S.playerId;
     if (S.ws) { try { S.ws.close(); } catch(e) {} S.ws = null; }
-    window.location.href = '/companion';
+    sessionStorage.removeItem('pmopoly_companion');
+    try {
+        await fetch('/api/companion/rooms/' + code + '?gm_id=' + gmId, { method: 'DELETE' });
+    } catch(e) {}
+    window.location.href = '/companion/gm';
 });
 
 // GM Finish Game

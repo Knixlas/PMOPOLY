@@ -326,13 +326,13 @@ class CompanionPlayer:
             fv = sum(f.get("marknadsvarde", f.get("anskaffning", 0)) for f in owned)
             bta = sum(f.get("bta", 0) for f in owned)
             ek = self.eget_kapital
-            tb = self._calc_tb()
+            tb = self._calc_tb
         elif self.projects:
             # Phase 1-3: project-based estimate
             fv = sum(p.get("marknadsvarde", p.get("anskaffning", 0)) for p in self.projects)
             bta = sum(p.get("bta", 0) for p in self.projects)
             ek = self.eget_kapital
-            tb = self._calc_tb() if self.pl_choices else 0
+            tb = self._calc_tb if self.pl_choices else 0
             # Phase 1 bonus: lower Q/H = less risk
             if not self.pl_choices:
                 risk_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
@@ -716,7 +716,10 @@ class CompanionManager:
                     await ws.send_json({"type": "state", "state": room.to_dict()})
                 else:
                     await ws.send_json({"type": "state", "state": room.player_state(pid)})
-            except Exception:
+            except Exception as exc:
+                import traceback
+                print(f"BROADCAST ERROR for {pid}: {exc}")
+                traceback.print_exc()
                 conns.pop(pid, None)
 
     async def handle_message(self, code: str, player_id: str, data: dict):

@@ -169,6 +169,25 @@ async def companion_create_room(body: dict):
     return {"code": room.code, "gm_id": gm_id}
 
 
+@app.delete("/api/companion/rooms/{code}")
+async def companion_delete_room(code: str, gm_id: str):
+    room = companion_manager.get_room(code)
+    if not room:
+        return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
+    if room.gm_id != gm_id:
+        return JSONResponse({"error": "Inte behörig"}, status_code=403)
+    # Close all WS connections and delete room
+    conns = companion_manager.connections.get(code, {})
+    for ws in list(conns.values()):
+        try:
+            await ws.close(1000, "Session reset by GM")
+        except Exception:
+            pass
+    companion_manager.connections.pop(code, None)
+    companion_manager.rooms.pop(code, None)
+    return {"ok": True}
+
+
 @app.get("/api/companion/rooms/{code}")
 async def companion_get_room(code: str):
     room = companion_manager.get_room(code)
