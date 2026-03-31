@@ -2643,7 +2643,7 @@ function showQuizForm(existing) {
         for (let i = 0; i < opts.length; i++) {
             optionsHtml += '<div style="display:flex;gap:6px;margin-bottom:4px;align-items:center">' +
                 '<input type="radio" name="qf-correct" value="' + i + '"' + (q.correct === i ? ' checked' : '') + '>' +
-                '<input type="text" class="qf-opt" value="' + (opts[i] || '').replace(/"/g, '&quot;') + '" placeholder="Alternativ ' + (i+1) + '" style="flex:1">' +
+                '<input type="text" class="qf-opt" value="' + (opts[i] || '').replace(/"/g, '&quot;') + '" placeholder="Alternativ ' + (i+1) + '" style="flex:1;width:auto;min-width:0">' +
                 (i >= 2 ? '<span style="cursor:pointer;color:#e74c3c" class="qf-remove-opt">&#10005;</span>' : '') +
                 '</div>';
         }
@@ -2693,7 +2693,7 @@ function showQuizForm(existing) {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;gap:6px;margin-bottom:4px;align-items:center';
         row.innerHTML = '<input type="radio" name="qf-correct" value="' + count + '">' +
-            '<input type="text" class="qf-opt" placeholder="Alternativ ' + (count+1) + '" style="flex:1">' +
+            '<input type="text" class="qf-opt" placeholder="Alternativ ' + (count+1) + '" style="flex:1;width:auto;min-width:0">' +
             '<span style="cursor:pointer;color:#e74c3c" class="qf-remove-opt">&#10005;</span>';
         optsDiv.appendChild(row);
         wireRemoveOpts();
