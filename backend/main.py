@@ -394,6 +394,33 @@ async def companion_texts():
         return {"phases": []}
 
 
+@app.get("/api/companion/data/quiz")
+async def companion_quiz_data():
+    """Return quiz questions from JSON file."""
+    import json as _json
+    quiz_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "quiz_questions.json")
+    try:
+        with open(quiz_path, "r", encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return {"questions": [], "default_time_limit": 30, "default_points": 100}
+
+
+@app.get("/companion/quiz-dashboard/{code}")
+async def companion_quiz_dashboard(code: str):
+    """External quiz leaderboard dashboard."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "companion-quiz-dashboard.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+
+@app.get("/api/companion/quiz-leaderboard/{code}")
+async def companion_quiz_leaderboard(code: str):
+    room = companion_manager.get_room(code)
+    if not room:
+        return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
+    return room.quiz_leaderboard()
+
+
 @app.get("/api/companion/analytics/games")
 async def analytics_games():
     """List all logged games."""

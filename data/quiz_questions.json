@@ -1,0 +1,32 @@
+{
+  "default_time_limit": 30,
+  "default_points": 100,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Vad står ABT för?",
+      "type": "multiple_choice",
+      "options": ["Allmänna bestämmelser totalentreprenad", "Arbetsberedning tätskikt", "Anbudsberäkning tidplan"],
+      "correct": 0,
+      "time_limit": 20,
+      "points": 150
+    },
+    {
+      "id": "q2",
+      "text": "Hur många meter är en normalvåning?",
+      "type": "number",
+      "correct": 3,
+      "tolerance": 0.5,
+      "time_limit": 15,
+      "points": 100
+    },
+    {
+      "id": "q3",
+      "text": "Vad heter den vanligaste entreprenadjuridiska tvistlösningen?",
+      "type": "text",
+      "correct": ["skiljedom", "skiljenämnd"],
+      "time_limit": 30,
+      "points": 100
+    }
+  ]
+}

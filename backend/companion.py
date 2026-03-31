@@ -192,6 +192,62 @@ BLOCK_NAMES = [
 ]
 
 
+# ── Quiz helpers ──
+
+def _quiz_points(base_points: float, time_taken: float, time_limit: float) -> float:
+    """Calculate quiz points based on response time.
+    100% at ≤2s, linear decay to 1% at time_limit."""
+    if time_taken <= 2.0:
+        return base_points
+    if time_taken >= time_limit:
+        return round(base_points * 0.01, 1)
+    fraction = 1.0 - 0.99 * (time_taken - 2.0) / (time_limit - 2.0)
+    return round(base_points * max(fraction, 0.01), 1)
+
+
+def _check_answer(question: dict, answer) -> bool:
+    """Validate answer against question. Returns True if correct."""
+    q_type = question.get("type", "text")
+    correct = question.get("correct")
+
+    if q_type == "multiple_choice":
+        try:
+            return int(answer) == int(correct)
+        except (ValueError, TypeError):
+            return False
+    elif q_type == "number":
+        try:
+            tolerance = question.get("tolerance", 0)
+            return abs(float(answer) - float(correct)) <= tolerance
+        except (ValueError, TypeError):
+            return False
+    elif q_type == "text":
+        if not answer or not correct:
+            return False
+        answer_str = str(answer).strip().lower()
+        if isinstance(correct, list):
+            return any(answer_str == c.strip().lower() for c in correct)
+        return answer_str == str(correct).strip().lower()
+    return False
+
+
+@dataclass
+class QuizAnswer:
+    player_id: str
+    answer: object  # int for MC, float for number, str for text
+    correct: bool
+    time_taken: float
+    points_earned: float
+
+
+@dataclass
+class ActiveQuiz:
+    question: dict
+    sent_at: float
+    answers: Dict[str, QuizAnswer] = field(default_factory=dict)
+    closed: bool = False
+
+
 @dataclass
 class CompanionPlayer:
     id: str
@@ -463,6 +519,16 @@ class CompanionRoom:
     game_mode: str = "test"  # "test" or "serious"
     logger: Optional[object] = None  # GameLogger instance for serious games
     f4_omvarldskort: Dict[str, dict] = field(default_factory=dict)  # step_id -> drawn omvärldskort
+    # Quiz state
+    quiz_questions: List[dict] = field(default_factory=list)
+    quiz_active: Optional[ActiveQuiz] = None
+    quiz_history: List[dict] = field(default_factory=list)
+    quiz_scores: Dict[str, float] = field(default_factory=dict)
+    quiz_correct_counts: Dict[str, int] = field(default_factory=dict)
+    quiz_answer_times: Dict[str, List[float]] = field(default_factory=dict)
+    quiz_count_in_score: bool = False
+    quiz_questions_sent: List[str] = field(default_factory=list)
+    game_finalized: bool = False
 
     @property
     def current_phase(self):
@@ -515,15 +581,44 @@ class CompanionRoom:
         else:
             return "risk"
 
+    def quiz_leaderboard(self) -> dict:
+        """Quiz-specific leaderboard."""
+        all_p = [p for p in self.players.values() if not p.is_gm]
+        entries = []
+        for p in all_p:
+            q_score = self.quiz_scores.get(p.id, 0)
+            correct = self.quiz_correct_counts.get(p.id, 0)
+            times = self.quiz_answer_times.get(p.id, [])
+            avg_time = round(sum(times) / len(times), 1) if times else 0
+            q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
+            entries.append({
+                "id": p.id,
+                "name": p.name,
+                "block_name": p.block_name,
+                "district": q_name,
+                "quiz_points": round(q_score, 1),
+                "correct_answers": correct,
+                "total_answered": len(times),
+                "avg_time": avg_time,
+            })
+        entries.sort(key=lambda e: e["quiz_points"], reverse=True)
+        for i, e in enumerate(entries):
+            e["rank"] = i + 1
+        return {
+            "players": entries,
+            "total_questions_sent": len(self.quiz_questions_sent),
+            "quiz_count_in_score": self.quiz_count_in_score,
+        }
+
     def leaderboard(self) -> dict:
         """All players and districts ranked by profit_score."""
         all_p = [p for p in self.players.values() if not p.is_gm and p.projects]
-        ranked = sorted(all_p, key=lambda p: p.profit_score, reverse=True)
+        ranked = sorted(all_p, key=lambda p: p.profit_score + (self.quiz_scores.get(p.id, 0) if self.quiz_count_in_score else 0), reverse=True)
         total_players = len(ranked)
         players = []
         for i, p in enumerate(ranked):
             q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
-            score = p.profit_score
+            score = p.profit_score + (self.quiz_scores.get(p.id, 0) if self.quiz_count_in_score else 0)
             players.append({
                 "rank": i + 1,
                 "total_players": total_players,
@@ -587,6 +682,29 @@ class CompanionRoom:
             "game_mode": self.game_mode,
             "log_event_count": len(self.logger.events) if self.logger else 0,
             "f4_omvarldskort": self.f4_omvarldskort,
+            "game_finalized": self.game_finalized,
+            # Quiz state for GM
+            "quiz_count_in_score": self.quiz_count_in_score,
+            "quiz_scores": {pid: round(s, 1) for pid, s in self.quiz_scores.items()},
+            "quiz_questions_sent": self.quiz_questions_sent,
+            "quiz_questions": self.quiz_questions,
+            "quiz_history_count": len(self.quiz_history),
+            "quiz_active": {
+                "question": {k: v for k, v in self.quiz_active.question.items()},
+                "sent_at": self.quiz_active.sent_at,
+                "closed": self.quiz_active.closed,
+                "answers": {
+                    pid: {
+                        "player_name": self.players[pid].name if pid in self.players else "?",
+                        "correct": a.correct,
+                        "time_taken": round(a.time_taken, 1),
+                        "points_earned": round(a.points_earned, 1),
+                        "answer": a.answer,
+                    }
+                    for pid, a in self.quiz_active.answers.items()
+                },
+                "num_eligible": sum(1 for p in self.players.values() if not p.is_gm),
+            } if self.quiz_active else None,
         }
 
     def player_state(self, player_id: str) -> dict:
@@ -605,6 +723,14 @@ class CompanionRoom:
             "step_help": step.get("help", "") if step else "",
             "player": player.to_dict(),
             "f4_omvarldskort": self.f4_omvarldskort,
+            "game_finalized": self.game_finalized,
+            "quiz_score": round(self.quiz_scores.get(player_id, 0), 1),
+            "quiz_count_in_score": self.quiz_count_in_score,
+            "quiz_active_question": (
+                {k: v for k, v in self.quiz_active.question.items() if k != "correct"}
+                if self.quiz_active and not self.quiz_active.closed and player_id not in self.quiz_active.answers
+                else None
+            ),
         }
 
 
@@ -638,6 +764,22 @@ class CompanionManager:
                 "quarter_names": names,
                 "game_mode": game_mode,
             })
+        # Load quiz questions
+        quiz_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                 "data", "quiz_questions.json")
+        try:
+            with open(quiz_path, "r", encoding="utf-8") as f:
+                qdata = json.load(f)
+                room.quiz_questions = qdata.get("questions", [])
+                # Apply defaults
+                default_tl = qdata.get("default_time_limit", 30)
+                default_pts = qdata.get("default_points", 100)
+                for q in room.quiz_questions:
+                    q.setdefault("time_limit", default_tl)
+                    q.setdefault("points", default_pts)
+        except Exception:
+            room.quiz_questions = []
+
         gm = CompanionPlayer(id=gm_id, name="Game Master", quarter_idx=-1, is_gm=True)
         room.players[gm_id] = gm
         self.rooms[code] = room
@@ -799,6 +941,7 @@ class CompanionManager:
             # Snapshot all players, then finalize
             room.logger.snapshot(room)
             room.logger.finalize(room)
+            room.game_finalized = True
             await self.broadcast_state(room)
 
         elif msg_type == "rename_quarter" and player.is_gm:
@@ -927,6 +1070,111 @@ class CompanionManager:
                 await self.send_to(code, player_id, {"type": "state", "state": room.to_dict()})
             else:
                 await self.send_to(code, player_id, {"type": "state", "state": room.player_state(player_id)})
+
+        # ── Quiz handlers ──
+
+        elif msg_type == "quiz_send" and player.is_gm:
+            question_id = data.get("question_id")
+            if room.quiz_active:
+                return  # Already a question active
+            question = next((q for q in room.quiz_questions if q["id"] == question_id), None)
+            if not question:
+                return
+            room.quiz_active = ActiveQuiz(question=question, sent_at=time.time())
+            room.quiz_questions_sent.append(question_id)
+            # Send question to all players (strip correct answer)
+            safe_q = {k: v for k, v in question.items() if k not in ("correct", "tolerance")}
+            safe_q["time_limit"] = question.get("time_limit", 30)
+            safe_q["points"] = question.get("points", 100)
+            await self.broadcast(code, {"type": "quiz_question", "question": safe_q})
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_answer" and not player.is_gm:
+            if not room.quiz_active or room.quiz_active.closed:
+                return
+            if player_id in room.quiz_active.answers:
+                return  # Already answered
+            answer = data.get("answer")
+            time_taken = time.time() - room.quiz_active.sent_at
+            question = room.quiz_active.question
+            correct = _check_answer(question, answer)
+            time_limit = question.get("time_limit", 30)
+            base_points = question.get("points", 100)
+            points = _quiz_points(base_points, time_taken, time_limit) if correct else 0
+            qa = QuizAnswer(player_id=player_id, answer=answer, correct=correct,
+                            time_taken=time_taken, points_earned=points)
+            room.quiz_active.answers[player_id] = qa
+            # Update cumulative scores
+            room.quiz_scores[player_id] = room.quiz_scores.get(player_id, 0) + points
+            room.quiz_correct_counts[player_id] = room.quiz_correct_counts.get(player_id, 0) + (1 if correct else 0)
+            room.quiz_answer_times.setdefault(player_id, []).append(time_taken)
+            # Send feedback to answering player (no correct answer revealed yet)
+            await self.send_to(code, player_id, {
+                "type": "quiz_feedback",
+                "correct": correct,
+                "points_earned": round(points, 1),
+                "time_taken": round(time_taken, 1),
+            })
+            # Update GM with results
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_close" and player.is_gm:
+            if not room.quiz_active:
+                return
+            room.quiz_active.closed = True
+            question = room.quiz_active.question
+            # Archive to history
+            room.quiz_history.append({
+                "question_id": question["id"],
+                "question_text": question["text"],
+                "correct_answer": question.get("correct"),
+                "num_answered": len(room.quiz_active.answers),
+                "num_correct": sum(1 for a in room.quiz_active.answers.values() if a.correct),
+            })
+            # Broadcast correct answer to all players
+            correct_answer = question.get("correct")
+            correct_display = correct_answer
+            if question.get("type") == "multiple_choice" and isinstance(correct_answer, int):
+                options = question.get("options", [])
+                correct_display = options[correct_answer] if correct_answer < len(options) else correct_answer
+            elif isinstance(correct_answer, list):
+                correct_display = correct_answer[0] if correct_answer else ""
+            await self.broadcast(code, {
+                "type": "quiz_closed",
+                "correct_answer": correct_display,
+                "question_text": question["text"],
+            })
+            room.quiz_active = None
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_toggle_score" and player.is_gm:
+            room.quiz_count_in_score = not room.quiz_count_in_score
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_add" and player.is_gm:
+            question = data.get("question")
+            if question and isinstance(question, dict):
+                # Generate ID if not provided
+                if not question.get("id"):
+                    question["id"] = f"q_{uuid.uuid4().hex[:6]}"
+                room.quiz_questions.append(question)
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_edit" and player.is_gm:
+            question_id = data.get("question_id")
+            updates = data.get("question", {})
+            for i, q in enumerate(room.quiz_questions):
+                if q["id"] == question_id:
+                    room.quiz_questions[i].update(updates)
+                    room.quiz_questions[i]["id"] = question_id  # Prevent ID change
+                    break
+            await self.broadcast_state(room)
+
+        elif msg_type == "quiz_delete" and player.is_gm:
+            question_id = data.get("question_id")
+            if question_id not in room.quiz_questions_sent:
+                room.quiz_questions = [q for q in room.quiz_questions if q["id"] != question_id]
+            await self.broadcast_state(room)
 
 
 companion_manager = CompanionManager()

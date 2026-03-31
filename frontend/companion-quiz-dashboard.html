@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMOPOLY — Quiz Resultat</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; padding: 20px; }
+h1 { color: #f0c929; text-align: center; font-size: 28px; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 20px; }
+.stats-bar { text-align: center; margin-bottom: 20px; padding: 10px; background: #1a2736; border-radius: 10px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.stat-item { text-align: center; }
+.stat-item .val { color: #f0c929; font-size: 22px; font-weight: 900; }
+.stat-item .lbl { color: #888; font-size: 11px; text-transform: uppercase; }
+
+.leaderboard { max-width: 800px; margin: 0 auto; }
+.lb-entry { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 6px; border-radius: 10px; background: #1a2736; }
+.lb-entry.lb-gold { border-left: 4px solid #f0c929; background: #1f2d3d; }
+.lb-entry.lb-silver { border-left: 4px solid #bdc3c7; }
+.lb-entry.lb-bronze { border-left: 4px solid #cd7f32; }
+.lb-rank { font-size: 22px; font-weight: 900; min-width: 36px; text-align: center; }
+.lb-entry.lb-gold .lb-rank { font-size: 28px; color: #f0c929; }
+.lb-entry.lb-silver .lb-rank { color: #bdc3c7; }
+.lb-entry.lb-bronze .lb-rank { color: #cd7f32; }
+.lb-info { flex: 1; }
+.lb-name { font-size: 16px; font-weight: 700; }
+.lb-detail { font-size: 12px; color: #888; margin-top: 2px; }
+.lb-score { text-align: right; }
+.lb-score-val { font-size: 22px; font-weight: 900; color: #f0c929; }
+.lb-score-label { font-size: 11px; color: #888; }
+.lb-bar-bg { width: 100px; height: 8px; background: #0f1923; border-radius: 4px; margin-top: 4px; }
+.lb-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #27ae60, #f0c929); }
+.lb-medal { font-size: 18px; margin-right: 4px; }
+
+.refresh-note { text-align: center; color: #555; font-size: 12px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>PMOPOLY</h1>
+<div class="subtitle">Quiz Resultat</div>
+<div class="stats-bar" id="db-stats">
+    <div class="stat-item"><div class="val" id="db-total-q">0</div><div class="lbl">Frågor</div></div>
+    <div class="stat-item"><div class="val" id="db-total-p">0</div><div class="lbl">Spelare</div></div>
+    <div class="stat-item"><div class="val" id="db-score-mode">—</div><div class="lbl">Räknas i total</div></div>
+</div>
+<div class="leaderboard" id="db-leaderboard"></div>
+<div class="refresh-note">Uppdateras var 5:e sekund</div>
+
+<script>
+const code = window.location.pathname.split('/').pop();
+
+async function refresh() {
+    try {
+        const res = await fetch(`/api/companion/quiz-leaderboard/${code}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('db-total-q').textContent = data.total_questions_sent || 0;
+        document.getElementById('db-total-p').textContent = (data.players || []).length;
+        document.getElementById('db-score-mode').textContent = data.quiz_count_in_score ? 'Ja' : 'Nej';
+
+        const players = data.players || [];
+        const maxScore = Math.max(1, ...players.map(e => e.quiz_points));
+        let html = '';
+        for (const e of players) {
+            const barW = Math.round((e.quiz_points / maxScore) * 100);
+            var medals = {1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49'};
+            var medal = medals[e.rank] || '';
+            var topClass = e.rank === 1 ? 'lb-gold' : (e.rank === 2 ? 'lb-silver' : (e.rank === 3 ? 'lb-bronze' : ''));
+
+            html += `<div class="lb-entry ${topClass}">
+                <div class="lb-rank">${medal || e.rank}</div>
+                <div class="lb-info">
+                    <div class="lb-name">${e.block_name || e.name}</div>
+                    <div class="lb-detail">${e.district} | ${e.correct_answers}/${e.total_answered} rätt | snitt ${e.avg_time}s</div>
+                </div>
+                <div class="lb-score">
+                    <div class="lb-score-val">${e.quiz_points}</div>
+                    <div class="lb-score-label">#${e.rank} av ${players.length}</div>
+                    <div class="lb-bar-bg"><div class="lb-bar" style="width:${barW}%"></div></div>
+                </div>
+            </div>`;
+        }
+        if (players.length === 0) html = '<div style="text-align:center;color:#666;padding:20px">Inga quizsvar ännu...</div>';
+        document.getElementById('db-leaderboard').innerHTML = html;
+    } catch (e) {}
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
