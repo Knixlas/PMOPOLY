@@ -421,6 +421,69 @@ async def companion_quiz_leaderboard(code: str):
     return room.quiz_leaderboard()
 
 
+@app.get("/api/companion/quiz-setups")
+async def list_quiz_setups():
+    """List all saved quiz setups."""
+    import json as _json
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "quiz_setups")
+    os.makedirs(setups_dir, exist_ok=True)
+    setups = []
+    for fname in sorted(os.listdir(setups_dir)):
+        if not fname.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(setups_dir, fname), "r", encoding="utf-8") as f:
+                data = _json.load(f)
+            setups.append({"name": data.get("name", fname[:-5]), "num_questions": len(data.get("questions", []))})
+        except Exception:
+            continue
+    return {"setups": setups}
+
+
+@app.post("/api/companion/quiz-setups")
+async def save_quiz_setup(body: dict):
+    """Save a quiz setup by name."""
+    import json as _json, re
+    name = str(body.get("name", "")).strip()
+    questions = body.get("questions", [])
+    if not name:
+        return JSONResponse({"error": "Namn krävs"}, status_code=400)
+    safe_name = re.sub(r'[^\w\- ]', '', name)[:40].strip()
+    if not safe_name:
+        return JSONResponse({"error": "Ogiltigt namn"}, status_code=400)
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "quiz_setups")
+    os.makedirs(setups_dir, exist_ok=True)
+    fpath = os.path.join(setups_dir, safe_name + ".json")
+    with open(fpath, "w", encoding="utf-8") as f:
+        _json.dump({"name": name, "questions": questions}, f, ensure_ascii=False, indent=2)
+    return {"ok": True, "name": name}
+
+
+@app.delete("/api/companion/quiz-setups/{name}")
+async def delete_quiz_setup(name: str):
+    """Delete a quiz setup."""
+    import re
+    safe_name = re.sub(r'[^\w\- ]', '', name)[:40].strip()
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "quiz_setups")
+    fpath = os.path.join(setups_dir, safe_name + ".json")
+    if os.path.exists(fpath):
+        os.remove(fpath)
+    return {"ok": True}
+
+
+@app.get("/api/companion/quiz-setups/{name}")
+async def load_quiz_setup(name: str):
+    """Load a quiz setup by name."""
+    import json as _json, re
+    safe_name = re.sub(r'[^\w\- ]', '', name)[:40].strip()
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "quiz_setups")
+    fpath = os.path.join(setups_dir, safe_name + ".json")
+    if not os.path.exists(fpath):
+        return JSONResponse({"error": "Setup hittades inte"}, status_code=404)
+    with open(fpath, "r", encoding="utf-8") as f:
+        return _json.load(f)
+
+
 @app.get("/api/companion/analytics/games")
 async def analytics_games():
     """List all logged games."""

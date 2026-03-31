@@ -1176,5 +1176,19 @@ class CompanionManager:
                 room.quiz_questions = [q for q in room.quiz_questions if q["id"] != question_id]
             await self.broadcast_state(room)
 
+        elif msg_type == "quiz_load_setup" and player.is_gm:
+            questions = data.get("questions", [])
+            default_tl = data.get("default_time_limit", 30)
+            default_pts = data.get("default_points", 100)
+            # Merge: keep unsent existing questions, add new ones, skip duplicates by id
+            existing_ids = {q["id"] for q in room.quiz_questions}
+            for q in questions:
+                q.setdefault("time_limit", default_tl)
+                q.setdefault("points", default_pts)
+                if q.get("id") and q["id"] not in existing_ids:
+                    room.quiz_questions.append(q)
+                    existing_ids.add(q["id"])
+            await self.broadcast_state(room)
+
 
 companion_manager = CompanionManager()

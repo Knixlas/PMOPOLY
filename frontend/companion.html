@@ -173,10 +173,12 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1923; colo
 .quiz-result-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; border-bottom: 1px solid #243447; }
 .quiz-form { background: #1a2736; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
 .quiz-form label { display: block; color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; margin-top: 10px; }
-.quiz-form input, .quiz-form select, .quiz-form textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334; background: #0f1923; color: #e0e0e0; font-size: 14px; }
+.quiz-form input:not([type="radio"]), .quiz-form select, .quiz-form textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334; background: #0f1923; color: #e0e0e0; font-size: 14px; }
+.quiz-form input[type="radio"] { width: auto; padding: 0; border: none; background: transparent; flex-shrink: 0; }
 .quiz-form textarea { min-height: 60px; resize: vertical; }
 .quiz-form .form-row { display: flex; gap: 8px; }
 .quiz-form .form-row > * { flex: 1; }
+input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
 </style>
 </head>
 <body>
@@ -2542,14 +2544,14 @@ function renderGMQuiz(st) {
     let html = '';
 
     // Controls row
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">';
-    html += '<div style="display:flex;align-items:center;gap:12px">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">';
     html += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">';
     html += '<input type="checkbox" id="quiz-score-toggle"' + (st.quiz_count_in_score ? ' checked' : '') + '> Räkna quiz i totalresultat</label>';
-    html += '</div>';
-    html += '<div style="display:flex;gap:8px">';
-    html += '<a href="/companion/quiz-dashboard/' + st.code + '" target="_blank" style="color:#4db8ff;font-size:13px">Quiz Dashboard</a>';
-    html += '<button class="btn-secondary" id="quiz-add-btn" style="padding:6px 12px;font-size:12px">+ Ny fråga</button>';
+    html += '<div style="display:flex;gap:8px;align-items:center">';
+    html += '<a href="/companion/quiz-dashboard/' + st.code + '" target="_blank" style="color:#4db8ff;font-size:13px">Dashboard</a>';
+    html += '<button class="btn-secondary" id="quiz-setup-load-btn" style="padding:6px 10px;font-size:12px">Ladda setup</button>';
+    html += '<button class="btn-secondary" id="quiz-setup-save-btn" style="padding:6px 10px;font-size:12px">Spara setup</button>';
+    html += '<button class="btn-secondary" id="quiz-add-btn" style="padding:6px 10px;font-size:12px">+ Ny fråga</button>';
     html += '</div></div>';
 
     // Active question panel
@@ -2611,6 +2613,31 @@ function renderGMQuiz(st) {
     container.querySelector('#quiz-add-btn')?.addEventListener('click', () => {
         showQuizForm(null);
     });
+    container.querySelector('#quiz-setup-save-btn')?.addEventListener('click', async () => {
+        const name = prompt('Namn på setup:');
+        if (!name || !name.trim()) return;
+        const questions = st.quiz_questions || [];
+        if (!questions.length) { alert('Inga frågor att spara.'); return; }
+        try {
+            const res = await fetch('/api/companion/quiz-setups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name.trim(), questions })
+            });
+            const data = await res.json();
+            if (data.ok) alert('Setup "' + name.trim() + '" sparad!');
+            else alert('Fel: ' + (data.error || 'Okänt'));
+        } catch(e) { alert('Kunde inte spara setup.'); }
+    });
+    container.querySelector('#quiz-setup-load-btn')?.addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/companion/quiz-setups');
+            const data = await res.json();
+            const setups = data.setups || [];
+            if (!setups.length) { alert('Inga sparade setups.'); return; }
+            showSetupLoadModal(setups);
+        } catch(e) { alert('Kunde inte hämta setups.'); }
+    });
     container.querySelectorAll('.quiz-send-btn:not([disabled])').forEach(btn => {
         btn.addEventListener('click', () => {
             send({ type: 'quiz_send', question_id: btn.dataset.qid });
@@ -2627,6 +2654,48 @@ function renderGMQuiz(st) {
             if (confirm('Ta bort frågan?')) {
                 send({ type: 'quiz_delete', question_id: btn.dataset.qid });
             }
+        });
+    });
+}
+
+function showSetupLoadModal(setups) {
+    const mc = document.getElementById('modal-container');
+    let rows = setups.map(s =>
+        '<div class="modal-item" style="display:flex;justify-content:space-between;align-items:center">' +
+        '<div><div class="item-name">' + s.name + '</div>' +
+        '<div class="item-detail">' + s.num_questions + ' frågor</div></div>' +
+        '<div style="display:flex;gap:6px">' +
+        '<button class="btn-primary setup-load" data-name="' + s.name + '" style="padding:6px 12px;font-size:13px">Ladda</button>' +
+        '<button class="btn-secondary setup-del" data-name="' + s.name + '" style="padding:6px 10px;font-size:13px;color:#e74c3c">&#10005;</button>' +
+        '</div></div>'
+    ).join('');
+    mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
+        '<div class="modal-header"><h3>Ladda setup</h3></div>' +
+        '<div class="modal-body">' + rows + '</div>' +
+        '<div class="modal-footer"><button class="btn-secondary" id="setup-modal-close">Stäng</button></div>' +
+        '</div></div>';
+    mc.querySelector('#setup-modal-close').addEventListener('click', () => { mc.innerHTML = ''; });
+    mc.querySelector('.modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) mc.innerHTML = ''; });
+    mc.querySelectorAll('.setup-load').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const name = btn.dataset.name;
+            try {
+                const res = await fetch('/api/companion/quiz-setups/' + encodeURIComponent(name));
+                const data = await res.json();
+                if (data.questions) {
+                    send({ type: 'quiz_load_setup', questions: data.questions,
+                           default_time_limit: data.default_time_limit || 30,
+                           default_points: data.default_points || 100 });
+                    mc.innerHTML = '';
+                } else { alert('Kunde inte ladda setup.'); }
+            } catch(e) { alert('Fel vid laddning.'); }
+        });
+    });
+    mc.querySelectorAll('.setup-del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Ta bort setup "' + btn.dataset.name + '"?')) return;
+            await fetch('/api/companion/quiz-setups/' + encodeURIComponent(btn.dataset.name), { method: 'DELETE' });
+            btn.closest('.modal-item').remove();
         });
     });
 }
