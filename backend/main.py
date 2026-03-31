@@ -165,8 +165,79 @@ async def companion_gm():
 @app.post("/api/companion/rooms")
 async def companion_create_room(body: dict):
     num_quarters = int(body.get("num_quarters", 4))
-    room, gm_id = companion_manager.create_room(num_quarters)
+    game_mode = body.get("game_mode", "test")
+    quarter_names = body.get("quarter_names")       # Optional: from saved setup
+    quarter_codes = body.get("quarter_codes")       # Optional: from saved setup
+    quiz_questions = body.get("quiz_questions")     # Optional: from saved setup
+    room, gm_id = companion_manager.create_room(
+        num_quarters, game_mode,
+        quarter_names=quarter_names,
+        quarter_codes=quarter_codes,
+        quiz_questions=quiz_questions,
+    )
     return {"code": room.code, "gm_id": gm_id}
+
+
+@app.get("/api/companion/room-setups")
+async def list_room_setups():
+    """List all saved room setups."""
+    import json as _json
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "room_setups")
+    os.makedirs(setups_dir, exist_ok=True)
+    setups = []
+    for fname in sorted(os.listdir(setups_dir)):
+        if not fname.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(setups_dir, fname), "r", encoding="utf-8") as f:
+                data = _json.load(f)
+            setups.append({
+                "name": data.get("name", fname[:-5]),
+                "num_quarters": data.get("num_quarters", 0),
+                "quarter_names": data.get("quarter_names", []),
+                "quarter_codes": data.get("quarter_codes", []),
+                "num_questions": len(data.get("quiz_questions", [])),
+                "game_mode": data.get("game_mode", "test"),
+            })
+        except Exception:
+            continue
+    return {"setups": setups}
+
+
+@app.post("/api/companion/room-setups")
+async def save_room_setup(body: dict):
+    """Save a room setup (from an active room)."""
+    import json as _json, re
+    name = str(body.get("name", "")).strip()
+    if not name:
+        return JSONResponse({"error": "Namn krävs"}, status_code=400)
+    safe_name = re.sub(r'[^\w\- ]', '', name)[:40].strip()
+    if not safe_name:
+        return JSONResponse({"error": "Ogiltigt namn"}, status_code=400)
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "room_setups")
+    os.makedirs(setups_dir, exist_ok=True)
+    fpath = os.path.join(setups_dir, safe_name + ".json")
+    with open(fpath, "w", encoding="utf-8") as f:
+        _json.dump({
+            "name": name,
+            "num_quarters": body.get("num_quarters", 4),
+            "quarter_names": body.get("quarter_names", []),
+            "quarter_codes": body.get("quarter_codes", []),
+            "game_mode": body.get("game_mode", "test"),
+            "quiz_questions": body.get("quiz_questions", []),
+        }, f, ensure_ascii=False, indent=2)
+    return {"ok": True, "name": name}
+
+
+@app.delete("/api/companion/room-setups/{name}")
+async def delete_room_setup(name: str):
+    import re
+    safe_name = re.sub(r'[^\w\- ]', '', name)[:40].strip()
+    setups_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "room_setups")
+    fpath = os.path.join(setups_dir, safe_name + ".json")
+    if os.path.exists(fpath):
+        os.remove(fpath)
+    return {"ok": True}
 
 
 @app.delete("/api/companion/rooms/{code}")

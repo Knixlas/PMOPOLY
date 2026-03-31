@@ -204,7 +204,9 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
     <div class="lobby-card">
         <h2>Skapa stadsdelar</h2>
         <input type="number" id="gm-num-districts" value="4" min="1" max="20" placeholder="Antal stadsdelar">
-        <button class="btn-primary" id="btn-create-room">Skapa stadsdelar</button>
+        <button class="btn-primary" id="btn-create-room">Skapa nytt rum</button>
+        <div class="or-divider">— eller —</div>
+        <button class="btn-secondary" id="btn-load-room-setup">Ladda sparad setup</button>
     </div>
 </div>
 
@@ -226,6 +228,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
         <div>
             <div style="color:#555;font-size:10px">GM-session: <span id="gm-room-code" style="letter-spacing:2px">—</span>
                 <span id="btn-gm-reset" style="cursor:pointer;color:#e74c3c;margin-left:16px;font-size:11px;text-decoration:underline">Nollställ</span>
+                <span id="btn-gm-save-setup" style="cursor:pointer;color:#27ae60;margin-left:16px;font-size:11px;text-decoration:underline">💾 Spara setup</span>
             </div>
         </div>
         <div class="gm-controls">
@@ -669,6 +672,99 @@ document.getElementById('btn-create-room').addEventListener('click', async () =>
     await loadReferenceData();
     connectWs(data.code, data.gm_id);
     showView('view-gm');
+});
+
+// Load room setup button (GM lobby)
+document.getElementById('btn-load-room-setup').addEventListener('click', async () => {
+    try {
+        const res = await fetch('/api/companion/room-setups');
+        const data = await res.json();
+        const setups = data.setups || [];
+        if (!setups.length) { alert('Inga sparade setups. Spara en setup inifrån ett aktivt rum.'); return; }
+        showRoomSetupLoadModal(setups);
+    } catch(e) { alert('Kunde inte hämta setups.'); }
+});
+
+async function createRoomFromSetup(setup) {
+    const res = await fetch('/api/companion/rooms', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            num_quarters: setup.num_quarters,
+            game_mode: setup.game_mode || 'test',
+            quarter_names: setup.quarter_names,
+            quarter_codes: setup.quarter_codes,
+            quiz_questions: setup.quiz_questions || [],
+        }),
+    });
+    const data = await res.json();
+    S.roomCode = data.code;
+    S.playerId = data.gm_id;
+    S.isGM = true;
+    saveSession();
+    await loadReferenceData();
+    connectWs(data.code, data.gm_id);
+    showView('view-gm');
+}
+
+function showRoomSetupLoadModal(setups) {
+    const mc = document.getElementById('modal-container');
+    let rows = setups.map(s =>
+        '<div class="modal-item" style="display:flex;justify-content:space-between;align-items:center" data-name="' + s.name + '">' +
+        '<div>' +
+        '<div class="item-name">' + s.name + '</div>' +
+        '<div class="item-detail">' + s.num_quarters + ' stadsdelar | ' + s.num_questions + ' frågor | ' + (s.game_mode === 'serious' ? 'Serös' : 'Test') + '</div>' +
+        '<div class="item-detail" style="margin-top:2px;color:#4db8ff;font-size:11px">Koder: ' + (s.quarter_codes || []).join(', ') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+        '<button class="btn-primary room-setup-load" data-idx="' + setups.indexOf(s) + '" style="padding:6px 12px;font-size:13px">Ladda</button>' +
+        '<button class="btn-secondary room-setup-del" data-name="' + s.name + '" style="padding:6px 10px;font-size:13px;color:#e74c3c">✕</button>' +
+        '</div></div>'
+    ).join('');
+    mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
+        '<div class="modal-header"><h3>Välj setup</h3></div>' +
+        '<div class="modal-body">' + rows + '</div>' +
+        '<div class="modal-footer"><button class="btn-secondary" id="room-setup-modal-close">Stäng</button></div>' +
+        '</div></div>';
+    mc.querySelector('#room-setup-modal-close').addEventListener('click', () => { mc.innerHTML = ''; });
+    mc.querySelector('.modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) mc.innerHTML = ''; });
+    mc.querySelectorAll('.room-setup-load').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const s = setups[parseInt(btn.dataset.idx)];
+            mc.innerHTML = '';
+            createRoomFromSetup(s);
+        });
+    });
+    mc.querySelectorAll('.room-setup-del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Ta bort setup "' + btn.dataset.name + '"?')) return;
+            await fetch('/api/companion/room-setups/' + encodeURIComponent(btn.dataset.name), { method: 'DELETE' });
+            btn.closest('.modal-item').remove();
+        });
+    });
+}
+
+// Save room setup (from active GM session)
+document.getElementById('btn-gm-save-setup').addEventListener('click', async () => {
+    const st = S.state;
+    if (!st) return;
+    const name = prompt('Namn på setup:');
+    if (!name || !name.trim()) return;
+    try {
+        const res = await fetch('/api/companion/room-setups', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: name.trim(),
+                num_quarters: st.num_quarters,
+                quarter_names: st.quarter_names,
+                quarter_codes: st.quarter_codes,
+                game_mode: st.game_mode,
+                quiz_questions: st.quiz_questions || [],
+            }),
+        });
+        const data = await res.json();
+        if (data.ok) alert('Setup "' + name.trim() + '" sparad!\n\nKvarterKoder: ' + st.quarter_codes.join(', '));
+        else alert('Fel: ' + (data.error || 'Okänt'));
+    } catch(e) { alert('Kunde inte spara setup.'); }
 });
 
 document.getElementById('btn-join-quarter').addEventListener('click', async () => {

@@ -741,19 +741,36 @@ class CompanionManager:
         self.rooms: Dict[str, CompanionRoom] = {}
         self.connections: Dict[str, Dict[str, WebSocket]] = {}  # code -> {player_id -> ws}
 
-    def create_room(self, num_quarters: int, game_mode: str = "test") -> tuple:
+    def create_room(self, num_quarters: int, game_mode: str = "test",
+                    quarter_names: list = None, quarter_codes: list = None,
+                    quiz_questions: list = None) -> tuple:
         """Returns (room, gm_id)."""
         import random
         code = uuid.uuid4().hex[:6].upper()
         gm_id = uuid.uuid4().hex[:8]
-        names = random.sample(DISTRICT_NAMES, min(num_quarters, len(DISTRICT_NAMES)))
-        if num_quarters > len(DISTRICT_NAMES):
-            names += [f"Stadsdel {i+1}" for i in range(len(DISTRICT_NAMES), num_quarters)]
-        # Generate unique code per quarter
-        q_codes = []
-        for _ in range(num_quarters):
-            qc = uuid.uuid4().hex[:4].upper()
-            q_codes.append(qc)
+        # Use provided names or generate random ones
+        if quarter_names and len(quarter_names) >= num_quarters:
+            names = list(quarter_names[:num_quarters])
+        else:
+            names = random.sample(DISTRICT_NAMES, min(num_quarters, len(DISTRICT_NAMES)))
+            if num_quarters > len(DISTRICT_NAMES):
+                names += [f"Stadsdel {i+1}" for i in range(len(DISTRICT_NAMES), num_quarters)]
+        # Use provided codes or generate unique codes per quarter
+        if quarter_codes and len(quarter_codes) >= num_quarters:
+            # Validate no collisions with existing rooms
+            existing_codes = {qc for r in self.rooms.values() for qc in r.quarter_codes}
+            if not any(qc in existing_codes for qc in quarter_codes[:num_quarters]):
+                q_codes = list(quarter_codes[:num_quarters])
+            else:
+                q_codes = []
+                for _ in range(num_quarters):
+                    qc = uuid.uuid4().hex[:4].upper()
+                    q_codes.append(qc)
+        else:
+            q_codes = []
+            for _ in range(num_quarters):
+                qc = uuid.uuid4().hex[:4].upper()
+                q_codes.append(qc)
         room = CompanionRoom(code=code, gm_id=gm_id, num_quarters=num_quarters,
                              quarter_names=names, quarter_codes=q_codes,
                              game_mode=game_mode)
@@ -764,21 +781,23 @@ class CompanionManager:
                 "quarter_names": names,
                 "game_mode": game_mode,
             })
-        # Load quiz questions
-        quiz_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                 "data", "quiz_questions.json")
-        try:
-            with open(quiz_path, "r", encoding="utf-8") as f:
-                qdata = json.load(f)
-                room.quiz_questions = qdata.get("questions", [])
-                # Apply defaults
-                default_tl = qdata.get("default_time_limit", 30)
-                default_pts = qdata.get("default_points", 100)
-                for q in room.quiz_questions:
-                    q.setdefault("time_limit", default_tl)
-                    q.setdefault("points", default_pts)
-        except Exception:
-            room.quiz_questions = []
+        # Load quiz questions: prefer provided list (from setup), else load from file
+        if quiz_questions is not None:
+            room.quiz_questions = list(quiz_questions)
+        else:
+            quiz_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     "data", "quiz_questions.json")
+            try:
+                with open(quiz_path, "r", encoding="utf-8") as f:
+                    qdata = json.load(f)
+                    room.quiz_questions = qdata.get("questions", [])
+                    default_tl = qdata.get("default_time_limit", 30)
+                    default_pts = qdata.get("default_points", 100)
+                    for q in room.quiz_questions:
+                        q.setdefault("time_limit", default_tl)
+                        q.setdefault("points", default_pts)
+            except Exception:
+                room.quiz_questions = []
 
         gm = CompanionPlayer(id=gm_id, name="Game Master", quarter_idx=-1, is_gm=True)
         room.players[gm_id] = gm
