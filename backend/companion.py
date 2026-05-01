@@ -255,6 +255,10 @@ class CompanionPlayer:
     quarter_idx: int
     is_gm: bool = False
     block_name: str = ""  # Personal quarter/block name within district
+    # Bolagsledning (gimmick — välj 1 CEO + 1 CFO + 1 COO innan setup, §1.5/2.3)
+    ceo: Optional[dict] = None
+    cfo: Optional[dict] = None
+    coo: Optional[dict] = None
     # Phase 1 assets
     projektchef: Optional[dict] = None
     projects: List[dict] = field(default_factory=list)
@@ -412,6 +416,9 @@ class CompanionPlayer:
             "quarter_idx": self.quarter_idx,
             "is_gm": self.is_gm,
             "block_name": self.block_name,
+            "ceo": self.ceo,
+            "cfo": self.cfo,
+            "coo": self.coo,
             "projektchef": self.projektchef,
             "projects": self.projects,
             "q_krav": self.q_krav,
@@ -978,6 +985,12 @@ class CompanionManager:
 
         elif msg_type == "update_assets" and not player.is_gm:
             assets = data.get("assets", {})
+            if "ceo" in assets:
+                player.ceo = assets["ceo"]
+            if "cfo" in assets:
+                player.cfo = assets["cfo"]
+            if "coo" in assets:
+                player.coo = assets["coo"]
             if "projektchef" in assets:
                 player.projektchef = assets["projektchef"]
             if "projects" in assets:
