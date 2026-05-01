@@ -21,15 +21,15 @@ def _load_phases_from_json():
         return None
 
 PHASES = [
-    {"id": "phase1", "name": "Fas 1: Projektutveckling", "steps": [
+    {"id": "phase1", "name": "Skede 1: Projektutveckling", "steps": [
         {"id": "choose_pc", "name": "1.2 Välj Projektchef", "help":
             "Varje spelare väljer 1 av 10 projektchefer. Gratis.\n\n"
             "Attribut att jämföra:\n"
             "• Riskbuffertar (Rb) — säkerhetsmarginal\n"
             "• Lindring — bonus på politik/dialogkort under PU-brädet\n"
             "• Nämndbonus — bonus vid nämndbeslut (steg 1.8)\n"
-            "• Q/H/T-bonus — tillämpas i fas 2\n"
-            "• Kompetens — spelbar som kort i fas 3\n\n"
+            "• Q/H/T-bonus — tillämpas i Skede 2.1\n"
+            "• Kompetens — spelbar som kort i Skede 2.2\n\n"
             "Tips: Hög lindring = bra under PU-brädet. Hög nämndbonus = tryggare med BRF. "
             "Hög Rb = mer flexibilitet senare."},
         {"id": "projects", "name": "1.4–1.6 Projektval & Brädspel", "help":
@@ -58,16 +58,16 @@ PHASES = [
             "• −1 Q-krav per Rb\n"
             "• −1 H-krav per Rb\n"
             "• −1 T (byggtid) per Rb\n\n"
-            "Resterande Rb sparas till fas 3 (omslag på händelsekort).\n"
-            "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i fas 2."},
+            "Resterande Rb sparas till Skede 2.2 (omslag på händelsekort).\n"
+            "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i Skede 2.1."},
     ]},
-    {"id": "phase2", "name": "Fas 2: Projektplanering", "steps": [
+    {"id": "phase2", "name": "Skede 2.1: Planering", "steps": [
         {"id": "choose_ac", "name": "2.1 Välj Arbetschef", "help":
             "Varje spelare väljer 1 av 10 arbetschefer. Gratis.\n\n"
             "Attribut att jämföra:\n"
             "• Riskbuffertar (Rb) — extra säkerhet\n"
-            "• Erfarenhet — permanent bonus på ALLA händelsekort (fas 2+3)\n"
-            "• Kompetens (STA/KOM/SAM/NOG/INN/ABM) — spelbar som kort i fas 3\n"
+            "• Erfarenhet — permanent bonus på ALLA händelsekort (Skede 2.1 + 2.2)\n"
+            "• Kompetens (STA/KOM/SAM/NOG/INN/ABM) — spelbar som kort i Skede 2.2\n"
             "• Q/H/T-bonus — tillämpas direkt\n\n"
             "Tips: +2 erfarenhet är extremt värdefullt — det lindrar ALLA händelsekort. "
             "Men det kostar kompetenspoäng. En AC med INN:4 kan vara avgörande."},
@@ -87,10 +87,10 @@ PHASES = [
             "• H vs H-krav — uppfyllt?\n"
             "• T (byggtid i månader)\n"
             "• ABT kvar — tillräcklig marginal?\n"
-            "• Erfarenhet — påverkar fas 3\n\n"
-            "Alla leverantörs- och organisationskort sparas som kompetenskort för fas 3."},
+            "• Erfarenhet — påverkar Skede 2.2\n\n"
+            "Alla leverantörs- och organisationskort sparas som kompetenskort för Skede 2.2."},
     ]},
-    {"id": "phase3", "name": "Fas 3: Genomförande", "steps": [
+    {"id": "phase3", "name": "Skede 2.2: Genomförande", "steps": [
         {"id": "gf_byggfaser", "name": "3.1–3.4 Byggfaser (8 st)", "help":
             "8 byggfaser. Per fas:\n\n"
             "1. Köp företagskulturkort (valfritt)\n"
@@ -127,7 +127,7 @@ PHASES = [
             "• Övriga: bara tärning → EK\n\n"
             "Registrera ditt slutliga EK."},
     ]},
-    {"id": "phase4", "name": "Fas 4: Förvaltning", "steps": [
+    {"id": "phase4", "name": "Skede 3: Förvaltning", "steps": [
         {"id": "f4_forbered", "name": "4.1 Förbered förvaltning", "help":
             "Projekt blir fastigheter. BRF säljs och ökar EK med (MV − Anskaffning).\n"
             "Kvarvarande = förvaltningsportfölj.\n\n"

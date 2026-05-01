@@ -30,7 +30,7 @@ export function renderPhase3Action(panel, gs, pending) {
             renderContinue(panel, pending, statusHtml);
             break;
         default:
-            panel.innerHTML = statusHtml + `<h3>Fas 3: Genomförande</h3><p>${pending.message || ''}</p>`;
+            panel.innerHTML = statusHtml + `<h3>Skede 2.2: Genomförande</h3><p>${pending.message || ''}</p>`;
     }
 }
 

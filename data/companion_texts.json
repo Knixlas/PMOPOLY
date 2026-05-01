@@ -2,7 +2,7 @@
   "phases": [
     {
       "id": "phase1",
-      "name": "Fas 1: Projektutveckling",
+      "name": "Skede 1: Projektutveckling",
       "steps": [
         {
           "id": "choose_pc",
@@ -28,7 +28,7 @@
     },
     {
       "id": "phase2",
-      "name": "Fas 2: Projektplanering",
+      "name": "Skede 2.1: Planering",
       "steps": [
         {
           "id": "choose_ac",
@@ -43,13 +43,13 @@
         {
           "id": "planning_summary",
           "name": "2.4 Planeringssammanfattning",
-          "help": "Kontrollera att allt stämmer:\n\n• Q uppfyllt?\n• H uppfyllt?\n• T ≤ 12?\n• ABT-budget kvar?\n\nDessa värden styr konsekvenskort i nästa fas."
+          "help": "Kontrollera att allt stämmer:\n\n• Q uppfyllt?\n• H uppfyllt?\n• T ≤ 12?\n• ABT-budget kvar?\n\nDessa värden styr konsekvenskort i Skede 2.2."
         }
       ]
     },
     {
       "id": "phase3",
-      "name": "Fas 3: Genomförande",
+      "name": "Skede 2.2: Genomförande",
       "steps": [
         {
           "id": "gf_byggfaser",
@@ -75,12 +75,12 @@
     },
     {
       "id": "phase4",
-      "name": "Fas 4: Förvaltning",
+      "name": "Skede 3: Förvaltning",
       "steps": [
         {
           "id": "f4_forbered",
           "name": "4.1 Förbered förvaltning",
-          "help": "Projekt blir fastigheter.\n• BRF säljs: EK ökar med (MV − Anskaffning)\n• Kvarvarande projekt = förvaltningsportfölj\n\n• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n• Kontrollera energiklass per fastighet (A–F)\n• Köp/sälj fastigheter om önskat"
+          "help": "Projekt blir fastigheter.\n• BRF säljs: EK ökar med (MV − Anskaffning)\n• Kvarvarande projekt = förvaltningsportfölj\n\n• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n• Kontrollera energiklass per fastighet (A–E)\n• Köp/sälj fastigheter om önskat"
         },
         {
           "id": "f4_q1",

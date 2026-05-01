@@ -970,7 +970,7 @@ def _handle_ekonomi(room: GameRoom, player: Player, action: dict) -> dict:
         return {"type": "state_update", "events": [{
             "type": "phase_change",
             "phase": "puzzle_placement",
-            "text": "Fas 1 klar! Placera era projekt på kvartersplanen.",
+            "text": "Skede 1 klar! Placera era projekt på kvartersplanen.",
         }]}
 
     return {"type": "error", "message": "Okänd ekonomi-åtgärd"}
@@ -984,7 +984,7 @@ def _advance_ekonomi(room: GameRoom):
         room.pending_action = {
             "action": "continue",
             "player_id": room.players[0].id,  # Host continues
-            "message": "Fas 1 klar! Klicka för att gå vidare till Planering.",
+            "message": "Skede 1 klar! Klicka för att gå vidare till Planering.",
         }
     else:
         _setup_riskbuffert_invest(room)
@@ -1480,7 +1480,7 @@ def _advance_planering_player(room: GameRoom, events: list) -> dict:
         events.append({
             "type": "phase_change",
             "phase": "phase3_genomforande",
-            "text": "Fas 2 klar! Nu börjar Projektgenomförande.",
+            "text": "Skede 2.1 klar! Nu börjar Genomförande.",
         })
         return {"type": "state_update", "events": events}
 
@@ -2095,7 +2095,7 @@ def _handle_genomforande(room: GameRoom, player: Player, action: dict) -> dict:
         events.append({
             "type": "phase_change",
             "phase": "phase4_forvaltning",
-            "text": "Fas 3 klar! Nu börjar Förvaltning.",
+            "text": "Skede 2.2 klar! Nu börjar Förvaltning.",
         })
         return {"type": "state_update", "events": events}
 
@@ -2835,7 +2835,7 @@ def _gf_finish(room: GameRoom, events: list) -> dict:
     room.pending_action = {
         "action": "continue",
         "player_id": room.players[0].id,
-        "message": "Fas 3 Genomförande klar! Klicka för att gå vidare.",
+        "message": "Skede 2.2 Genomförande klar! Klicka för att gå vidare.",
     }
     return {"type": "state_update", "events": events}
 
@@ -3735,4 +3735,4 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
         room.events_log.extend(events)
         return {"type": "state_update", "events": events}
 
-    return {"type": "error", "message": f"Okänd åtgärd i Fas 4: {act}/{sub}"}
+    return {"type": "error", "message": f"Okänd åtgärd i Skede 3: {act}/{sub}"}
