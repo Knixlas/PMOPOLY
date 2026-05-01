@@ -319,8 +319,8 @@ class Player:
     laps: int = 0
     projects: List[Project] = field(default_factory=list)
     riskbuffertar: int = 0
-    q_krav: int = 4
-    h_krav: int = 4
+    q_krav: int = 6
+    h_krav: int = 6
     t_bonus: int = 0
     mark_expansions: int = 0  # legacy counter (for economics)
     mark_expansion_pieces: List[dict] = field(default_factory=list)  # [{id, cells: [[r,c],...]}]
@@ -398,15 +398,15 @@ class Player:
 
     @property
     def total_erfarenhet(self) -> int:
+        """Ackumulerad erfarenhet, taket är 12 (regelboken §10 + §1.7)."""
         exp = 0
         for s in self.pl_suppliers.values():
             exp += s.erfarenhet if hasattr(s, 'erfarenhet') else s.get("erfarenhet", 0)
         for o in self.pl_orgs.values():
             exp += o.erfarenhet if hasattr(o, 'erfarenhet') else o.get("erfarenhet", 0)
-        # AC experience bonus
         if self.arbetschef:
             exp += self.arbetschef.get("erfarenhet", 0)
-        return exp
+        return min(12, exp)
 
     @property
     def kvarter_trigger(self) -> str:

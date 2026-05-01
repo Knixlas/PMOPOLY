@@ -1796,9 +1796,11 @@ function renderPlayer() {
         }
         html += '<div>T: <strong style="color:' + (curT <= 12 ? 'var(--success)' : 'var(--danger)') + '">' + curT + '</strong> m\u00e5n <span style="color:var(--ink-mid)">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
         var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
-        var totalErf = plErf + pcErf + acErf;
+        // Erfarenhetstaket är 12 (regelboken §10 + §1.7)
+        var totalErfRaw = plErf + pcErf + acErf;
+        var totalErf = Math.min(12, totalErfRaw);
         html += '<div style="grid-column:1/-1">' + counterRow('Riskbuffertar (Rb)', p.riskbuffertar || 0, 'riskbuffertar', false) + '</div>';
-        html += '<div>Erf: <strong>' + totalErf + '</strong></div>';
+        html += '<div>Erf: <strong>' + totalErf + '</strong>' + (totalErfRaw > 12 ? ' <span style="color:var(--ink-mid);font-size:11px">(av ' + totalErfRaw + ', tak 12)</span>' : '') + '</div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
         html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
@@ -1806,6 +1808,19 @@ function renderPlayer() {
             html += '<div>Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         }
         html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
+        // Moderbolagslån — tillgängligt redan i Skede 2.1 om ABT-budget tagit slut (regelboken §6.2)
+        if (isPhase2 || isPhase3) {
+            var _modA21 = p.gf_moderbolagslan_antal || 0;
+            var _abtNeg = anskKvar < 0;
+            if (_modA21 > 0 || _abtNeg) {
+                html += '<div style="grid-column:1/-1;border-top:1px dashed var(--border);padding-top:4px;margin-top:4px">';
+                html += counterRow('Moderbolagslån (antal · 95 Mkr in / 100 Mkr skuld)', _modA21, 'gf_moderbolagslan_antal', false);
+                if (_modA21 > 0) {
+                    html += '<div style="font-size:11px;color:var(--danger);margin-top:2px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
+                }
+                html += '</div>';
+            }
+        }
         if (isPhase3) {
             // Tidskort Q/H impact: reduce krav
             var tidQAdj = p.gf_kons_t_q_adj || 0;
