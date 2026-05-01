@@ -1069,7 +1069,7 @@ function renderPlayer() {
         html += '<div class="counter-val">' + (p.rb_spent_t || 0) + '</div>';
         html += '<button class="counter-btn" data-action="rb-incr" data-target="t">+</button></div></div>';
         html += '<div style="text-align:center;margin-top:8px;color:' + (rbLeft > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + ';font-size:14px">';
-        html += rbLeft + ' Rb kvar (sparas till fas 3)</div>';
+        html += rbLeft + ' Rb kvar (sparas till Skede 2.2)</div>';
         html += '</div>';
     }
 
@@ -1740,7 +1740,7 @@ function renderPlayer() {
                 send({ type: 'update_assets', assets: { f4_final_score: Math.round(_score*10)/10 } });
             }
         }
-    } catch(e) { console.error('[F4 render error]', e); html += '<div style="color:red">Fas 4 renderingsfel: ' + e.message + '</div>'; }
+    } catch(e) { console.error('[F4 render error]', e); html += '<div style="color:red">Skede 3 renderingsfel: ' + e.message + '</div>'; }
     }
 
     // ── "Klar med detta steg" button ──

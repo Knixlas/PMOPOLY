@@ -167,15 +167,15 @@ function updatePhaseIndicator(gs) {
     const subEl = document.getElementById('phase-sub');
 
     const phaseNames = {
-        'phase1_mark_tomt': 'Fas 1: Mark & Tomt',
-        'phase1_board': 'Fas 1: Brädspel',
-        'phase1_namndbeslut': 'Fas 1: Nämndbeslut',
-        'phase1_placement': 'Fas 1: Placering',
-        'phase1_ekonomi': 'Fas 1: Ekonomi',
-        'phase2_planering': 'Fas 2: Planering',
+        'phase1_mark_tomt': 'Skede 1: Mark & Tomt',
+        'phase1_board': 'Skede 1: Brädspel',
+        'phase1_namndbeslut': 'Skede 1: Nämndbeslut',
+        'phase1_placement': 'Skede 1: Placering',
+        'phase1_ekonomi': 'Skede 1: Ekonomi',
+        'phase2_planering': 'Skede 2.1: Planering',
         'puzzle_placement': 'Kvartersplanering',
-        'phase3_genomforande': 'Fas 3: Genomförande',
-        'phase4_forvaltning': 'Fas 4: Förvaltning',
+        'phase3_genomforande': 'Skede 2.2: Genomförande',
+        'phase4_forvaltning': 'Skede 3: Förvaltning',
         'finished': 'Spelet är slut!',
     };
 
@@ -779,17 +779,17 @@ function renderCompanion() {
 
     // Phase indicator
     const phaseNames = {
-        'phase1_mark_tomt': 'Fas 1: Mark & Tomt',
-        'phase1_pc_hire': 'Fas 1: Välj PC',
-        'phase1_board': 'Fas 1: Brädspel',
-        'phase1_namndbeslut': 'Fas 1: Nämndbeslut',
-        'phase1_placement': 'Fas 1: Placering',
-        'phase1_ekonomi': 'Fas 1: Ekonomi',
+        'phase1_mark_tomt': 'Skede 1: Mark & Tomt',
+        'phase1_pc_hire': 'Skede 1: Välj PC',
+        'phase1_board': 'Skede 1: Brädspel',
+        'phase1_namndbeslut': 'Skede 1: Nämndbeslut',
+        'phase1_placement': 'Skede 1: Placering',
+        'phase1_ekonomi': 'Skede 1: Ekonomi',
         'puzzle_placement': 'Kvartersplanering',
-        'phase2_ac_hire': 'Fas 2: Välj AC',
-        'phase2_planering': 'Fas 2: Planering',
-        'phase3_genomforande': 'Fas 3: Genomförande',
-        'phase4_forvaltning': 'Fas 4: Förvaltning',
+        'phase2_ac_hire': 'Skede 2.1: Välj AC',
+        'phase2_planering': 'Skede 2.1: Planering',
+        'phase3_genomforande': 'Skede 2.2: Genomförande',
+        'phase4_forvaltning': 'Skede 3: Förvaltning',
     };
     html += '<div style="color:var(--burgundy);font-weight:700;margin-bottom:8px">' + (phaseNames[phase] || phase) + '</div>';
 

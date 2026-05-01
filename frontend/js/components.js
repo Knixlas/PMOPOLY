@@ -550,7 +550,7 @@ export function renderPlanGFBoard(gameState) {
     if (gameState.phase === 'phase2_planering') {
         const step = pending.step || 0;
         const totalSteps = pending.total_steps || 13;
-        lines.push({ text: 'Fas 2: Planering', color: 'var(--burgundy)', size: 16, bold: true });
+        lines.push({ text: 'Skede 2.1: Planering', color: 'var(--burgundy)', size: 16, bold: true });
         if (step > 0) {
             lines.push({ text: `Steg ${step}/${totalSteps}`, size: 14 });
             if (pending.slot_name) lines.push({ text: pending.slot_name, size: 13, color: '#3498db' });
@@ -561,7 +561,7 @@ export function renderPlanGFBoard(gameState) {
         const fasNr = pending.fas_nr || '';
         const fasNamn = faskort.namn || '';
 
-        lines.push({ text: 'Fas 3: Genomförande', color: 'var(--burgundy)', size: 16, bold: true });
+        lines.push({ text: 'Skede 2.2: Genomförande', color: 'var(--burgundy)', size: 16, bold: true });
 
         if (subState.includes('buy_support')) {
             lines.push({ text: 'Köp externt stöd?', size: 14 });
@@ -679,7 +679,7 @@ export function renderPhase4Board(gameState) {
     const quarter = gameState.f4_quarter || pending.quarter || 1;
 
     const lines = [];
-    lines.push({ text: 'Fas 4: Förvaltning', color: 'var(--burgundy)', size: 16, bold: true });
+    lines.push({ text: 'Skede 3: Förvaltning', color: 'var(--burgundy)', size: 16, bold: true });
     lines.push({ text: `Kvartal ${quarter}/4`, size: 15, bold: true });
 
     if (subState.includes('hire')) lines.push({ text: 'Anställ personal', size: 13, color: '#27ae60' });

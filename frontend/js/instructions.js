@@ -6,12 +6,12 @@
 export const INSTRUCTIONS = {
 
     phase1_mark_tomt: {
-        title: "Fas 1: Välj projekttyp",
+        title: "Skede 1: Välj projekttyp",
         rules:
-            "Välkommen till PMOPOLY! Du är en projektutvecklare som ska bygga bostäder och lokaler.\n\n" +
+            "Välkommen till Åkepol! Du är en projektutvecklare som ska bygga bostäder och lokaler.\n\n" +
             "I den här första delen väljer varje spelare vilken typ av projekt de vill satsa på: " +
             "BRF, Hyresrätt, Förskola, Lokal eller Kontor. Varje typ har olika kostnader, intäkter och krav.\n\n" +
-            "Ditt mål under hela Fas 1 är att samla så bra projekt som möjligt — " +
+            "Ditt mål under hela Skede 1 är att samla så bra projekt som möjligt — " +
             "de avgör din ekonomi genom resten av spelet.",
         strategy:
             "Titta på förhållandet mellan anskaffningsvärde (intäkt) och kostnad. " +
@@ -20,7 +20,7 @@ export const INSTRUCTIONS = {
     },
 
     phase1_board: {
-        title: "Fas 1: Brädspelet",
+        title: "Skede 1: Brädspelet",
         rules:
             "Nu börjar brädspelet! Slå en D6 och flytta runt brädet. Du spelar 2 varv.\n\n" +
             "Ruttyper:\n" +
@@ -54,7 +54,7 @@ export const INSTRUCTIONS = {
     },
 
     phase1_namndbeslut: {
-        title: "Fas 1: Nämndbeslut",
+        title: "Skede 1: Nämndbeslut",
         rules:
             "Varje projekt måste godkännas av nämnden! Du slår D20 för varje projekt.\n\n" +
             "• Resultatet måste vara ≥ projektets nämndkrav (visas som \"Nämnd: ≥X\")\n" +
@@ -65,11 +65,11 @@ export const INSTRUCTIONS = {
         strategy:
             "Projekt med högt nämndkrav (≥15+) är riskfyllda. " +
             "Spara riskbuffertar till de viktigaste projekten. " +
-            "Investera gärna överskottsbuffertar i att sänka K- och H-krav — det betalar sig i Fas 2.",
+            "Investera gärna överskottsbuffertar i att sänka K- och H-krav — det betalar sig i Skede 2.1.",
     },
 
     phase1_ekonomi: {
-        title: "Fas 1: Ekonomi",
+        title: "Skede 1: Ekonomi",
         rules:
             "Nu räknas ekonomin ihop automatiskt.\n\n" +
             "• Intäkter = summan av alla projekts anskaffningsvärden\n" +
@@ -78,13 +78,13 @@ export const INSTRUCTIONS = {
             "Om kostnaderna överstiger intäkterna behöver du ta moderbolagslån. " +
             "Varje lån på 100 Mkr ger 95 Mkr netto (5 Mkr i avgift).",
         strategy:
-            "ABT är din budget för Fas 2 och 3 — allt du köper (leverantörer, organisation, extern support) " +
+            "ABT är din budget för Skede 2.1 och 2.2 — allt du köper (leverantörer, organisation, extern support) " +
             "dras härifrån. Ju mer ABT du har, desto mer flexibilitet. " +
             "Undvik lån om möjligt — avgiften äter av din vinst.",
     },
 
     phase2_planering: {
-        title: "Fas 2: Planering",
+        title: "Skede 2.1: Planering",
         rules:
             "Dags att planera ditt bygge! Du går igenom 13 steg i ordning.\n\n" +
             "Vid varje steg väljer du antingen en leverantör eller en organisationsresurs:\n" +
@@ -95,7 +95,7 @@ export const INSTRUCTIONS = {
         strategy:
             "Planera bakifrån: kolla vilka Q- och H-krav du behöver uppfylla, " +
             "och välj leverantörer som ger rätt poäng till lägst kostnad. " +
-            "Billigare leverantörer ger ofta lägre Q/H men sparar ABT till Fas 3.",
+            "Billigare leverantörer ger ofta lägre Q/H men sparar ABT till Skede 2.2.",
     },
 
     puzzle_placement: {
@@ -105,7 +105,7 @@ export const INSTRUCTIONS = {
             "Du har ett 4\u00d74 basrutnät. Varje markexpansion ger 5 extra celler runtom.\n\n" +
             "Dra projekt från inventariet till rutnätet. " +
             "Tryck R för att rotera, F för att spegelvända.\n" +
-            "Bara placerade projekt genererar intäkter i Fas 3 och 4.\n\n" +
+            "Bara placerade projekt genererar intäkter i Skede 2.2 och 3.\n\n" +
             "Alla spelare placerar samtidigt. Klicka 'Klar' när du är nöjd.",
         strategy:
             "Placera de mest lönsamma projekten först. " +
@@ -113,7 +113,7 @@ export const INSTRUCTIONS = {
     },
 
     phase3_genomforande: {
-        title: "Fas 3: Genomförande",
+        title: "Skede 2.2: Genomförande",
         rules:
             "Bygget pågår! 8 faskort spelas i ordning — varje kort representerar en byggfas.\n\n" +
             "Vid varje fas kan du köpa extern support för att minska risk. " +
@@ -126,17 +126,17 @@ export const INSTRUCTIONS = {
     },
 
     phase4_forvaltning: {
-        title: "Fas 4: Förvaltning",
+        title: "Skede 3: Förvaltning",
         rules:
             "Ditt bygge är klart! Nu förvaltar du dina fastigheter under 4 kvartal.\n\n" +
             "• Anställ personal — du behöver minst en förvaltare (FC)\n" +
             "• Personalens kapacitet måste täcka antal fastigheter\n" +
             "• Varje kvartal: samla driftnetto, betala löner, hantera händelser\n" +
             "• Nya fastigheter dyker upp på marknaden (3, 2, 1, 0 per kvartal)\n\n" +
-            "Slutpoäng = Fastighetsvärde × 30% + Eget kapital + Totalbalans",
+            "Slutpoäng = (FV × 30% × Energibonus + Eget kapital + TB) ÷ (BTA / 1000) × f(n)",
         strategy:
             "Anställ rätt personal tidigt — underbemanning ger sämre förvaltning. " +
-            "Energiklass påverkar värdering (A = +10%, F = -15%). " +
+            "Energiklass påverkar värdering (A = +10%, E = 0 — osäljbar). " +
             "Köp undervärderade fastigheter om du har kapital.",
     },
 };
