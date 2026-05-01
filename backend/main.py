@@ -162,6 +162,55 @@ async def companion_gm():
 
 # ── Companion API ──
 
+# Cache for ledning cards (CEO/CFO/COO) — loaded once
+_ledning_cache: dict = {}
+
+def _load_ledning_cards():
+    """Load CEO/CFO/COO cards from data/0_ledning/L_personal.csv (cached)."""
+    if _ledning_cache:
+        return _ledning_cache
+    import csv as _csv
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "..", "data", "0_ledning", "L_personal.csv")
+    # CSV exporterad från Excel — Windows-1252-encoding
+    try:
+        with open(path, "r", encoding="cp1252", errors="replace") as f:
+            reader = _csv.DictReader(f, delimiter=";")
+            for row in reader:
+                roll = (row.get("Roll") or "").strip()
+                if roll not in ("CEO", "CFO", "COO"):
+                    continue
+                # Compose competence dict (only non-empty/non-"-" entries)
+                kompetens = {}
+                for k in ("STA", "KOM", "SAM", "NOG", "INN", "ABM"):
+                    v = (row.get(k) or "").strip()
+                    if v and v != "-":
+                        try:
+                            kompetens[k] = int(v)
+                        except ValueError:
+                            pass
+                card = {
+                    "id": (row.get("ID") or "").strip(),
+                    "roll": roll,
+                    "namn": (row.get("Namn") or "").strip(),
+                    "specialisering": (row.get("Specialisering") or "").strip(),
+                    "beskrivning": (row.get("Beskrivning") or "").strip(),
+                    "kompetens": kompetens,
+                    "fill_color": (row.get("fill_color") or "").strip() or "#7A2020",
+                    "line_color": (row.get("line_color") or "").strip() or "#7A2020",
+                }
+                _ledning_cache.setdefault(roll, []).append(card)
+    except FileNotFoundError:
+        pass
+    return _ledning_cache
+
+
+@app.get("/api/companion/ledning")
+async def companion_ledning():
+    """Returnera CEO/CFO/COO-kort grupperade per roll. Statisk data, cachad."""
+    return _load_ledning_cards()
+
+
 @app.post("/api/companion/rooms")
 async def companion_create_room(body: dict):
     num_quarters = int(body.get("num_quarters", 4))

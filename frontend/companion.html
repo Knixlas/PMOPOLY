@@ -837,6 +837,11 @@ async function loadReferenceData() {
     S.projectData = (await projRes.json()).projects;
     S.acData = (await acRes.json()).ac;
     S.planningData = await planRes.json();
+    // Ledning (CEO/CFO/COO) — gimmick, optional
+    try {
+        const lRes = await fetch('/api/companion/ledning');
+        S.ledningData = await lRes.json();
+    } catch(e) { console.warn('Ledning data failed to load:', e); S.ledningData = {}; }
     // Optional data — failures don't block the game
     try {
         const ddRes = await fetch('/api/companion/data/dd');
@@ -945,6 +950,35 @@ function renderPlayer() {
     const showGF = ph3Idx >= 0;
 
     let html = '';
+
+    // Bolagsledning (CEO/CFO/COO) — gimmick, alltid synlig
+    var ledColl = isPhase2 || isPhase3 || isPhase4;
+    var ledRolls = [
+        {key:'ceo', label:'CEO'},
+        {key:'cfo', label:'CFO'},
+        {key:'coo', label:'COO'},
+    ];
+    var ledFilled = ledRolls.filter(function(r){return p[r.key];}).length;
+    html += '<div class="asset-card" style="border-left-color:#7A2020">';
+    html += '<div class="asset-label" style="cursor:pointer" data-action="toggle-section" data-target="ledning-detail">';
+    html += 'Bolagsledning <span style="color:var(--ink-mid);font-weight:400">(' + ledFilled + '/3)</span>';
+    html += ' <span style="float:right;font-size:11px;color:var(--ink-faint)">' + (ledColl ? '▶' : '▼') + '</span></div>';
+    html += '<div id="ledning-detail" style="' + (ledColl ? 'display:none' : '') + '">';
+    ledRolls.forEach(function(r) {
+        var c = p[r.key];
+        if (c) {
+            html += '<div class="chosen-item" data-action="choose-ledning" data-roll="' + r.label + '" style="cursor:pointer">';
+            html += '<div class="dot" style="background:' + (c.fill_color || '#7A2020') + '"></div>';
+            html += '<div><div class="name">' + r.label + ': ' + c.namn + '</div>';
+            html += '<div class="detail">' + (c.specialisering || '') + '</div></div>';
+            html += '<div class="remove-btn" data-action="remove-ledning" data-roll="' + r.label + '">✕</div>';
+            html += '</div>';
+        } else {
+            html += '<div class="asset-empty" data-action="choose-ledning" data-roll="' + r.label + '">+ Välj ' + r.label + '</div>';
+        }
+    });
+    html += '</div>';  // close ledning-detail
+    html += '</div>';  // close asset-card
 
     // PC Card
     if (showPC) {
@@ -1949,6 +1983,22 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { projektchef: null } });
         });
     });
+    container.querySelectorAll('[data-action="choose-ledning"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            // Don't trigger when clicking the remove × inside
+            if (e.target.dataset.action === 'remove-ledning') return;
+            openLedningModal(el.dataset.roll);
+        });
+    });
+    container.querySelectorAll('[data-action="remove-ledning"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const roll = el.dataset.roll.toLowerCase();
+            const assets = {};
+            assets[roll] = null;
+            send({ type: 'update_assets', assets: assets });
+        });
+    });
     container.querySelectorAll('[data-action="choose-ac"]').forEach(el => {
         el.addEventListener('click', () => openACModal());
     });
@@ -2337,6 +2387,47 @@ function showDDKortModal(fastNamn, kopeskilling) {
             });
         }
     });
+}
+
+// ── Ledning Modal (CEO / CFO / COO — gimmick) ──
+function openLedningModal(roll) {
+    const mc = document.getElementById('modal-container');
+    const cards = (S.ledningData && S.ledningData[roll]) || [];
+    const rollKey = roll.toLowerCase();  // "CEO" → "ceo"
+    let html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header"><h3>Välj ' + roll + '</h3></div>';
+    html += '<div class="modal-body">';
+    if (cards.length === 0) {
+        html += '<div style="color:var(--ink-mid);font-style:italic;padding:20px;text-align:center">Inga ledningskort laddade.</div>';
+    }
+    for (const c of cards) {
+        const kompList = Object.entries(c.kompetens || {})
+            .map(([k, v]) => k + ':' + v).join(' ');
+        html += '<div class="modal-item" data-card-id="' + c.id + '" style="border-left:4px solid ' + (c.fill_color || '#7A2020') + '">';
+        html += '<div class="item-name">' + c.namn + '</div>';
+        html += '<div class="item-detail" style="font-style:italic">' + (c.specialisering || '') + (kompList ? ' · ' + kompList : '') + '</div>';
+        if (c.beskrivning) {
+            html += '<div class="item-detail" style="margin-top:6px;color:var(--ink-mid);font-size:12px">' + c.beskrivning + '</div>';
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+
+    mc.querySelectorAll('.modal-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const card = cards.find(c => c.id === el.dataset.cardId);
+            if (card) {
+                const assets = {};
+                assets[rollKey] = card;
+                send({ type: 'update_assets', assets: assets });
+            }
+            mc.innerHTML = '';
+        });
+    });
+    mc.querySelector('#modal-cancel').addEventListener('click', () => { mc.innerHTML = ''; });
 }
 
 function openPCModal() {
