@@ -36,7 +36,7 @@ KOMMERSIELLT_TYPES = ["FÖRSKOLOR", "LOKAL", "KONTOR"]
 PROJECT_TYPE_TO_EVENT = {
     "Hyresrätt": "HR", "FÖRSKOLOR": "FSK", "LOKAL": "LOK", "KONTOR": "KON",
 }
-EK_FV_MODIFIER = {"A": 1.10, "B": 1.05, "C": 1.00, "D": 0.95, "E": 0.90, "F": 0.85}
+EK_FV_MODIFIER = {"A": 1.10, "B": 1.05, "C": 1.00, "D": 0.95, "E": 0.0}
 QUARTER_NEW_PROPS = {1: 3, 2: 2, 3: 1, 4: 0}
 
 # Rent negotiation scale: netto value -> höjning per HR property (Mkr)

@@ -132,7 +132,7 @@ PHASES = [
             "Projekt blir fastigheter. BRF säljs och ökar EK med (MV − Anskaffning).\n"
             "Kvarvarande = förvaltningsportfölj.\n\n"
             "• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n"
-            "• Sätt energiklass per fastighet (A–F)\n"
+            "• Sätt energiklass per fastighet (A–E)\n"
             "• Köp/sälj fastigheter om önskat"},
         {"id": "f4_q1", "name": "4.2–4.3 Kvartal 1", "help":
             "Kvartal 1:\n"

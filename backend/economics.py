@@ -79,32 +79,100 @@ def calc_real_ek(player) -> float:
     return player.eget_kapital - loans_gross
 
 
+# ── Måluppfyllelse-faktor f(n) per regelboken §9.2 ──
+# n = Q-avvikelse + H-avvikelse + T-avvikelse (sätts vid Skede 2-avslut, §7.7).
+# Tabellen 0-10, sedan linjär nedgång (1 procentenhet per steg) tills 0% vid n=60.
+_DEVIATION_FACTOR_TABLE = {
+    0: 1.00, 1: 0.90, 2: 0.82, 3: 0.75, 4: 0.70,
+    5: 0.65, 6: 0.61, 7: 0.58, 8: 0.55, 9: 0.52, 10: 0.50,
+}
+
+
+def deviation_factor(n: int) -> float:
+    """Måluppfyllelse-faktor f(n) som multipliceras på råpoängen.
+
+    n=0 → 100% (alla mål uppfyllda), n=10 → 50%, n≥60 → 0%.
+    Mellan 11 och 60 sjunker faktorn 1 procentenhet per ytterligare avvikelse.
+    """
+    if n <= 0:
+        return 1.00
+    if n in _DEVIATION_FACTOR_TABLE:
+        return _DEVIATION_FACTOR_TABLE[n]
+    return max(0.0, (50 - (n - 10)) / 100.0)
+
+
+def calc_deviation_n(player) -> dict:
+    """Beräkna n = summan av Q/H/T-avvikelser per §7.7.
+
+    Q-avvikelse = max(0, Q-krav − Q-utfall)
+    H-avvikelse = max(0, H-krav − H-utfall)
+    T-avvikelse = max(0, T-utfall − 12)
+
+    Q/H/T-utfall hämtas från snap_exec_* (slutet av Skede 2.2 Genomförandet).
+    Returnerar dict med n_q, n_h, n_t, n_total för transparens.
+    """
+    q_krav = getattr(player, 'q_krav', 0)
+    h_krav = getattr(player, 'h_krav', 0)
+    q_utfall = getattr(player, 'snap_exec_q', q_krav)
+    h_utfall = getattr(player, 'snap_exec_h', h_krav)
+    t_utfall = getattr(player, 'snap_exec_t', 12)
+
+    n_q = max(0, q_krav - q_utfall)
+    n_h = max(0, h_krav - h_utfall)
+    n_t = max(0, t_utfall - 12)
+    return {"n_q": n_q, "n_h": n_h, "n_t": n_t, "n_total": n_q + n_h + n_t}
+
+
 def calc_final_score(player, total_fv_30: float) -> dict:
-    """Calculate final game score.
-    Score = (0.30 × FV + 0.10 × EK) / ägd_BTA × 1000 + TG
-    FV = sum of fastigheter marknadsvärde (30% equity, rest is bank loan)
+    """Beräkna slutpoäng per regelboken §9.1 + §9.2.
+
+    Råpoäng = (FV × 30% × Energibonus + EK + TB) ÷ (BTA / 1000)
+    Slutpoäng = Råpoäng × f(n)
+
+    FV med energibonus per fastighet appliceras innan summan skickas hit
+    (via _calc_fastighetsvarde i engine.py som multiplicerar med EK_FV_MODIFIER).
+    EK-faktor (0.10 / 2.00) bibehållen som straff för negativ EK.
+    TB sätts till 0 om ABT-budget var 0 eller negativ.
     """
     real_ek = calc_real_ek(player)
-    tg = calc_tg(player)
+    tg = calc_tg(player)  # behållen för rapport / tooltip
 
-    # FV = total fastighetsvärde (marknadsvärde of owned properties)
-    fv = total_fv_30 / 0.3 if total_fv_30 > 0 else 0  # total_fv_30 is already 30%, convert back
+    # FV = total fastighetsvärde (energibonus redan applicerad per fastighet)
+    fv = total_fv_30 / 0.3 if total_fv_30 > 0 else 0  # total_fv_30 är 30 %-andelen; konvertera tillbaka
     ek = real_ek
     owned_bta = player.total_bta
 
-    # EK: positive = 10%, negative = 200% penalty
+    # TB i Mkr per §9.1
+    if player.abt_start <= 0:
+        tb = 0.0
+    else:
+        abt_remaining = getattr(player, 'abt_remaining_before_transfer', player.abt_budget)
+        tb = abt_remaining - player.abt_loans_net - player.abt_borrowing_cost
+
     ek_factor = 0.10 if ek >= 0 else 2.00
 
     if owned_bta > 0:
-        score = (0.30 * fv + ek_factor * ek) / owned_bta * 1000 + tg
+        rapong = (0.30 * fv + ek_factor * ek + tb) / owned_bta * 1000
     else:
-        score = tg
+        rapong = tb
+
+    # f(n) — måluppfyllelse-faktor
+    dev = calc_deviation_n(player)
+    f_n = deviation_factor(dev["n_total"])
+    score = rapong * f_n
 
     return {
         "fv": round(fv, 1),
         "fv_30": round(fv * 0.3, 1),
         "real_ek": round(real_ek, 1),
+        "tb": round(tb, 1),
         "tg_pct": round(tg, 1),
+        "rapong": round(rapong, 1),
+        "n_q": dev["n_q"],
+        "n_h": dev["n_h"],
+        "n_t": dev["n_t"],
+        "n_total": dev["n_total"],
+        "f_n": round(f_n, 2),
         "score": round(score, 1),
         "total_bta": owned_bta,
         "n_projects": len(player.projects),
