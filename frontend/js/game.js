@@ -224,7 +224,7 @@ function renderInfoPanel(gs) {
         if (sq) {
             const sqColors = {
                 'start': '#2980b9', 'projekt': '#27ae60', 'kort': '#8e44ad',
-                'stjarna': '#f0c929', 'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
+                'stjarna': 'var(--burgundy)', 'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
                 'skonhetsradet': '#16a085'
             };
             const sqIcons = {
@@ -319,7 +319,7 @@ function renderInfoPanel(gs) {
         const quarter = gs.f4_quarter || pending.quarter || 1;
         const subState = gs.sub_state || '';
         html += `
-            <div class="info-square" style="border-color:#f0c929">
+            <div class="info-square" style="border-color:var(--burgundy)">
                 <div class="info-sq-icon">🏢</div>
                 <div class="info-sq-name">Förvaltning</div>
                 <div class="info-sq-type">Kvartal ${quarter}/4</div>
@@ -572,8 +572,8 @@ function renderAssetsPanel(gs) {
 
             // Highlight selected
             if (sel && sel.id === pid) {
-                card.style.border = '2px solid #f0c929';
-                card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
+                card.style.border = '2px solid var(--burgundy)';
+                card.style.boxShadow = '0 0 10px rgba(107,24,21,0.35)';
             }
 
             card.style.cursor = 'pointer';
@@ -591,8 +591,8 @@ function renderAssetsPanel(gs) {
             if (!piece || piece.placed) return;
 
             if (sel && sel.id === markId) {
-                card.style.border = '2px solid #f0c929';
-                card.style.boxShadow = '0 0 10px rgba(240,201,41,0.5)';
+                card.style.border = '2px solid var(--burgundy)';
+                card.style.boxShadow = '0 0 10px rgba(107,24,21,0.35)';
             }
 
             card.style.cursor = 'pointer';
@@ -791,39 +791,39 @@ function renderCompanion() {
         'phase3_genomforande': 'Fas 3: Genomförande',
         'phase4_forvaltning': 'Fas 4: Förvaltning',
     };
-    html += '<div style="color:#f0c929;font-weight:700;margin-bottom:8px">' + (phaseNames[phase] || phase) + '</div>';
+    html += '<div style="color:var(--burgundy);font-weight:700;margin-bottom:8px">' + (phaseNames[phase] || phase) + '</div>';
 
     // PC
     if (me.projektchef) {
         const pc = me.projektchef;
-        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
-        html += '<div style="font-size:11px;color:#999">PROJEKTCHEF</div>';
+        html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
+        html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKTCHEF</div>';
         html += '<div style="font-weight:600">' + pc.namn + '</div>';
-        html += '<div style="font-size:12px;color:#aaa">' + (pc.specialisering || '') + ' | Lindring: +' + (pc.lindring || pc.kapacitet || 0) + ' | Nämnd: +' + (pc.namnd_bonus || 0) + '</div>';
+        html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + ' | Lindring: +' + (pc.lindring || pc.kapacitet || 0) + ' | Nämnd: +' + (pc.namnd_bonus || 0) + '</div>';
         html += '</div>';
     }
 
     // AC
     if (me.arbetschef) {
         const ac = me.arbetschef;
-        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #4A6FA5">';
-        html += '<div style="font-size:11px;color:#999">ARBETSCHEF</div>';
+        html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #4A6FA5">';
+        html += '<div style="font-size:11px;color:var(--ink-mid)">ARBETSCHEF</div>';
         html += '<div style="font-weight:600">' + ac.namn + '</div>';
-        html += '<div style="font-size:12px;color:#aaa">' + (ac.specialisering || '') + ' | Erf: +' + (ac.erfarenhet || ac.kapacitet || 0) + '</div>';
+        html += '<div style="font-size:12px;color:var(--ink-mid)">' + (ac.specialisering || '') + ' | Erf: +' + (ac.erfarenhet || ac.kapacitet || 0) + '</div>';
         html += '</div>';
     }
 
     // Projects
     const projs = me.projects || [];
     if (projs.length > 0) {
-        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #27ae60">';
-        html += '<div style="font-size:11px;color:#999">PROJEKT (' + projs.length + ')</div>';
-        const TYPE_COLORS = {'BRF':'#cc9b1a','FÖRSKOLOR':'#1d6b35','Hyresrätt':'#8b2252','LOKAL':'#1565C0','KONTOR':'#6A1B9A'};
+        html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid var(--success)">';
+        html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKT (' + projs.length + ')</div>';
+        const TYPE_COLORS = {'BRF':'var(--type-brf)','FÖRSKOLOR':'var(--type-forskolor)','Hyresrätt':'var(--type-hyresratt)','LOKAL':'var(--type-lokal)','KONTOR':'var(--type-kontor)'};
         for (const p of projs) {
-            const col = TYPE_COLORS[p.typ] || '#555';
+            const col = TYPE_COLORS[p.typ] || 'var(--ink-line)';
             html += '<div style="padding:2px 0;border-left:2px solid ' + col + ';padding-left:6px;margin:2px 0">';
             html += '<span style="font-weight:600;font-size:12px">' + p.namn + '</span>';
-            html += ' <span style="color:#999;font-size:11px">' + p.typ + ' | BTA:' + p.bta + ' | Anskaff:' + p.anskaffning + '</span>';
+            html += ' <span style="color:var(--ink-mid);font-size:11px">' + p.typ + ' | BTA:' + p.bta + ' | Anskaff:' + p.anskaffning + '</span>';
             html += '</div>';
         }
         html += '</div>';
@@ -835,23 +835,23 @@ function renderCompanion() {
     const totalBta = projs.reduce((s, p) => s + (p.bta || 0), 0);
     const totalAnsk = projs.reduce((s, p) => s + (p.anskaffning || 0), 0);
 
-    html += '<div style="background:#0f1923;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #4db8ff">';
-    html += '<div style="font-size:11px;color:#4db8ff;font-weight:600">SAMMANSTÄLLNING</div>';
+    html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid var(--burgundy)">';
+    html += '<div style="font-size:11px;color:var(--burgundy);font-weight:600">SAMMANSTÄLLNING</div>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12px;margin-top:4px">';
 
     // Q/H with achieved vs target
     const plQ = me.pl_q || 0;
     const plH = me.pl_h || 0;
     const plT = me.pl_t || 0;
-    html += '<div>Q: <strong style="color:' + (plQ >= totalQ ? '#27ae60' : '#e74c3c') + '">(' + plQ + ')' + totalQ + '</strong></div>';
-    html += '<div>H: <strong style="color:' + (plH >= totalH ? '#27ae60' : '#e74c3c') + '">(' + plH + ')' + totalH + '</strong></div>';
+    html += '<div>Q: <strong style="color:' + (plQ >= totalQ ? 'var(--success)' : 'var(--danger)') + '">(' + plQ + ')' + totalQ + '</strong></div>';
+    html += '<div>H: <strong style="color:' + (plH >= totalH ? 'var(--success)' : 'var(--danger)') + '">(' + plH + ')' + totalH + '</strong></div>';
     html += '<div>Rb: <strong>' + (me.riskbuffertar || 0) + '</strong></div>';
     html += '<div>Erf: <strong>' + (me.total_erfarenhet || 0) + '</strong></div>';
     html += '<div>BTA: <strong>' + totalBta + '</strong></div>';
     html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
 
     // EK & ABT
-    html += '<div>EK: <strong style="color:' + ((me.eget_kapital || 0) >= 0 ? '#27ae60' : '#e74c3c') + '">' + Math.round(me.eget_kapital || 0) + ' Mkr</strong></div>';
+    html += '<div>EK: <strong style="color:' + ((me.eget_kapital || 0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(me.eget_kapital || 0) + ' Mkr</strong></div>';
     html += '<div>ABT: <strong>' + Math.round(me.abt_budget || 0) + ' Mkr</strong></div>';
 
     html += '</div></div>';
@@ -860,15 +860,15 @@ function renderCompanion() {
     const suppliers = me.pl_suppliers || {};
     const orgs = me.pl_orgs || {};
     if (Object.keys(suppliers).length > 0 || Object.keys(orgs).length > 0) {
-        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #e67e22">';
-        html += '<div style="font-size:11px;color:#999">LEVERANTÖRER & ORG</div>';
+        html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid var(--warning)">';
+        html += '<div style="font-size:11px;color:var(--ink-mid)">LEVERANTÖRER & ORG</div>';
         for (const [name, s] of Object.entries(suppliers)) {
             const niva = typeof s === 'object' ? (s.niva || '?') : '?';
-            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:#3498db">Nivå ' + niva + '</span></div>';
+            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:var(--info)">Nivå ' + niva + '</span></div>';
         }
         for (const [name, o] of Object.entries(orgs)) {
             const niva = typeof o === 'object' ? (o.niva || '?') : '?';
-            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:#e67e22">Nivå ' + niva + '</span></div>';
+            html += '<div style="font-size:12px;padding:1px 0">• ' + name + ' <span style="color:var(--warning)">Nivå ' + niva + '</span></div>';
         }
         html += '</div>';
     }
@@ -876,13 +876,13 @@ function renderCompanion() {
     // Phase 4: Fastigheter
     const fasts = me.fastigheter || [];
     if (fasts.length > 0) {
-        html += '<div style="background:#1a2736;padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #16a085">';
-        html += '<div style="font-size:11px;color:#999">FASTIGHETER (' + fasts.length + ')</div>';
+        html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid var(--success)">';
+        html += '<div style="font-size:11px;color:var(--ink-mid)">FASTIGHETER (' + fasts.length + ')</div>';
         for (const f of fasts) {
             if (f.sold) continue;
             html += '<div style="font-size:12px;padding:2px 0">';
             html += '<span style="font-weight:600">' + f.namn + '</span>';
-            html += ' <span style="color:#999">' + f.typ + ' | EK: ' + (f.energiklass || '?') + ' | MV: ' + Math.round(f.marknadsvarde || 0) + ' Mkr</span>';
+            html += ' <span style="color:var(--ink-mid)">' + f.typ + ' | EK: ' + (f.energiklass || '?') + ' | MV: ' + Math.round(f.marknadsvarde || 0) + ' Mkr</span>';
             html += '</div>';
         }
         html += '</div>';

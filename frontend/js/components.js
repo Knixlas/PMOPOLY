@@ -352,11 +352,11 @@ function renderTokenAt(player, boardPos, layout, playerIdx) {
 function renderCenterPanel(lines, cx, cy, width, height) {
     let html = `
         <rect x="${cx - width/2}" y="${cy - height/2}" width="${width}" height="${height}"
-              rx="12" fill="rgba(15,52,96,0.92)" stroke="#f0c929" stroke-width="2"/>`;
+              rx="12" stroke-width="2" style="fill:var(--paper-deep);stroke:var(--burgundy)"/>`;
     let y = cy - height/2 + 30;
     for (const line of lines) {
         html += `<text x="${cx}" y="${y}" text-anchor="middle"
-              fill="${line.color || 'white'}" font-size="${line.size || 13}" font-weight="${line.bold ? '700' : '400'}">
+              style="fill:${line.color || 'var(--ink)'}" font-size="${line.size || 13}" font-weight="${line.bold ? '700' : '400'}">
             ${line.text}
         </text>`;
         y += (line.gap || 25);
@@ -387,7 +387,7 @@ function renderSquareOverlays(boardSquares) {
 
         // Background rect
         html += `<rect x="${x}" y="${y}" width="${SQ_W}" height="${SQ_H}"
-                       rx="6" fill="${fill}" opacity="0.85" stroke="#f0c929" stroke-width="1.5"/>`;
+                       rx="6" fill="${fill}" opacity="0.85" stroke-width="1.5" style="stroke:var(--ink-line)"/>`;
 
         // Square number
         html += `<text x="${x + 4}" y="${y + 13}" fill="rgba(255,255,255,0.6)"
@@ -422,14 +422,13 @@ export function renderBoard(boardSquares, players) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    // Dark background instead of mismatched image
-    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
+    let html = `<rect x="0" y="0" width="610" height="610" rx="12" style="fill:var(--paper)"/>`;
 
     // Center decoration
-    html += `<text x="305" y="290" text-anchor="middle" fill="#f0c929"
-                   font-size="28" font-weight="900" opacity="0.3">PMOPOLY</text>`;
-    html += `<text x="305" y="320" text-anchor="middle" fill="#f0c929"
-                   font-size="12" font-weight="400" opacity="0.2">Husbyggspelet</text>`;
+    html += `<text x="305" y="290" text-anchor="middle" style="fill:var(--ink)"
+                   font-size="28" font-weight="900" opacity="0.18">PMOPOLY</text>`;
+    html += `<text x="305" y="320" text-anchor="middle" style="fill:var(--ink)"
+                   font-size="12" font-weight="400" opacity="0.12">Husbyggspelet</text>`;
 
     // Square overlays with labels
     html += renderSquareOverlays(boardSquares);
@@ -533,7 +532,7 @@ export function renderPlanGFBoard(gameState) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
+    let html = `<rect x="0" y="0" width="610" height="610" rx="12" style="fill:var(--paper)"/>`;
     html += renderPlanGFSquares(gameState);
 
     // Player tokens
@@ -551,7 +550,7 @@ export function renderPlanGFBoard(gameState) {
     if (gameState.phase === 'phase2_planering') {
         const step = pending.step || 0;
         const totalSteps = pending.total_steps || 13;
-        lines.push({ text: 'Fas 2: Planering', color: '#f0c929', size: 16, bold: true });
+        lines.push({ text: 'Fas 2: Planering', color: 'var(--burgundy)', size: 16, bold: true });
         if (step > 0) {
             lines.push({ text: `Steg ${step}/${totalSteps}`, size: 14 });
             if (pending.slot_name) lines.push({ text: pending.slot_name, size: 13, color: '#3498db' });
@@ -562,7 +561,7 @@ export function renderPlanGFBoard(gameState) {
         const fasNr = pending.fas_nr || '';
         const fasNamn = faskort.namn || '';
 
-        lines.push({ text: 'Fas 3: Genomförande', color: '#f0c929', size: 16, bold: true });
+        lines.push({ text: 'Fas 3: Genomförande', color: 'var(--burgundy)', size: 16, bold: true });
 
         if (subState.includes('buy_support')) {
             lines.push({ text: 'Köp externt stöd?', size: 14 });
@@ -572,7 +571,7 @@ export function renderPlanGFBoard(gameState) {
             if (subState.includes('play')) lines.push({ text: 'Spela kompetenskort', size: 12, color: '#3498db' });
             else if (subState.includes('level')) lines.push({ text: 'Välj utfallsnivå', size: 12, color: '#3498db' });
         } else if (subState.includes('penalty')) {
-            lines.push({ text: 'Konsekvenskort', size: 15, bold: true, color: '#e74c3c' });
+            lines.push({ text: 'Konsekvenskort', size: 15, bold: true, color: 'var(--burgundy)' });
         } else if (subState.includes('garanti')) {
             lines.push({ text: 'Garantibesiktning', size: 15, bold: true, color: '#e67e22' });
         } else if (subState.includes('summary') || subState.includes('forskott')) {
@@ -647,7 +646,7 @@ function renderF4Squares(gameState) {
 
         html += `<rect x="${x}" y="${y}" width="${SQ_W}" height="${SQ_H}"
                        rx="6" fill="${fill}" opacity="${q + 1 === quarter ? '0.9' : '0.4'}"
-                       stroke="${q + 1 === quarter ? '#f0c929' : '#555'}" stroke-width="1.5"/>`;
+                       stroke-width="1.5" style="stroke:${q + 1 === quarter ? 'var(--burgundy)' : 'var(--ink-line)'}"/>`;
         html += `<text x="${x + 4}" y="${y + 13}" fill="rgba(255,255,255,0.6)"
                        font-size="9">Q${q + 1}</text>`;
         html += `<text x="${cx}" y="${y + 38}" text-anchor="middle"
@@ -660,7 +659,7 @@ export function renderPhase4Board(gameState) {
     const svg = document.getElementById('game-board');
     if (!svg) return;
 
-    let html = `<rect x="0" y="0" width="610" height="610" fill="#0a1628" rx="12"/>`;
+    let html = `<rect x="0" y="0" width="610" height="610" rx="12" style="fill:var(--paper)"/>`;
     html += renderF4Squares(gameState);
 
     // Player tokens
@@ -680,7 +679,7 @@ export function renderPhase4Board(gameState) {
     const quarter = gameState.f4_quarter || pending.quarter || 1;
 
     const lines = [];
-    lines.push({ text: 'Fas 4: Förvaltning', color: '#f0c929', size: 16, bold: true });
+    lines.push({ text: 'Fas 4: Förvaltning', color: 'var(--burgundy)', size: 16, bold: true });
     lines.push({ text: `Kvartal ${quarter}/4`, size: 15, bold: true });
 
     if (subState.includes('hire')) lines.push({ text: 'Anställ personal', size: 13, color: '#27ae60' });
