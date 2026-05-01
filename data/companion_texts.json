@@ -5,24 +5,129 @@
       "name": "Skede 1: Projektutveckling",
       "steps": [
         {
+          "id": "welcome",
+          "name": "Välkommen till Åkepol",
+          "lead": "Idag spelar vi ett spel som speglar hela kedjan: från projektutveckling, genom planering och byggnation, till att äga och förvalta fastigheter inom ert kvarter. Som par bildar ni ett kvarter; tre andra par i samma stadsdel är era konkurrenter. Spelet har 3 skeden.",
+          "actions": [
+            "Skriv in stadsdelskoden ni fått av spelledaren",
+            "Skriv in ert företagsnamn (kvarterets namn)",
+            "Välj er företagsledning: 1 CEO, 1 CFO, 1 COO (kosmetiskt, ger lagrollerna karaktär)"
+          ],
+          "meaning": "Ni leder ett dotterbolag till Holiday House Holding — moderbolaget garanterar byggnadskreditiv men styr inte projektet. Strategin lägger ni.",
+          "tip": "CEO/CFO/COO påverkar inte poängen — välj efter personlighet, inte siffror.",
+          "regelbok": "§1, §2.3"
+        },
+        {
+          "id": "setup_skede1",
+          "name": "Sätt upp Projektutvecklingen",
+          "lead": "Vi börjar Skede 1: Projektutveckling. Här tar ni fram projekt och sätter de krav (Q, H, T) som ska uppfyllas senare.",
+          "actions": [
+            "Lägg fram PU-brädet (det stora bruna)",
+            "Plocka tärningar: D4, D6, D8, D10, D12, D20",
+            "Sätt svarta krav-markörer på Q=6 och H=6 (Detaljplanens grundvärde)",
+            "Sätt T=12 (utgångskravet, rör sig först i Skede 2.1)",
+            "Slå D6 om vem som börjar — högst slag börjar, sedan medsols"
+          ],
+          "meaning": "Q=Kvalitet, H=Hållbarhet, T=Byggtid (månader). Riskbuffertar (Rb) ger er chansen att slå om dåliga slag.",
+          "tip": "Q och H rör sig UPPÅT under hela Skede 1 (svårare krav att möta). Rb-stjärnorna kan rädda er senare — samla dem.",
+          "regelbok": "§3.1, §1.7"
+        },
+        {
           "id": "choose_pc",
-          "name": "1.2 Välj Projektchef",
-          "help": "Varje spelare väljer sin Projektchef (PC).\n\nPC:n påverkar:\n• Lindring vid politik/dialogkort\n• Nämndbonus vid nämndbeslut\n• Kompetenspoäng under planering\n\nTänk på: dyrare PC ger bättre skydd men minskar ABT."
+          "name": "Välj Projektchef",
+          "lead": "Varje kvarter väljer en av 10 projektchefer (PC). PC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
+          "actions": [
+            "Klicka \"Välj Projektchef\" i companion",
+            "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndbonus (D20 vid nämndbeslut), Q/H/T-bonus, Kompetens",
+            "Diskutera i kvarteret och välj en gemensam PC"
+          ],
+          "meaning": "PC är en av kvarterets viktigaste resurser. Erfarenhet och kontaktnät spelar stor roll.",
+          "tip": "Hög lindring = bra på PU-brädet. Hög nämndbonus = tryggare med BRF. Hög Rb = mer flexibilitet senare.",
+          "regelbok": "§3.8"
         },
         {
           "id": "projects",
-          "name": "1.4–1.6 Projektval & Brädspel",
-          "help": "Välj startprojekt och spela PU-brädet.\n\nPå brädet:\n• Projekt — ta nytt projekt\n• Dialog/Politik — dra kort, slå D20\n• Stjärna — +1 riskbuffert\n• Stadshuset — ta/lämna projekt\n• Länsstyrelsen — sänker H-krav med 2\n• Skönhetsrådet — sänker Q-krav med 2\n\nRegistrera alla projekt och ändringar i appen."
+          "name": "Projektval & PU-brädet",
+          "lead": "Nu rör ni er runt PU-brädet i två varv. På varje runda får ni välja projekt, hantera politik/dialog-händelser, eller utöka tomten. Brädet har 24 rutor, fyra hörnrutor är specialfall.",
+          "actions": [
+            "Klicka \"Välj första projekt\" — ett projekt sätter Q-/H-krav och utvecklingskostnad",
+            "Slå D6 och flytta medsols (på er tur)",
+            "Projekt-ruta: ta projektet eller lägg i projektbanken",
+            "Stjärna: +1 riskbuffert",
+            "Dialog/Politik: dra kort, slå D20 + PC-lindring",
+            "Stadsbyggnadskontoret: dra markexpansion (5 Mkr/styck)",
+            "Stadshuset: ta, byt eller lämna projekt",
+            "Länsstyrelsen: +2 på valfritt krav (Q eller H) — du väljer",
+            "Skönhetsrådet: −2 på valfritt krav (Q eller H) — du väljer",
+            "Justera Q/H/Rb i companion efterhand",
+            "När första kvarteret passerar Stadsbyggnadskontoret för andra gången → fas avbryts, övriga avslutar pågående drag"
+          ],
+          "meaning": "Mer projekt = mer intäkter, men också svårare krav att uppfylla i Skede 2. Kvartertypen (Bostäder / Bostäder+1 / Övriga) styr hur snälla händelsekorten blir senare.",
+          "tip": "Ta fler projekt än ni får rum med — utvecklingskostnaden betalas ändå, så strategin \"redundans + sortera bort i pusslet\" kan löna sig.",
+          "regelbok": "§3.2–§3.7, §4.4"
         },
         {
           "id": "namndbeslut",
-          "name": "1.8 Nämndbeslut",
-          "help": "Varje projekt testas: slå D20 + PC:s nämndbonus.\n\nGodkänt = projektet är kvar.\nUnderkänt = projektet tas bort (använd X-knappen).\n\nRiskbuffertar kan användas för omslag.\n\nEfter nämndbeslut kan du köpa nya projekt till 3× ordinarie kostnad."
+          "name": "Nämndbeslut",
+          "lead": "Innan ni får placera projekten måste nämnden godkänna dem. För varje projekt med nämndkrav slår ni D20 + PC:s nämndbonus (erfarenhet räknas inte).",
+          "actions": [
+            "Slå D20 + nämndbonus per projekt",
+            "Resultat ≥ nämndkravet = godkänt",
+            "Misslyckat: använd 1 Rb för omslag, eller ta bort projektet (✕-knappen)",
+            "Utvecklingskostnaden är redan betald även för underkända projekt",
+            "Köp ev. nya projekt från projektbanken till 3× utvecklingskostnad (i tur och ordning enligt spelordning)"
+          ],
+          "meaning": "I verkligheten är nämndprocessen den första riktiga risken — fel typ av projekt på fel mark = avslag.",
+          "tip": "Rb är värt mer på dyra projekt än billiga. Ni kan slå om EN gång per slag — ingen tredje serve.",
+          "regelbok": "§4.1, §4.2"
+        },
+        {
+          "id": "placement",
+          "name": "Placera projekt på marken",
+          "lead": "Lägg pussel: alla godkända projekt ska rymmas på er mark (4×4 = 16 celler) plus markexpansioner. Bostäder (BRF/Hyresrätt) får läggas i ett övre lager — men hela bostadsformen måste vila på underliggande projekt (inga \"hål\").",
+          "actions": [
+            "Passa in projektformerna fysiskt på er tomt",
+            "Inget projekt får sticka ut utanför mark + expansioner",
+            "Övre lager: bara bostäder, måste täckas helt av projekt under",
+            "Justera tillbaka Q-/H-krav om ni inte placerade ett projekt",
+            "Lägg ej placerade projekt i projektbanken (kostnaden är ändå betald)"
+          ],
+          "meaning": "I verkligheten är detta byggrättsligt komplicerat — staplade lager symboliserar flerskiktade kvarter (oftast inte tillåtet i verkligheten).",
+          "tip": "Bostäder ovanpå kontor/lokaler är spelets mest BTA-effektiva strategi — använd det om ni passar in formerna.",
+          "regelbok": "§4.3, §4.4"
+        },
+        {
+          "id": "anskaffning",
+          "name": "Anskaffning & ABT-budget",
+          "lead": "Nu räknas ekonomin ihop. Anskaffningen är er totala budget — det som blir kvar efter tomt, expansioner och utveckling är ABT-budgeten ni har att röra er med i Skede 2.",
+          "actions": [
+            "Companion summerar automatiskt:",
+            "  Anskaffning (intäkt från projekten)",
+            "  − 15 Mkr för tomten",
+            "  − 5 Mkr per markexpansion",
+            "  − Utvecklingskostnad för alla projekt (även ej placerade)",
+            "  = ABT-budget",
+            "Notera kvarterstyp på scoreboard: Bostäder / Bostäder+1 / Övriga",
+            "Notera BTA-klass och BYA-klass (A–D, baserat på storlek)"
+          ],
+          "meaning": "ABT är er kassa under produktionen. Det som blir över när bygget är klart är ert täckningsbidrag (TB). Moderbolaget förväntar sig ett TB.",
+          "tip": "Negativ ABT-budget tvingar fram moderbolagslån — undvik om möjligt, lånet straffar er hårt i Skede 3.",
+          "regelbok": "§5.1, §1.7"
         },
         {
           "id": "rb_invest",
-          "name": "1.12 Riskbuffertinvestering",
-          "help": "Fördela kvarvarande riskbuffertar:\n\n• −1 Kvalitetskrav (Q)\n• −1 Hållbarhetskrav (H)\n• −1 Byggtid (T)\n\nVarje riskbuffert kan bara användas en gång."
+          "name": "Sänk era krav (om ni vill)",
+          "lead": "Sista chansen i Skede 1: använd era kvarvarande riskbuffertar för att sänka Q-, H- eller T-kravet. 1 Rb = 1 steg. Resterande Rb sparas till Skede 2.2 (omslag på dåliga slag).",
+          "actions": [
+            "Använd ± knappar för att fördela Rb:",
+            "  −1 Q-krav per Rb",
+            "  −1 H-krav per Rb",
+            "  −1 T per Rb",
+            "Golv: T ≥ 8, Q-krav ≥ 0, H-krav ≥ 0"
+          ],
+          "meaning": "Det är sista chansen att flytta målstolparna. Sparade Rb fungerar som omslag-försäkring i Skede 2.2 istället.",
+          "tip": "T-sänkning är ovanligt värdefull eftersom T-överskridande också drar med sig Q- och H-straff via konsekvenskorten.",
+          "regelbok": "§3.6, §5.2"
         }
       ]
     },
@@ -31,19 +136,66 @@
       "name": "Skede 2.1: Planering",
       "steps": [
         {
+          "id": "transition_skede2",
+          "name": "Skede 1 är klart — sätt upp Skede 2",
+          "lead": "Skede 1 är klart! Vi pausar nu, sen byter vi bräde till PL/GF-brädet och börjar Skede 2.1 Planering.",
+          "actions": [
+            "Plocka undan PU-kort, PU-bräde, PU-personal — läggs i spelboxen",
+            "BEHÅLL alla projektkort (placerade + godkända som inte placerades)",
+            "Ej godkända BRF kan läggas tillbaka eftersom BRF inte används i förvaltningen",
+            "Lägg fram Skede 2-brädet (Planering + Genomförande använder samma)",
+            "Sätt T-utfall (färgad kub) = 12 + högsta projektets T (max 14)",
+            "Färgade Q-, H-utfallskuber börjar på samma värde som kraven"
+          ],
+          "meaning": "Bygget startar i T-utfallet — högsta projekt drar upp tiden direkt. T-utfallet kan röra sig i Skede 2.2, aldrig under 8.",
+          "tip": "Q- och H-utfallskuberna börjar på krav-värdet och rör sig endast nedåt i Skede 2 — målet är att inte tappa för många steg.",
+          "regelbok": "§5.1, §5.2"
+        },
+        {
           "id": "choose_ac",
-          "name": "2.1 Välj Arbetschef",
-          "help": "Varje spelare väljer sin Arbetschef (AC).\n\nAC:n påverkar:\n• Erfarenhetsbonus vid D20-slag\n• Kan spelas som kompetenskort (en gång)\n• Kostnad dras från ABT\n\nVälj efter dina behov — erfarenhet hjälper vid händelsekort."
+          "name": "Välj Arbetschef",
+          "lead": "Varje kvarter väljer en arbetschef (AC). Kvarteret med lägst ABT-kostnad väljer först. AC ger erfarenhetsbonus på alla händelsekort i Skede 2 + 3.",
+          "actions": [
+            "Klicka \"Välj Arbetschef\" i companion",
+            "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), Q/H/T-bonus",
+            "Lägst ABT-kostnad väljer först — companion visar turordning"
+          ],
+          "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Mycket värdefullt eftersom det lindrar händelsekort. Kompetenser används i Skede 2.2 för att betala FAS-kort.",
+          "tip": "En AC med +2 erfarenhet är ofta bättre än en med spridda kompetenser — bonusen på alla slag rätar ut värsta utfallen.",
+          "regelbok": "§5.4, §10"
         },
         {
           "id": "planning",
-          "name": "2.3 Planeringssteg",
-          "help": "13 steg i ordning: Stödf. → Mark → Husund. → Dig. → Stomme → Install. → Op.team → Gem.arb → Yttertak → Fasader → Markn. → Stomkomp. → Inv.ytsk.\n\nPer steg:\n• Välj leverantör/organisation (nivå 1–4)\n• Pris beror på BYA/BTA-klass, dras från ABT\n• Q, H, T, erfarenhet uppdateras\n• Dra ett händelsekort → D20 + erfarenhet\n\nRegistrera dina leverantörsval och uppdatera ABT med +/- knapparna.\n\nTips: Kolla TG (täckningsgrad) varje steg. Under 20%? Dags att välja billigare."
+          "name": "De 13 planeringsstegen",
+          "lead": "13 steg i fast ordning. Vid varje steg ligger fyra alternativ uppe — alla kvarter har samma fyra och får välja samma som varandra. Efter varje val drar ni ett händelsekort.",
+          "actions": [
+            "Per steg:",
+            "  1. Välj ett av fyra alternativ (leverantör nivå 1–4 eller organisation)",
+            "  2. Betala kostnaden från ABT-budget (BYA/BTA-klass styr priset)",
+            "  3. Justera Q, H, T, erfarenhet enligt valet",
+            "  4. Dra händelsekort: D20 + erfarenhet → utför kortets effekt",
+            "  5. Leverantörer nivå 1 eller 2 sparas på scoreboard (drar garanti-kort vid skedesavslut)",
+            "Ordning: Stödfunktioner → Mark → Husunderbyggnad → Digitalisering → Stomme → Installationer → Operativt team → Gemensamma arbeten → Yttertak → Fasader → Marknadsteam → Stomkomplettering → Inv. ytskikt"
+          ],
+          "meaning": "I verkligheten är planeringen där projekt vinner eller förlorar. De flesta byggproblem kan spåras tillbaka till planeringen.",
+          "tip": "Billiga leverantörer = lägre Q/H men sparar ABT till Skede 2.2 — riskar dock fler garantibesiktningar. Balansera medvetet.",
+          "regelbok": "§5.3, §5.5"
         },
         {
           "id": "planning_summary",
-          "name": "2.4 Planeringssammanfattning",
-          "help": "Kontrollera att allt stämmer:\n\n• Q uppfyllt?\n• H uppfyllt?\n• T ≤ 12?\n• ABT-budget kvar?\n\nDessa värden styr konsekvenskort i Skede 2.2."
+          "name": "Sammanfattning Skede 2.1",
+          "lead": "13 steg klara. Kontrollera era värden innan ni går in i Skede 2.2 — det är så här det ser ut när byggstart sker.",
+          "actions": [
+            "Q-utfall vs Q-krav — uppfyllt redan?",
+            "H-utfall vs H-krav — uppfyllt redan?",
+            "T-utfall (mål: 12)",
+            "ABT-budget kvar — finns marginal till Genomförandet?",
+            "Erfarenhet (max 12, gäller hela Skede 2)",
+            "Alla leverantörs- och organisationskort sparas som kompetenskort för Skede 2.2 (kan spelas en gång var)"
+          ],
+          "meaning": "Skede 2.2 är där ni \"betalar med kompetens\" för att klara FAS-korten. Spridda kompetenser = bredare verktygslåda.",
+          "tip": "Räkna kompetenspoäng per kategori (STA/KOM/SAM/NOG/INN/ABM) innan Skede 2.2 — saknar ni en kategori helt blir vissa FAS-kort omöjliga utan kulturkort.",
+          "regelbok": "§5.6, §6.5"
         }
       ]
     },
@@ -52,24 +204,87 @@
       "name": "Skede 2.2: Genomförande",
       "steps": [
         {
+          "id": "transition_skede3",
+          "name": "Sätt upp Genomförandet",
+          "lead": "Samma bräde som 2.1, men nu byggs projekten. 8 utförandefaser. Ni betalar med kompetens (eller tar konsekvensen). Riskbuffertar är värdefulla nu.",
+          "actions": [
+            "Plocka fram alla GF-kort (gröna): FAS-kort, konsekvenskort (Q/H/T), garantibesiktning, kulturkort",
+            "Sätt scoreboarden: Q-, H-, T-utfallskuberna är där 2.1 lämnade dem",
+            "Sparade leverantörer nivå 1–2 ska ligga i sin ruta på scoreboarden"
+          ],
+          "meaning": "Företagskultur (kulturkorten) är \"extraenergi\" — det lilla extra hela teamet kan ge utöver normalnivå. Begränsad mängd, först till kvarn (80 kort delas av alla kvarter).",
+          "tip": "Köp kulturkort tidigt om ni planerar dem — de blir dyrare för varje fas (2 → 7 Mkr).",
+          "regelbok": "§6.1, §6.3"
+        },
+        {
           "id": "gf_byggfaser",
-          "name": "3.1–3.4 Byggfaser (8 st)",
-          "help": "8 byggfaser genomförs i ordning.\n\nPer fas:\n1. Välj utfallsnivå (faskort)\n   • Negativt — gratis men straff (Q/H/T-förlust)\n   • Neutralt — kräver kompetenskort\n   • Positivt — högre krav, minimal kostnad\n   • Bonus — högsta krav, kan ge vinst\n\n2. Spela kompetenskort om Neutralt+\n   Leverantörs-, org-, AC- eller kulturkort.\n\n3. Dra händelsekort per fas\n   D20 + erfarenhet. Effekt på ABT.\n\nRegistrera Q/H/T/ABT-ändringar per fas."
+          "name": "De 8 utförandefaserna",
+          "lead": "Per fas: vänd FAS-kortet → 4 utfallsnivåer (Röd / Gul / Grön / Mörkgrön) → välj nivå genom att betala kompetens. Sen händelsekort.",
+          "actions": [
+            "Per fas:",
+            "  1. Köp ev. kulturkort (frivilligt, kostar 2–7 Mkr beroende på fas)",
+            "  2. Vänd FAS-kortet — välj kolumn baserat på er kvarterstyp",
+            "  3. Välj utfallsnivå:",
+            "     Röd (negativ): ingen kostnad, straff i Q/H/T eller ABT",
+            "     Gul: lägre kompetenskrav, sparar pengar och tid",
+            "     Grön (ingen effekt): moderat kompetenskrav, neutralt",
+            "     Mörkgrön (bonus): högsta kompetenskrav, kan ge tidsvinst, Q-bonus eller B-ÄTA-intäkt",
+            "  4. Spela kompetenskort tills sammanlagda summan möter eller överstiger kravet",
+            "  5. Dra händelsekort ur er egen hög: D20 + erfarenhet → utför kortets effekt",
+            "  6. Justera scoreboard, lägg använda kort i spelboxen",
+            "Upprepa för alla 8 utförandefaser",
+            "B-ÄTA är vinst på beställarens ändring — läggs direkt till kassan, inte till TB/TG"
+          ],
+          "meaning": "Ambitionsnivån är en riskavvägning — det är inte alltid värt att gå för Mörkgrön. Mörkgrön = högsta krav, men kan ge B-ÄTA-vinst direkt till kassan.",
+          "tip": "Planera över alla 8 faser. Spela inte alla kompetenskort på fas 1–3 — de senare faserna har högre krav och kostnader. Och ej använda kompetenser ger inga pengar tillbaka.",
+          "regelbok": "§6.4, §6.5, §6.6, §6.7"
         },
         {
           "id": "gf_konsekvens",
-          "name": "3.5 Konsekvenskort",
-          "help": "Först: TID\nAntal kort = månader över 12.\nKan påverka Q, H och ABT-kostnad.\n\nSedan: KVALITET\nAntal kort = Q-poäng under krav.\nPåverkar bara ABT-kostnad.\n\nSist: HÅLLBARHET\nAntal kort = H-poäng under krav.\nPåverkar bara ABT-kostnad.\n\nPer kort: slå D20 + erfarenhet."
+          "name": "Konsekvenser (T → Q → H)",
+          "lead": "Nu jämförs era utfall mot kraven. Avvikelser ger konsekvenskort som drar er nedåt.",
+          "actions": [
+            "Tid: för varje månad er T överstiger 12, dra ett konsekvenskort-Tid",
+            "Kvalitet: för varje steg ert Q-utfall understiger Q-kravet, dra konsekvenskort-Kvalitet",
+            "Hållbarhet: för varje steg ert H-utfall understiger H-kravet, dra konsekvenskort-Hållbarhet",
+            "Per kort: slå D20 + erfarenhet, effekt = ABT-kostnad",
+            "Q/H-loopen kan rulla på (vissa kort sänker utfallet ytterligare → fler kort)",
+            "CFO antecknar antalet dragna konsekvenskort — påverkar antal garantikort i nästa steg"
+          ],
+          "meaning": "Avvikelser från Q/H/T-mål påverkar slutpoängen via f(n) straffaktorn (1 fel → 90 %, 4 fel → 70 %, 10 fel → 50 %, sen linjärt till 0).",
+          "tip": "En enstaka avvikelse tar 10 % av råpoängen — håll målen om ni kan. Förebyggande arbete i Skede 2 är billigare än konsekvenser här.",
+          "regelbok": "§7.1–§7.3, §9.2"
         },
         {
           "id": "gf_garanti",
-          "name": "3.6 Garantibesiktning",
-          "help": "Antal garantikort baseras på:\n• Konsekvenskort dragna\n• Leverantörer/organisationer under nivå 3\n\nPer kort: slå D20. Effekt = ABT-kostnad.\n\nRegistrera ABT-ändringar med +/- knapparna."
+          "name": "Garantibesiktning",
+          "lead": "5 år efter färdigställande besiktigas byggnaden. Dolda fel dyker upp — leverantörers kvalitet avgör hur många.",
+          "actions": [
+            "Antal kort = (antal konsekvenskort dragna) + (antal sparade leverantörer nivå 1–2)",
+            "Per kort: slå D20, effekt = ABT-kostnad (alltid ≤ 0)",
+            "Om garanti-högen tar slut: blanda om använda kort, dra igen"
+          ],
+          "meaning": "Lågnivå-leverantörer (nivå 1–2) ger garantiavsättningar. Här syns straffet för att ha sparat in på leverantörsval i Skede 2.1.",
+          "tip": "Garantikorten är ALLTID ≤ 0 — det är ren kostnad. Bara att svälja och föra in i ABT.",
+          "regelbok": "§7.4"
         },
         {
           "id": "gf_abt_ek",
-          "name": "3.7–3.8 ABT→EK & Förskott",
-          "help": "Kvarvarande ABT-budget överförs till EK.\n\nBRF-vinst:\n• Fast intäkt: (Marknadsvärde − Anskaffning) per BRF → EK\n• Rörlig intäkt: slå tärning per BRF → EK\n\nModerbolagslån:\n• Ger 95 Mkr kontant, skapar 100 Mkr skuld\n• Används för att täcka negativt EK\n• Kan lösas senare: −100 Mkr från EK\n\nRegistrera slutligt EK och antal moderbolagslån."
+          "name": "Ekonomisk uppgörelse + BRF-försäljning",
+          "lead": "Bygget är klart. Nu summeras Skede 2-resultatet och BRF-projekten säljs av innan förvaltningen.",
+          "actions": [
+            "TB (Täckningsbidrag): ABT-budget − faktisk ABT-kostnad",
+            "TG (Täckningsgrad): TB ÷ ABT-budget (procentmått)",
+            "Om moderbolagslån har tagits: 100 Mkr per lån dras från eget kapital",
+            "Kvarvarande medel → kassan (följer med till Skede 3)",
+            "BRF-försäljning: Marknadsvärde − Anskaffning + rörlig intäkt (slå projektkortets tärning) → kassan",
+            "Behåll BRF-projektkorten i separat hög (BTA räknas i slutet)",
+            "B-ÄTA-intäkter ligger separat på kassan, inte i TB/TG",
+            "Räkna avvikelser (n) innan scoreboarden plockas bort: spara n stycken kort i en hög hos kvarteret"
+          ],
+          "meaning": "TB är ert mått på hur väl ni höll budgeten — del av slutpoängen och tillskott till kassan. n styr f(n)-straffaktorn på slutpoängen.",
+          "tip": "Spara avvikelse-högen synligt — n läses av direkt ur den vid slutvärderingen. BRF-projektkorten behövs för BTA-divisorn även om de är sålda.",
+          "regelbok": "§7.5, §7.6, §7.7"
         }
       ]
     },
@@ -79,33 +294,106 @@
       "steps": [
         {
           "id": "f4_forbered",
-          "name": "4.1 Förbered förvaltning",
-          "help": "Projekt blir fastigheter.\n• BRF säljs: EK ökar med (MV − Anskaffning)\n• Kvarvarande projekt = förvaltningsportfölj\n\n• Välj FC (Fastighetschef) och FS (Fastighetsskötare)\n• Kontrollera energiklass per fastighet (A–E)\n• Köp/sälj fastigheter om önskat"
+          "name": "Förbered förvaltning + anställ personal",
+          "lead": "Bygget är klart, nu förvaltar ni i 4 kvartal. Projekten heter nu fastigheter. Marknaden har också utbud (fastigheter byggda av andra aktörer) som ni kan köpa.",
+          "actions": [
+            "Plocka undan Skede 2-brädet, plocka fram Skede 3-brädet (stadsdelens marknad)",
+            "Era fastigheter ligger framför er (ej på brädet)",
+            "Övriga aktörers fastigheter (ej BRF) ligger på brädet — kan köpas",
+            "Plocka fram röda kort (F): personal, händelsekort per fastighetstyp, omvärldskort, DD-kort, kvartalskort, yieldkort",
+            "Anställ FC (Fastighetschef) — minst 1 krävs. Lägst marknadsvärde väljer först.",
+            "Anställ ev. FS (Fastighetsskötare) så samlade kapacitet ≥ antalet fastigheter ni äger",
+            "Personalstyrkan kan inte minskas under skedet, även vid övertalighet"
+          ],
+          "meaning": "I verkligheten är förvaltningskostnaden över 50 år större än byggkostnaden. Rätt personal = lägre driftskostnader.",
+          "tip": "Personalstyrkan kan inte minskas — anställ inte fler än ni säkert behöver. FC har strategiskt fokus, FS sköter daglig drift.",
+          "regelbok": "§8.1, §8.2"
         },
         {
           "id": "f4_q1",
-          "name": "4.2–4.3 Kvartal 1",
-          "help": "Kvartal 1:\n• Ange yield (bostäder + kommersiellt) → marknadsvärde uppdateras\n• Dra händelsekort per fastighet → registrera EK/energi-effekter\n• Lön FC+FS dras automatiskt\n• Köp/sälj fastigheter"
+          "name": "Kvartal 1 — Kvartalsspiralen",
+          "lead": "Kvartalet följer en fast spiral. Marknadsvärdet uppdateras varje kvartal pga yield-förändringar.",
+          "actions": [
+            "1. Sälj fastigheter om ni vill (tvångsförsäljning sker här om kassan är negativ)",
+            "2. Utöka marknaden: 3 nya fastigheter denna kvartal",
+            "3. Budgivning: köp på sekundärmarknaden — start på marknadsvärde, lägsta accepterade bud 80 %, banken köper alltid tillbaka för 80 %, ni betalar bara 30 % kontant",
+            "4. Dra DD-kort (Due Diligence) per fastighet ni köper",
+            "5. Anställ ev. ny FS för att täcka antal fastigheter",
+            "6. Summera driftnetto på era ägda fastigheter → intäkt till kassan",
+            "7. Dra omvärldskort (samma för alla kvarter)",
+            "8. Betala personalkostnad (FC + FS-löner)",
+            "9. Dra händelsekort av rätt typ per ägd fastighet (HR / KON / LOK / FÖR)",
+            "10. Dra kvartalskort",
+            "11. Energiuppgraderingar (frivilligt, 3 Mkr per steg, A–E)",
+            "12. Dra yieldkort och justera marknadsyielden",
+            "Vid moderbolagslån: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp"
+          ],
+          "meaning": "Yield-förändringar är makro-risken ni inte kan kontrollera — den vänder hela värderingen. Banken stabiliserar med 80 %-golv. Energiklass A = +10 % FV-bonus, klass E = osäljbar (0).",
+          "tip": "Energiuppgraderingar (3 Mkr/steg) lönar sig nästan alltid på fastigheter ni planerar att behålla. På fastigheter ni ska sälja: räkna på köparens incitament istället.",
+          "regelbok": "§6.2, §8.3–§8.11"
         },
         {
           "id": "f4_q2",
-          "name": "4.4–4.5 Kvartal 2",
-          "help": "Kvartal 2:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Hyresförhandling (om hyresrätt)\n• Lön, köp/sälj"
+          "name": "Kvartal 2 — Kvartalsspiralen",
+          "lead": "Kvartal 2 följer samma spiral. Nu ska ni också göra hyresförhandling om ni har hyresrätter.",
+          "actions": [
+            "Samma sekvens som Kvartal 1",
+            "Utöka marknaden: 2 nya fastigheter denna kvartal",
+            "Hyresförhandling om ni har hyresrätter",
+            "Vid moderbolagslån: samma restriktioner som tidigare"
+          ],
+          "meaning": "Mitt-i-säsongen — strategi behöver justeras efter hur omvärldskorten gått hittills. Yieldkurvan kan ha vänt.",
+          "tip": "Om ni inte uppnådde Q4 i planeringen, är det här ni kan rädda värdet med energiuppgraderingar.",
+          "regelbok": "§8.3–§8.11"
         },
         {
           "id": "f4_q3",
-          "name": "4.6–4.7 Kvartal 3",
-          "help": "Kvartal 3:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Lön, köp/sälj"
+          "name": "Kvartal 3 — Kvartalsspiralen",
+          "lead": "Kvartal 3 följer samma spiral. Nu blir marknaden smalare — bara 1 ny fastighet kommer ut.",
+          "actions": [
+            "Samma sekvens som tidigare kvartal",
+            "Utöka marknaden: 1 ny fastighet denna kvartal",
+            "Vid moderbolagslån: samma restriktioner som tidigare"
+          ],
+          "meaning": "Slutet närmar sig — varje energiuppgradering måste betalas innan slutvärderingen för att räknas i FV.",
+          "tip": "Räkna på FV-bidraget per fastighet och investera i de med högst potential. Klass-E-fastigheter ger 0 — sälj eller uppgradera dem.",
+          "regelbok": "§8.3–§8.11"
         },
         {
           "id": "f4_q4",
-          "name": "4.8–4.9 Kvartal 4",
-          "help": "Kvartal 4:\n• Ange yield → marknadsvärde uppdateras\n• Händelsekort per fastighet\n• Hyresförhandling (om hyresrätt)\n• Lön, köp/sälj"
+          "name": "Kvartal 4 — Sista kvartalet",
+          "lead": "Sista kvartalet. Ingen ny fastighet på marknaden, men hyresförhandling igen om ni har hyresrätter.",
+          "actions": [
+            "Samma sekvens som tidigare kvartal",
+            "Utöka marknaden: 0 nya fastigheter (marknaden är stängd)",
+            "Hyresförhandling om ni har hyresrätter",
+            "Inget yieldkort dras detta kvartal — yielden låses",
+            "Vid moderbolagslån: samma restriktioner som tidigare"
+          ],
+          "meaning": "Yielden ni har efter Q3 är den ni räknar slutpoängen med. Kasse-positionen och fastigheternas energiklass är de sista hävstängerna.",
+          "tip": "Kolla att ni har minst 1 fastighet — alla kvarter måste äga något när året är slut.",
+          "regelbok": "§8.3–§8.11"
         },
         {
           "id": "f4_slut",
-          "name": "5.1–5.2 Slutvärdering",
-          "help": "Beräkna slutpoäng:\n\nFV = DN/yield × energiklassmodifier per fastighet\nFV × 30% = ägarandel\n\nSlutpoäng = (FV×30% + EK + TB) / BTA × 1000 [kr/kvm]\n\nHögst poäng vinner!"
+          "name": "Slutvärdering",
+          "lead": "Förvaltningen är klar. Nu räknas slutpoängen — det jämförelsetal som avgör vinnaren.",
+          "actions": [
+            "Companion räknar automatiskt:",
+            "Råpoäng = (FV × 30 % × Energibonus + Eget kapital + TB) ÷ (BTA / 1000)",
+            "  FV per fastighet = (driftnetto × 4) ÷ (yield/100)",
+            "  × 30 % = ert ägarkapital (70 % är banklån)",
+            "  Energibonus per fastighet: A=1.10, B=1.05, C=1.00, D=0.95, E=0",
+            "  Eget kapital = kassa − moderbolagslån (100 Mkr per lån)",
+            "  TB = ABT-budget − faktisk ABT-kostnad (sätts till 0 om ABT var negativt)",
+            "  BTA = placerade projekt + sålda BRF + köpta fastigheter",
+            "Slutpoäng = Råpoäng × f(n)",
+            "  n=0 → 100 %, n=1 → 90 %, n=4 → 70 %, n=10 → 50 %, sen linjärt till 0 vid n=60",
+            "Den med högst slutpoäng vinner. Vid lika poäng: högst förvaltad BTA vinner."
+          ],
+          "meaning": "Inte bara \"mest pengar\" — det handlar om bäst förvaltad portfölj per kvm. Den som byggt kvalitet från start har fördel i förvaltningen.",
+          "tip": "Vid lika poäng vinner högst förvaltad BTA. Ett tätt slut kan avgöras av om ni köpte en till fastighet på sekundärmarknaden.",
+          "regelbok": "§9.1, §9.2, §9.3"
         }
       ]
     }

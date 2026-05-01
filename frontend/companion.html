@@ -250,6 +250,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
         <div class="phase-name" id="p-phase-name">—</div>
         <div class="step-name" id="p-step-name">Väntar på Game Master...</div>
         <div style="margin-top:6px;font-size:13px;color:var(--ink-mid)">Kvarter: <span id="p-block-name" style="color:var(--burgundy);cursor:pointer;border-bottom:1px dashed var(--ink-faint)" title="Klicka för att byta namn">—</span>
+            <span id="btn-tips-toggle" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Visa/dölj tips i prompts">💡 Tips</span>
             <span id="btn-leave-player" style="margin-left:12px;color:var(--danger);cursor:pointer;font-size:12px">Lämna</span>
         </div>
     </div>
@@ -885,18 +886,80 @@ function render() {
     }
 }
 
-function showHelpPopup(title, text) {
-    const mc = document.getElementById('modal-container');
-    const lines = text.split('\n').map(function(l) {
-        if (l.startsWith('•')) return '<div style="padding:2px 0 2px 12px">' + l + '</div>';
-        if (l.trim() === '') return '<br>';
-        if (l.startsWith('Tips:')) return '<div style="color:var(--burgundy);margin-top:8px;font-style:italic">' + l + '</div>';
-        return '<div>' + l + '</div>';
-    }).join('');
+// Tips-toggle (persistas i localStorage)
+function getTipsOn() {
+    var v = localStorage.getItem('akepol-tips-on');
+    return v === null ? true : v === '1';  // default PÅ
+}
+function setTipsOn(on) {
+    localStorage.setItem('akepol-tips-on', on ? '1' : '0');
+    // Re-render any open prompt + the player view
+    if (typeof render === 'function') render();
+}
+
+function _escapeHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showHelpPopup(title, dataOrText, phaseName) {
+    var mc = document.getElementById('modal-container');
+    var body = '';
+    var hasStructured = dataOrText && typeof dataOrText === 'object' && (dataOrText.lead || (dataOrText.actions && dataOrText.actions.length));
+
+    if (hasStructured) {
+        var d = dataOrText;
+        var tipsOn = getTipsOn();
+        // Eyebrow
+        if (phaseName) {
+            body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:6px">' + _escapeHtml(phaseName) + '</div>';
+        }
+        // Lead
+        if (d.lead) {
+            body += '<div style="font-size:1rem;line-height:1.5;color:var(--ink);margin-bottom:14px">' + _escapeHtml(d.lead) + '</div>';
+        }
+        // Actions
+        if (d.actions && d.actions.length) {
+            body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin:14px 0 6px">Stegen ni gör nu</div>';
+            body += '<ul style="margin:0 0 14px 0;padding-left:18px;line-height:1.5">';
+            d.actions.forEach(function(a) {
+                // Indented sub-items (lines starting with two spaces) get rendered without bullet
+                if (/^\s+/.test(a)) {
+                    body += '<li style="list-style:none;color:var(--ink-mid);font-size:0.95rem;padding:1px 0">' + _escapeHtml(a.trim()) + '</li>';
+                } else {
+                    body += '<li style="padding:2px 0">' + _escapeHtml(a) + '</li>';
+                }
+            });
+            body += '</ul>';
+        }
+        // Meaning (alltid synlig)
+        if (d.meaning) {
+            body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin:14px 0 6px">Vad det betyder</div>';
+            body += '<div style="font-style:italic;color:var(--ink-mid);line-height:1.5">' + _escapeHtml(d.meaning) + '</div>';
+        }
+        // Tip (om toggle är PÅ)
+        if (d.tip && tipsOn) {
+            body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin:14px 0 6px">💡 Tips</div>';
+            body += '<div style="color:var(--burgundy);line-height:1.5">' + _escapeHtml(d.tip) + '</div>';
+        }
+        // Regelbok footer
+        if (d.regelbok) {
+            body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-top:18px;padding-top:10px;border-top:1px solid var(--border)">Regelbok ' + _escapeHtml(d.regelbok) + '</div>';
+        }
+    } else {
+        // Bakåtkompat: gammal text-format
+        var text = typeof dataOrText === 'string' ? dataOrText : (dataOrText && dataOrText.help) || '';
+        body = text.split('\n').map(function(l) {
+            if (l.startsWith('•')) return '<div style="padding:2px 0 2px 12px">' + _escapeHtml(l) + '</div>';
+            if (l.trim() === '') return '<br>';
+            if (l.startsWith('Tips:')) return '<div style="color:var(--burgundy);margin-top:8px;font-style:italic">' + _escapeHtml(l) + '</div>';
+            return '<div>' + _escapeHtml(l) + '</div>';
+        }).join('');
+    }
+
     mc.innerHTML = '<div class="modal-overlay"><div class="modal">' +
-        '<div class="modal-header"><h3>' + (title || 'Hjälp') + '</h3></div>' +
-        '<div class="modal-body" style="font-size:14px;line-height:1.6">' + lines + '</div>' +
-        '<div class="modal-footer"><button class="btn-primary" id="modal-ok">Förstått!</button></div>' +
+        '<div class="modal-header"><h3>' + _escapeHtml(title || 'Hjälp') + '</h3></div>' +
+        '<div class="modal-body" style="font-size:14px;line-height:1.6">' + body + '</div>' +
+        '<div class="modal-footer"><button class="btn-primary" id="modal-ok">Förstått</button></div>' +
         '</div></div>';
     mc.querySelector('#modal-ok').addEventListener('click', function() { mc.innerHTML = ''; });
     mc.querySelector('.modal-overlay').addEventListener('click', function(e) {
@@ -914,13 +977,14 @@ function renderPlayer() {
 
     // Step name + info icon
     const stepEl = document.getElementById('p-step-name');
+    var hasHelp = (st.step_data && (st.step_data.lead || (st.step_data.actions && st.step_data.actions.length))) || st.step_help;
     stepEl.innerHTML = (st.step_name || 'Väntar...') +
-        (st.step_help ? ' <span class="help-icon" id="btn-help-step" title="Visa hjälp">ℹ️</span>' : '');
+        (hasHelp ? ' <span class="help-icon" id="btn-help-step" title="Visa hjälp">ℹ️</span>' : '');
 
-    // Show help popup on step change
-    if (st.step && st.step !== S._lastStep && st.step_help) {
+    // Show help popup on step change (prefer structured step_data; fall back to step_help)
+    if (st.step && st.step !== S._lastStep && hasHelp) {
         S._lastStep = st.step;
-        showHelpPopup(st.step_name, st.step_help);
+        showHelpPopup(st.step_name, st.step_data || st.step_help, st.phase_name);
     }
     if (!S._lastStep) S._lastStep = st.step;
     const blockEl = document.getElementById('p-block-name');
@@ -1961,8 +2025,14 @@ function renderPlayer() {
     const helpBtn = document.getElementById('btn-help-step');
     if (helpBtn) {
         helpBtn.addEventListener('click', function() {
-            showHelpPopup(st.step_name, st.step_help);
+            showHelpPopup(st.step_name, st.step_data || st.step_help, st.phase_name);
         });
+    }
+
+    // Tips toggle button
+    const tipsBtn = document.getElementById('btn-tips-toggle');
+    if (tipsBtn) {
+        tipsBtn.onclick = function() { setTipsOn(!getTipsOn()); };
     }
 }
 
