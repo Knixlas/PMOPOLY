@@ -968,6 +968,20 @@ class CompanionManager:
 
         msg_type = data.get("type")
 
+        if msg_type == "request_state":
+            # Klient ber om färsk state (refresh-knapp). Skicka bara till
+            # den frågande, inte broadcast — billigt även med 28 spelare.
+            ws = self.connections.get(code, {}).get(player_id)
+            if ws:
+                try:
+                    if player.is_gm:
+                        await ws.send_json({"type": "state", "state": room.to_dict()})
+                    else:
+                        await ws.send_json({"type": "state", "state": room.player_state(player_id)})
+                except Exception:
+                    self.disconnect(code, player_id, ws)
+            return
+
         if msg_type == "advance_step" and player.is_gm:
             # Save current profit_score as prev for trend arrows
             for p in room.players.values():

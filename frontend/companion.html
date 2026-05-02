@@ -292,6 +292,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
         <div style="margin-top:6px;font-size:13px;color:var(--ink-mid)">Kvarter: <span id="p-block-name" style="color:var(--burgundy);cursor:pointer;border-bottom:1px dashed var(--ink-faint)" title="Klicka för att byta namn">—</span>
             <span id="btn-tips-toggle" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Visa/dölj tips i prompts">💡 Tips</span>
             <span id="btn-regelbok" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Snabbreferens regelboken">📖 Regelbok</span>
+            <span id="btn-player-refresh" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Hämta färsk state från servern (om vyn känns stale)">🔄 Uppdatera</span>
             <span id="btn-leave-player" style="margin-left:12px;color:var(--danger);cursor:pointer;font-size:12px">Lämna</span>
         </div>
     </div>
@@ -307,6 +308,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
                 <span id="btn-gm-save-setup" style="cursor:pointer;color:var(--success);margin-left:16px;font-size:11px;text-decoration:underline">💾 Spara setup</span>
                 <span id="btn-gm-regelbok" style="cursor:pointer;color:var(--burgundy);margin-left:16px;font-size:11px;text-decoration:underline">📖 Regelbok</span>
                 <a href="/companion/balansrakning" target="_blank" style="color:var(--info);margin-left:16px;font-size:11px;text-decoration:underline">📄 Manuell blankett</a>
+                <span id="btn-gm-refresh" style="cursor:pointer;color:var(--burgundy);margin-left:16px;font-size:11px;text-decoration:underline" title="Hämta färsk state från servern (om vyn känns stale)">🔄 Uppdatera vy</span>
             </div>
         </div>
         <div class="gm-controls">
@@ -3785,6 +3787,25 @@ document.getElementById('btn-leave-player').addEventListener('click', () => {
         showView('view-lobby');
     }
 });
+
+// Refresh-knappar (GM + spelare): be servern om färsk state
+function _requestFreshState(btnEl) {
+    if (!S.ws || S.ws.readyState !== WebSocket.OPEN) {
+        // WS nere — försök öppna den igen, så flushar onopen kön
+        if (S.roomCode && S.playerId) connectWs(S.roomCode, S.playerId);
+        return;
+    }
+    var orig = btnEl ? btnEl.textContent : '';
+    if (btnEl) { btnEl.textContent = '⏳ Uppdaterar...'; btnEl.style.pointerEvents = 'none'; }
+    send({ type: 'request_state' });
+    setTimeout(function() {
+        if (btnEl) { btnEl.textContent = orig; btnEl.style.pointerEvents = ''; }
+    }, 800);
+}
+var _gmRefreshBtn = document.getElementById('btn-gm-refresh');
+if (_gmRefreshBtn) _gmRefreshBtn.addEventListener('click', function() { _requestFreshState(this); });
+var _playerRefreshBtn = document.getElementById('btn-player-refresh');
+if (_playerRefreshBtn) _playerRefreshBtn.addEventListener('click', function() { _requestFreshState(this); });
 </script>
 </body>
 </html>
