@@ -587,6 +587,9 @@ function projectedScore(p, phase) {
     var curQ = 0, curH = 0, curT = 0;
     for (var k in choices) { var ch = choices[k]; plCost += ch.cost||0; curQ += ch.q||0; curH += ch.h||0; curT += ch.t||0; plErf += ch.erf||0; }
     for (var k2 in plEvts) { var ev = plEvts[k2]; plEvAbt += ev.abt||0; }
+    // Q/H kan inte sjunka under 0 på scoreboarden
+    curQ = Math.max(0, curQ);
+    curH = Math.max(0, curH);
 
     // Byggfas totals
     var gfP = p.gf_phases || {};
@@ -1415,25 +1418,44 @@ function renderPlayer() {
 
     // Phase 3: Konsekvenskort — Tid, Kvalitet, Hållbarhet
     if (step === 'gf_konsekvens') {
-        // Calculate how many cards per category
+        // Calculate cards per category using the SAME formula as Sammanställning,
+        // so kons-card penalties cascade: hållbarhetskort som sänker Q triggar
+        // ytterligare kvalitetskort, etc. Måste inkludera PC/AC-bonus,
+        // planeringshändelser och tidigare konsekvenskorts påverkan.
         var _choices = p.pl_choices || {};
         var _plEvts = p.pl_events || {};
-        var _plQ = 0, _plH = 0, _plT = 0;
+        var _plQ = 0, _plH = 0, _plT = 0, _plEvQ = 0, _plEvH = 0, _plEvT = 0;
         for (var _k in _choices) { var _ch = _choices[_k]; _plQ += _ch.q||0; _plH += _ch.h||0; _plT += _ch.t||0; }
-        for (var _k in _plEvts) { var _ev = _plEvts[_k]; _plQ += _ev.q||0; _plH += _ev.h||0; }
+        for (var _k in _plEvts) { var _ev = _plEvts[_k]; _plEvQ += _ev.q||0; _plEvH += _ev.h||0; _plEvT += _ev.t||0; }
         var _gfP = p.gf_phases || {};
         var _gfQ = 0, _gfH = 0, _gfT = 0;
         for (var _f in _gfP) { _gfQ += _gfP[_f].q||0; _gfH += _gfP[_f].h||0; _gfT += _gfP[_f].t||0; }
         var _projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         var _projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         var _maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
+        var _pcQ = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
+        var _pcH = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
+        var _pcT = p.projektchef ? (p.projektchef.t_bonus || 0) : 0;
+        var _acQ = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
+        var _acH = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
+        var _acT = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
+        var _konsTQ = p.gf_kons_t_q || 0;
+        var _konsTH = p.gf_kons_t_h || 0;
+        var _konsKQ = p.gf_kons_q_q || 0;
+        var _konsKH = p.gf_kons_q_h || 0;
+        var _konsHQ = p.gf_kons_h_q || 0;
+        var _konsHH = p.gf_kons_h_h || 0;
         var _totQ = 6 + _projQ + p.q_krav - (p.rb_spent_q || 0);
         var _totH = 6 + _projH + p.h_krav - (p.rb_spent_h || 0);
         var _baseT = 12 + _maxProjT;
-        var _curT = Math.max(8, _baseT - (p.rb_spent_t || 0) + _plT + _gfT);
+        var _totT = Math.max(8, _baseT - (p.rb_spent_t || 0));
+        // Q/H kan inte sjunka under 0 — kortantal cap:as då på krav-värdet
+        var _curQ = Math.max(0, _plQ + _plEvQ + _gfQ + _pcQ + _acQ + _konsTQ + _konsKQ + _konsHQ);
+        var _curH = Math.max(0, _plH + _plEvH + _gfH + _pcH + _acH + _konsTH + _konsKH + _konsHH);
+        var _curT = Math.max(8, _totT + _plT + _plEvT + _gfT - _pcT - _acT);
         var konsKortT = Math.max(0, _curT - 12);
-        var konsKortQ = Math.max(0, _totQ - (_plQ + _gfQ));
-        var konsKortH = Math.max(0, _totH - (_plH + _gfH));
+        var konsKortQ = Math.max(0, _totQ - _curQ);
+        var konsKortH = Math.max(0, _totH - _curH);
 
         html += '<div class="asset-card" style="border-left-color:var(--danger)">';
         html += '<div class="asset-label">KONSEKVENSKORT</div>';
@@ -2141,8 +2163,9 @@ function renderPlayer() {
         var konsKvalH = p.gf_kons_q_h || 0;
         var konsHallQ = p.gf_kons_h_q || 0;
         var konsHallH = p.gf_kons_h_h || 0;
-        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ + konsKvalQ + konsHallQ;
-        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH + konsKvalH + konsHallH;
+        // Q/H kan inte sjunka under 0 på scoreboarden
+        var curQ = Math.max(0, plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ + konsKvalQ + konsHallQ);
+        var curH = Math.max(0, plH + plEvH + gfH + pcH + acH + konsTimeH + konsKvalH + konsHallH);
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -2668,18 +2691,33 @@ function attachPlayerEvents(container) {
     container.querySelectorAll('.f4-sell-btn').forEach(function(el) {
         el.addEventListener('click', function() {
             var fi = parseInt(el.dataset.fi);
-            var kopeskilling = prompt('Ange köpeskilling (Mkr):');
+            var kopeskilling = prompt('Ange köpeskilling (Mkr) — kassan får 30 %, resten löser banklånet:');
             if (kopeskilling === null) return;
             kopeskilling = parseFloat(kopeskilling.replace(',','.')) || 0;
             var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
-            if (fasts[fi]) {
-                fasts[fi].sold = true;
-                fasts[fi].kopeskilling = kopeskilling;
-                send({ type: 'update_assets', assets: {
-                    fastigheter: fasts,
-                    eget_kapital: (S.state.player.eget_kapital || 0) + kopeskilling
-                }});
+            if (!fasts[fi]) return;
+            // 70 % löser bankens lånedel, 30 % går till kassan (regelboken §8.6)
+            var earn = Math.round(kopeskilling * 0.30 * 10) / 10;
+            var newEk = (S.state.player.eget_kapital || 0) + earn;
+            // Lös moderbolagslån direkt så fort kassan har 100 Mkr (1 lån = 100 Mkr skuld)
+            var modLan = S.state.player.gf_moderbolagslan_antal || 0;
+            var loansRepaid = 0;
+            while (modLan > 0 && newEk >= 100) {
+                newEk -= 100;
+                modLan -= 1;
+                loansRepaid += 1;
             }
+            fasts[fi].sold = true;
+            fasts[fi].kopeskilling = kopeskilling;
+            var assets = { fastigheter: fasts, eget_kapital: newEk };
+            if (loansRepaid > 0) assets.gf_moderbolagslan_antal = modLan;
+            send({ type: 'update_assets', assets: assets });
+            var msg = fasts[fi].namn + ' såld för ' + kopeskilling + ' Mkr.\n+' + earn + ' Mkr till kassan (30 %).';
+            if (loansRepaid > 0) {
+                msg += '\n\n' + loansRepaid + ' moderbolagslån återbetalat (−' + (loansRepaid * 100) + ' Mkr).';
+                if (modLan === 0) msg += '\nTvångsförsäljningen upphör.';
+            }
+            alert(msg);
         });
     });
     // Phase 4: Driftnetto now auto-added in render (no manual button needed)
