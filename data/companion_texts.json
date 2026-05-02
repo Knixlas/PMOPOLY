@@ -58,8 +58,8 @@
             "Dialog/Politik: dra kort, slå D20 + PC-lindring",
             "Stadsbyggnadskontoret: dra markexpansion (5 Mkr/styck)",
             "Stadshuset: ta, byt eller lämna projekt",
-            "Länsstyrelsen: +2 på valfritt krav (Q eller H) — du väljer",
-            "Skönhetsrådet: −2 på valfritt krav (Q eller H) — du väljer",
+            "Länsstyrelsen: +2 fördelat på Q och H (t.ex. +2 Q, +1 Q och +1 H, eller +2 H) — du väljer",
+            "Skönhetsrådet: −2 fördelat på Q och H (t.ex. −2 Q, −1 Q och −1 H, eller −2 H) — du väljer",
             "Justera Q/H/Rb i companion efterhand",
             "När första kvarteret passerar Stadsbyggnadskontoret för andra gången → fas avbryts, övriga avslutar pågående drag"
           ],
