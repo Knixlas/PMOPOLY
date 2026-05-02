@@ -20,6 +20,7 @@
         {
           "id": "setup_skede1",
           "name": "Projektutveckling",
+          "image": "Spelbrade_Skede1_Setup_Klart.png",
           "lead": "Vi börjar Skede 1: Projektutveckling. Här tar ni fram projekt och sätter de krav (Q, H, T) som ska uppfyllas senare.",
           "actions": [
             "Lägg fram PU-brädet (det stora bruna)",
@@ -84,6 +85,7 @@
         {
           "id": "placement",
           "name": "Placera projekt på marken",
+          "image": "Spelbrade_Skede1_Placering_Exempel.png",
           "lead": "Lägg pussel: alla godkända projekt ska rymmas på er mark (4×4 = 16 celler) plus markexpansioner. Bostäder (BRF/Hyresrätt) får läggas i ett övre lager — men hela bostadsformen måste vila på underliggande projekt (inga \"hål\").",
           "actions": [
             "Passa in projektformerna fysiskt på er tomt",
@@ -138,6 +140,7 @@
         {
           "id": "transition_skede2",
           "name": "Skede 1 är klart — sätt upp Skede 2",
+          "image": "Spelbrade_Skede2_1_Setup.png",
           "lead": "Skede 1 är klart! Vi pausar nu, sen byter vi bräde till PL/GF-brädet och börjar Skede 2.1 Planering.",
           "actions": [
             "Plocka undan PU-kort, PU-bräde, PU-personal — läggs i spelboxen",
@@ -207,6 +210,7 @@
         {
           "id": "transition_skede3",
           "name": "Sätt upp Genomförandet",
+          "image": "Spelbrade_Skede2_2_Setup.png",
           "lead": "Samma bräde som 2.1, men nu byggs projekten. 8 utförandefaser. Ni betalar med kompetens (eller tar konsekvensen). Riskbuffertar är värdefulla nu.",
           "actions": [
             "Plocka fram alla GF-kort (gröna): FAS-kort, konsekvenskort (Q/H/T), garantibesiktning, kulturkort",
@@ -296,6 +300,7 @@
         {
           "id": "f4_forbered",
           "name": "Förbered förvaltning + anställ personal",
+          "image": "Spelbrade_Skede3_Setup.png",
           "lead": "Bygget är klart, nu förvaltar ni i 4 kvartal. Projekten heter nu fastigheter. Marknaden har också utbud (fastigheter byggda av andra aktörer) som ni kan köpa.",
           "actions": [
             "Plocka undan Skede 2-brädet, plocka fram Skede 3-brädet (stadsdelens marknad)",
