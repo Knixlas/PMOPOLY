@@ -1269,18 +1269,21 @@ function renderPlayer() {
         const rbLeft = p.riskbuffertar - (p.rb_spent_q || 0) - (p.rb_spent_h || 0) - (p.rb_spent_t || 0);
         html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
         html += '<div class="asset-label">F\u00f6rdela riskbuffertar (' + p.riskbuffertar + ' tillg\u00e4ngliga)</div>';
+        // S\u00e4nk-rader: minus-knappen \u00d6KAR s\u00e4nkningen (mer negativt), plus-knappen
+        // \u00e5terst\u00e4ller mot 0. V\u00e4rdet visas som negativt s\u00e5 "\u22121" = "Q-krav -1".
+        var _rbq = p.rb_spent_q || 0, _rbh = p.rb_spent_h || 0, _rbt = p.rb_spent_t || 0;
         html += '<div class="counter-row"><div class="label">S\u00e4nk Q-krav</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_q || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbq > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbq > 0 ? '\u2212' + _rbq : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk H-krav</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="h">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_h || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="h">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="h">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbh > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbh > 0 ? '\u2212' + _rbh : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="h">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk T (byggtid)</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="t">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_t || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="t">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="t">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbt > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbt > 0 ? '\u2212' + _rbt : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="t">+</button></div></div>';
         html += '<div style="text-align:center;margin-top:8px;color:' + (rbLeft > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + ';font-size:14px">';
         html += rbLeft + ' Rb kvar (sparas till Skede 2.2)</div>';
         html += '</div>';

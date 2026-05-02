@@ -35,13 +35,13 @@
         {
           "id": "choose_pc",
           "name": "Välj Projektchef",
-          "lead": "Varje kvarter väljer en av 10 projektchefer (PC). PC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
+          "lead": "Varje kvarter väljer en av 10 projektchefer (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
           "actions": [
             "Klicka \"Välj Projektchef\" i companion",
             "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndbonus (D20 vid nämndbeslut), Q/H/T-bonus, Kompetens",
-            "Diskutera i kvarteret och välj en gemensam PC"
+            "Diskutera i kvarteret och välj en gemensam PrC"
           ],
-          "meaning": "PC är en av kvarterets viktigaste resurser. Erfarenhet och kontaktnät spelar stor roll.",
+          "meaning": "PrC är en av kvarterets viktigaste resurser. Erfarenhet och kontaktnät spelar stor roll.",
           "tip": "Hög lindring = bra på PU-brädet. Hög nämndbonus = tryggare med BRF. Hög Rb = mer flexibilitet senare.",
           "regelbok": "§3.8"
         },
@@ -145,10 +145,10 @@
             "Ej godkända BRF kan läggas tillbaka eftersom BRF inte används i förvaltningen",
             "Lägg fram Skede 2-brädet (Planering + Genomförande använder samma)",
             "Sätt T-utfall (färgad kub) = 12 + högsta projektets T (max 14)",
-            "Färgade Q-, H-utfallskuber börjar på samma värde som kraven"
+            "Färgade Q-, H-utfallskuber börjar på 0 — de byggs upp under Skedet"
           ],
           "meaning": "Bygget startar i T-utfallet — högsta projekt drar upp tiden direkt. T-utfallet kan röra sig i Skede 2.2, aldrig under 8.",
-          "tip": "Q- och H-utfallskuberna börjar på krav-värdet och rör sig endast nedåt i Skede 2 — målet är att inte tappa för många steg.",
+          "tip": "Q och H börjar på 0 och justeras uppåt under spelets gång (planering, leverantörer, händelsekort). Målet är att nå Q-/H-kraven.",
           "regelbok": "§5.1, §5.2"
         },
         {
