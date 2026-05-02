@@ -3452,15 +3452,18 @@ def _f4_do_sell(room, player, prop_idx, events):
         "text": f"{player.name} sålde {prop.namn} för {earn:.1f} Mkr (EK)",
     })
 
-    # After selling, check if loan can now be fully repaid from EK
-    loans_gross = player.abt_loans_net + player.abt_borrowing_cost
-    if loans_gross > 0 and player.eget_kapital >= loans_gross:
-        player.eget_kapital -= loans_gross
-        player.abt_loans_net = 0
-        player.abt_borrowing_cost = 0
+    # Lös moderbolagslån direkt så fort EK har 100 Mkr (1 lån = 95 net + 5 fee = 100 gross)
+    loans_repaid = 0
+    while (player.abt_loans_net + player.abt_borrowing_cost) > 0 and player.eget_kapital >= 100:
+        player.eget_kapital -= 100
+        player.abt_loans_net = max(0, player.abt_loans_net - 95)
+        player.abt_borrowing_cost = max(0, player.abt_borrowing_cost - 5)
+        loans_repaid += 1
+    if loans_repaid > 0:
+        remaining = player.abt_loans_net + player.abt_borrowing_cost
         events.append({
             "type": "loan",
-            "text": f"Moderbolagslån återbetalat: {loans_gross:.1f} Mkr från EK (netto EK: {player.eget_kapital:.1f} Mkr)",
+            "text": f"{loans_repaid} moderbolagslån återbetalat (-{loans_repaid * 100} Mkr från EK). Kvar: {remaining:.0f} Mkr skuld, EK: {player.eget_kapital:.1f} Mkr.",
         })
 
 

@@ -101,6 +101,7 @@
         {
           "id": "anskaffning",
           "name": "Anskaffning & ABT-budget",
+          "image": "scoreboard.png",
           "lead": "Nu räknas ekonomin ihop. Anskaffningen är er totala budget — det som blir kvar efter tomt, expansioner och utveckling är ABT-budgeten ni har att röra er med i Skede 2.",
           "actions": [
             "Companion summerar automatiskt:",
