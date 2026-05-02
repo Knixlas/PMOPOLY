@@ -859,11 +859,24 @@ class CompanionManager:
         return None
 
     def join_room(self, code: str, name: str, quarter_idx: int) -> Optional[tuple]:
-        """Returns (room, player_id) or None."""
+        """Returns (room, player_id) or None.
+
+        Reclaim-by-name: om samma namn + kvarter redan finns, returnera den
+        befintliga player_id:n istället för att skapa ny. Tillåter byte av
+        enhet (mobil <-> desktop) utan att skapa dubblett-spelare. Befintlig
+        WS stängs av connect()-logiken när nya enheten kopplar upp.
+        """
         room = self.rooms.get(code)
         if not room:
             return None
-        # Check quarter capacity
+        # Reclaim existing player slot if same name in same quarter
+        name_key = (name or "").strip().lower()
+        if name_key:
+            for p in room.players.values():
+                if (p.quarter_idx == quarter_idx and not p.is_gm
+                        and (p.name or "").strip().lower() == name_key):
+                    return room, p.id
+        # Check quarter capacity (only enforced for genuinely new players)
         quarter_players = [p for p in room.players.values() if p.quarter_idx == quarter_idx and not p.is_gm]
         if len(quarter_players) >= 4:
             return None
