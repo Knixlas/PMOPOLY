@@ -112,13 +112,13 @@ class Client:
 
 
 async def trigger_next_step(gm_client):
-    """GM skickar 'next_step'. Mät broadcast-latens till spelare."""
+    """GM skickar 'advance_step'. Mät broadcast-latens till spelare."""
     if not gm_client.ws:
         return None
     sent_at = time.time()
     try:
-        await gm_client.ws.send(json.dumps({"type": "next_step"}))
-    except Exception as e:
+        await gm_client.ws.send(json.dumps({"type": "advance_step"}))
+    except Exception:
         return None
     return sent_at
 
@@ -137,11 +137,11 @@ async def main():
     rooms = []
     for r in room_results:
         if isinstance(r, Exception):
-            print(f"  ❌ Room creation failed: {r}")
+            print(f"  [FAIL]Room creation failed: {r}")
             return
         code, gm_id, qcs, t = r
         rooms.append((code, gm_id, qcs))
-        print(f"  ✓ {code} created in {t*1000:.0f}ms (qcs: {qcs})")
+        print(f"  [OK]{code} created in {t*1000:.0f}ms (qcs: {qcs})")
     print()
 
     # 2) Join all 28 players in parallel
@@ -159,7 +159,7 @@ async def main():
     )
     join_t = time.time() - join_t0
     join_times = [r[2] for r in join_results if not isinstance(r, Exception)]
-    print(f"  ✓ Alla joinade på {join_t*1000:.0f}ms (per-spelare: median {statistics.median(join_times)*1000:.0f}ms, max {max(join_times)*1000:.0f}ms)")
+    print(f"  [OK]Alla joinade på {join_t*1000:.0f}ms (per-spelare: median {statistics.median(join_times)*1000:.0f}ms, max {max(join_times)*1000:.0f}ms)")
     print()
 
     # 3) Spawn all WebSocket clients (28 players + 7 GMs)
@@ -183,7 +183,7 @@ async def main():
 
     connect_times = [c.connected_at * 1000 for c in clients if c.connected_at is not None]
     state_times = [(c.first_state_at - ws_t0) * 1000 for c in clients if c.first_state_at is not None]
-    print(f"  ✓ Anslutna på {ws_total*1000:.0f}ms")
+    print(f"  [OK]Anslutna på {ws_total*1000:.0f}ms")
     print(f"    Connect-tid: median {statistics.median(connect_times):.0f}ms, p95 {sorted(connect_times)[int(len(connect_times)*0.95)]:.0f}ms, max {max(connect_times):.0f}ms")
     print(f"    First-state-tid: median {statistics.median(state_times):.0f}ms, max {max(state_times):.0f}ms")
     print(f"    Errors: {sum(1 for c in clients if c.errors)} st")
@@ -236,7 +236,7 @@ async def main():
             urllib.request.urlopen(req, timeout=5)
         except Exception:
             pass
-    print("✓ Klar")
+    print("[OK] Klar")
 
 
 if __name__ == "__main__":

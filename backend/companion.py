@@ -280,13 +280,17 @@ class CompanionPlayer:
     pl_events: Dict[str, dict] = field(default_factory=dict)  # step_id -> {q, h, abt} event card effects
     # Phase 3 assets - per byggfas (1-8)
     gf_phases: Dict[str, dict] = field(default_factory=dict)  # "1"-"8" -> {q, h, t, abt}
-    gf_kons_q: int = 0   # Konsekvenskort ABT for kvalitet
-    gf_kons_h: int = 0   # Konsekvenskort ABT for hållbarhet
-    gf_kons_t: int = 0   # Konsekvenskort ABT for tid
-    gf_kons_q_adj: int = 0   # Konsekvenskort Q-adjustment (lowers requirement)
-    gf_kons_h_adj: int = 0   # Konsekvenskort H-adjustment (lowers requirement)
+    gf_kons_q: int = 0   # Konsekvenskort ABT-kostnad från Q-kort
+    gf_kons_h: int = 0   # Konsekvenskort ABT-kostnad från H-kort
+    gf_kons_t: int = 0   # Konsekvenskort ABT-kostnad från T-kort
+    gf_kons_q_adj: int = 0   # Konsekvenskort Q-adjustment (lowers requirement) — legacy, kept for compat
+    gf_kons_h_adj: int = 0   # Konsekvenskort H-adjustment (lowers requirement) — legacy, kept for compat
     gf_kons_t_q: int = 0    # Q-påverkan från tidskort (sänker Q)
     gf_kons_t_h: int = 0    # H-påverkan från tidskort (sänker H)
+    gf_kons_q_q: int = 0    # Q-påverkan från kvalitetskort (sänker Q)
+    gf_kons_q_h: int = 0    # H-påverkan från kvalitetskort (sänker H)
+    gf_kons_h_q: int = 0    # Q-påverkan från hållbarhetskort (sänker Q)
+    gf_kons_h_h: int = 0    # H-påverkan från hållbarhetskort (sänker H)
     gf_garanti_abt: int = 0  # Garantibesiktning ABT
     gf_brf_rorlig: float = 0.0  # Rörlig intäkt BRF
     gf_moderbolagslan: float = 0.0  # Moderbolagslån (legacy)
@@ -300,6 +304,7 @@ class CompanionPlayer:
     f4_yield_bostader: float = 4.0  # Current yield % for bostäder
     f4_yield_kommersiellt: float = 5.0  # Current yield % for kommersiellt
     f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
+    f4_upgrades_per_quarter: Dict[str, list] = field(default_factory=dict)  # "1"-"4" -> [fastighet_id...]
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
     f4_market_bought: Dict[str, int] = field(default_factory=dict)  # step_id -> num bought this quarter
@@ -444,6 +449,10 @@ class CompanionPlayer:
             "gf_kons_h_adj": self.gf_kons_h_adj,
             "gf_kons_t_q": self.gf_kons_t_q,
             "gf_kons_t_h": self.gf_kons_t_h,
+            "gf_kons_q_q": self.gf_kons_q_q,
+            "gf_kons_q_h": self.gf_kons_q_h,
+            "gf_kons_h_q": self.gf_kons_h_q,
+            "gf_kons_h_h": self.gf_kons_h_h,
             "gf_garanti_abt": self.gf_garanti_abt,
             "gf_brf_rorlig": round(self.gf_brf_rorlig, 1),
             "gf_moderbolagslan": round(self.gf_moderbolagslan, 1),
@@ -454,6 +463,7 @@ class CompanionPlayer:
             "f4_yield_bostader": self.f4_yield_bostader,
             "f4_yield_kommersiellt": self.f4_yield_kommersiellt,
             "f4_quarters": self.f4_quarters,
+            "f4_upgrades_per_quarter": self.f4_upgrades_per_quarter,
             "f4_final_score": round(self.f4_final_score, 1),
             "f4_market_bought": self.f4_market_bought,
             "steps_done": self.steps_done,
@@ -728,6 +738,17 @@ class CompanionRoom:
             return {}
         phase = self.current_phase
         step = self.current_step
+        # Teammates inom samma kvarter — frontend filtrerar PrC/AC-modaler
+        # så samma person inte kan väljas av två i samma kvarter.
+        teammates = [p for p in self.players.values()
+                     if p.quarter_idx == player.quarter_idx
+                     and not p.is_gm and p.id != player_id]
+        quarter_taken = {
+            "pc_ids": [t.projektchef.get("id") for t in teammates
+                       if t.projektchef and t.projektchef.get("id")],
+            "ac_ids": [t.arbetschef.get("id") for t in teammates
+                       if t.arbetschef and t.arbetschef.get("id")],
+        }
         return {
             "code": self.code,
             "phase": phase["id"] if phase else None,
@@ -743,6 +764,7 @@ class CompanionRoom:
                 "regelbok": step.get("regelbok", ""),
             } if step else None,
             "player": player.to_dict(),
+            "quarter_taken": quarter_taken,
             "f4_omvarldskort": self.f4_omvarldskort,
             "game_finalized": self.game_finalized,
             "quiz_score": round(self.quiz_scores.get(player_id, 0), 1),
@@ -1073,6 +1095,14 @@ class CompanionManager:
                 player.gf_kons_t_q = int(assets["gf_kons_t_q"])
             if "gf_kons_t_h" in assets:
                 player.gf_kons_t_h = int(assets["gf_kons_t_h"])
+            if "gf_kons_q_q" in assets:
+                player.gf_kons_q_q = int(assets["gf_kons_q_q"])
+            if "gf_kons_q_h" in assets:
+                player.gf_kons_q_h = int(assets["gf_kons_q_h"])
+            if "gf_kons_h_q" in assets:
+                player.gf_kons_h_q = int(assets["gf_kons_h_q"])
+            if "gf_kons_h_h" in assets:
+                player.gf_kons_h_h = int(assets["gf_kons_h_h"])
             if "gf_garanti_abt" in assets:
                 player.gf_garanti_abt = int(assets["gf_garanti_abt"])
             if "gf_brf_rorlig" in assets:
@@ -1093,6 +1123,8 @@ class CompanionManager:
                 player.f4_yield_kommersiellt = float(assets["f4_yield_kommersiellt"])
             if "f4_quarters" in assets:
                 player.f4_quarters = assets["f4_quarters"]
+            if "f4_upgrades_per_quarter" in assets:
+                player.f4_upgrades_per_quarter = assets["f4_upgrades_per_quarter"]
             if "f4_final_score" in assets:
                 player.f4_final_score = float(assets["f4_final_score"])
             if "f4_market_bought" in assets:

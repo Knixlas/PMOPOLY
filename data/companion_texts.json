@@ -7,7 +7,7 @@
         {
           "id": "welcome",
           "name": "Välkommen till Åkepol",
-          "lead": "Idag spelar vi ett spel som speglar hela kedjan: från projektutveckling, genom planering och byggnation, till att äga och förvalta fastigheter inom ert kvarter. Som par bildar ni ett kvarter; tre andra par i samma stadsdel är era konkurrenter. Spelet har 3 skeden.",
+          "lead": "Idag spelar vi ett spel som speglar hela kedjan: från projektutveckling, genom planering och byggnation, till att äga och förvalta fastigheter inom ert kvarter. Som lag bildar ni ett kvarter; tre andra lag i samma stadsdel är era konkurrenter. Spelet har 3 skeden.",
           "actions": [
             "Skriv in stadsdelskoden ni fått av spelledaren",
             "Skriv in ert företagsnamn (kvarterets namn)",
@@ -19,7 +19,7 @@
         },
         {
           "id": "setup_skede1",
-          "name": "Sätt upp Projektutvecklingen",
+          "name": "Projektutveckling",
           "lead": "Vi börjar Skede 1: Projektutveckling. Här tar ni fram projekt och sätter de krav (Q, H, T) som ska uppfyllas senare.",
           "actions": [
             "Lägg fram PU-brädet (det stora bruna)",
@@ -35,14 +35,14 @@
         {
           "id": "choose_pc",
           "name": "Välj Projektchef",
-          "lead": "Varje kvarter väljer en av 10 projektchefer (PC). PC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
+          "lead": "Varje kvarter väljer en projektchef (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
           "actions": [
             "Klicka \"Välj Projektchef\" i companion",
             "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndbonus (D20 vid nämndbeslut), Q/H/T-bonus, Kompetens",
-            "Diskutera i kvarteret och välj en gemensam PC"
+            "Inom kvarteret väljer ni i tur och ordning — samma person kan bara väljas en gång per kvarter"
           ],
-          "meaning": "PC är en av kvarterets viktigaste resurser. Erfarenhet och kontaktnät spelar stor roll.",
-          "tip": "Hög lindring = bra på PU-brädet. Hög nämndbonus = tryggare med BRF. Hög Rb = mer flexibilitet senare.",
+          "meaning": "PrC är en av kvarterets viktigaste resurser. Personerna är ungefär lika starka — det är profilen som skiljer.",
+          "tip": "Välj efter er strategi: hög lindring för PU-brädet, hög nämndbonus för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
           "regelbok": "§3.8"
         },
         {
@@ -145,10 +145,10 @@
             "Ej godkända BRF kan läggas tillbaka eftersom BRF inte används i förvaltningen",
             "Lägg fram Skede 2-brädet (Planering + Genomförande använder samma)",
             "Sätt T-utfall (färgad kub) = 12 + högsta projektets T (max 14)",
-            "Färgade Q-, H-utfallskuber börjar på samma värde som kraven"
+            "Färgade Q-, H-utfallskuber börjar på 0 — de byggs upp under Skedet"
           ],
           "meaning": "Bygget startar i T-utfallet — högsta projekt drar upp tiden direkt. T-utfallet kan röra sig i Skede 2.2, aldrig under 8.",
-          "tip": "Q- och H-utfallskuberna börjar på krav-värdet och rör sig endast nedåt i Skede 2 — målet är att inte tappa för många steg.",
+          "tip": "Q och H börjar på 0 och justeras uppåt under spelets gång (planering, leverantörer, händelsekort). Målet är att nå Q-/H-kraven.",
           "regelbok": "§5.1, §5.2"
         },
         {
@@ -158,10 +158,11 @@
           "actions": [
             "Klicka \"Välj Arbetschef\" i companion",
             "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), Q/H/T-bonus",
-            "Lägst ABT-kostnad väljer först — companion visar turordning"
+            "Lägst ABT-kostnad väljer först — companion visar turordning",
+            "Samma person kan bara väljas en gång per kvarter"
           ],
-          "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Mycket värdefullt eftersom det lindrar händelsekort. Kompetenser används i Skede 2.2 för att betala FAS-kort.",
-          "tip": "En AC med +2 erfarenhet är ofta bättre än en med spridda kompetenser — bonusen på alla slag rätar ut värsta utfallen.",
+          "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Kompetenser används i Skede 2.2 för att betala FAS-kort.",
+          "tip": "AC och PrC är ungefär lika starka — välj efter er strategi snarare än \"bäst i tabellen\".",
           "regelbok": "§5.4, §10"
         },
         {
@@ -312,20 +313,20 @@
         {
           "id": "f4_q1",
           "name": "Kvartal 1 — Kvartalsspiralen",
-          "lead": "Kvartalet följer en fast spiral. Marknadsvärdet uppdateras varje kvartal pga yield-förändringar.",
+          "lead": "Kvartalet följer en fast spiral. I Q1 gäller ingångsvärdena för yield (4 % bostäder, 5 % kommersiellt) — inget yieldkort dras. Marknadsvärdet uppdateras nästa kvartal när första yieldkortet dras.",
           "actions": [
-            "1. Sälj fastigheter om ni vill (tvångsförsäljning sker här om kassan är negativ)",
-            "2. Utöka marknaden: 3 nya fastigheter denna kvartal",
-            "3. Budgivning: köp på sekundärmarknaden — start på marknadsvärde, lägsta accepterade bud 80 %, banken köper alltid tillbaka för 80 %, ni betalar bara 30 % kontant",
-            "4. Dra DD-kort (Due Diligence) per fastighet ni köper",
-            "5. Anställ ev. ny FS för att täcka antal fastigheter",
-            "6. Summera driftnetto på era ägda fastigheter → intäkt till kassan",
-            "7. Dra omvärldskort (samma för alla kvarter)",
-            "8. Betala personalkostnad (FC + FS-löner)",
-            "9. Dra händelsekort av rätt typ per ägd fastighet (HR / KON / LOK / FÖR)",
-            "10. Dra kvartalskort",
-            "11. Energiuppgraderingar (frivilligt, 3 Mkr per steg, A–E)",
-            "12. Dra yieldkort och justera marknadsyielden",
+            "1. Yield: ingångsvärden 4 % bostäder / 5 % kommersiellt (inget kort dras i Q1)",
+            "2. Sälj fastigheter om ni vill (tvångsförsäljning sker här om kassan är negativ)",
+            "3. Utöka marknaden: 3 nya fastigheter denna kvartal",
+            "4. Budgivning: köp på sekundärmarknaden — start på marknadsvärde, lägsta accepterade bud 80 %, banken köper alltid tillbaka för 80 %, ni betalar bara 30 % kontant",
+            "5. Dra DD-kort (Due Diligence) per fastighet ni köper",
+            "6. Anställ ev. ny FS för att täcka antal fastigheter",
+            "7. Summera driftnetto på era ägda fastigheter → intäkt till kassan",
+            "8. Dra omvärldskort (samma för alla kvarter)",
+            "9. Betala personalkostnad (FC + FS-löner)",
+            "10. Dra händelsekort av rätt typ per ägd fastighet (HR / KON / LOK / FÖR)",
+            "11. Dra kvartalskort",
+            "12. Energiuppgraderingar (max 3 unika projekt, 3 Mkr/steg)",
             "Vid moderbolagslån: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp"
           ],
           "meaning": "Yield-förändringar är makro-risken ni inte kan kontrollera — den vänder hela värderingen. Banken stabiliserar med 80 %-golv. Energiklass A = +10 % FV-bonus, klass E = osäljbar (0).",
@@ -335,11 +336,13 @@
         {
           "id": "f4_q2",
           "name": "Kvartal 2 — Kvartalsspiralen",
-          "lead": "Kvartal 2 följer samma spiral. Nu ska ni också göra hyresförhandling om ni har hyresrätter.",
+          "lead": "Kvartal 2 följer samma spiral. Yieldkort dras först (sätter Q2:s yield). Hyresförhandling om ni har hyresrätter.",
           "actions": [
-            "Samma sekvens som Kvartal 1",
+            "Yieldkort dras FÖRST — justera yield i companion innan resten",
+            "Samma sekvens som Kvartal 1 i övrigt",
             "Utöka marknaden: 2 nya fastigheter denna kvartal",
             "Hyresförhandling om ni har hyresrätter",
+            "Energiuppgraderingar: max 2 unika projekt detta kvartal",
             "Vid moderbolagslån: samma restriktioner som tidigare"
           ],
           "meaning": "Mitt-i-säsongen — strategi behöver justeras efter hur omvärldskorten gått hittills. Yieldkurvan kan ha vänt.",
@@ -349,10 +352,12 @@
         {
           "id": "f4_q3",
           "name": "Kvartal 3 — Kvartalsspiralen",
-          "lead": "Kvartal 3 följer samma spiral. Nu blir marknaden smalare — bara 1 ny fastighet kommer ut.",
+          "lead": "Kvartal 3 följer samma spiral. Yieldkort dras först (sätter Q3:s yield). Marknaden smalnar — bara 1 ny fastighet kommer ut.",
           "actions": [
-            "Samma sekvens som tidigare kvartal",
+            "Yieldkort dras FÖRST — justera yield i companion",
+            "Samma sekvens som tidigare kvartal i övrigt",
             "Utöka marknaden: 1 ny fastighet denna kvartal",
+            "Energiuppgraderingar: max 1 unikt projekt detta kvartal",
             "Vid moderbolagslån: samma restriktioner som tidigare"
           ],
           "meaning": "Slutet närmar sig — varje energiuppgradering måste betalas innan slutvärderingen för att räknas i FV.",
@@ -362,15 +367,16 @@
         {
           "id": "f4_q4",
           "name": "Kvartal 4 — Sista kvartalet",
-          "lead": "Sista kvartalet. Ingen ny fastighet på marknaden, men hyresförhandling igen om ni har hyresrätter.",
+          "lead": "Sista kvartalet. Ingen ny fastighet på marknaden — men hyresförhandling igen om ni har hyresrätter, och yieldkort dras som vanligt.",
           "actions": [
             "Samma sekvens som tidigare kvartal",
             "Utöka marknaden: 0 nya fastigheter (marknaden är stängd)",
             "Hyresförhandling om ni har hyresrätter",
-            "Inget yieldkort dras detta kvartal — yielden låses",
-            "Vid moderbolagslån: samma restriktioner som tidigare"
+            "Yieldkort dras (sätter Q4:s yield) — justera i companion",
+            "Vid moderbolagslån: samma restriktioner som tidigare",
+            "Energiuppgraderingar: 0 (max-budget förbrukad efter Q3)"
           ],
-          "meaning": "Yielden ni har efter Q3 är den ni räknar slutpoängen med. Kasse-positionen och fastigheternas energiklass är de sista hävstängerna.",
+          "meaning": "Yielden ni har efter Q4-yieldkortet är den ni räknar slutpoängen med. Kasse-positionen och fastigheternas energiklass är de sista hävstängerna.",
           "tip": "Kolla att ni har minst 1 fastighet — alla kvarter måste äga något när året är slut.",
           "regelbok": "§8.3–§8.11"
         },

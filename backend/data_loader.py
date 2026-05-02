@@ -510,15 +510,28 @@ def _parse_erfarenhet(not_text: str) -> int:
 
 
 def load_pc_ac_staff() -> Dict[str, list]:
-    """Load PC and AC candidates from PU_PL_personal.csv."""
+    """Load PC and AC candidates from PU_PL_personal.csv.
+
+    Stödjer både gamla rollnamnen ('PC', 'AC') och de nya
+    ('PROJEKTCHEF', 'ARBETSCHEF') från SPELET 2:s nuvarande filstruktur.
+    """
     fp = data_path("pu_pl_personal")
     if not os.path.exists(fp):
         return {"PC": [], "AC": []}
     rows = read_csv(fp)
     result = {"PC": [], "AC": []}
+    # Map both old and new role names to internal "PC" / "AC"
+    ROLL_MAP = {
+        "PC": "PC", "PROJEKTCHEF": "PC",
+        "AC": "AC", "ARBETSCHEF": "AC",
+    }
     for row in rows:
-        roll = safe_str(row.get("Roll")).upper()
-        if roll not in ("PC", "AC"):
+        roll_raw = safe_str(row.get("Roll")).upper()
+        roll = ROLL_MAP.get(roll_raw)
+        if roll is None:
+            continue
+        # Skip empty template rows (no ID)
+        if not safe_str(row.get("ID")):
             continue
         beskrivning = safe_str(row.get("Beskrivning", row.get("Not", "")))
 

@@ -1269,18 +1269,21 @@ function renderPlayer() {
         const rbLeft = p.riskbuffertar - (p.rb_spent_q || 0) - (p.rb_spent_h || 0) - (p.rb_spent_t || 0);
         html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
         html += '<div class="asset-label">F\u00f6rdela riskbuffertar (' + p.riskbuffertar + ' tillg\u00e4ngliga)</div>';
+        // S\u00e4nk-rader: minus-knappen \u00d6KAR s\u00e4nkningen (mer negativt), plus-knappen
+        // \u00e5terst\u00e4ller mot 0. V\u00e4rdet visas som negativt s\u00e5 "\u22121" = "Q-krav -1".
+        var _rbq = p.rb_spent_q || 0, _rbh = p.rb_spent_h || 0, _rbt = p.rb_spent_t || 0;
         html += '<div class="counter-row"><div class="label">S\u00e4nk Q-krav</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_q || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbq > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbq > 0 ? '\u2212' + _rbq : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk H-krav</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="h">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_h || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="h">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="h">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbh > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbh > 0 ? '\u2212' + _rbh : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="h">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk T (byggtid)</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="t">\u2212</button>';
-        html += '<div class="counter-val">' + (p.rb_spent_t || 0) + '</div>';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="t">+</button></div></div>';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="t">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbt > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbt > 0 ? '\u2212' + _rbt : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="t">+</button></div></div>';
         html += '<div style="text-align:center;margin-top:8px;color:' + (rbLeft > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + ';font-size:14px">';
         html += rbLeft + ' Rb kvar (sparas till Skede 2.2)</div>';
         html += '</div>';
@@ -1330,8 +1333,8 @@ function renderPlayer() {
                 // Event card effect for this step
                 if (editPlanning) {
                     var evQ = ev.q || 0, evH = ev.h || 0, evAbt = ev.abt || 0;
+                    html += '<div style="padding:2px 0 2px 20px;font-size:11px;color:var(--ink-faint);font-style:italic">H\u00e4ndelsekort: + = f\u00f6rs\u00e4mring / extra kostnad \u00b7 \u2212 = f\u00f6rb\u00e4ttring</div>';
                     html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:var(--warning)">';
-                    html += 'H\u00e4ndelsekort: ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="-1">\u2212</span>';
                     html += ' Q:' + evQ + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="1">+</span> | ';
@@ -1339,7 +1342,7 @@ function renderPlayer() {
                     html += ' H:' + evH + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="h" data-dir="1">+</span> | ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="-1">\u2212</span>';
-                    html += ' ABT:' + evAbt + ' ';
+                    html += ' Kostn (Mkr):' + evAbt + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="1">+</span> | ';
                     var evT = ev.t || 0;
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="t" data-dir="-1">\u2212</span>';
@@ -1348,7 +1351,7 @@ function renderPlayer() {
                     html += '</div>';
                 } else if (ev.q || ev.h || ev.abt || ev.t) {
                     html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:var(--warning)">';
-                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' T:' + (ev.t||0) + ' ABT:' + (ev.abt||0);
+                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' T:' + (ev.t||0) + ' Kostn:' + (ev.abt||0) + ' Mkr';
                     html += '</div>';
                 }
                 html += '</div>';
@@ -1383,7 +1386,7 @@ function renderPlayer() {
             html += '<span>Q: <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="-1">\u2212</span> <strong>' + (gf.q||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="1">+</span></span>';
             html += '<span>H: <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="-1">\u2212</span> <strong>' + (gf.h||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="1">+</span></span>';
             html += '<span>T: <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="-1">\u2212</span> <strong>' + (gf.t||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="1">+</span></span>';
-            html += '<span>ABT: <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
+            html += '<span>Kostn (Mkr): <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
             html += '</div></div>';
         }
         html += '</div>';
@@ -1418,8 +1421,8 @@ function renderPlayer() {
         // TID först — kan påverka Q, H och kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--warning)">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">Tidskorten kan p\u00e5verka Q, H och kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
         html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
         html += '</div>';
@@ -1427,15 +1430,19 @@ function renderPlayer() {
         // KVALITET — bara kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--info)">Kvalitet (' + konsKortQ + ' kort)</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">Kvalitetskorten p\u00e5verkar bara kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_q || 0, 'gf_kons_q_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_h || 0, 'gf_kons_q_h', true);
         html += '</div>';
 
         // HÅLLBARHET — bara kostnad
         html += '<div style="padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--success)">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">H\u00e5llbarhetskorten p\u00e5verkar bara kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_q || 0, 'gf_kons_h_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_h || 0, 'gf_kons_h_h', true);
         html += '</div>';
         html += '</div>';
     }
@@ -1792,8 +1799,8 @@ function renderPlayer() {
             var _fcLonQ = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
             var _fsListQ = Array.isArray(p.fastighetsskotare) ? p.fastighetsskotare : (p.fastighetsskotare ? [p.fastighetsskotare] : []);
             var _fsLonQ = _fsListQ.reduce(function(s, fs) { return s + (fs.lon || 0); }, 0);
-            var _totalLonQ = _fcLonQ + _fsLonQ;
-            var _nettoKvartal = _totalDN - _totalLonQ;
+            var _totalLonQ = Math.round((_fcLonQ + _fsLonQ) * 10) / 10;
+            var _nettoKvartal = Math.round((_totalDN - _totalLonQ) * 10) / 10;
 
             var _dnDoneKey = 'dn_' + step;
             var _dnAdded = (p.steps_done || {})[_dnDoneKey] === true;
@@ -1841,7 +1848,8 @@ function renderPlayer() {
         if (_kvartalsEvents[step] && _driftnettoQuarters.indexOf(step) >= 0) {
             var _kev = _kvartalsEvents[step];
             var _ownsType = _unsoldFasts.some(function(f) { return f.typ === _kev.typ; });
-            var _hEk = ((_f4Q || {})[step] || {}).handelse_ek || 0;
+            var _f4Q_ke = p.f4_quarters || {};
+            var _hEk = (_f4Q_ke[step] || {}).handelse_ek || 0;
             html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
             html += '<div class="asset-label">\uD83C\uDFB2 KVARTALSH\u00c4NDELSE</div>';
             html += '<div style="font-size:14px;color:' + _kev.color + ';margin-bottom:8px">' + _kev.icon + ' ' + _kev.text + '</div>';
@@ -1874,8 +1882,9 @@ function renderPlayer() {
             html += '</div></div>';
         }
 
-        // Yield input (visible in phase 4, but +/- buttons hidden in Q4)
-        var _yieldReadOnly = (step === 'f4_q4');
+        // Yield input (visible in phase 4). I Q1 gäller ingångsvärden — inget yieldkort
+        // dras alltså, så yielden är låst. I Q2-Q4 dras yieldkort i början av varvet.
+        var _yieldReadOnly = (step === 'f4_q1');
         if (true) {
             html += '<div class="asset-card" style="border-left-color:var(--info)">';
             html += '<div class="asset-label">YIELD</div>';
@@ -1897,7 +1906,7 @@ function renderPlayer() {
             }
             html += '</div>';
             if (_yieldReadOnly) {
-                html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Yield kan inte \u00e4ndras i Q4.</div>';
+                html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Q1: ing\u00e5ngsv\u00e4rden g\u00e4ller (4 % bost\u00e4der, 5 % kommersiellt) \u2014 inget yieldkort dras detta kvartal.</div>';
             }
             html += '</div></div>';
         }
@@ -2026,10 +2035,15 @@ function renderPlayer() {
         var acT = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
         var acRb = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
         var acErf = p.arbetschef ? (p.arbetschef.erfarenhet || 0) : 0;
-        var konsTimeQ = p.gf_kons_t_q || 0;  // Q reduction from time consequence cards
-        var konsTimeH = p.gf_kons_t_h || 0;  // H reduction from time consequence cards
-        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ;
-        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH;
+        // Q/H-påverkan från konsekvenskort (sänker — sparas som negativa)
+        var konsTimeQ = p.gf_kons_t_q || 0;
+        var konsTimeH = p.gf_kons_t_h || 0;
+        var konsKvalQ = p.gf_kons_q_q || 0;
+        var konsKvalH = p.gf_kons_q_h || 0;
+        var konsHallQ = p.gf_kons_h_q || 0;
+        var konsHallH = p.gf_kons_h_h || 0;
+        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ + konsKvalQ + konsHallQ;
+        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH + konsKvalH + konsHallH;
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -2547,8 +2561,17 @@ function attachPlayerEvents(container) {
             mc.querySelectorAll('[data-proj]').forEach(function(pEl) {
                 pEl.addEventListener('click', function() {
                     var proj = JSON.parse(pEl.dataset.proj);
-                    var kopeskilling = parseFloat(prompt('K\u00f6peskilling (Mkr):') || '0');
+                    var kopeskilling = parseFloat(prompt('Hela k\u00f6peskillingen (Mkr) \u2014 ange marknadsv\u00e4rdet ni kommit \u00f6verens om:') || '0');
                     if (!kopeskilling) { mc.innerHTML = ''; return; }
+                    // 70 % l\u00e5nefinansieras, 30 % betalas kontant fr\u00e5n kassan (regelboken \u00a78.6)
+                    var kontant = Math.round(kopeskilling * 0.30 * 10) / 10;
+                    var ok = confirm(
+                        '70 % betalas med l\u00e5n, 30 % fr\u00e5n kassan.\n\n' +
+                        'Ni betalar ' + kontant + ' Mkr (30 % av ' + kopeskilling + ' Mkr) till s\u00e4ljaren.\n\n' +
+                        'Resterande ' + (kopeskilling - kontant) + ' Mkr l\u00e4ggs som l\u00e5n (tyst variabel).\n\n' +
+                        'Bekr\u00e4fta k\u00f6pet?'
+                    );
+                    if (!ok) { mc.innerHTML = ''; return; }
                     var _step = S.state.step;
                     var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
                     fasts.push({
@@ -2561,10 +2584,10 @@ function attachPlayerEvents(container) {
                     _mktBought[_step] = (_mktBought[_step] || 0) + 1;
                     send({ type: 'update_assets', assets: {
                         fastigheter: fasts,
-                        eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling,
+                        eget_kapital: Math.round(((S.state.player.eget_kapital || 0) - kontant) * 10) / 10,
                         f4_market_bought: _mktBought
                     }});
-                    showDDKortModal(proj.namn, kopeskilling);
+                    showDDKortModal(proj.namn, kopeskilling, kontant);
                 });
             });
         });
@@ -2573,13 +2596,16 @@ function attachPlayerEvents(container) {
 
 // ── PC Modal ──
 // ── DD-kort Modal ──
-function showDDKortModal(fastNamn, kopeskilling) {
+function showDDKortModal(fastNamn, kopeskilling, kontant) {
     var mc = document.getElementById('modal-container');
     var cards = S.ddData.filter(function(c) { return c.id; });
     var html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence \u2014 ' + fastNamn + '</h3></div>';
     html += '<div class="modal-body">';
-    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:12px">K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>. Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
+    var _betaltText = (kontant !== undefined)
+        ? 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong> (betalt ' + kontant + ' Mkr kontant, resten l\u00e5n).'
+        : 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>.';
+    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:12px">' + _betaltText + ' Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
     html += '<button id="btn-draw-dd" class="btn-primary" style="width:100%;padding:14px;font-size:16px;margin-bottom:12px">\uD83C\uDCCF Dra DD-kort</button>';
     html += '<div id="dd-result"></div>';
     html += '</div>';
@@ -2663,17 +2689,29 @@ function openLedningModal(roll) {
 
 function openPCModal() {
     const mc = document.getElementById('modal-container');
+    // Filtrera bort PrC som redan valts av lagkamrater i kvarteret
+    var taken = (S.state && S.state.quarter_taken && S.state.quarter_taken.pc_ids) || [];
     let html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>Välj Projektchef</h3></div>';
     html += '<div class="modal-body">';
+    var availableCount = 0;
     for (const pc of S.pcData) {
+        if (taken.indexOf(pc.id) >= 0) continue; // upptagen av lagkamrat
+        availableCount++;
         const motstand = pc.handelsemotstand || 'ingen';
         const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        const lindring = pc.lindring || 0;
+        const rb = pc.rb || 0;
         html += `<div class="modal-item" data-pc-id="${pc.id}">
-            <div class="item-name">${pc.namn}</div>
-            <div class="item-detail">${pc.specialisering} | Lindring: +${pc.kapacitet} (${motstand})${namnd} | Lön: ${pc.lon} Mkr</div>
+            <div class="item-name">${pc.namn} <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">— ${pc.specialisering}</span></div>
+            <div class="item-detail">Lindring +${lindring} (${motstand})${namnd} · Rb ${rb}</div>
             <div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">${pc.not_text || ''}</div>
         </div>`;
+    }
+    if (availableCount === 0) {
+        html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla projektchefer är redan valda av lagkamrater i kvarteret.</div>';
+    } else if (taken.length > 0) {
+        html += '<div style="text-align:center;padding:8px;color:var(--ink-faint);font-size:0.85rem;font-style:italic">' + taken.length + ' projektchef' + (taken.length === 1 ? '' : 'er') + ' redan vald' + (taken.length === 1 ? '' : 'a') + ' i kvarteret.</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
@@ -2751,16 +2789,28 @@ function openPlanningModal(stepId) {
 // ── AC Modal ──
 function openACModal() {
     const mc = document.getElementById('modal-container');
+    // Filtrera bort AC som redan valts av lagkamrater i kvarteret
+    var taken = (S.state && S.state.quarter_taken && S.state.quarter_taken.ac_ids) || [];
     let html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>V\u00e4lj Arbetschef</h3></div>';
     html += '<div class="modal-body">';
+    var availableCount = 0;
     for (const ac of S.acData) {
+        if (taken.indexOf(ac.id) >= 0) continue;
+        availableCount++;
+        var motstand = ac.handelsemotstand || 'ingen';
+        var komps = ac.kompetenser || {};
+        var kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
         html += '<div class="modal-item" data-ac-id="' + ac.id + '">' +
-            '<div class="item-name">' + ac.namn + '</div>' +
-            '<div class="item-detail">' + ac.specialisering + ' | Erf: +' + ac.kapacitet +
-            ' | Komp: ' + (ac.forhandling || 'ingen') + '</div>' +
+            '<div class="item-name">' + ac.namn + ' <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">\u2014 ' + ac.specialisering + '</span></div>' +
+            '<div class="item-detail">Erf +' + (ac.erfarenhet || 0) + ' (' + motstand + ') \u00b7 Rb ' + (ac.rb || 0) + (kompList ? ' \u00b7 ' + kompList : '') + '</div>' +
             '<div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">' + (ac.not_text || '') + '</div>' +
             '</div>';
+    }
+    if (availableCount === 0) {
+        html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla arbetschefer \u00e4r redan valda av lagkamrater i kvarteret.</div>';
+    } else if (taken.length > 0) {
+        html += '<div style="text-align:center;padding:8px;color:var(--ink-faint);font-size:0.85rem;font-style:italic">' + taken.length + ' arbetschef' + (taken.length === 1 ? '' : 'er') + ' redan vald' + (taken.length === 1 ? '' : 'a') + ' i kvarteret.</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
