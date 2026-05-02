@@ -455,8 +455,18 @@ def load_staff() -> List[Staff]:
     rows = read_csv(data_path("personal"))
     staff = []
     for row in rows:
+        # CSV-Roll är "FASTIGHETSCHEF"/"FASTIGHETSSKÖTARE", normalisera till
+        # "FC"/"FS" som resten av koden förväntar sig (main.py-filter,
+        # engine.py-display osv).
+        raw_roll = safe_str(row.get("Roll")).upper()
+        if raw_roll.startswith("FASTIGHETSCH"):
+            roll = "FC"
+        elif raw_roll.startswith("FASTIGHETSSK"):
+            roll = "FS"
+        else:
+            roll = raw_roll
         staff.append(Staff(
-            roll=safe_str(row.get("Roll")),
+            roll=roll,
             id=safe_str(row.get("ID")),
             namn=safe_str(row.get("Namn")),
             specialisering=safe_str(row.get("Specialisering")),
