@@ -1421,8 +1421,8 @@ function renderPlayer() {
         // TID först — kan påverka Q, H och kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--warning)">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">Tidskorten kan p\u00e5verka Q, H och kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
         html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
         html += '</div>';
@@ -1430,15 +1430,19 @@ function renderPlayer() {
         // KVALITET — bara kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--info)">Kvalitet (' + konsKortQ + ' kort)</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">Kvalitetskorten p\u00e5verkar bara kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_q || 0, 'gf_kons_q_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_h || 0, 'gf_kons_q_h', true);
         html += '</div>';
 
         // HÅLLBARHET — bara kostnad
         html += '<div style="padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--success)">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid);margin-bottom:4px">H\u00e5llbarhetskorten p\u00e5verkar bara kostnad</div>';
-        html += counterRow('ABT-kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
+        html += counterRow('Kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_q || 0, 'gf_kons_h_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_h || 0, 'gf_kons_h_h', true);
         html += '</div>';
         html += '</div>';
     }
@@ -2029,10 +2033,15 @@ function renderPlayer() {
         var acT = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
         var acRb = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
         var acErf = p.arbetschef ? (p.arbetschef.erfarenhet || 0) : 0;
-        var konsTimeQ = p.gf_kons_t_q || 0;  // Q reduction from time consequence cards
-        var konsTimeH = p.gf_kons_t_h || 0;  // H reduction from time consequence cards
-        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ;
-        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH;
+        // Q/H-påverkan från konsekvenskort (sänker — sparas som negativa)
+        var konsTimeQ = p.gf_kons_t_q || 0;
+        var konsTimeH = p.gf_kons_t_h || 0;
+        var konsKvalQ = p.gf_kons_q_q || 0;
+        var konsKvalH = p.gf_kons_q_h || 0;
+        var konsHallQ = p.gf_kons_h_q || 0;
+        var konsHallH = p.gf_kons_h_h || 0;
+        var curQ = plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ + konsKvalQ + konsHallQ;
+        var curH = plH + plEvH + gfH + pcH + acH + konsTimeH + konsKvalH + konsHallH;
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
