@@ -628,32 +628,41 @@ def load_dd_cards() -> List[DDCard]:
 
 
 def load_mgmt_events() -> Dict[str, List[ManagementEvent]]:
-    """Load management händelsekort grouped by type."""
+    """Load management händelsekort grouped by type.
+
+    Använder header-namn istf positionsindex så vi tål nya kolumner
+    som SPELET 2 lägger till (t.ex. 'Händelsetyp' som infördes 2026-04).
+    """
     fp = data_path("handelsekort_forv")
     if not os.path.exists(fp):
         return {}
-    enc = detect_encoding(fp)
+    rows = read_csv(fp)
     cards: Dict[str, List[ManagementEvent]] = {}
-    with open(fp, "r", encoding=enc) as f:
-        reader = csv.reader(f, delimiter=";")
-        header = next(reader)
-        for cols in reader:
-            if not cols[0].strip():
-                continue
-            eff_str = cols[3].strip().replace(",", ".") if len(cols) > 3 else "0"
-            mild_eff_str = cols[6].strip().replace(",", ".") if len(cols) > 6 else "0"
-            card = ManagementEvent(
-                id=cols[0].strip(),
-                typ=cols[1].strip(),
-                rubrik=cols[2].strip(),
-                effekt_mkr=float(eff_str) if eff_str else 0,
-                mildring_roll=cols[4].strip() if len(cols) > 4 else "",
-                mildring_spec=cols[5].strip() if len(cols) > 5 else "",
-                mildring_effekt_mkr=float(mild_eff_str) if mild_eff_str else 0,
-                trigger="Alla",
-                beskrivning=cols[7].strip() if len(cols) > 7 else "",
-            )
-            cards.setdefault(card.typ, []).append(card)
+
+    def _flt(val):
+        s = safe_str(val).replace(",", ".")
+        try:
+            return float(s) if s else 0.0
+        except (ValueError, TypeError):
+            return 0.0
+
+    for row in rows:
+        rid = safe_str(row.get("ID"))
+        if not rid:
+            continue
+        card = ManagementEvent(
+            id=rid,
+            typ=safe_str(row.get("Typ")),
+            rubrik=safe_str(row.get("Rubrik")),
+            effekt_mkr=_flt(row.get("Effekt_Mkr", row.get("Effekt", 0))),
+            mildring_roll=safe_str(row.get("Mildring_roll")),
+            mildring_spec=safe_str(row.get("Mildring_spec")),
+            mildring_effekt_mkr=_flt(row.get("Mildring_effekt_Mkr",
+                                              row.get("Mildring_effekt", 0))),
+            trigger="Alla",
+            beskrivning=safe_str(row.get("Beskrivning")),
+        )
+        cards.setdefault(card.typ, []).append(card)
     import random
     for pile in cards.values():
         random.shuffle(pile)
