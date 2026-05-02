@@ -601,7 +601,8 @@ function projectedScore(p, phase) {
     // Estimated FV from driftnetto (non-BRF only)
     var estFV = projects.reduce(function(s, pr) {
         var dn = pr.driftnetto || 0;
-        var isBost = (pr.typ === 'Hyresrätt' || pr.typ === 'BRF');
+        var _ptyp = (pr.typ || '').toUpperCase();
+        var isBost = (_ptyp === 'HYRESRÄTT' || _ptyp === 'BRF');
         var yld = isBost ? 4.0 : 5.0;
         return s + (dn > 0 ? (4 * dn) / (yld / 100) : (pr.marknadsvarde || pr.anskaffning || 0));
     }, 0);
@@ -707,7 +708,7 @@ function projectedScore(p, phase) {
             _ownedFasts = projects.map(function(pr) { return pr; });
         }
         var _actualFV = _ownedFasts.reduce(function(s, ff) {
-            var isBost = ff.typ === 'Hyresrätt';
+            var isBost = (ff.typ || '').toUpperCase() === 'HYRESRÄTT';
             var yld = isBost ? (p.f4_yield_bostader || 4.0) : (p.f4_yield_kommersiellt || 5.0);
             var dn = ff.driftnetto || 0;
             var eklMap = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0};
@@ -1204,7 +1205,7 @@ function renderPlayer() {
             html += '<div class="chosen-item">';
             html += '<div class="dot" style="background:#8B7355"></div>';
             html += '<div><div class="name">' + p.projektchef.namn + '</div>';
-            html += '<div class="detail">' + p.projektchef.specialisering + ' | L\u00f6n: ' + p.projektchef.lon + ' Mkr</div></div>';
+            html += '<div class="detail">' + p.projektchef.specialisering + '</div></div>';
             if (editPC) html += '<div class="remove-btn" data-action="remove-pc">\u2715</div>';
             html += '</div>';
         } else if (editPC) {
@@ -1225,7 +1226,7 @@ function renderPlayer() {
         html += '<div id="proj-list" style="' + (projCollapsed ? 'display:none' : '') + '">';
         if (p.projects.length > 0) {
             for (const proj of p.projects) {
-                const color = { BRF: '#DAA520', 'F\u00d6RSKOLOR': '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', 'Hyresr\u00e4tt': '#C62828' }[proj.typ] || 'var(--ink-mid)';
+                const color = { BRF: '#DAA520', 'F\u00d6RSKOLA': '#2E7D32', LOKAL: '#1565C0', KONTOR: '#6A1B9A', 'HYRESR\u00c4TT': '#C62828' }[(proj.typ||'').toUpperCase()] || 'var(--ink-mid)';
                 html += '<div class="chosen-item">';
                 html += '<div class="dot" style="background:' + color + '"></div>';
                 html += '<div><div class="name">' + (proj.namn || proj.id) + '</div>';
@@ -1236,7 +1237,7 @@ function renderPlayer() {
         }
         if (editProjects) {
             html += '<div class="proj-type-grid">';
-            for (const typ of ['BRF', 'F\u00d6RSKOLOR', 'LOKAL', 'KONTOR', 'Hyresr\u00e4tt']) {
+            for (const typ of ['BRF', 'F\u00d6RSKOLA', 'LOKAL', 'KONTOR', 'HYRESR\u00c4TT']) {
                 html += '<button class="proj-type-btn" data-action="add-project-type" data-typ="' + typ + '">' + typ + '</button>';
             }
             html += '</div>';
@@ -1245,7 +1246,7 @@ function renderPlayer() {
             html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">';
             html += '<div style="color:var(--burgundy);font-size:13px;margin-bottom:6px">K\u00f6p nytt projekt (3\u00d7 pris)</div>';
             html += '<div class="proj-type-grid">';
-            for (const typ of ['BRF', 'F\u00d6RSKOLOR', 'LOKAL', 'KONTOR', 'Hyresr\u00e4tt']) {
+            for (const typ of ['BRF', 'F\u00d6RSKOLA', 'LOKAL', 'KONTOR', 'HYRESR\u00c4TT']) {
                 html += '<button class="proj-type-btn" data-action="buy-project-3x" data-typ="' + typ + '" style="border-color:var(--warning);color:var(--warning)">' + typ + '</button>';
             }
             html += '</div></div>';
@@ -1297,7 +1298,7 @@ function renderPlayer() {
             html += '<div class="chosen-item">';
             html += '<div class="dot" style="background:#4A6FA5"></div>';
             html += '<div><div class="name">' + p.arbetschef.namn + '</div>';
-            html += '<div class="detail">' + p.arbetschef.specialisering + ' | Erf: +' + (p.arbetschef.kapacitet || 0) + ' | Komp: ' + (p.arbetschef.forhandling || 'ingen') + '</div></div>';
+            html += '<div class="detail">' + p.arbetschef.specialisering + ' | Erf: +' + (p.arbetschef.erfarenhet || 0) + '</div></div>';
             if (editAC) html += '<div class="remove-btn" data-action="remove-ac">\u2715</div>';
             html += '</div>';
         } else if (editAC) {
@@ -1406,8 +1407,8 @@ function renderPlayer() {
         var _projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         var _projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         var _maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        var _totQ = 4 + _projQ + p.q_krav - (p.rb_spent_q || 0);
-        var _totH = 4 + _projH + p.h_krav - (p.rb_spent_h || 0);
+        var _totQ = 6 + _projQ + p.q_krav - (p.rb_spent_q || 0);
+        var _totH = 6 + _projH + p.h_krav - (p.rb_spent_h || 0);
         var _baseT = 12 + _maxProjT;
         var _curT = Math.max(8, _baseT - (p.rb_spent_t || 0) + _plT + _gfT);
         var konsKortT = Math.max(0, _curT - 12);
@@ -1461,8 +1462,8 @@ function renderPlayer() {
         var _pQ2 = p.projects.reduce(function(s,pr){return s+(pr.kvalitet||0);},0);
         var _pH2 = p.projects.reduce(function(s,pr){return s+(pr.hallbarhet||0);},0);
         var _mT2 = p.projects.reduce(function(m,pr){return Math.max(m,pr.tid||0);},0);
-        var _tQ2 = 4 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
-        var _tH2 = 4 + _pH2 + p.h_krav - (p.rb_spent_h||0);
+        var _tQ2 = 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
+        var _tH2 = 6 + _pH2 + p.h_krav - (p.rb_spent_h||0);
         var _bT2 = 12 + _mT2;
         var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2);
         var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2)) + Math.max(0,_tH2-(_plH2+_gfH2)) + Math.max(0,_cT2-12);
@@ -1581,7 +1582,7 @@ function renderPlayer() {
     if (isPhase4) { try {
         var fasts = p.fastigheter || [];
         var EKLASS = ['E','D','C','B','A'];
-        var TYPE_COLORS = {'BRF':'#d4a017','Hyresrätt':'var(--danger)','FÖRSKOLOR':'var(--success)','LOKAL':'#2980b9','KONTOR':'#8e44ad'};
+        var TYPE_COLORS = {'BRF':'#d4a017','HYRESRÄTT':'var(--danger)','FÖRSKOLA':'var(--success)','LOKAL':'#2980b9','KONTOR':'#8e44ad'};
 
         // Auto-convert projects to fastigheter if not done yet
         if (fasts.length === 0 && p.projects.length > 0 && !S._f4converted) {
@@ -1699,7 +1700,7 @@ function renderPlayer() {
         for (var fi = 0; fi < fasts.length; fi++) {
             var f = fasts[fi];
             if (f.sold) continue;
-            var isBostader = (f.typ === 'Hyresr\u00e4tt');
+            var isBostader = (f.typ || '').toUpperCase() === 'HYRESR\u00c4TT';
             var yieldPct = isBostader ? p.f4_yield_bostader : p.f4_yield_kommersiellt;
             var dn = f.driftnetto || 0;  // Mkr per kvartal
             // Energiklass affects MV: C=1.00 referens, A=1.10 / B=1.05 / D=0.95 / E=0 (E ger 0 FV-bidrag — hård bestraffning)
@@ -1840,8 +1841,8 @@ function renderPlayer() {
 
         // Kvartalshändelser (specific per quarter) — only if player owns the relevant type
         var _kvartalsEvents = {
-            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort', color: 'var(--success)', icon: '\uD83C\uDFEB', typ: 'F\u00d6RSKOLOR' },
-            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling', color: 'var(--burgundy)', icon: '\uD83D\uDCCB', typ: 'Hyresr\u00e4tt' },
+            'f4_q1': { text: 'F\u00f6rskolor: H\u00e4ndelsekort', color: 'var(--success)', icon: '\uD83C\uDFEB', typ: 'F\u00d6RSKOLA' },
+            'f4_q2': { text: 'Hyresr\u00e4tt: Hyresf\u00f6rhandling', color: 'var(--burgundy)', icon: '\uD83D\uDCCB', typ: 'HYRESR\u00C4TT' },
             'f4_q3': { text: 'Lokal: H\u00e4ndelsekort', color: '#2980b9', icon: '\uD83C\uDFEC', typ: 'LOKAL' },
             'f4_q4': { text: 'Kontor: H\u00e4ndelsekort', color: '#8e44ad', icon: '\uD83C\uDFE2', typ: 'KONTOR' },
         };
@@ -1966,8 +1967,8 @@ function renderPlayer() {
             var _projQslut = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
             var _projHslut = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
             var _maxProjTslut = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-            var _totQslut = 4 + _projQslut + p.q_krav - (p.rb_spent_q || 0);
-            var _totHslut = 4 + _projHslut + p.h_krav - (p.rb_spent_h || 0);
+            var _totQslut = 6 + _projQslut + p.q_krav - (p.rb_spent_q || 0);
+            var _totHslut = 6 + _projHslut + p.h_krav - (p.rb_spent_h || 0);
             var _baseTslut = 12 + _maxProjTslut;
             var _curTslut = Math.max(8, _baseTslut - (p.rb_spent_t || 0));
             var _nQslut = Math.max(0, _totQslut - curQ);
@@ -2079,8 +2080,8 @@ function renderPlayer() {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
-        const totalH = 4 + projH + p.h_krav - (p.rb_spent_h || 0);
+        const totalQ = 6 + projQ + p.q_krav - (p.rb_spent_q || 0);
+        const totalH = 6 + projH + p.h_krav - (p.rb_spent_h || 0);
         const baseT = 12 + maxProjT;
         const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
@@ -2135,10 +2136,18 @@ function renderPlayer() {
         }
         html += '<div>T: <strong style="color:' + (curT <= 12 ? 'var(--success)' : 'var(--danger)') + '">' + curT + '</strong> m\u00e5n <span style="color:var(--ink-mid)">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
         var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
+        var rbSpent = (p.rb_spent_q || 0) + (p.rb_spent_h || 0) + (p.rb_spent_t || 0);
+        var rbKvar = totalRb - rbSpent;
         // Erfarenhetstaket är 12 (regelboken §10 + §1.7)
         var totalErfRaw = plErf + pcErf + acErf;
         var totalErf = Math.min(12, totalErfRaw);
-        html += '<div style="grid-column:1/-1">' + counterRow('Riskbuffertar (Rb)', p.riskbuffertar || 0, 'riskbuffertar', false) + '</div>';
+        // Rb visas bara som status (kvar/total). +/- finns i 'Ändringar från
+        // kort & spelbräde'-kortet under skede 1, och i Skede 2-rb-investering.
+        var rbDetail = '';
+        if (pcRb || acRb) {
+            rbDetail = ' <span style="color:var(--ink-mid);font-size:11px">(varav ledning: ' + (pcRb + acRb) + ')</span>';
+        }
+        html += '<div>Rb: <strong style="color:' + (rbKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + rbKvar + '</strong> kvar av <strong>' + totalRb + '</strong>' + rbDetail + '</div>';
         html += '<div>Erf: <strong>' + totalErf + '</strong>' + (totalErfRaw > 12 ? ' <span style="color:var(--ink-mid);font-size:11px">(av ' + totalErfRaw + ', tak 12)</span>' : '') + '</div>';
         html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
         html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
@@ -2611,7 +2620,7 @@ function attachPlayerEvents(container) {
                 try { var r = await fetch('/api/companion/data/projects'); var _pdata = await r.json(); S._allProjects = _pdata.projects || _pdata; } catch(e) { return; }
             }
             var mc = document.getElementById('modal-container');
-            var types = ['F\u00d6RSKOLOR','LOKAL','KONTOR','Hyresr\u00e4tt'];
+            var types = ['F\u00d6RSKOLA','LOKAL','KONTOR','HYRESR\u00c4TT'];
             var _p = S.state.player;
             var html = '<div class="modal-overlay"><div class="modal">';
             html += '<div class="modal-header"><h3>K\u00f6p fastighet fr\u00e5n marknaden</h3></div>';
@@ -2621,7 +2630,7 @@ function attachPlayerEvents(container) {
                 if (projs.length === 0) continue;
                 html += '<div style="font-size:12px;color:var(--ink-mid);text-transform:uppercase;letter-spacing:1px;padding:8px 0 4px;border-bottom:1px solid var(--border);margin-top:4px">' + t + '</div>';
                 for (var pr of projs) {
-                    var _isBost = (pr.typ === 'Hyresr\u00e4tt');
+                    var _isBost = ((pr.typ || '').toUpperCase() === 'HYRESR\u00c4TT');
                     var _yld = _isBost ? (_p.f4_yield_bostader||4.0) : (_p.f4_yield_kommersiellt||5.0);
                     var _dn = pr.driftnetto || 0;
                     var _eklF = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0}[(pr.energiklass||'C').toUpperCase()] || 1.0;
