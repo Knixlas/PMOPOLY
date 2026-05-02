@@ -249,48 +249,41 @@ def load_organisations() -> Dict[str, List[Organisation]]:
 def load_planning_events() -> Dict[str, List[PlanningEventCard]]:
     """Load planning event cards grouped by kort_id.
 
-    CSV columns: Kort_ID;ID;Namn;Typ;Fas;Svårighetsgrad;Beskrivning;Summering;
-                 Trigger;Klassvillkor;Tröskel_1_5;Tröskel_6_17;Tröskel_18_20;Tröskel_21_plus
+    Header-baserad lookup för att tåla nya kolumner från SPELET 2
+    (t.ex. en 'Fas'-kolumn som la sig först 2026-04).
     """
     fp = data_path("handelsekort_pl")
     if not os.path.exists(fp):
         return {}
 
-    enc = detect_encoding(fp)
+    rows = read_csv(fp)
     cards: Dict[str, List[PlanningEventCard]] = {}
 
-    with open(fp, "r", encoding=enc) as f:
-        reader = csv.reader(f, delimiter=";")
-        header = next(reader)
-
-        # Find threshold columns (indices 10-13 in 0-based)
-        for cols in reader:
-            if not cols[0].strip() or cols[0].strip().lower() == "tom":
-                continue
-
-            effects = [
-                cols[10].strip() if len(cols) > 10 else "",
-                cols[11].strip() if len(cols) > 11 else "",
-                cols[12].strip() if len(cols) > 12 else "",
-                cols[13].strip() if len(cols) > 13 else "",
-            ]
-
-            card = PlanningEventCard(
-                kort_id=cols[0].strip(),
-                id=safe_int(cols[1]) if len(cols) > 1 else 0,
-                namn=cols[2].strip() if len(cols) > 2 else "",
-                typ=cols[3].strip() if len(cols) > 3 else "",
-                fas=cols[4].strip() if len(cols) > 4 else "",
-                svarighetsgrad=cols[5].strip() if len(cols) > 5 else "",
-                beskrivning=cols[6].strip() if len(cols) > 6 else "",
-                summering=cols[7].strip() if len(cols) > 7 else "",
-                trigger=cols[8].strip() if len(cols) > 8 else "Alla",
-                klassvillkor=cols[9].strip() if len(cols) > 9 else "Alla",
-                effects=effects,
-            )
-
-            kort_id = card.kort_id
-            cards.setdefault(kort_id, []).append(card)
+    for row in rows:
+        kid = safe_str(row.get("Kort_ID"))
+        if not kid or kid.lower() == "tom":
+            continue
+        effects = [
+            safe_str(row.get("Tröskel_1_5", row.get("Trskel_1_5", ""))),
+            safe_str(row.get("Tröskel_6_17", row.get("Trskel_6_17", ""))),
+            safe_str(row.get("Tröskel_18_20", row.get("Trskel_18_20", ""))),
+            safe_str(row.get("Tröskel_21_plus", row.get("Trskel_21_plus", ""))),
+        ]
+        card = PlanningEventCard(
+            kort_id=kid,
+            id=safe_int(row.get("ID")),
+            namn=safe_str(row.get("Namn")),
+            typ=safe_str(row.get("Typ")),
+            fas=safe_str(row.get("Fas")),
+            svarighetsgrad=safe_str(row.get("Svårighetsgrad",
+                                              row.get("Svarighetsgrad", ""))),
+            beskrivning=safe_str(row.get("Beskrivning")),
+            summering=safe_str(row.get("Summering")),
+            trigger=safe_str(row.get("Trigger")) or "Alla",
+            klassvillkor=safe_str(row.get("Klassvillkor")) or "Alla",
+            effects=effects,
+        )
+        cards.setdefault(card.kort_id, []).append(card)
 
     return cards
 
