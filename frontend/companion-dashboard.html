@@ -76,7 +76,7 @@ h2.section-head { max-width: 800px; margin: 22px auto 10px; color: var(--burgund
 </div>
 <h2 class="section-head">Stadsdelar</h2>
 <div class="leaderboard" id="db-districts"></div>
-<h2 class="section-head">Spelare</h2>
+<h2 class="section-head">Dotterbolag</h2>
 <div class="leaderboard" id="db-leaderboard"></div>
 <div class="refresh-note">Uppdateras var 5:e sekund</div>
 
@@ -149,7 +149,7 @@ async function refresh() {
                 <div class="lb-rank">${pMedal || e.rank}</div>
                 <div class="lb-info">
                     <div class="lb-name">${e.block_name || e.name}</div>
-                    <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta} | PC: ${e.pc_name}</div>
+                    <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta}</div>
                     <div class="lb-tier" style="color:${pTier.color}">${pTier.emoji} ${pTier.label}</div>
                 </div>
                 <div class="lb-score">
