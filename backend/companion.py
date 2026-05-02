@@ -304,6 +304,7 @@ class CompanionPlayer:
     f4_yield_bostader: float = 4.0  # Current yield % for bostäder
     f4_yield_kommersiellt: float = 5.0  # Current yield % for kommersiellt
     f4_quarters: Dict[str, dict] = field(default_factory=dict)  # "1"-"4" -> {ek_change}
+    f4_upgrades_per_quarter: Dict[str, list] = field(default_factory=dict)  # "1"-"4" -> [fastighet_id...]
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
     f4_market_bought: Dict[str, int] = field(default_factory=dict)  # step_id -> num bought this quarter
@@ -462,6 +463,7 @@ class CompanionPlayer:
             "f4_yield_bostader": self.f4_yield_bostader,
             "f4_yield_kommersiellt": self.f4_yield_kommersiellt,
             "f4_quarters": self.f4_quarters,
+            "f4_upgrades_per_quarter": self.f4_upgrades_per_quarter,
             "f4_final_score": round(self.f4_final_score, 1),
             "f4_market_bought": self.f4_market_bought,
             "steps_done": self.steps_done,
@@ -1121,6 +1123,8 @@ class CompanionManager:
                 player.f4_yield_kommersiellt = float(assets["f4_yield_kommersiellt"])
             if "f4_quarters" in assets:
                 player.f4_quarters = assets["f4_quarters"]
+            if "f4_upgrades_per_quarter" in assets:
+                player.f4_upgrades_per_quarter = assets["f4_upgrades_per_quarter"]
             if "f4_final_score" in assets:
                 player.f4_final_score = float(assets["f4_final_score"])
             if "f4_market_bought" in assets:

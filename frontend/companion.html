@@ -1799,8 +1799,8 @@ function renderPlayer() {
             var _fcLonQ = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
             var _fsListQ = Array.isArray(p.fastighetsskotare) ? p.fastighetsskotare : (p.fastighetsskotare ? [p.fastighetsskotare] : []);
             var _fsLonQ = _fsListQ.reduce(function(s, fs) { return s + (fs.lon || 0); }, 0);
-            var _totalLonQ = _fcLonQ + _fsLonQ;
-            var _nettoKvartal = _totalDN - _totalLonQ;
+            var _totalLonQ = Math.round((_fcLonQ + _fsLonQ) * 10) / 10;
+            var _nettoKvartal = Math.round((_totalDN - _totalLonQ) * 10) / 10;
 
             var _dnDoneKey = 'dn_' + step;
             var _dnAdded = (p.steps_done || {})[_dnDoneKey] === true;
@@ -1848,7 +1848,8 @@ function renderPlayer() {
         if (_kvartalsEvents[step] && _driftnettoQuarters.indexOf(step) >= 0) {
             var _kev = _kvartalsEvents[step];
             var _ownsType = _unsoldFasts.some(function(f) { return f.typ === _kev.typ; });
-            var _hEk = ((_f4Q || {})[step] || {}).handelse_ek || 0;
+            var _f4Q_ke = p.f4_quarters || {};
+            var _hEk = (_f4Q_ke[step] || {}).handelse_ek || 0;
             html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
             html += '<div class="asset-label">\uD83C\uDFB2 KVARTALSH\u00c4NDELSE</div>';
             html += '<div style="font-size:14px;color:' + _kev.color + ';margin-bottom:8px">' + _kev.icon + ' ' + _kev.text + '</div>';
@@ -2559,8 +2560,17 @@ function attachPlayerEvents(container) {
             mc.querySelectorAll('[data-proj]').forEach(function(pEl) {
                 pEl.addEventListener('click', function() {
                     var proj = JSON.parse(pEl.dataset.proj);
-                    var kopeskilling = parseFloat(prompt('K\u00f6peskilling (Mkr):') || '0');
+                    var kopeskilling = parseFloat(prompt('Hela k\u00f6peskillingen (Mkr) \u2014 ange marknadsv\u00e4rdet ni kommit \u00f6verens om:') || '0');
                     if (!kopeskilling) { mc.innerHTML = ''; return; }
+                    // 70 % l\u00e5nefinansieras, 30 % betalas kontant fr\u00e5n kassan (regelboken \u00a78.6)
+                    var kontant = Math.round(kopeskilling * 0.30 * 10) / 10;
+                    var ok = confirm(
+                        '70 % betalas med l\u00e5n, 30 % fr\u00e5n kassan.\n\n' +
+                        'Ni betalar ' + kontant + ' Mkr (30 % av ' + kopeskilling + ' Mkr) till s\u00e4ljaren.\n\n' +
+                        'Resterande ' + (kopeskilling - kontant) + ' Mkr l\u00e4ggs som l\u00e5n (tyst variabel).\n\n' +
+                        'Bekr\u00e4fta k\u00f6pet?'
+                    );
+                    if (!ok) { mc.innerHTML = ''; return; }
                     var _step = S.state.step;
                     var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
                     fasts.push({
@@ -2573,10 +2583,10 @@ function attachPlayerEvents(container) {
                     _mktBought[_step] = (_mktBought[_step] || 0) + 1;
                     send({ type: 'update_assets', assets: {
                         fastigheter: fasts,
-                        eget_kapital: (S.state.player.eget_kapital || 0) - kopeskilling,
+                        eget_kapital: Math.round(((S.state.player.eget_kapital || 0) - kontant) * 10) / 10,
                         f4_market_bought: _mktBought
                     }});
-                    showDDKortModal(proj.namn, kopeskilling);
+                    showDDKortModal(proj.namn, kopeskilling, kontant);
                 });
             });
         });
@@ -2585,13 +2595,16 @@ function attachPlayerEvents(container) {
 
 // ── PC Modal ──
 // ── DD-kort Modal ──
-function showDDKortModal(fastNamn, kopeskilling) {
+function showDDKortModal(fastNamn, kopeskilling, kontant) {
     var mc = document.getElementById('modal-container');
     var cards = S.ddData.filter(function(c) { return c.id; });
     var html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence \u2014 ' + fastNamn + '</h3></div>';
     html += '<div class="modal-body">';
-    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:12px">K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>. Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
+    var _betaltText = (kontant !== undefined)
+        ? 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong> (betalt ' + kontant + ' Mkr kontant, resten l\u00e5n).'
+        : 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>.';
+    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:12px">' + _betaltText + ' Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
     html += '<button id="btn-draw-dd" class="btn-primary" style="width:100%;padding:14px;font-size:16px;margin-bottom:12px">\uD83C\uDCCF Dra DD-kort</button>';
     html += '<div id="dd-result"></div>';
     html += '</div>';
