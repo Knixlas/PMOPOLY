@@ -864,10 +864,27 @@ class CompanionManager:
 
     async def connect(self, code: str, player_id: str, ws: WebSocket):
         await ws.accept()
-        self.connections.setdefault(code, {})[player_id] = ws
+        # If the same player_id already has an open WebSocket (e.g., page reload
+        # or network blip while old socket lingers), close it before replacing.
+        # Without this, the stale socket's eventual disconnect handler would
+        # pop the NEW socket from the dict (race condition).
+        old = self.connections.setdefault(code, {}).get(player_id)
+        if old is not None and old is not ws:
+            try:
+                await old.close(code=1000, reason="Replaced by new connection")
+            except Exception:
+                pass
+        self.connections[code][player_id] = ws
 
-    def disconnect(self, code: str, player_id: str):
+    def disconnect(self, code: str, player_id: str, ws: WebSocket = None):
+        """Remove player WS. If `ws` is given, only pop when it matches the
+        currently stored socket — protects against a stale disconnect handler
+        racing with a fresh reconnect."""
         conns = self.connections.get(code, {})
+        if ws is not None:
+            current = conns.get(player_id)
+            if current is not ws:
+                return  # stale disconnect; ignore
         conns.pop(player_id, None)
 
     async def send_to(self, code: str, player_id: str, data: dict):

@@ -467,13 +467,23 @@ function connectWs(code, playerId) {
         }
     };
     ws.onclose = (e) => {
-        // Don't reconnect on auth errors or too many retries
-        if (e.code >= 4000 || _wsRetries >= 5) {
+        // Don't reconnect on auth errors (4xxx codes from server)
+        if (e.code >= 4000) {
             console.warn('WS closed permanently:', e.code, e.reason);
             return;
         }
+        // Exponential backoff with jitter: 1s, 2s, 4s, 7s, 10s, 15s, 20s, 30s...
+        // Random jitter (0-1000ms) prevents thundering herd on simultaneous reconnects.
+        if (_wsRetries >= 12) {
+            console.warn('WS giving up after 12 retries');
+            return;
+        }
+        var base = Math.min(1000 * Math.pow(1.6, _wsRetries), 30000);
+        var jitter = Math.floor(Math.random() * 1000);
+        var delay = base + jitter;
         _wsRetries++;
-        setTimeout(() => connectWs(code, playerId), 3000);
+        console.log('WS reconnect attempt', _wsRetries, 'in', Math.round(delay), 'ms');
+        setTimeout(() => connectWs(code, playerId), delay);
     };
     ws.onerror = () => {}; // Suppress error logging (onclose handles it)
     S.ws = ws;
