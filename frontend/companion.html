@@ -251,6 +251,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
         <div class="step-name" id="p-step-name">Väntar på Game Master...</div>
         <div style="margin-top:6px;font-size:13px;color:var(--ink-mid)">Kvarter: <span id="p-block-name" style="color:var(--burgundy);cursor:pointer;border-bottom:1px dashed var(--ink-faint)" title="Klicka för att byta namn">—</span>
             <span id="btn-tips-toggle" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Visa/dölj tips i prompts">💡 Tips</span>
+            <span id="btn-regelbok" style="margin-left:12px;color:var(--burgundy);cursor:pointer;font-size:12px;font-family:var(--font-mono);letter-spacing:0.06em" title="Snabbreferens regelboken">📖 Regelbok</span>
             <span id="btn-leave-player" style="margin-left:12px;color:var(--danger);cursor:pointer;font-size:12px">Lämna</span>
         </div>
     </div>
@@ -264,6 +265,7 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
             <div style="color:var(--ink-faint);font-size:10px">GM-session: <span id="gm-room-code" style="letter-spacing:2px">—</span>
                 <span id="btn-gm-reset" style="cursor:pointer;color:var(--danger);margin-left:16px;font-size:11px;text-decoration:underline">Nollställ</span>
                 <span id="btn-gm-save-setup" style="cursor:pointer;color:var(--success);margin-left:16px;font-size:11px;text-decoration:underline">💾 Spara setup</span>
+                <span id="btn-gm-regelbok" style="cursor:pointer;color:var(--burgundy);margin-left:16px;font-size:11px;text-decoration:underline">📖 Regelbok</span>
             </div>
         </div>
         <div class="gm-controls">
@@ -970,6 +972,84 @@ function showHelpPopup(title, dataOrText, phaseName) {
         '<div class="modal-header"><h3>' + _escapeHtml(title || 'Hjälp') + '</h3></div>' +
         '<div class="modal-body" style="font-size:14px;line-height:1.6">' + body + '</div>' +
         '<div class="modal-footer"><button class="btn-primary" id="modal-ok">Förstått</button></div>' +
+        '</div></div>';
+    mc.querySelector('#modal-ok').addEventListener('click', function() { mc.innerHTML = ''; });
+    mc.querySelector('.modal-overlay').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) mc.innerHTML = '';
+    });
+}
+
+// ── Regelbok-snabbreferens ──
+// Centrala paragrafer + nyckeltal som spelarna oftast frågar om vid bordet.
+// Inte hela regelboken — bara den värdefulla "fusklappen".
+var REGELBOK_QUICKREF = [
+    {
+        section: 'Spelets struktur',
+        items: [
+            { ref: '§1', t: '3 skeden: Skede 1 Projektutveckling, Skede 2 Planering+Genomförande, Skede 3 Förvaltning.' },
+            { ref: '§1.7 / §10', t: 'Erfarenhetstak: max 12 oavsett hur mycket man samlar in.' },
+        ]
+    },
+    {
+        section: 'Skede 1 — Projektutveckling',
+        items: [
+            { ref: '§3.1, §5.2', t: 'T-utfallet startar på 12. I Skede 2-setup höjs det med kvarterets största T-värde (max +2 till 14). Sjunker aldrig under 8.' },
+            { ref: '§4.2', t: 'Anskaffningskostnad = grundpris × formfaktor. Hög formfaktor = dyr tomt.' },
+        ]
+    },
+    {
+        section: 'Skede 2.1 — Planering',
+        items: [
+            { ref: '§5.4', t: 'AC-val: lägst ABT-budget väljer först. Ordningen är inverterad mot pris.' },
+            { ref: '§6.4', t: 'Q/H/T grundkrav = 6 (Detaljplanen). Justeras av valda projekt.' },
+            { ref: '§6.2', t: 'Moderbolagslån kan tas redan i Skede 2.1 om ABT-budget tagit slut.' },
+        ]
+    },
+    {
+        section: 'Skede 2.2 — Genomförande',
+        items: [
+            { ref: '§7.1', t: 'Byggfaser: grund, stomme, fasad, inredning. Konsekvenskort dras vid varje byggfas.' },
+            { ref: '§7', t: 'B-ÄTA = vinst på ändringsbeställning. Går till kassan, INTE till TB/TG.' },
+            { ref: '§7', t: 'Garanti: avsättning vid övertag. Reducerar slutpoäng om Q/H underskrids.' },
+        ]
+    },
+    {
+        section: 'Skede 3 — Förvaltning',
+        items: [
+            { ref: '§8.5, §8.11', t: 'Yield Q1 = startvärde (4% bostäder, 5% kommersiellt). Yieldkort dras Q1, Q2, Q3 — Q4 låst.' },
+            { ref: '§8.6', t: 'Sekundärmarknad: säljaren får 30% av MV "i handen". Lånet löses som tyst variabel.' },
+            { ref: '§8.8', t: 'Energi-uppgradering: 3 Mkr per steg. Max projekt per kvartal: Q1=3, Q2=2, Q3=1, Q4=0.' },
+            { ref: '§8.10', t: 'Energiklass FV-modifierare: A=1.10, B=1.05, C=1.00, D=0.95, E=0 (E nollställer värdet).' },
+        ]
+    },
+    {
+        section: 'Slutformel & f(n)',
+        items: [
+            { ref: '§9.1', t: 'Råpoäng = (FV × 30% × Energibonus + EK_faktor × Eget kapital + TB) ÷ (BTA / 1000).' },
+            { ref: '§9.1', t: 'EK_faktor = 0.10 om EK ≥ 0, annars 2.00 (asymmetrin förhindrar "sälj-allt"-strategin och straffar moderbolagslån).' },
+            { ref: '§9.2', t: 'f(n) straffaktor (n = summan av Q-, H-, T-avvikelser):' },
+            { ref: '§9.2 tabell', t: 'n=0→100% · 1→90 · 2→82 · 3→75 · 4→70 · 5→65 · 6→61 · 7→58 · 8→55 · 9→52 · 10→50 · sedan linjärt mot 0.' },
+            { ref: '§13', t: 'Slutpoäng = Råpoäng × f(n). Vinnaren har högst slutpoäng.' },
+        ]
+    },
+];
+
+function showRegelbokQuickref() {
+    var mc = document.getElementById('modal-container');
+    var body = '<div style="color:var(--ink-mid);font-size:0.85rem;line-height:1.5;margin-bottom:14px;font-style:italic">Snabbreferens till regelboken — de oftast efterfrågade reglerna och formlerna. Inte fullständig — slå upp regelboken vid tveksamheter.</div>';
+    REGELBOK_QUICKREF.forEach(function(group) {
+        body += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)">' + _escapeHtml(group.section) + '</div>';
+        group.items.forEach(function(it) {
+            body += '<div style="margin:8px 0;line-height:1.45">' +
+                '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--ink-faint);display:inline-block;min-width:80px">' + _escapeHtml(it.ref) + '</span>' +
+                '<span style="color:var(--ink)">' + _escapeHtml(it.t) + '</span>' +
+                '</div>';
+        });
+    });
+    mc.innerHTML = '<div class="modal-overlay"><div class="modal" style="max-width:680px">' +
+        '<div class="modal-header"><h3>📖 Regelbok — snabbreferens</h3></div>' +
+        '<div class="modal-body" style="font-size:14px;line-height:1.6;max-height:75vh;overflow-y:auto">' + body + '</div>' +
+        '<div class="modal-footer"><button class="btn-primary" id="modal-ok">Stäng</button></div>' +
         '</div></div>';
     mc.querySelector('#modal-ok').addEventListener('click', function() { mc.innerHTML = ''; });
     mc.querySelector('.modal-overlay').addEventListener('click', function(e) {
@@ -2043,6 +2123,11 @@ function renderPlayer() {
     const tipsBtn = document.getElementById('btn-tips-toggle');
     if (tipsBtn) {
         tipsBtn.onclick = function() { setTipsOn(!getTipsOn()); };
+    }
+    // Regelbok quickref button (player)
+    const rbBtn = document.getElementById('btn-regelbok');
+    if (rbBtn) {
+        rbBtn.onclick = function() { showRegelbokQuickref(); };
     }
 }
 
@@ -3354,6 +3439,10 @@ document.getElementById('btn-prev-step').addEventListener('click', () => {
     setTimeout(() => send({ type: 'get_state' }), 200);
     setTimeout(() => send({ type: 'get_state' }), 800);
 });
+
+// GM Regelbok-snabbreferens
+var _gmRbBtn = document.getElementById('btn-gm-regelbok');
+if (_gmRbBtn) _gmRbBtn.addEventListener('click', function() { showRegelbokQuickref(); });
 
 // GM Reset
 var _resetBtn = document.getElementById('btn-gm-reset');
