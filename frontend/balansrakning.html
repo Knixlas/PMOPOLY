@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Åkepol — Balans- och resultaträkning (manuell fallback)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --paper:        #F1E8D6;
+    --paper-deep:   #E6D9BD;
+    --bg-card:      #FAF6EC;
+    --ink:          #1A1410;
+    --ink-mid:      #544A3F;
+    --ink-faint:    #6B6056;
+    --burgundy:     #6B1815;
+    --border:       rgba(84,74,63,.32);
+    --line:         #9E968E;
+    --font-serif:   'Source Serif 4', Cambria, 'Times New Roman', serif;
+    --font-mono:    'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-serif); background: var(--paper); color: var(--ink); padding: 18px; line-height: 1.45; }
+
+.print-controls { max-width: 680px; margin: 0 auto 18px; padding: 12px 18px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.print-controls .info { font-size: 0.82rem; color: var(--ink-mid); font-style: italic; flex: 1; min-width: 200px; }
+.print-controls button { padding: 10px 18px; border: 1px solid var(--burgundy); background: var(--burgundy); color: #fff; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; cursor: pointer; border-radius: 6px; }
+
+.sheet { max-width: 680px; margin: 0 auto 24px; background: var(--bg-card); padding: 30px 38px; border: 1px solid var(--border); border-radius: 6px; page-break-after: always; }
+.sheet:last-child { page-break-after: auto; }
+
+.sheet h1 { color: var(--ink); font-family: var(--font-serif); font-weight: 600; font-size: 1.7rem; letter-spacing: 0; margin-bottom: 4px; }
+.sheet h1 em { font-style: italic; color: var(--burgundy); font-weight: 400; }
+.sheet .subtitle { color: var(--ink-mid); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 2px solid var(--border); }
+
+.sheet h2 { color: var(--burgundy); font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.sheet h3 { color: var(--ink); font-family: var(--font-serif); font-style: italic; font-size: 1rem; font-weight: 500; margin: 16px 0 6px; }
+
+.field { display: flex; align-items: baseline; padding: 5px 0; }
+.field .label { flex: 0 0 auto; min-width: 160px; color: var(--ink-mid); font-size: 0.92rem; padding-right: 12px; }
+.field .value { flex: 1; border-bottom: 1px solid var(--line); min-height: 22px; padding: 0 4px; }
+.field .unit { color: var(--ink-faint); font-family: var(--font-mono); font-size: 0.8rem; padding-left: 10px; flex: 0 0 auto; }
+
+.field-row { display: flex; gap: 12px; padding: 5px 0; }
+.field-row .field { flex: 1; padding: 0; }
+
+.note { margin: 10px 0 4px; font-size: 0.85rem; color: var(--ink-mid); font-style: italic; line-height: 1.5; }
+.note strong { color: var(--burgundy); font-style: normal; }
+
+.formula { background: var(--paper-deep); padding: 12px 16px; border-left: 3px solid var(--burgundy); border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; margin: 10px 0; white-space: pre-wrap; }
+
+table.grid { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 0.88rem; }
+table.grid th, table.grid td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+table.grid th { background: var(--paper-deep); color: var(--burgundy); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+table.grid td { min-height: 22px; }
+table.grid td.num { text-align: right; font-family: var(--font-mono); }
+table.grid td.fillable { background: rgba(255,255,255,0.4); }
+
+.fn-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.78rem; margin: 8px 0; }
+.fn-table th, .fn-table td { border: 1px solid var(--border); padding: 5px 4px; text-align: center; }
+.fn-table th { background: var(--paper-deep); color: var(--burgundy); }
+
+.checkbox { display: inline-block; width: 14px; height: 14px; border: 1px solid var(--ink); border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+@media print {
+    body { background: white; padding: 0; }
+    .print-controls { display: none; }
+    .sheet { box-shadow: none; border: none; margin: 0; max-width: 100%; padding: 24px 30px; border-radius: 0; }
+    .sheet h1 em { color: #000; }
+    .sheet h2 { color: #000; }
+    .formula { background: #f4f4f4; border-left-color: #000; }
+}
+
+@page { size: A4; margin: 1.4cm; }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+    <div class="info">Manuell fallback-blankett om Companion-appen inte fungerar. Skriv ut till PDF eller papper innan spelet börjar.</div>
+    <button onclick="window.print()">Skriv ut / Spara som PDF</button>
+</div>
+
+<!-- ── Sida 1: Identitet + Skede 1 ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 1 av 6</div>
+
+    <h2>Spelare</h2>
+    <div class="field"><span class="label">Stadsdel</span><span class="value"></span></div>
+    <div class="field"><span class="label">Kvarter (block)</span><span class="value"></span></div>
+    <div class="field"><span class="label">Företag</span><span class="value"></span></div>
+    <div class="field"><span class="label">Spelarnamn</span><span class="value"></span></div>
+    <div class="field"><span class="label">Datum</span><span class="value"></span></div>
+
+    <h2>Skede 1 — Projektutveckling</h2>
+    <h3>Vald ledning</h3>
+    <div class="field"><span class="label">CEO</span><span class="value"></span></div>
+    <div class="field"><span class="label">CFO</span><span class="value"></span></div>
+    <div class="field"><span class="label">COO</span><span class="value"></span></div>
+    <div class="field"><span class="label">Projektchef (PC)</span><span class="value"></span></div>
+
+    <h3>Projekt</h3>
+    <table class="grid">
+        <thead>
+            <tr><th>#</th><th>Typ</th><th>Form-faktor</th><th>BTA (kvm)</th><th>Kostnad (Mkr)</th><th>Anskaffning (Mkr)</th><th>Q</th><th>H</th><th>T</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>2</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>3</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>4</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+        </tbody>
+    </table>
+
+    <div class="field-row">
+        <div class="field"><span class="label">Markexpansion (st × 5 Mkr)</span><span class="value"></span><span class="unit">st</span></div>
+        <div class="field"><span class="label">Riskbuffertar</span><span class="value"></span><span class="unit">st</span></div>
+    </div>
+    <div class="field-row">
+        <div class="field"><span class="label">Q-krav (start 6)</span><span class="value"></span></div>
+        <div class="field"><span class="label">H-krav (start 6)</span><span class="value"></span></div>
+    </div>
+    <div class="note"><strong>§3.1, §5.2:</strong> T-utfallet startar på 12. I Skede 2-setup höjs det med kvarterets största T-värde (max +2 till 14). Sjunker aldrig under 8.</div>
+</div>
+
+<!-- ── Sida 2: Skede 2.1 Planering ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 2 av 6</div>
+
+    <h2>Skede 2.1 — Planering</h2>
+    <div class="field-row">
+        <div class="field"><span class="label">Vald arbetschef (AC)</span><span class="value"></span></div>
+        <div class="field"><span class="label">ABT-budget</span><span class="value"></span><span class="unit">Mkr</span></div>
+    </div>
+    <div class="note"><strong>§5.4:</strong> AC-val: lägst ABT-budget väljer först.</div>
+
+    <h3>Planering — 13 lager</h3>
+    <table class="grid">
+        <thead>
+            <tr><th>#</th><th>Lager</th><th>Typ</th><th>Vald nivå</th><th>Kostnad (Mkr)</th><th>Q</th><th>H</th><th>T</th><th>Erf</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Stödfunktioner</td><td>Org</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>2</td><td>MARK</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>3</td><td>HUSUNDERBYGGNAD</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>4</td><td>Digitalisering</td><td>Org</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>5</td><td>STOMME</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>6</td><td>INSTALLATIONER</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>7</td><td>Operativt team</td><td>Org</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>8</td><td>GEM. ARBETEN</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>9</td><td>YTTERTAK</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>10</td><td>FASADER</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>11</td><td>Marknadsteam</td><td>Org</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>12</td><td>STOMKOMPLETTERING</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>13</td><td>INV YTSKIKT</td><td>Lev.</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><th colspan="4">Summa</th><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+        </tbody>
+    </table>
+
+    <div class="field-row">
+        <div class="field"><span class="label">Total planeringskostnad</span><span class="value"></span><span class="unit">Mkr</span></div>
+        <div class="field"><span class="label">Erfarenhet (max 12)</span><span class="value"></span></div>
+    </div>
+    <div class="note"><strong>§1.7 / §10:</strong> Erfarenhetstak 12. <strong>§6.4:</strong> Q/H-krav grundvärde 6, justeras av valda projekt.</div>
+</div>
+
+<!-- ── Sida 3: Skede 2.2 Genomförande ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 3 av 6</div>
+
+    <h2>Skede 2.2 — Genomförande</h2>
+    <h3>Byggfaser & ÄTA-kostnader</h3>
+    <table class="grid">
+        <thead>
+            <tr><th>Byggfas</th><th>ABT-kostnad (Mkr)</th><th>B-ÄTA (Mkr)</th><th>Konsekvens Q</th><th>Konsekvens H</th><th>Konsekvens T</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Grund</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>Stomme</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>Fasad</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>Inredning</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><th>Summa</th><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+        </tbody>
+    </table>
+    <div class="note"><strong>§7:</strong> B-ÄTA = vinst på ändringsbeställning. Går till <strong>kassan</strong>, inte TB/TG.</div>
+
+    <h3>Garanti & Q/H/T-utfall</h3>
+    <div class="field-row">
+        <div class="field"><span class="label">Garanti-avsättning</span><span class="value"></span><span class="unit">Mkr</span></div>
+        <div class="field"><span class="label">Eget kapital efter genomförande</span><span class="value"></span><span class="unit">Mkr</span></div>
+    </div>
+    <div class="field-row">
+        <div class="field"><span class="label">Q-utfall</span><span class="value"></span></div>
+        <div class="field"><span class="label">H-utfall</span><span class="value"></span></div>
+        <div class="field"><span class="label">T-utfall</span><span class="value"></span></div>
+    </div>
+    <div class="note"><strong>§7:</strong> Garanti = avsättning vid övertag. Reducerar slutpoäng om Q/H underskrids efter genomförande.</div>
+</div>
+
+<!-- ── Sida 4: Skede 3 Förvaltning Q1-Q2 ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 4 av 6</div>
+
+    <h2>Skede 3 — Förvaltning</h2>
+    <div class="note"><strong>§8.5, §8.11:</strong> Yield Q1 = startvärde (4% bostäder, 5% kommersiellt). Yieldkort dras Q1, Q2, Q3 — Q4 låst. <strong>§8.8:</strong> Energi-uppgradering 3 Mkr/steg, max projekt per kvartal: Q1=3, Q2=2, Q3=1, Q4=0.</div>
+
+    <h3>Kvartal 1 — Q1</h3>
+    <div class="field-row">
+        <div class="field"><span class="label">Yield bostäder</span><span class="value">4,0</span><span class="unit">% (start)</span></div>
+        <div class="field"><span class="label">Yield kommersiellt</span><span class="value">5,0</span><span class="unit">% (start)</span></div>
+    </div>
+    <div class="field-row">
+        <div class="field"><span class="label">Driftnetto</span><span class="value"></span><span class="unit">Mkr</span></div>
+        <div class="field"><span class="label">Energiuppgr. (max 3 unika)</span><span class="value"></span></div>
+    </div>
+    <div class="field"><span class="label">Yieldkort effekt</span><span class="value"></span></div>
+
+    <h3>Kvartal 2 — Q2</h3>
+    <div class="field-row">
+        <div class="field"><span class="label">Yield bostäder</span><span class="value"></span><span class="unit">%</span></div>
+        <div class="field"><span class="label">Yield kommersiellt</span><span class="value"></span><span class="unit">%</span></div>
+    </div>
+    <div class="field-row">
+        <div class="field"><span class="label">Driftnetto</span><span class="value"></span><span class="unit">Mkr</span></div>
+        <div class="field"><span class="label">Energiuppgr. (max 2 unika)</span><span class="value"></span></div>
+    </div>
+    <div class="field"><span class="label">Yieldkort effekt</span><span class="value"></span></div>
+    <div class="field"><span class="label">Sekundärmarknad-händelser</span><span class="value"></span></div>
+</div>
+
+<!-- ── Sida 5: Skede 3 Q3-Q4 + Sekundärmarknad ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 5 av 6</div>
+
+    <h2>Skede 3 — Förvaltning (forts.)</h2>
+    <h3>Kvartal 3 — Q3</h3>
+    <div class="field-row">
+        <div class="field"><span class="label">Yield bostäder</span><span class="value"></span><span class="unit">%</span></div>
+        <div class="field"><span class="label">Yield kommersiellt</span><span class="value"></span><span class="unit">%</span></div>
+    </div>
+    <div class="field-row">
+        <div class="field"><span class="label">Driftnetto</span><span class="value"></span><span class="unit">Mkr</span></div>
+        <div class="field"><span class="label">Energiuppgr. (max 1 unik)</span><span class="value"></span></div>
+    </div>
+    <div class="field"><span class="label">Yieldkort effekt</span><span class="value"></span></div>
+
+    <h3>Kvartal 4 — Q4 (yield låst, inga energiuppgr.)</h3>
+    <div class="field-row">
+        <div class="field"><span class="label">Yield bostäder (låst)</span><span class="value"></span><span class="unit">%</span></div>
+        <div class="field"><span class="label">Yield kommersiellt (låst)</span><span class="value"></span><span class="unit">%</span></div>
+    </div>
+    <div class="field"><span class="label">Driftnetto</span><span class="value"></span><span class="unit">Mkr</span></div>
+
+    <h3>Sekundärmarknad — sammanställning</h3>
+    <table class="grid">
+        <thead>
+            <tr><th>Kvartal</th><th>Köp/sälj</th><th>Fastighet</th><th>MV (Mkr)</th><th>Säljarens kassa (30%)</th><th>DD-kort</th></tr>
+        </thead>
+        <tbody>
+            <tr><td class="fillable"></td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td class="fillable"></td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td class="fillable"></td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td class="fillable"></td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+        </tbody>
+    </table>
+    <div class="note"><strong>§8.6:</strong> Säljaren får 30% av MV "i handen". Lånet löses som tyst variabel. DD-kort dras vid varje köp.</div>
+</div>
+
+<!-- ── Sida 6: Slutformel ── -->
+<div class="sheet">
+    <h1>Åke<em>pol</em> — balans- och resultaträkning</h1>
+    <div class="subtitle">Manuell fallback · Sida 6 av 6 — Slutuppgörelse</div>
+
+    <h2>Slutbalans</h2>
+    <div class="field"><span class="label">FV (slutligt fastighetsvärde)</span><span class="value"></span><span class="unit">Mkr</span></div>
+    <div class="field"><span class="label">Energiklass (snitt)</span><span class="value"></span><span class="unit">A/B/C/D/E</span></div>
+    <div class="field"><span class="label">Energibonus</span><span class="value"></span><span class="unit">A=1.10 · B=1.05 · C=1.00 · D=0.95 · E=0</span></div>
+    <div class="field"><span class="label">Eget kapital (EK)</span><span class="value"></span><span class="unit">Mkr</span></div>
+    <div class="field"><span class="label">EK-faktor</span><span class="value"></span><span class="unit">0.10 om EK ≥ 0, annars 2.00</span></div>
+    <div class="field"><span class="label">TB (täckningsbidrag)</span><span class="value"></span><span class="unit">Mkr</span></div>
+    <div class="field"><span class="label">BTA totalt</span><span class="value"></span><span class="unit">kvm</span></div>
+
+    <h2>Avvikelser & f(n)</h2>
+    <div class="field-row">
+        <div class="field"><span class="label">Q-avvikelse</span><span class="value"></span></div>
+        <div class="field"><span class="label">H-avvikelse</span><span class="value"></span></div>
+        <div class="field"><span class="label">T-avvikelse</span><span class="value"></span></div>
+    </div>
+    <div class="field"><span class="label">n = summa</span><span class="value"></span></div>
+    <div class="field"><span class="label">f(n)</span><span class="value"></span><span class="unit">% (se tabell nedan)</span></div>
+
+    <table class="fn-table">
+        <tr><th>n</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>&gt;10</th></tr>
+        <tr><th>f(n)</th><td>100</td><td>90</td><td>82</td><td>75</td><td>70</td><td>65</td><td>61</td><td>58</td><td>55</td><td>52</td><td>50</td><td>linjärt mot 0 (n=60→0)</td></tr>
+    </table>
+
+    <h2>Slutformel · §9.1, §13</h2>
+    <div class="formula">Råpoäng = (FV × 30 % × Energibonus + EK_faktor × EK + TB) ÷ (BTA / 1000)
+
+Slutpoäng = Råpoäng × f(n)</div>
+
+    <div class="field"><span class="label">Råpoäng (uträkning)</span><span class="value"></span></div>
+    <div class="field" style="margin-top:14px;border-top:2px solid var(--burgundy);padding-top:14px">
+        <span class="label" style="color:var(--burgundy);font-weight:700">SLUTPOÄNG</span>
+        <span class="value" style="font-family:var(--font-mono);font-size:1.2rem;font-weight:700"></span>
+    </div>
+
+    <div class="note" style="margin-top:18px">Lämnas till GM efter att alla 4 kvartal är klara. Vinnaren har högst slutpoäng.</div>
+</div>
+
+</body>
+</html>

@@ -359,6 +359,13 @@ async def companion_dashboard(code: str):
                         headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
+@app.get("/companion/balansrakning")
+async def companion_balansrakning():
+    """Manuell fallback-blankett — skrivs ut till PDF/papper inför konferensen
+    så spelarna har ett alternativ om appen krånglar."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "balansrakning.html"))
+
+
 @app.get("/api/companion/leaderboard/{code}")
 async def companion_leaderboard(code: str):
     room = companion_manager.get_room(code)
@@ -681,12 +688,12 @@ async def companion_ws(ws: WebSocket, code: str, player_id: str):
             await companion_manager.handle_message(code, player_id, data)
 
     except WebSocketDisconnect:
-        companion_manager.disconnect(code, player_id)
+        companion_manager.disconnect(code, player_id, ws)
     except Exception as e:
         print(f"COMPANION WS ERROR [{code}/{player_id}]: {e}")
         import traceback
         traceback.print_exc()
-        companion_manager.disconnect(code, player_id)
+        companion_manager.disconnect(code, player_id, ws)
 
 
 @app.get("/health")
