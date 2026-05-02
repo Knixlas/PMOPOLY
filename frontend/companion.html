@@ -1406,8 +1406,8 @@ function renderPlayer() {
         var _projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         var _projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         var _maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        var _totQ = 4 + _projQ + p.q_krav - (p.rb_spent_q || 0);
-        var _totH = 4 + _projH + p.h_krav - (p.rb_spent_h || 0);
+        var _totQ = 6 + _projQ + p.q_krav - (p.rb_spent_q || 0);
+        var _totH = 6 + _projH + p.h_krav - (p.rb_spent_h || 0);
         var _baseT = 12 + _maxProjT;
         var _curT = Math.max(8, _baseT - (p.rb_spent_t || 0) + _plT + _gfT);
         var konsKortT = Math.max(0, _curT - 12);
@@ -1461,8 +1461,8 @@ function renderPlayer() {
         var _pQ2 = p.projects.reduce(function(s,pr){return s+(pr.kvalitet||0);},0);
         var _pH2 = p.projects.reduce(function(s,pr){return s+(pr.hallbarhet||0);},0);
         var _mT2 = p.projects.reduce(function(m,pr){return Math.max(m,pr.tid||0);},0);
-        var _tQ2 = 4 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
-        var _tH2 = 4 + _pH2 + p.h_krav - (p.rb_spent_h||0);
+        var _tQ2 = 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
+        var _tH2 = 6 + _pH2 + p.h_krav - (p.rb_spent_h||0);
         var _bT2 = 12 + _mT2;
         var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2);
         var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2)) + Math.max(0,_tH2-(_plH2+_gfH2)) + Math.max(0,_cT2-12);
@@ -1966,8 +1966,8 @@ function renderPlayer() {
             var _projQslut = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
             var _projHslut = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
             var _maxProjTslut = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-            var _totQslut = 4 + _projQslut + p.q_krav - (p.rb_spent_q || 0);
-            var _totHslut = 4 + _projHslut + p.h_krav - (p.rb_spent_h || 0);
+            var _totQslut = 6 + _projQslut + p.q_krav - (p.rb_spent_q || 0);
+            var _totHslut = 6 + _projHslut + p.h_krav - (p.rb_spent_h || 0);
             var _baseTslut = 12 + _maxProjTslut;
             var _curTslut = Math.max(8, _baseTslut - (p.rb_spent_t || 0));
             var _nQslut = Math.max(0, _totQslut - curQ);
@@ -2079,8 +2079,8 @@ function renderPlayer() {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        const totalQ = 4 + projQ + p.q_krav - (p.rb_spent_q || 0);
-        const totalH = 4 + projH + p.h_krav - (p.rb_spent_h || 0);
+        const totalQ = 6 + projQ + p.q_krav - (p.rb_spent_q || 0);
+        const totalH = 6 + projH + p.h_krav - (p.rb_spent_h || 0);
         const baseT = 12 + maxProjT;
         const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
