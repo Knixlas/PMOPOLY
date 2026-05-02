@@ -1882,8 +1882,9 @@ function renderPlayer() {
             html += '</div></div>';
         }
 
-        // Yield input (visible in phase 4, but +/- buttons hidden in Q4)
-        var _yieldReadOnly = (step === 'f4_q4');
+        // Yield input (visible in phase 4). I Q1 gäller ingångsvärden — inget yieldkort
+        // dras alltså, så yielden är låst. I Q2-Q4 dras yieldkort i början av varvet.
+        var _yieldReadOnly = (step === 'f4_q1');
         if (true) {
             html += '<div class="asset-card" style="border-left-color:var(--info)">';
             html += '<div class="asset-label">YIELD</div>';
@@ -1905,7 +1906,7 @@ function renderPlayer() {
             }
             html += '</div>';
             if (_yieldReadOnly) {
-                html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Yield kan inte \u00e4ndras i Q4.</div>';
+                html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Q1: ing\u00e5ngsv\u00e4rden g\u00e4ller (4 % bost\u00e4der, 5 % kommersiellt) \u2014 inget yieldkort dras detta kvartal.</div>';
             }
             html += '</div></div>';
         }
