@@ -359,6 +359,13 @@ async def companion_dashboard(code: str):
                         headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
+@app.get("/companion/balansrakning")
+async def companion_balansrakning():
+    """Manuell fallback-blankett — skrivs ut till PDF/papper inför konferensen
+    så spelarna har ett alternativ om appen krånglar."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "balansrakning.html"))
+
+
 @app.get("/api/companion/leaderboard/{code}")
 async def companion_leaderboard(code: str):
     room = companion_manager.get_room(code)
