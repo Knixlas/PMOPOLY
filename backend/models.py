@@ -367,6 +367,10 @@ class Player:
     driftnetto_bonus: Dict[str, float] = field(default_factory=dict)
     f4_score: float = 0.0
     f4_score_per_bta: float = 0.0
+    # Energiuppgraderingar per kvartal — set av projektnamn (regelboken §8.8 + spelplanen):
+    # Q1: max 3 unika projekt, Q2: 2, Q3: 1, Q4: 0. Valfritt antal STEG per projekt
+    # (samma projekt räknas som 1 oavsett om man höjer 1 eller flera steg).
+    f4_upgrades_per_quarter: Dict[str, list] = field(default_factory=dict)
     f4_fv_30: float = 0.0
     f4_real_ek: float = 0.0
     f4_tb: float = 0.0
@@ -534,6 +538,7 @@ class Player:
             "used_external_ids": self.used_external_ids,
             "external_hand": self.external_hand,
             "projekt_energiklass": self.projekt_energiklass,
+            "f4_upgrades_per_quarter": self.f4_upgrades_per_quarter,
             "staff": [s.to_dict() if hasattr(s, 'to_dict') else s for s in self.staff],
             "fastigheter": [p.to_dict() if hasattr(p, 'to_dict') else p for p in self.fastigheter],
             "abt_loans_net": round(self.abt_loans_net, 1),
