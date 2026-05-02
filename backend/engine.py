@@ -14,7 +14,7 @@ from config import (
     YIELD_START_BOSTADER, YIELD_START_KOMMERSIELLT, LOAN_RATIO,
     BOSTADER_TYPES, KOMMERSIELLT_TYPES, PROJECT_TYPE_TO_EVENT,
     EK_FV_MODIFIER, QUARTER_NEW_PROPS, RENT_SCALE,
-    ENERGY_UPGRADE_COSTS, DICE_MAP,
+    ENERGY_UPGRADE_COST_PER_STEP, DICE_MAP,
 )
 
 
@@ -1860,16 +1860,27 @@ def _finalize_puzzle(room: GameRoom, events: list):
 # ═══════════════════════════════════════════
 
 def _setup_ac_hire(room: GameRoom):
-    """Set up AC hiring for current player."""
-    player = room.current_player
+    """Set up AC hiring — kvarter med lägst ABT-kostnad väljer först (§5.4).
+
+    Lägst ABT-kostnad = lägst kvarvarande ABT-budget i Skede 2-start.
+    Ger fördel åt det fattigaste kvarteret som tröstpris.
+    """
     hired_ids = room.temp.get("ac_hired_ids", set())
+    # Find players who haven't picked AC yet
+    candidates = [p for p in room.players if p.arbetschef is None]
+    if not candidates:
+        return  # All hired (caller should advance phase)
+    # Sortera ASC på abt_budget — lägst budget väljer först
+    candidates.sort(key=lambda p: p.abt_budget)
+    player = candidates[0]
+
     available = [ac for ac in room.game_data.ac_staff if ac["id"] not in hired_ids]
     room.sub_state = "choose_ac"
     room.pending_action = {
         "action": "choose_ac",
         "player_id": player.id,
         "available": available,
-        "message": f"{player.name}, välj din Arbetschef (AC).",
+        "message": f"{player.name}, välj din Arbetschef (AC). Lägst ABT-budget väljer först.",
     }
 
 
@@ -1890,14 +1901,13 @@ def _handle_ac_hire(room: GameRoom, player, action: dict) -> dict:
     event = {"type": "event", "text": f"{player.name} anställer {ac['namn']} som Arbetschef (-{ac.get('lon', 0)} Mkr)"}
     room.events_log.append(event)
 
-    room.next_turn()
-    if room.turn_index == 0:
-        # All players hired — start planning
+    # Alla spelare valt AC?
+    if all(p.arbetschef is not None for p in room.players):
         room.phase = GamePhase.PHASE2_PLANERING
         room.temp = {}
         _setup_planering(room)
     else:
-        _setup_ac_hire(room)
+        _setup_ac_hire(room)  # Picks next lowest-ABT player
 
     return {"type": "state_update", "events": [event]}
 
@@ -2623,14 +2633,14 @@ def _gf_setup_garanti_for_player(room: GameRoom, events: list) -> dict:
     player = room.players[idx]
     room.turn_index = idx
 
-    # Count: low-level suppliers + low-level orgs + Q shortfall + H shortfall
+    # Per regelboken §7.4: 1 garantikort per draget konsekvenskort (T+Q+H) +
+    # 1 per sparad leverantör på nivå 1-2. Organisationer räknas INTE här.
     low_suppliers = sum(1 for s in player.pl_suppliers.values()
                         if (s.niva if hasattr(s, 'niva') else s.get("niva", 3)) <= 2)
-    low_orgs = sum(1 for o in player.pl_orgs.values()
-                   if (o.niva if hasattr(o, 'niva') else o.get("niva", 3)) <= 2)
     q_short = max(0, player.q_krav - player.pl_q)
     h_short = max(0, player.h_krav - player.pl_h)
-    total_cards = low_suppliers + low_orgs + q_short + h_short
+    t_over = max(0, player.pl_t - 12)  # T-konsekvenskort var saknat tidigare
+    total_cards = low_suppliers + q_short + h_short + t_over
 
     # Pool all garanti cards
     all_garanti = []
@@ -2654,7 +2664,7 @@ def _gf_setup_garanti_for_player(room: GameRoom, events: list) -> dict:
     events.append({
         "type": "event",
         "player_id": player.id,
-        "text": f"{player.name}: {total_cards} garantikort (lev:{low_suppliers}, org:{low_orgs}, Q-{q_short}, H-{h_short})",
+        "text": f"{player.name}: {total_cards} garantikort (lev nivå 1-2:{low_suppliers}, T+{t_over}, Q-{q_short}, H-{h_short})",
     })
     return _gf_draw_garanti(room, player, events)
 
@@ -3275,29 +3285,40 @@ def _f4_after_mgmt(room, player, events):
 
 
 def _f4_setup_energy_upgrade(room, player):
-    """Let player choose energy upgrades."""
+    """Let player choose energy upgrades.
+
+    Vid moderbolagslån (§6.2): uppgraderingsstopp — visar tom lista och
+    förhindrar val.
+    """
+    has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
     upgradeable = []
-    for prop in player.fastigheter:
-        ek = _get_prop_ek(prop, player)
-        if ek != "A":
-            ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
-            new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
-            step_key = f"{ek}-{new_ek}"
-            cost = ENERGY_UPGRADE_COSTS.get(step_key, {}).get(player.bta_klass, 0)
-            cost *= room.f4_energy_discount
-            upgradeable.append({
-                "namn": prop.namn, "typ": prop.typ, "ek": ek, "new_ek": new_ek,
-                "cost": round(cost, 1),
-            })
+    if not has_loan:
+        for prop in player.fastigheter:
+            ek = _get_prop_ek(prop, player)
+            if ek != "A":
+                ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
+                new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
+                cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
+                upgradeable.append({
+                    "namn": prop.namn, "typ": prop.typ, "ek": ek, "new_ek": new_ek,
+                    "cost": round(cost, 1),
+                })
 
     room.sub_state = "f4_energy_upgrade"
+    if has_loan:
+        msg = "Energiuppgradering — blockerad pga moderbolagslån (§6.2)"
+    elif room.f4_energy_discount < 1:
+        msg = "Energiuppgradering (50% rabatt!)"
+    else:
+        msg = "Energiuppgradering"
     room.pending_action = {
         "action": "f4_energy_upgrade",
         "player_id": player.id,
         "upgradeable": upgradeable,
         "eget_kapital": round(player.eget_kapital, 1),
         "discount": room.f4_energy_discount,
-        "message": "Energiuppgradering" + (" (50% rabatt!)" if room.f4_energy_discount < 1 else ""),
+        "has_loan": has_loan,
+        "message": msg,
     }
 
 
@@ -3645,6 +3666,9 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
     # ── Energy upgrade ──
     if sub == "f4_energy_upgrade":
         if act == "f4_energy_upgrade" and val:
+            # Vid moderbolagslån: uppgraderingsstopp (§6.2)
+            if (player.abt_loans_net + player.abt_borrowing_cost) > 0:
+                return {"type": "error", "message": "Uppgraderingsstopp pga moderbolagslån (§6.2)"}
             # Upgrade a property
             prop_namn = val
             prop = None
@@ -3658,9 +3682,7 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
             ek = _get_prop_ek(prop, player)
             ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
             new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
-            step_key = f"{ek}-{new_ek}"
-            cost = ENERGY_UPGRADE_COSTS.get(step_key, {}).get(player.bta_klass, 0)
-            cost *= room.f4_energy_discount
+            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
 
             player.eget_kapital -= cost
             player.projekt_energiklass[prop.namn] = new_ek
