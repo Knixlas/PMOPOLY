@@ -3284,33 +3284,54 @@ def _f4_after_mgmt(room, player, events):
         _f4_finish_player_turn(room, events)
 
 
+# Per-kvartal-limit på antal UNIKA projekt som får energiuppgraderas (spelplanen + §8.8)
+# Valfritt antal steg per projekt — samma projekt kan höjas flera klasser i ett och samma kvartal.
+ENERGY_UPGRADE_PROJECTS_PER_QUARTER = {1: 3, 2: 2, 3: 1, 4: 0}
+
+
 def _f4_setup_energy_upgrade(room, player):
     """Let player choose energy upgrades.
 
-    Vid moderbolagslån (§6.2): uppgraderingsstopp — visar tom lista och
-    förhindrar val.
+    Vid moderbolagslån (§6.2): uppgraderingsstopp — visar tom lista.
+    Per kvartal: Q1=3, Q2=2, Q3=1, Q4=0 unika projekt (spelplanen + §8.8).
+    Samma projekt kan höjas flera steg i samma kvartal — räknas som 1.
     """
     has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
+    q = room.f4_quarter
+    quarter_limit = ENERGY_UPGRADE_PROJECTS_PER_QUARTER.get(q, 0)
+    q_key = str(q)
+    already_upgraded = list(player.f4_upgrades_per_quarter.get(q_key, []))
+    slots_left = max(0, quarter_limit - len(already_upgraded))
+
     upgradeable = []
-    if not has_loan:
+    if not has_loan and quarter_limit > 0:
         for prop in player.fastigheter:
             ek = _get_prop_ek(prop, player)
-            if ek != "A":
-                ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
-                new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
-                cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
-                upgradeable.append({
-                    "namn": prop.namn, "typ": prop.typ, "ek": ek, "new_ek": new_ek,
-                    "cost": round(cost, 1),
-                })
+            if ek == "A":
+                continue
+            # Tillåt om: redan uppgraderat detta kvartal (gratis fortsättning) ELLER ledigt slot
+            already_this_q = prop.namn in already_upgraded
+            if not already_this_q and slots_left <= 0:
+                continue  # Skip — limiten nådd och detta är inte ett påbörjat projekt
+            ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
+            new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
+            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
+            upgradeable.append({
+                "namn": prop.namn, "typ": prop.typ, "ek": ek, "new_ek": new_ek,
+                "cost": round(cost, 1),
+                "already_started_this_q": already_this_q,
+            })
 
     room.sub_state = "f4_energy_upgrade"
     if has_loan:
         msg = "Energiuppgradering — blockerad pga moderbolagslån (§6.2)"
-    elif room.f4_energy_discount < 1:
-        msg = "Energiuppgradering (50% rabatt!)"
+    elif quarter_limit == 0:
+        msg = f"Inga energiuppgraderingar tillåtna i Kvartal {q}"
+    elif slots_left == 0 and not already_upgraded:
+        msg = f"Kvartal {q}: limit nådd ({quarter_limit} projekt)"
     else:
-        msg = "Energiuppgradering"
+        rabatt = " (50% rabatt!)" if room.f4_energy_discount < 1 else ""
+        msg = f"Energiuppgradering — Kvartal {q}: {len(already_upgraded)}/{quarter_limit} unika projekt valda{rabatt}"
     room.pending_action = {
         "action": "f4_energy_upgrade",
         "player_id": player.id,
@@ -3318,6 +3339,8 @@ def _f4_setup_energy_upgrade(room, player):
         "eget_kapital": round(player.eget_kapital, 1),
         "discount": room.f4_energy_discount,
         "has_loan": has_loan,
+        "quarter_limit": quarter_limit,
+        "projects_used": len(already_upgraded),
         "message": msg,
     }
 
@@ -3669,8 +3692,19 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
             # Vid moderbolagslån: uppgraderingsstopp (§6.2)
             if (player.abt_loans_net + player.abt_borrowing_cost) > 0:
                 return {"type": "error", "message": "Uppgraderingsstopp pga moderbolagslån (§6.2)"}
-            # Upgrade a property
+            # Per kvartal-limit (§8.8 + spelplanen): Q1=3, Q2=2, Q3=1, Q4=0 unika projekt
+            q = room.f4_quarter
+            quarter_limit = ENERGY_UPGRADE_PROJECTS_PER_QUARTER.get(q, 0)
+            q_key = str(q)
+            already = list(player.f4_upgrades_per_quarter.get(q_key, []))
             prop_namn = val
+            if quarter_limit == 0:
+                return {"type": "error", "message": f"Inga energiuppgraderingar tillåtna i Kvartal {q}"}
+            if prop_namn not in already and len(already) >= quarter_limit:
+                return {"type": "error",
+                        "message": f"Kvartal {q}: max {quarter_limit} unika projekt får uppgraderas (du har redan valt {len(already)})"}
+
+            # Upgrade a property
             prop = None
             for p in player.fastigheter:
                 if p.namn == prop_namn:
@@ -3683,6 +3717,11 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
             ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
             new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
             cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
+
+            # Spåra projekt-namnet i kvartalets set
+            if prop_namn not in already:
+                already.append(prop_namn)
+                player.f4_upgrades_per_quarter[q_key] = already
 
             player.eget_kapital -= cost
             player.projekt_energiklass[prop.namn] = new_ek
