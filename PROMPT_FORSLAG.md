@@ -57,7 +57,7 @@
 
 ### 1. `welcome` (NY) — Välkommen till Åkepol
 **Trigger:** När första spelaren går med i ett kvarter (eller GM klickar "Starta")
-**Lead:** Idag spelar vi ett spel som speglar hela kedjan: från projektutveckling, genom planering och byggnation, till att äga och förvalta fastigheter inom ert kvarter. Som par bildar ni ett kvarter; tre andra par i samma stadsdel är era konkurrenter. Spelet har **3 skeden**.
+**Lead:** Idag spelar vi ett spel som speglar hela kedjan: från projektutveckling, genom planering och byggnation, till att äga och förvalta fastigheter inom ert kvarter. Som lag bildar ni ett kvarter; tre andra lag i samma stadsdel är era konkurrenter. Spelet har **3 skeden**.
 **Stegen ni gör nu:**
 - Skriv in stadsdelskoden ni fått av spelledaren
 - Skriv in ert företagsnamn (kvarterets namn)
