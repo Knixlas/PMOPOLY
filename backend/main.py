@@ -403,19 +403,20 @@ async def companion_planning_data():
     orgs = {}
     for namn, levels in game_data.organisations.items():
         orgs[namn] = [o.to_dict() for o in levels]
-    # Planning step order with type info
+    # Planning step order with type info \u2014 keys \u00e4r uppercase eftersom SPELET 2:s
+    # CSV-data har uppercase namn (ST\u00d6DFUNKTIONER, OPERATIVT TEAM osv).
     steps = [
-        {"id": "stodfunktioner", "name": "St\u00f6dfunktioner", "type": "org", "key": "St\u00f6dfunktioner"},
+        {"id": "stodfunktioner", "name": "St\u00f6dfunktioner", "type": "org", "key": "ST\u00d6DFUNKTIONER"},
         {"id": "mark", "name": "MARK", "type": "supplier", "key": "MARK"},
         {"id": "husunderbyggnad", "name": "HUSUNDERBYGGNAD", "type": "supplier", "key": "HUSUNDERBYGGNAD"},
-        {"id": "digitalisering", "name": "Digitalisering", "type": "org", "key": "Digitalisering"},
+        {"id": "digitalisering", "name": "Digitalisering", "type": "org", "key": "DIGITALISERING"},
         {"id": "stomme", "name": "STOMME", "type": "supplier", "key": "STOMME"},
         {"id": "installationer", "name": "INSTALLATIONER", "type": "supplier", "key": "INSTALLATIONER"},
-        {"id": "opteam", "name": "Operativt team", "type": "org", "key": "Operativt team"},
+        {"id": "opteam", "name": "Operativt team", "type": "org", "key": "OPERATIVT TEAM"},
         {"id": "gemarbeten", "name": "GEM. ARBETEN", "type": "supplier", "key": "GEMENSAMMA ARBETEN"},
         {"id": "yttertak", "name": "YTTERTAK", "type": "supplier", "key": "YTTERTAK"},
         {"id": "fasader", "name": "FASADER", "type": "supplier", "key": "FASADER"},
-        {"id": "marknadsteam", "name": "Marknadsteam", "type": "org", "key": "Marknadsteam"},
+        {"id": "marknadsteam", "name": "Marknadsteam", "type": "org", "key": "MARKNADSTEAM"},
         {"id": "stomkomp", "name": "STOMKOMPLETTERING", "type": "supplier", "key": "STOMKOMPLETTERING"},
         {"id": "invytskikt", "name": "INV YTSKIKT", "type": "supplier", "key": "INV YTSKIKT"},
     ]
