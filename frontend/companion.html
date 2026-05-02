@@ -1165,6 +1165,26 @@ function renderPlayer() {
 
     let html = '';
 
+    // ── Step-bild (visas efter att prompt-modalen stängts) ──
+    // Manuella moment (sätt upp bräde, placera projekt etc) får en bild som
+    // visar hur det ska se ut när det är klart. Bilden ligger på
+    // /img/steps/<filename>. Om filen saknas visas en placeholder med
+    // filnamnet så Niklas vet vad som ska skapas.
+    if (st.step_data && st.step_data.image) {
+        var _img = st.step_data.image;
+        var _imgUrl = '/img/steps/' + _img;
+        html += '<div class="asset-card" style="border-left-color:var(--burgundy);padding:10px">';
+        html += '<div class="asset-label" style="margin-bottom:8px">Stödbild</div>';
+        html += '<div class="step-image-wrap" style="position:relative;background:var(--paper);border-radius:6px;overflow:hidden;border:1px solid var(--border)">';
+        html += '<img src="' + _imgUrl + '" alt="' + _escapeHtml(_img) + '" style="width:100%;height:auto;display:block" ';
+        html += 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
+        html += '<div class="step-image-missing" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;color:var(--ink-faint);font-style:italic;text-align:center;font-size:0.85rem;background:repeating-linear-gradient(45deg,var(--paper),var(--paper) 10px,var(--paper-deep) 10px,var(--paper-deep) 20px)">';
+        html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin-bottom:6px">Bild saknas</div>';
+        html += '<div style="font-family:var(--font-mono);font-size:0.85rem;color:var(--ink-mid)">' + _escapeHtml(_img) + '</div>';
+        html += '<div style="margin-top:6px;font-size:0.8rem">(läggs i frontend/img/steps/)</div>';
+        html += '</div></div></div>';
+    }
+
     // Bolagsledning (CEO/CFO/COO) — gimmick, alltid synlig
     var ledColl = isPhase2 || isPhase3 || isPhase4;
     var ledRolls = [
@@ -2092,7 +2112,7 @@ function renderPlayer() {
         const totalBta = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
         html += '<div class="asset-card" style="border-left-color:var(--info);background:var(--paper)">';
         html += '<div class="asset-label" style="color:var(--info)">Sammanst\u00e4llning</div>';
-        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:14px">';
+        html += '<div class="summary-body" style="font-size:14px">';
         // Calculate planning totals (reusable across phases)
         var choices = p.pl_choices || {};
         var plEvts = p.pl_events || {};
@@ -2128,13 +2148,26 @@ function renderPlayer() {
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
         var anskKvar = totalAnsk - totalKost - totalAbtUsed;
 
-        html += '<div>Q-krav: <strong>' + totalQ + '</strong></div>';
-        html += '<div>H-krav: <strong>' + totalH + '</strong></div>';
-        if (isPhase2 || isPhase3) {
-            html += '<div>Q: <strong style="color:' + (curQ >= totalQ ? 'var(--success)' : 'var(--danger)') + '">(' + curQ + ')' + totalQ + '</strong></div>';
-            html += '<div>H: <strong style="color:' + (curH >= totalH ? 'var(--success)' : 'var(--danger)') + '">(' + curH + ')' + totalH + '</strong></div>';
+        // ── KRAV-block (Q | H | T tillsammans, scoreboard-stil) ──
+        var showCur = (isPhase2 || isPhase3 || isPhase4);
+        var qMain = showCur ? curQ + ' / ' + totalQ : String(totalQ);
+        var hMain = showCur ? curH + ' / ' + totalH : String(totalH);
+        var qColor = showCur ? (curQ >= totalQ ? 'var(--success)' : 'var(--danger)') : 'var(--ink)';
+        var hColor = showCur ? (curH >= totalH ? 'var(--success)' : 'var(--danger)') : 'var(--ink)';
+        var tColor = curT <= 12 ? 'var(--success)' : 'var(--danger)';
+        function _kravCell(label, color, mainVal, subVal, valColor, last) {
+            return '<div style="flex:1;padding:8px 6px;text-align:center' + (last ? '' : ';border-right:1px solid var(--border)') + '">' +
+                   '<div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:' + color + ';margin-bottom:2px">' + label + '</div>' +
+                   '<div style="font-size:1.6rem;font-weight:700;line-height:1;color:' + (valColor || 'var(--ink)') + '">' + mainVal + '</div>' +
+                   (subVal ? '<div style="font-size:0.7rem;color:var(--ink-faint);margin-top:2px">' + subVal + '</div>' : '') +
+                   '</div>';
         }
-        html += '<div>T: <strong style="color:' + (curT <= 12 ? 'var(--success)' : 'var(--danger)') + '">' + curT + '</strong> m\u00e5n <span style="color:var(--ink-mid)">(m\u00e5l: 12, start: ' + baseT + ')</span></div>';
+        html += '<div style="display:flex;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;overflow:hidden">';
+        html += _kravCell('Kvalitet', '#1565C0', qMain, showCur ? 'krav ' + totalQ : 'krav', qColor);
+        html += _kravCell('Hållbarhet', '#2E7D32', hMain, showCur ? 'krav ' + totalH : 'krav', hColor);
+        html += _kravCell('Tid (mån)', '#A8501F', String(curT), 'mål 12 · start ' + baseT, tColor, true);
+        html += '</div>';
+        // (T-v\u00e4rdet ing\u00e5r nu i KRAV-blocket ovan)
         var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
         var rbSpent = (p.rb_spent_q || 0) + (p.rb_spent_h || 0) + (p.rb_spent_t || 0);
         var rbKvar = totalRb - rbSpent;
@@ -2147,21 +2180,35 @@ function renderPlayer() {
         if (pcRb || acRb) {
             rbDetail = ' <span style="color:var(--ink-mid);font-size:11px">(varav ledning: ' + (pcRb + acRb) + ')</span>';
         }
-        html += '<div>Rb: <strong style="color:' + (rbKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + rbKvar + '</strong> kvar av <strong>' + totalRb + '</strong>' + rbDetail + '</div>';
-        html += '<div>Erf: <strong>' + totalErf + '</strong>' + (totalErfRaw > 12 ? ' <span style="color:var(--ink-mid);font-size:11px">(av ' + totalErfRaw + ', tak 12)</span>' : '') + '</div>';
-        html += '<div>Projekt: <strong>' + p.projects.length + '</strong></div>';
-        html += '<div>Anskaff: <strong>' + totalAnsk + ' Mkr</strong></div>';
-        html += '<div>Utv.kostn: <strong>' + totalKost + ' Mkr</strong></div>';
-        if (isPhase2 || isPhase3) {
-            html += '<div>Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+        // ── Rb / Erf / Projekt — kompakt 3-kolumnig rad ──
+        var rbDetail2 = (pcRb || acRb) ? ' <span style="color:var(--ink-faint);font-size:11px">(led ' + (pcRb + acRb) + ')</span>' : '';
+        var erfDetail = totalErfRaw > 12 ? ' <span style="color:var(--ink-faint);font-size:10px">(' + totalErfRaw + ', tak 12)</span>' : '';
+        function _miniCell(label, valHtml) {
+            return '<div style="padding:6px 8px;background:var(--bg-card);border-radius:4px;text-align:center">' +
+                   '<div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px">' + label + '</div>' +
+                   valHtml + '</div>';
         }
-        html += '<div>BTA: <strong>' + totalBta + ' kvm</strong></div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;font-size:13px">';
+        html += _miniCell('Riskbuffert', '<strong style="font-size:1.05rem;color:' + (rbKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + rbKvar + '</strong> / ' + totalRb + rbDetail2);
+        html += _miniCell('Erfarenhet', '<strong style="font-size:1.05rem">' + totalErf + '</strong>' + erfDetail);
+        html += _miniCell('Projekt', '<strong style="font-size:1.05rem">' + p.projects.length + '</strong>');
+        html += '</div>';
+
+        // ── Ekonomi-rad (Anskaff / Utv.kostn / BTA) ──
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;font-size:12px;color:var(--ink-mid)">';
+        html += '<div>Anskaff <strong style="color:var(--ink)">' + totalAnsk + '</strong> Mkr</div>';
+        html += '<div>Utv.kostn <strong style="color:var(--ink)">' + totalKost + '</strong> Mkr</div>';
+        html += '<div>BTA <strong style="color:var(--ink)">' + totalBta + '</strong> kvm</div>';
+        html += '</div>';
+        if (isPhase2 || isPhase3) {
+            html += '<div style="font-size:13px;margin-bottom:6px">Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+        }
         // Moderbolagslån — tillgängligt redan i Skede 2.1 om ABT-budget tagit slut (regelboken §6.2)
         if (isPhase2 || isPhase3) {
             var _modA21 = p.gf_moderbolagslan_antal || 0;
             var _abtNeg = anskKvar < 0;
             if (_modA21 > 0 || _abtNeg) {
-                html += '<div style="grid-column:1/-1;border-top:1px dashed var(--border);padding-top:4px;margin-top:4px">';
+                html += '<div style="border-top:1px dashed var(--border);padding-top:4px;margin-top:4px">';
                 html += counterRow('Moderbolagslån (antal · 95 Mkr in / 100 Mkr skuld)', _modA21, 'gf_moderbolagslan_antal', false);
                 if (_modA21 > 0) {
                     html += '<div style="font-size:11px;color:var(--danger);margin-top:2px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
@@ -2180,7 +2227,7 @@ function renderPlayer() {
             var konsH = Math.max(0, adjTotalH - curH);
             var konsT = Math.max(0, curT - 12);
             var nTotal = konsQ + konsH + konsT;
-            html += '<div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:4px;margin-top:4px">';
+            html += '<div style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">';
             html += 'Konsekv.kort: Q:' + konsQ + ' H:' + konsH + ' T:' + konsT + ' = <strong>' + nTotal + ' kort</strong>';
             if (tidQAdj || tidHAdj) {
                 html += ' <span style="color:var(--warning);font-size:12px">(tidskort: Q-' + tidQAdj + ' H-' + tidHAdj + ')</span>';
@@ -2191,20 +2238,20 @@ function renderPlayer() {
             var fn = nTotal <= 0 ? 1.00 : (fnTable[nTotal] !== undefined ? fnTable[nTotal] : Math.max(0, (50 - (nTotal - 10)) / 100));
             var fnPct = Math.round(fn * 100);
             var fnColor = fnPct >= 90 ? 'var(--success)' : (fnPct >= 70 ? 'var(--burgundy)' : 'var(--danger)');
-            html += '<div style="grid-column:1/-1;font-size:12px;color:var(--ink-mid)">Måluppfyllelse f(n): <strong style="color:' + fnColor + '">' + fnPct + '%</strong> (n=' + nTotal + ' avvikelser → multipliceras på slutpoängen)</div>';
+            html += '<div style="font-size:12px;color:var(--ink-mid)">Måluppfyllelse f(n): <strong style="color:' + fnColor + '">' + fnPct + '%</strong> (n=' + nTotal + ' avvikelser → multipliceras på slutpoängen)</div>';
         }
         // TB & TG (after genomförande)
         if (isPhase3 || isPhase4) {
             var tb = anskKvar;
             var tg = (totalAnsk > 0) ? Math.round((tb / totalAnsk) * 100) : 0;
-            html += '<div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:4px;margin-top:4px">';
+            html += '<div style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">';
             html += 'TB: <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong>';
             html += ' &nbsp; TG: <strong style="color:' + (tg >= 20 ? 'var(--success)' : (tg >= 0 ? 'var(--burgundy)' : 'var(--danger)')) + '">' + tg + '%</strong>';
             html += '</div>';
             // Moderbolagslån
             var _modAntal = p.gf_moderbolagslan_antal || 0;
             if (_modAntal > 0) {
-                html += '<div style="grid-column:1/-1;color:var(--danger);font-weight:600">';
+                html += '<div style="color:var(--danger);font-weight:600">';
                 html += '\ud83d\udfe5 Moderbolags\u00e5n: ' + _modAntal + ' st = <strong>' + (_modAntal * 100) + ' Mkr skuld</strong></div>';
             }
             html += '<div style="grid-column:1/-1">';
@@ -2214,7 +2261,7 @@ function renderPlayer() {
                 var _ownedCount = isPhase4
                     ? (p.fastigheter||[]).filter(function(f){return !f.sold;}).length
                     : (p.projects||[]).filter(function(pr){return pr.typ !== 'BRF';}).length;
-                html += '<div style="grid-column:1/-1;background:var(--danger);color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
+                html += '<div style="background:var(--danger);color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
                 html += '\u26a0\ufe0f Kassan \u00e4r negativ! ';
                 if (_ownedCount > 1) {
                     html += 'S\u00e4lj fastigheter ner till 1 st, eller ta moderbola\u200dgs\u00e5n (+95 Mkr/st).';
@@ -2227,7 +2274,7 @@ function renderPlayer() {
         // Projected score indicator with ranking + tier
         if (_projScore) {
             var _tier = getTier(_projScore);
-            html += '<div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:6px;margin-top:6px">';
+            html += '<div style="border-top:1px solid var(--border);padding-top:6px;margin-top:6px">';
             html += 'Vinstchans: ' + renderTrendScore(_projScore, _prevScore);
             // Show cached ranking if available
             if (S.lastLeaderboard) {
@@ -2504,31 +2551,68 @@ function attachPlayerEvents(container) {
             }});
         });
     });
-    // Phase 4: Energiklass buttons (with cost confirmation)
+    // Phase 4: Energiklass buttons (med limit per kvartal + 3 Mkr/steg)
+    var ENERGY_LIMIT_PER_Q = {1:3, 2:2, 3:1, 4:0};
     container.querySelectorAll('.f4-eklass-btn').forEach(function(el) {
         el.addEventListener('click', function() {
             var fi = parseInt(el.dataset.fi);
             var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
-            if (fasts[fi]) {
-                var oldEk = fasts[fi].energiklass || 'D';
-                var newEk = el.dataset.eklass;
-                if (oldEk === newEk) return;
-                var klasser = ['F','E','D','C','B','A'];
-                var oldIdx = klasser.indexOf(oldEk);
-                var newIdx = klasser.indexOf(newEk);
-                var stepsCount = Math.abs(newIdx - oldIdx);
-                var isUpgrade = newIdx > oldIdx;
-                var defaultCost = isUpgrade ? stepsCount * 5 : 0;
-                var costStr = prompt('\u00c4ndra energiklass fr\u00e5n ' + oldEk + ' till ' + newEk + '?\nKostnad f\u00f6r energiklass\u00e4ndring (Mkr):', defaultCost);
-                if (costStr === null) return; // cancelled
-                var cost = parseFloat(costStr.replace(',','.')) || 0;
-                fasts[fi].energiklass = newEk;
-                var assets = { fastigheter: fasts };
-                if (cost > 0) {
-                    assets.eget_kapital = (S.state.player.eget_kapital || 0) - cost;
+            if (!fasts[fi]) return;
+            var oldEk = fasts[fi].energiklass || 'D';
+            var newEk = el.dataset.eklass;
+            if (oldEk === newEk) return;
+            var klasser = ['E','D','C','B','A'];
+            var oldIdx = klasser.indexOf(oldEk);
+            var newIdx = klasser.indexOf(newEk);
+            var stepsCount = Math.abs(newIdx - oldIdx);
+            var isUpgrade = newIdx > oldIdx;
+
+            // Per-kvartal-limit (regelbok \u00a78.8): Q1=3, Q2=2, Q3=1, Q4=0 unika fastigheter
+            var qStep = (S.state.step || '').match(/^f4_q(\d+)$/);
+            if (qStep && isUpgrade) {
+                var q = parseInt(qStep[1]);
+                var limit = ENERGY_LIMIT_PER_Q[q] !== undefined ? ENERGY_LIMIT_PER_Q[q] : 0;
+                var upgrades = Object.assign({}, S.state.player.f4_upgrades_per_quarter || {});
+                var qKey = String(q);
+                var alreadyList = (upgrades[qKey] || []).slice();
+                var fid = fasts[fi].id;
+                var alreadyInList = alreadyList.indexOf(fid) >= 0;
+                if (!alreadyInList && alreadyList.length >= limit) {
+                    alert('Energiuppgraderingsgr\u00e4ns f\u00f6r Q' + q + ' (' + limit + ' unika fastigheter) \u00e4r n\u00e5dd.\n\n' +
+                          'Ni har redan uppgraderat ' + alreadyList.length + ' fastighet' +
+                          (alreadyList.length === 1 ? '' : 'er') + ' detta kvartal. ' +
+                          (q < 4 ? 'V\u00e4nta till Q' + (q+1) + ' eller tidigare uppgraderade fastigheter.'
+                                 : 'Q4 till\u00e5ter inga energiuppgraderingar.'));
+                    return;
                 }
-                send({ type: 'update_assets', assets: assets });
+                if (!alreadyInList) {
+                    alreadyList.push(fid);
+                    upgrades[qKey] = alreadyList;
+                }
             }
+
+            // Kostnad: 3 Mkr/steg vid uppgradering, 0 vid nedgradering (regelbok \u00a78.8)
+            var defaultCost = isUpgrade ? stepsCount * 3 : 0;
+            var costStr = prompt('\u00c4ndra energiklass fr\u00e5n ' + oldEk + ' till ' + newEk + '?\nKostnad (Mkr) \u2014 standard 3 Mkr/steg:', defaultCost);
+            if (costStr === null) return;
+            var cost = parseFloat(String(costStr).replace(',','.')) || 0;
+            fasts[fi].energiklass = newEk;
+            var assets = { fastigheter: fasts };
+            if (cost > 0) {
+                assets.eget_kapital = (S.state.player.eget_kapital || 0) - cost;
+            }
+            // Bara skicka upgrades-uppdateringen om vi faktiskt \u00e4ndrade den
+            if (qStep && isUpgrade) {
+                var qKey2 = String(parseInt(qStep[1]));
+                var ups = Object.assign({}, S.state.player.f4_upgrades_per_quarter || {});
+                var lst = (ups[qKey2] || []).slice();
+                if (lst.indexOf(fasts[fi].id) < 0) {
+                    lst.push(fasts[fi].id);
+                    ups[qKey2] = lst;
+                    assets.f4_upgrades_per_quarter = ups;
+                }
+            }
+            send({ type: 'update_assets', assets: assets });
         });
     });
     // Phase 4: Toggle events per fastighet (persistent state)
