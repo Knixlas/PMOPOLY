@@ -728,6 +728,17 @@ class CompanionRoom:
             return {}
         phase = self.current_phase
         step = self.current_step
+        # Teammates inom samma kvarter — frontend filtrerar PrC/AC-modaler
+        # så samma person inte kan väljas av två i samma kvarter.
+        teammates = [p for p in self.players.values()
+                     if p.quarter_idx == player.quarter_idx
+                     and not p.is_gm and p.id != player_id]
+        quarter_taken = {
+            "pc_ids": [t.projektchef.get("id") for t in teammates
+                       if t.projektchef and t.projektchef.get("id")],
+            "ac_ids": [t.arbetschef.get("id") for t in teammates
+                       if t.arbetschef and t.arbetschef.get("id")],
+        }
         return {
             "code": self.code,
             "phase": phase["id"] if phase else None,
@@ -743,6 +754,7 @@ class CompanionRoom:
                 "regelbok": step.get("regelbok", ""),
             } if step else None,
             "player": player.to_dict(),
+            "quarter_taken": quarter_taken,
             "f4_omvarldskort": self.f4_omvarldskort,
             "game_finalized": self.game_finalized,
             "quiz_score": round(self.quiz_scores.get(player_id, 0), 1),

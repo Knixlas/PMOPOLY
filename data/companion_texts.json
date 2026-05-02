@@ -35,14 +35,14 @@
         {
           "id": "choose_pc",
           "name": "Välj Projektchef",
-          "lead": "Varje kvarter väljer en av 10 projektchefer (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
+          "lead": "Varje kvarter väljer en projektchef (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
           "actions": [
             "Klicka \"Välj Projektchef\" i companion",
             "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndbonus (D20 vid nämndbeslut), Q/H/T-bonus, Kompetens",
-            "Diskutera i kvarteret och välj en gemensam PrC"
+            "Inom kvarteret väljer ni i tur och ordning — samma person kan bara väljas en gång per kvarter"
           ],
-          "meaning": "PrC är en av kvarterets viktigaste resurser. Erfarenhet och kontaktnät spelar stor roll.",
-          "tip": "Hög lindring = bra på PU-brädet. Hög nämndbonus = tryggare med BRF. Hög Rb = mer flexibilitet senare.",
+          "meaning": "PrC är en av kvarterets viktigaste resurser. Personerna är ungefär lika starka — det är profilen som skiljer.",
+          "tip": "Välj efter er strategi: hög lindring för PU-brädet, hög nämndbonus för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
           "regelbok": "§3.8"
         },
         {
@@ -158,10 +158,11 @@
           "actions": [
             "Klicka \"Välj Arbetschef\" i companion",
             "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), Q/H/T-bonus",
-            "Lägst ABT-kostnad väljer först — companion visar turordning"
+            "Lägst ABT-kostnad väljer först — companion visar turordning",
+            "Samma person kan bara väljas en gång per kvarter"
           ],
-          "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Mycket värdefullt eftersom det lindrar händelsekort. Kompetenser används i Skede 2.2 för att betala FAS-kort.",
-          "tip": "En AC med +2 erfarenhet är ofta bättre än en med spridda kompetenser — bonusen på alla slag rätar ut värsta utfallen.",
+          "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Kompetenser används i Skede 2.2 för att betala FAS-kort.",
+          "tip": "AC och PrC är ungefär lika starka — välj efter er strategi snarare än \"bäst i tabellen\".",
           "regelbok": "§5.4, §10"
         },
         {

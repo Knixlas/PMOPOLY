@@ -1333,8 +1333,8 @@ function renderPlayer() {
                 // Event card effect for this step
                 if (editPlanning) {
                     var evQ = ev.q || 0, evH = ev.h || 0, evAbt = ev.abt || 0;
+                    html += '<div style="padding:2px 0 2px 20px;font-size:11px;color:var(--ink-faint);font-style:italic">H\u00e4ndelsekort: + = f\u00f6rs\u00e4mring / extra kostnad \u00b7 \u2212 = f\u00f6rb\u00e4ttring</div>';
                     html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:var(--warning)">';
-                    html += 'H\u00e4ndelsekort: ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="-1">\u2212</span>';
                     html += ' Q:' + evQ + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="q" data-dir="1">+</span> | ';
@@ -1342,7 +1342,7 @@ function renderPlayer() {
                     html += ' H:' + evH + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="h" data-dir="1">+</span> | ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="-1">\u2212</span>';
-                    html += ' ABT:' + evAbt + ' ';
+                    html += ' Kostn (Mkr):' + evAbt + ' ';
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="abt" data-dir="1">+</span> | ';
                     var evT = ev.t || 0;
                     html += '<span class="ev-btn" data-step="' + ps.id + '" data-field="t" data-dir="-1">\u2212</span>';
@@ -1351,7 +1351,7 @@ function renderPlayer() {
                     html += '</div>';
                 } else if (ev.q || ev.h || ev.abt || ev.t) {
                     html += '<div style="padding:2px 0 2px 20px;font-size:12px;color:var(--warning)">';
-                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' T:' + (ev.t||0) + ' ABT:' + (ev.abt||0);
+                    html += 'H\u00e4ndelsekort: Q:' + (ev.q||0) + ' H:' + (ev.h||0) + ' T:' + (ev.t||0) + ' Kostn:' + (ev.abt||0) + ' Mkr';
                     html += '</div>';
                 }
                 html += '</div>';
@@ -1386,7 +1386,7 @@ function renderPlayer() {
             html += '<span>Q: <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="-1">\u2212</span> <strong>' + (gf.q||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="1">+</span></span>';
             html += '<span>H: <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="-1">\u2212</span> <strong>' + (gf.h||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="1">+</span></span>';
             html += '<span>T: <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="-1">\u2212</span> <strong>' + (gf.t||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="1">+</span></span>';
-            html += '<span>ABT: <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
+            html += '<span>Kostn (Mkr): <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
             html += '</div></div>';
         }
         html += '</div>';
@@ -2666,17 +2666,29 @@ function openLedningModal(roll) {
 
 function openPCModal() {
     const mc = document.getElementById('modal-container');
+    // Filtrera bort PrC som redan valts av lagkamrater i kvarteret
+    var taken = (S.state && S.state.quarter_taken && S.state.quarter_taken.pc_ids) || [];
     let html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>Välj Projektchef</h3></div>';
     html += '<div class="modal-body">';
+    var availableCount = 0;
     for (const pc of S.pcData) {
+        if (taken.indexOf(pc.id) >= 0) continue; // upptagen av lagkamrat
+        availableCount++;
         const motstand = pc.handelsemotstand || 'ingen';
         const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        const lindring = pc.lindring || 0;
+        const rb = pc.rb || 0;
         html += `<div class="modal-item" data-pc-id="${pc.id}">
-            <div class="item-name">${pc.namn}</div>
-            <div class="item-detail">${pc.specialisering} | Lindring: +${pc.kapacitet} (${motstand})${namnd} | Lön: ${pc.lon} Mkr</div>
+            <div class="item-name">${pc.namn} <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">— ${pc.specialisering}</span></div>
+            <div class="item-detail">Lindring +${lindring} (${motstand})${namnd} · Rb ${rb}</div>
             <div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">${pc.not_text || ''}</div>
         </div>`;
+    }
+    if (availableCount === 0) {
+        html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla projektchefer är redan valda av lagkamrater i kvarteret.</div>';
+    } else if (taken.length > 0) {
+        html += '<div style="text-align:center;padding:8px;color:var(--ink-faint);font-size:0.85rem;font-style:italic">' + taken.length + ' projektchef' + (taken.length === 1 ? '' : 'er') + ' redan vald' + (taken.length === 1 ? '' : 'a') + ' i kvarteret.</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
@@ -2754,16 +2766,28 @@ function openPlanningModal(stepId) {
 // ── AC Modal ──
 function openACModal() {
     const mc = document.getElementById('modal-container');
+    // Filtrera bort AC som redan valts av lagkamrater i kvarteret
+    var taken = (S.state && S.state.quarter_taken && S.state.quarter_taken.ac_ids) || [];
     let html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>V\u00e4lj Arbetschef</h3></div>';
     html += '<div class="modal-body">';
+    var availableCount = 0;
     for (const ac of S.acData) {
+        if (taken.indexOf(ac.id) >= 0) continue;
+        availableCount++;
+        var motstand = ac.handelsemotstand || 'ingen';
+        var komps = ac.kompetenser || {};
+        var kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
         html += '<div class="modal-item" data-ac-id="' + ac.id + '">' +
-            '<div class="item-name">' + ac.namn + '</div>' +
-            '<div class="item-detail">' + ac.specialisering + ' | Erf: +' + ac.kapacitet +
-            ' | Komp: ' + (ac.forhandling || 'ingen') + '</div>' +
+            '<div class="item-name">' + ac.namn + ' <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">\u2014 ' + ac.specialisering + '</span></div>' +
+            '<div class="item-detail">Erf +' + (ac.erfarenhet || 0) + ' (' + motstand + ') \u00b7 Rb ' + (ac.rb || 0) + (kompList ? ' \u00b7 ' + kompList : '') + '</div>' +
             '<div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">' + (ac.not_text || '') + '</div>' +
             '</div>';
+    }
+    if (availableCount === 0) {
+        html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla arbetschefer \u00e4r redan valda av lagkamrater i kvarteret.</div>';
+    } else if (taken.length > 0) {
+        html += '<div style="text-align:center;padding:8px;color:var(--ink-faint);font-size:0.85rem;font-style:italic">' + taken.length + ' arbetschef' + (taken.length === 1 ? '' : 'er') + ' redan vald' + (taken.length === 1 ? '' : 'a') + ' i kvarteret.</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-cancel">Avbryt</button></div>';
