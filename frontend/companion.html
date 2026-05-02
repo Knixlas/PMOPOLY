@@ -3463,8 +3463,8 @@ function renderGMTable(st) {
     const maxScore = Math.max(1, ...allPlayers.map(p => p._projScore || 0));
 
     let html = '<thead><tr>' +
-        '<th>Stadsdel</th><th>Kvarter</th><th>Spelare</th><th>Status</th>' +
-        '<th>PC</th><th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>' +
+        '<th>Stadsdel</th><th>Kvarter</th><th>Dotterbolag</th><th>Status</th>' +
+        '<th>Projekt</th><th>Q</th><th>H</th><th>Rb</th>' +
         '<th>Vinstchans</th>' +
         '</tr></thead><tbody>';
 
@@ -3475,7 +3475,6 @@ function renderGMTable(st) {
         if (done) { statusIcon = '\uD83D\uDFE2'; statusColor = 'var(--success)'; }
         else if (hasData) { statusIcon = '\uD83D\uDFE1'; statusColor = 'var(--burgundy)'; }
         else { statusIcon = '\uD83D\uDD34'; statusColor = 'var(--danger)'; }
-        var pcName = p.projektchef ? p.projektchef.namn : '\u2014';
         var numProj = p.projects ? p.projects.length : 0;
         var score = p._projScore || 0;
         var barW = Math.round((score / maxScore) * 60);
@@ -3502,7 +3501,6 @@ function renderGMTable(st) {
             '<td style="color:var(--burgundy)">' + (p.block_name || '\u2014') + '</td>' +
             '<td>' + p.name + '</td>' +
             '<td style="color:' + statusColor + '">' + statusIcon + '</td>' +
-            '<td>' + pcName + '</td>' +
             '<td>' + numProj + '</td>' +
             '<td>' + p.q_krav + '</td>' +
             '<td>' + p.h_krav + '</td>' +
