@@ -25,7 +25,7 @@ CODE_TO_TYPES = {"B": ["BRF"], "F": ["FÖRSKOLOR"], "L": ["LOKAL"], "K": ["KONTO
 
 # Phase 3: external support cost per phase (1-8)
 PHASE_COST = [2, 2, 3, 3, 4, 5, 6, 7]
-ENERGY_CLASSES = ["A", "B", "C", "D", "E", "F"]
+ENERGY_CLASSES = ["A", "B", "C", "D", "E"]  # Per regelboken §9.1 — F borttaget i paket 1
 
 # Phase 4: Förvaltning constants
 YIELD_START_BOSTADER = 4.0   # %
@@ -48,14 +48,8 @@ RENT_SCALE = {
     16: 1.5, 17: 1.6,
 }
 
-# Energy upgrade costs: step -> {BTA_class: cost_Mkr}
-ENERGY_UPGRADE_COSTS = {
-    "F-E": {"A": 1.0, "B": 1.5, "C": 2.0, "D": 2.5},
-    "E-D": {"A": 1.5, "B": 2.0, "C": 2.5, "D": 3.0},
-    "D-C": {"A": 2.0, "B": 2.5, "C": 3.0, "D": 3.5},
-    "C-B": {"A": 3.0, "B": 3.5, "C": 4.0, "D": 4.5},
-    "B-A": {"A": 4.0, "B": 4.5, "C": 5.0, "D": 5.5},
-}
+# Energy upgrade cost — fast pris per steg (regelboken §8.8)
+ENERGY_UPGRADE_COST_PER_STEP = 3.0  # Mkr per steg, fast pris
 
 # Planning step order: (slot_name, slot_type)
 PLANNING_ORDER = [
