@@ -213,6 +213,46 @@ body { font-family: var(--font-serif); background: var(--paper); color: var(--in
 .quiz-form .form-row { display: flex; gap: 8px; }
 .quiz-form .form-row > * { flex: 1; }
 input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
+
+/* ── Mobile-anpassningar ──
+   28 spelare på konferens använder telefon. GM kör laptop men kan behöva
+   öppna dashboard på mobil/surfplatta vid behov. */
+@media (max-width: 600px) {
+    .gm-header { flex-direction: column; align-items: stretch; gap: 8px; }
+    .gm-controls { justify-content: stretch; }
+    .gm-controls button { flex: 1; padding: 9px 8px; font-size: 0.68rem; }
+    /* Player header får inte spilla över */
+    .phase-header .step-name { word-break: break-word; }
+    /* Gör att modaler nyttjar hela skärmen */
+    .modal { max-width: 100% !important; max-height: 92vh; }
+    .modal-overlay { padding: 6px; }
+    /* Förstora tappytor på counter-buttons för bättre touch */
+    .counter-btn { width: 40px; height: 40px; }
+    /* Quartsgrid blir naturligt 1 kolumn när minmax(280px) inte får plats */
+    /* Tabs i GM får samma flex */
+    .gm-tab { font-size: 0.65rem; }
+    /* GM-tabell scrollas horisontellt (overflow-x:auto finns redan) */
+    .gm-table { font-size: 0.78rem; }
+    .gm-table th, .gm-table td { padding: 5px 6px; }
+    /* Quiz modal anpassad */
+    .quiz-question-text { font-size: 1.1rem; padding: 14px 12px; }
+    .quiz-timer { font-size: 2.4rem; }
+}
+
+/* Extra liten skärm (iPhone SE, 375px) */
+@media (max-width: 380px) {
+    .player-view { padding: 8px; padding-bottom: 80px; }
+    .gm-view { padding: 8px; }
+    .phase-header { padding: 10px; }
+    .asset-card { padding: 12px; }
+    .lobby-card { padding: 18px; }
+}
+
+/* Landscape phone — håll modaler scrollbara */
+@media (max-height: 500px) and (max-width: 900px) {
+    .modal { max-height: 96vh; }
+    #quiz-modal-container .quiz-modal { max-height: 96vh; overflow-y: auto; }
+}
 </style>
 </head>
 <body>
