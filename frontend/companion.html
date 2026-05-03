@@ -1969,29 +1969,27 @@ function renderPlayer() {
         // Slutvärdering
         if (step === 'f4_slut') {
             var _ownedF = fasts.filter(function(f){return !f.sold;});
+            var _soldBrf = fasts.filter(function(f){
+                return f.sold && (f.typ||'').toUpperCase() === 'BRF';
+            });
             var _eklMap = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0};
 
-            // \u2500\u2500 Steg 1: Fastighetspo\u00e4ng = 30% \u00d7 MV (per fastighet, summera) \u2500\u2500
+            // Steg 1: Fastighetspoäng (energiklassjusterad) = 30% × MV × bonus
             var _fastpoangPerF = _ownedF.map(function(f) {
                 var mv = f.marknadsvarde || f.anskaffning || 0;
-                return { namn: f.namn, mv: mv, fastpoang: 0.30 * mv,
-                         ek: (f.energiklass||'C').toUpperCase(),
-                         bonus: _eklMap[(f.energiklass||'C').toUpperCase()] || 1.0 };
+                var ek = (f.energiklass||'C').toUpperCase();
+                var bonus = _eklMap[ek] || 1.0;
+                return { namn: f.namn, mv: mv, ek: ek, bonus: bonus,
+                         fastpoang: 0.30 * mv * bonus };
             });
             var _summaFastpoang = _fastpoangPerF.reduce(function(s,x){return s+x.fastpoang;},0);
 
-            // \u2500\u2500 Steg 2: Energiklassbonus = Fastighetspo\u00e4ng \u00d7 bonus (per fastighet) \u2500\u2500
-            var _energipoangPerF = _fastpoangPerF.map(function(x) {
-                return Object.assign({}, x, { energipoang: x.fastpoang * x.bonus });
-            });
-            var _summaEnergipoang = _energipoangPerF.reduce(function(s,x){return s+x.energipoang;},0);
-
-            // \u2500\u2500 Steg 3: Likvida medel = EK \u00d7 (0.10 om pos, 2.00 om neg) \u2500\u2500
+            // Steg 2: Kassa (justerad) = EK × (0.10 om pos, 2.00 om neg)
             var _ek4 = p.eget_kapital || 0;
             var _ekFactor = _ek4 >= 0 ? 0.10 : 2.00;
-            var _likvida = _ekFactor * _ek4;
+            var _kassaJusterad = _ekFactor * _ek4;
 
-            // \u2500\u2500 Steg 4: TB i ABT \u2500\u2500
+            // Steg 3: TB i ABT
             var _pAnsk4 = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
             var _pKost4 = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
             var _abt4 = 0;
@@ -2001,13 +1999,16 @@ function renderPlayer() {
             _abt4 += (p.gf_kons_q||0)+(p.gf_kons_h||0)+(p.gf_kons_t||0)+(p.gf_garanti_abt||0);
             var _tb4 = _pAnsk4 - _pKost4 - _abt4;
 
-            // \u2500\u2500 Steg 5: Summa = energipo\u00e4ng + likvida + TB, normaliserat per 1000 kvm BTA \u2500\u2500
+            // Steg 4: BTA (inkl sålda BRF:er)
             var _btaOwned = _ownedF.reduce(function(s,f){return s+(f.bta||0);},0);
-            var _summa = _summaEnergipoang + _likvida + _tb4;
-            var _summaPerKvm = _btaOwned > 0 ? _summa / _btaOwned * 1000 : _summa;
+            var _btaSoldBrf = _soldBrf.reduce(function(s,f){return s+(f.bta||0);},0);
+            var _btaTotal = _btaOwned + _btaSoldBrf;
 
-            // \u2500\u2500 Steg 6: Slutpo\u00e4ng = Summa \u00d7 m\u00e5luppfyllelsemodifieraren f(n) \u2500\u2500
-            // n = Q-, H-, T-avvikelser
+            // Slutpoäng = (Fastighetspoäng + Kassa + TB) ÷ (BTA/1000) × f(n)
+            var _summa = _summaFastpoang + _kassaJusterad + _tb4;
+            var _perKvm = _btaTotal > 0 ? _summa / _btaTotal * 1000 : _summa;
+
+            // f(n)
             var _projQslut = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
             var _projHslut = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
             var _maxProjTslut = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
@@ -2020,56 +2021,56 @@ function renderPlayer() {
             var _nTslut = Math.max(0, _curTslut - 12);
             var _nSlut = _nQslut + _nHslut + _nTslut;
             var _fnSlut = deviationFactor(_nSlut);
-            var _score = _summaPerKvm * _fnSlut;
+            var _score = _perKvm * _fnSlut;
 
-            // Render \u2014 steg f\u00f6r steg
+            // Render — steg för steg
             html += '<div class="asset-card" style="border-left-color:var(--burgundy);background:var(--paper-deep)">';
             html += '<div class="asset-label" style="color:var(--burgundy);font-size:18px">\ud83c\udfc6 SLUTV\u00c4RDERING</div>';
 
-            // Steg 1: Fastighetspo\u00e4ng
+            // Steg 1: Fastighetspoäng (energiklassjusterad)
             html += '<div style="margin-top:10px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 1 \u00b7 Fastighetspo\u00e4ng (30 % av MV)</div>';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 1 \u00b7 Fastighetspo\u00e4ng (energiklassjusterad)</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">30 % av MV \u00d7 energibonus (A:1,10 \u00b7 B:1,05 \u00b7 C:1,00 \u00b7 D:0,95 \u00b7 E:0)</div>';
             _fastpoangPerF.forEach(function(x) {
-                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + x.namn + ' (MV ' + Math.round(x.mv) + ' Mkr)</span><span><strong>' + Math.round(x.fastpoang*10)/10 + ' Mkr</strong></span></div>';
-            });
-            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Summa</span><span>' + Math.round(_summaFastpoang*10)/10 + ' Mkr</span></div>';
-            html += '</div>';
-
-            // Steg 2: Energiklassbonus
-            html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 2 \u00b7 Energiklassbonus (\u00d7 klassmodifieraren)</div>';
-            _energipoangPerF.forEach(function(x) {
                 var bonusColor = x.bonus >= 1 ? 'var(--success)' : (x.bonus === 0 ? 'var(--danger)' : 'var(--warning)');
-                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + x.namn + ' (' + x.ek + ' = <span style="color:' + bonusColor + '">\u00d7' + x.bonus + '</span>)</span><span><strong>' + Math.round(x.energipoang*10)/10 + ' Mkr</strong></span></div>';
+                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + x.namn + ' (MV ' + Math.round(x.mv) + ' Mkr \u00b7 ' + x.ek + ' <span style="color:' + bonusColor + '">\u00d7' + x.bonus + '</span>)</span><span><strong>' + Math.round(x.fastpoang*10)/10 + ' Mkr</strong></span></div>';
             });
-            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Summa energipo\u00e4ng</span><span>' + Math.round(_summaEnergipoang*10)/10 + ' Mkr</span></div>';
+            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Summa fastighetspo\u00e4ng</span><span>' + Math.round(_summaFastpoang*10)/10 + ' Mkr</span></div>';
             html += '</div>';
 
-            // Steg 3: Likvida medel
+            // Steg 2: Kassa (justerad)
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 3 \u00b7 Likvida medel (EK \u00d7 faktor)</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>EK ' + Math.round(_ek4) + ' Mkr \u00d7 ' + (_ek4 >= 0 ? '0,10 (positiv)' : '<span style="color:var(--danger)">2,00 (negativ \u2014 straff)</span>') + '</span><span><strong style="color:' + (_likvida >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_likvida*10)/10 + ' Mkr</strong></span></div>';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 2 \u00b7 Kassa (justerad)</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">Kassa \u00d7 0,10 om positiv, \u00d7 2,00 om negativ (straffaktor)</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Kassa ' + Math.round(_ek4) + ' Mkr \u00d7 ' + (_ek4 >= 0 ? '0,10' : '<span style="color:var(--danger)">2,00</span>') + '</span><span><strong style="color:' + (_kassaJusterad >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_kassaJusterad*10)/10 + ' Mkr</strong></span></div>';
             html += '</div>';
 
-            // Steg 4: TB i ABT
+            // Steg 3: TB
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 4 \u00b7 TB i ABT</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Anskaffning \u2212 utvecklingskost. \u2212 ABT-kost.</span><span><strong style="color:' + (_tb4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_tb4) + ' Mkr</strong></span></div>';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 3 \u00b7 TB (t\u00e4ckningsbidrag i ABT)</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">Anskaffning \u2212 utvecklingskostnad \u2212 ABT-kostnader</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + Math.round(_pAnsk4) + ' \u2212 ' + Math.round(_pKost4) + ' \u2212 ' + Math.round(_abt4) + '</span><span><strong style="color:' + (_tb4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_tb4) + ' Mkr</strong></span></div>';
             html += '</div>';
 
-            // Steg 5: Summa per kvm
+            // Steg 4: BTA (inkl sålda BRF:er)
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 5 \u00b7 Summa</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Energipo\u00e4ng + Likvida + TB</span><span>' + Math.round(_summa*10)/10 + ' Mkr</span></div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00f7 BTA/1000 (' + _btaOwned + ' kvm)</span><span><strong>' + Math.round(_summaPerKvm*10)/10 + '</strong></span></div>';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 4 \u00b7 BTA (inkl. s\u00e5lda BRF:er)</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">Total byggd yta \u2014 normaliserar slutpo\u00e4ngen per 1000 kvm</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Egna fastigheter</span><span>' + _btaOwned + ' kvm</span></div>';
+            if (_soldBrf.length > 0) {
+                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>+ S\u00e5lda BRF:er (' + _soldBrf.length + ' st)</span><span>' + _btaSoldBrf + ' kvm</span></div>';
+            }
+            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Total BTA</span><span>' + _btaTotal + ' kvm</span></div>';
             html += '</div>';
 
-            // Steg 6: Slutpo\u00e4ng \u00d7 f(n)
+            // Slutberäkning + f(n) → Slutpoäng
             var _fnPctSlut = Math.round(_fnSlut*100);
             var _fnColorSlut = _fnPctSlut >= 90 ? 'var(--success)' : (_fnPctSlut >= 70 ? 'var(--burgundy)' : 'var(--danger)');
-            html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 6 \u00b7 M\u00e5luppfyllelsemodifierare f(n)</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>n = ' + _nSlut + ' avvikelser (Q:' + _nQslut + ' H:' + _nHslut + ' T:' + _nTslut + ')</span><span style="color:' + _fnColorSlut + '"><strong>\u00d7' + _fnSlut.toFixed(2) + ' (' + _fnPctSlut + ' %)</strong></span></div>';
+            html += '<div style="margin-top:10px;padding:10px;background:var(--paper);border-radius:6px;border:1px dashed var(--burgundy)">';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:6px">Slutber\u00e4kning</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>(Fastighetspo\u00e4ng + Kassa + TB)</span><span>' + Math.round(_summa*10)/10 + ' Mkr</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00f7 BTA/1000 (' + _btaTotal + ' kvm)</span><span>' + Math.round(_perKvm*10)/10 + '</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px"><span>\u00d7 f(n) \u2014 n = ' + _nSlut + ' avvikelser (Q:' + _nQslut + ' H:' + _nHslut + ' T:' + _nTslut + ')</span><span style="color:' + _fnColorSlut + '"><strong>\u00d7' + _fnSlut.toFixed(2) + ' (' + _fnPctSlut + ' %)</strong></span></div>';
             html += '</div>';
 
             html += '<div style="border-top:2px solid var(--burgundy);padding-top:10px;margin-top:10px;font-size:22px;text-align:center">';
