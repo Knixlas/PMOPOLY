@@ -1076,9 +1076,25 @@ class CompanionManager:
             if "projektchef" in assets:
                 player.projektchef = assets["projektchef"]
             if "projects" in assets:
-                player.projects = assets["projects"]
-                # Utv.kostnad speglar aktuell projektlista (uppdateras vid +/− projekt)
-                player.dev_cost_total = sum(p.get("kostnad", 0) for p in player.projects)
+                old_projects = list(player.projects or [])
+                new_projects = assets["projects"]
+                player.projects = new_projects
+                # Bestäm aktuellt steg för att avgöra hur dev_cost_total ska räknas
+                _step = room.current_step
+                _step_id = _step["id"] if _step else None
+                if _step_id == "projects":
+                    # Under projektvalet: utv.kostnad följer aktuell lista
+                    # (fritt att lägga till/ta bort innan nämnd)
+                    player.dev_cost_total = sum(p.get("kostnad", 0) for p in new_projects)
+                else:
+                    # Efter projektvalet: bara nya projekt höjer utv.kostnad.
+                    # Borttagna projekt behåller sin betalda kostnad (sunk cost) —
+                    # gäller t.ex. nämnd-avslag och ej placerade projekt.
+                    old_ids = {p.get("id") for p in old_projects if p.get("id")}
+                    added = [p for p in new_projects if p.get("id") and p.get("id") not in old_ids]
+                    added_cost = sum(p.get("kostnad", 0) for p in added)
+                    if added_cost:
+                        player.dev_cost_total = (player.dev_cost_total or 0) + added_cost
             if "q_krav" in assets:
                 player.q_krav = int(assets["q_krav"])
             if "h_krav" in assets:

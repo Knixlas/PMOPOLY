@@ -1178,9 +1178,11 @@ function renderPlayer() {
     const editPC = step === 'choose_pc';
     const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3 || isPhase4;
     const editProjects = step === 'projects';
-    // Tillåt borttagning både under nämndbeslut och efteråt (rb_invest), så att
-    // projekt som inte slank igenom kan tas bort manuellt.
-    const editProjectsRemove = step === 'namndbeslut' || step === 'rb_invest';
+    // Tillåt borttagning under nämndbeslut, remove_unplaced och rb_invest så att
+    // projekt som inte slank igenom eller inte placerades kan tas bort manuellt.
+    const editProjectsRemove = step === 'namndbeslut' || step === 'remove_unplaced' || step === 'rb_invest';
+    // 3×-köp av nytt projekt: bara i namndbeslut (för att ersätta avslagna projekt)
+    const allowBuy3x = step === 'namndbeslut';
     const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
     const showRbInvest = step === 'rb_invest';
 
@@ -1292,7 +1294,7 @@ function renderPlayer() {
             }
             html += '</div>';
         }
-        if (editProjectsRemove) {
+        if (allowBuy3x) {
             html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">';
             html += '<div style="color:var(--burgundy);font-size:13px;margin-bottom:6px">K\u00f6p nytt projekt (3\u00d7 pris)</div>';
             html += '<div class="proj-type-grid">';

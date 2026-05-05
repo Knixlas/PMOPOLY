@@ -99,6 +99,20 @@
           "regelbok": "§4.3, §4.4"
         },
         {
+          "id": "remove_unplaced",
+          "name": "Ta bort ej placerade projekt",
+          "lead": "Projekt som inte fick plats på er mark läggs tillbaka i projektbanken. Q- och H-kraven sjunker eftersom de borttagna projekten inte längre bidrar — men utvecklingskostnaden för dem är redan betald och ligger kvar i Utv.kostn.",
+          "actions": [
+            "Ta bort varje projekt som inte placerades med ✕-knappen",
+            "Q- och H-krav justeras automatiskt nedåt",
+            "Utv.kostn ligger kvar (kostnaden är redan betald)",
+            "Borttagna projektkort läggs tillbaka i projektbanken"
+          ],
+          "meaning": "Ej placerade projekt har ändå kostat pengar att utveckla — sunk cost. Pusslet är i Skede 1 ofta det som bestämmer hur mycket BTA ni faktiskt får sälja.",
+          "tip": "Var noga: ta bort exakt de projekt ni faktiskt INTE placerade. Felaktig borttagning sänker era krav på ett orättvist sätt.",
+          "regelbok": "§4.4"
+        },
+        {
           "id": "anskaffning",
           "name": "Anskaffning & ABT-budget",
           "image": "scoreboard.png",
