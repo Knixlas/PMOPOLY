@@ -2883,53 +2883,49 @@ function attachPlayerEvents(container) {
 
 // ── PC Modal ──
 // ── DD-kort Modal ──
+// Spelaren drar DD-kortet manuellt på spelbrädet. Companion bara registrerar
+// effekten (+/- Mkr i EK) som spelaren knappar in.
 function showDDKortModal(fastNamn, kopeskilling, kontant) {
     var mc = document.getElementById('modal-container');
-    var cards = S.ddData.filter(function(c) { return c.id; });
     var html = '<div class="modal-overlay"><div class="modal">';
-    html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence \u2014 ' + fastNamn + '</h3></div>';
+    html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence — ' + fastNamn + '</h3></div>';
     html += '<div class="modal-body">';
     var _betaltText = (kontant !== undefined)
-        ? 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong> (betalt ' + kontant + ' Mkr kontant, resten l\u00e5n).'
-        : 'K\u00f6pt f\u00f6r <strong>' + kopeskilling + ' Mkr</strong>.';
-    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:12px">' + _betaltText + ' Dra ett DD-kort f\u00f6r att se om n\u00e5got avviker.</div>';
-    html += '<button id="btn-draw-dd" class="btn-primary" style="width:100%;padding:14px;font-size:16px;margin-bottom:12px">\uD83C\uDCCF Dra DD-kort</button>';
-    html += '<div id="dd-result"></div>';
+        ? 'Köpt för <strong>' + kopeskilling + ' Mkr</strong> (betalt ' + kontant + ' Mkr kontant, resten lån).'
+        : 'Köpt för <strong>' + kopeskilling + ' Mkr</strong>.';
+    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:14px">' + _betaltText + ' Dra ett DD-kort på spelbrädet och notera påverkan här.</div>';
+    html += '<div style="background:var(--paper-deep);border-radius:8px;padding:14px;text-align:center">';
+    html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:10px">Påverkan på EK (Mkr)</div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center">';
+    html += '<button class="counter-btn" id="dd-minus" style="font-size:18px;padding:6px 14px">−</button>';
+    html += '<input id="dd-input" type="number" value="0" step="0.5" style="width:120px;text-align:center;font-size:22px;font-weight:700;padding:6px;background:var(--paper);border:1px solid var(--border);border-radius:6px;color:var(--ink)">';
+    html += '<button class="counter-btn" id="dd-plus" style="font-size:18px;padding:6px 14px">+</button>';
     html += '</div>';
-    html += '<div class="modal-footer"><button class="btn-secondary" id="modal-dd-close" style="width:100%">St\u00e4ng</button></div>';
+    html += '<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Negativt belopp för kostnad, positivt för bonus. Lämna 0 om kortet var neutralt.</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="modal-footer" style="display:flex;gap:8px">';
+    html += '<button class="btn-secondary" id="modal-dd-close" style="flex:1">Stäng</button>';
+    html += '<button class="btn-primary" id="btn-apply-dd" style="flex:2;background:#1B365D">Applicera i EK</button>';
+    html += '</div>';
     html += '</div></div>';
     mc.innerHTML = html;
-    mc.querySelector('#modal-dd-close').addEventListener('click', function() { mc.innerHTML = ''; });
-    mc.querySelector('#btn-draw-dd').addEventListener('click', function() {
-        if (!cards.length) { mc.innerHTML = ''; return; }
-        var card = cards[Math.floor(Math.random() * cards.length)];
-        var typColor = card.typ === 'Positiv' ? 'var(--success)' : card.typ === 'Kostnad' ? 'var(--danger)' : 'var(--ink-mid)';
-        var effektHtml = '';
-        if (card.effekt_mkr !== 0) {
-            effektHtml = '<div style="font-size:18px;font-weight:700;color:' + typColor + ';margin:8px 0">' +
-                (card.effekt_mkr > 0 ? '+' : '') + card.effekt_mkr + ' Mkr</div>';
+    var input = document.getElementById('dd-input');
+    document.getElementById('dd-minus').addEventListener('click', function() {
+        var v = parseFloat(input.value || '0') - 0.5;
+        input.value = (v % 1 === 0) ? v.toFixed(0) : v.toFixed(1);
+    });
+    document.getElementById('dd-plus').addEventListener('click', function() {
+        var v = parseFloat(input.value || '0') + 0.5;
+        input.value = (v % 1 === 0) ? v.toFixed(0) : v.toFixed(1);
+    });
+    document.getElementById('modal-dd-close').addEventListener('click', function() { mc.innerHTML = ''; });
+    document.getElementById('btn-apply-dd').addEventListener('click', function() {
+        var delta = parseFloat(input.value || '0') || 0;
+        if (delta !== 0) {
+            send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + delta } });
         }
-        var resultHtml = '<div style="background:var(--paper-deep);border:2px solid ' + typColor + ';border-radius:8px;padding:12px">' +
-            '<div style="color:' + typColor + ';font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">' + card.id + ' \u2014 ' + card.typ + '</div>' +
-            '<div style="font-weight:700;font-size:16px;margin-bottom:6px">' + card.rubrik + '</div>' +
-            '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:8px">' + card.beskrivning + '</div>' +
-            effektHtml +
-            '</div>';
-        if (card.effekt_mkr !== 0) {
-            resultHtml += '<button id="btn-apply-dd" style="margin-top:10px;width:100%;padding:12px;background:' + typColor + ';color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">' +
-                'Applicera (' + (card.effekt_mkr > 0 ? '+' : '') + card.effekt_mkr + ' Mkr i EK)</button>';
-        }
-        document.getElementById('dd-result').innerHTML = resultHtml;
-        document.getElementById('btn-draw-dd').style.display = 'none';
-        var applyBtn = document.getElementById('btn-apply-dd');
-        if (applyBtn) {
-            applyBtn.addEventListener('click', function() {
-                send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + card.effekt_mkr } });
-                applyBtn.textContent = '\u2713 Applicerad';
-                applyBtn.disabled = true;
-                applyBtn.style.opacity = '0.5';
-            });
-        }
+        mc.innerHTML = '';
     });
 }
 
