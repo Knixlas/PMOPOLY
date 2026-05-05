@@ -285,17 +285,27 @@ function renderChoosePC(panel, pending) {
     let html = `<h3>Välj Projektchef (PC)</h3><p>${pending.message}</p>`;
     const options = pending.available || [];
     for (const pc of options) {
-        const motstand = pc.handelsemotstand || 'ingen';
-        const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        const motstand = pc.handelsemotstand || '';
+        const lindring = pc.lindring || 0;
         const komp = pc.kompetenser ? Object.entries(pc.kompetenser).map(([k,v]) => `${k}:${v}`).join(', ') : '';
+        const effekter = [];
+        if (lindring > 0 && motstand) effekter.push(`+${lindring} på slag avseende ${motstand}`);
+        if (pc.namnd_bonus) effekter.push(`+${pc.namnd_bonus} på slag avseende Nämndbeslut`);
+        if (pc.q_bonus) effekter.push(`Sänker Q-krav med ${pc.q_bonus}`);
+        if (pc.h_bonus) effekter.push(`Sänker H-krav med ${pc.h_bonus}`);
+        if (pc.t_bonus) effekter.push(`Kortar byggtid med ${pc.t_bonus} mån`);
+        if (pc.rb) effekter.push(`+${pc.rb} Riskbuffert`);
+        if (komp) effekter.push(`Kompetens: ${komp}`);
+        const effektHtml = effekter.length
+            ? `<ul style="margin:2px 0 0 0;padding-left:18px"><li>${effekter.join('</li><li>')}</li></ul>`
+            : '';
         html += `
             <div class="project-option action-btn" data-id="${pc.id}">
                 <div class="proj-name">${pc.namn}</div>
                 <div class="proj-type">${pc.specialisering}</div>
                 <div class="proj-stats">
-                    Lindring: +${pc.lindring || 0} (${motstand})${namnd}<br>
-                    ${komp ? `Kompetens: ${komp}<br>` : ''}
-                    Kostnad: ${pc.lon} Mkr
+                    ${effektHtml}
+                    Kostnad: ${pc.lon || 0} Mkr
                 </div>
                 <div class="proj-desc">${pc.not_text || ''}</div>
             </div>`;

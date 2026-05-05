@@ -420,7 +420,14 @@ async def companion_planning_data():
         {"id": "stomkomp", "name": "STOMKOMPLETTERING", "type": "supplier", "key": "STOMKOMPLETTERING"},
         {"id": "invytskikt", "name": "INV YTSKIKT", "type": "supplier", "key": "INV YTSKIKT"},
     ]
-    return {"suppliers": suppliers, "organisations": orgs, "steps": steps}
+    # Inkludera leverantörskrav per projekt (för att kunna nedtona för låga nivåer)
+    supplier_reqs = game_data.supplier_requirements or {}
+    return {
+        "suppliers": suppliers,
+        "organisations": orgs,
+        "steps": steps,
+        "supplier_requirements": supplier_reqs,
+    }
 
 
 @app.get("/api/companion/data/projects")

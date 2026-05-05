@@ -271,7 +271,7 @@ class CompanionPlayer:
     rb_spent_h: int = 0
     rb_spent_t: int = 0
     mark_expansions: int = 0
-    dev_cost_total: float = 0.0  # Cumulative dev cost (never decreases)
+    dev_cost_total: float = 0.0  # Aktuell summa av projektens kostnader
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
     # Phase 2 assets
@@ -1077,9 +1077,8 @@ class CompanionManager:
                 player.projektchef = assets["projektchef"]
             if "projects" in assets:
                 player.projects = assets["projects"]
-                # Dev cost only goes up — track cumulative
-                current_dev = sum(p.get("kostnad", 0) for p in player.projects)
-                player.dev_cost_total = max(player.dev_cost_total, current_dev)
+                # Utv.kostnad speglar aktuell projektlista (uppdateras vid +/− projekt)
+                player.dev_cost_total = sum(p.get("kostnad", 0) for p in player.projects)
             if "q_krav" in assets:
                 player.q_krav = int(assets["q_krav"])
             if "h_krav" in assets:

@@ -70,7 +70,7 @@ function renderHireStaff(panel, pending, statusHtml) {
                         <span class="sup-name">[${s.roll}] ${s.namn}</span>
                         <span class="sup-cost">Lön: ${(s.lon || 0).toFixed(1)} Mkr/kv</span>
                     </div>
-                    <div class="sup-stats">${s.specialisering} | Kap: ${s.kapacitet}
+                    <div class="sup-stats">${s.specialisering} | Kapacitet: ${s.kapacitet}
                     ${s.forhandling ? ` | Förh: ${s.forhandling}` : ''}</div>
                 </div>
             `;

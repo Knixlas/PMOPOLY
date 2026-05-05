@@ -700,18 +700,18 @@ function showAssetDetail(card, player) {
         const pc = player.projektchef;
         if (!pc) return;
         const kompStr = Object.entries(pc.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
+        const motstand = pc.handelsemotstand || '';
         html = `
             <h3>${pc.namn}</h3>
             <div class="card-type">Projektchef — ${pc.specialisering || ''}</div>
             <div class="detail-grid">
-                <div class="detail-row"><span>Lindring</span><span>+${pc.lindring || 0}</span></div>
-                <div class="detail-row"><span>Motstånd</span><span>${pc.handelsemotstand || '—'}</span></div>
-                <div class="detail-row"><span>Nämndbonus</span><span>+${pc.namnd_bonus || 0}</span></div>
-                <div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb || 0}</span></div>
-                ${pc.q_bonus ? `<div class="detail-row"><span>Kvalitet</span><span>+${pc.q_bonus}</span></div>` : ''}
-                ${pc.h_bonus ? `<div class="detail-row"><span>Hållbarhet</span><span>+${pc.h_bonus}</span></div>` : ''}
-                ${pc.t_bonus ? `<div class="detail-row"><span>Tid</span><span>-${pc.t_bonus} mån</span></div>` : ''}
-                ${kompStr ? `<div class="detail-row"><span>Kompetenser</span><span>${kompStr}</span></div>` : ''}
+                ${(pc.lindring && motstand) ? `<div class="detail-row"><span>Slag avseende ${motstand}</span><span>+${pc.lindring}</span></div>` : ''}
+                ${pc.namnd_bonus ? `<div class="detail-row"><span>Slag avseende Nämndbeslut</span><span>+${pc.namnd_bonus}</span></div>` : ''}
+                ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
+                ${pc.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${pc.h_bonus}</span></div>` : ''}
+                ${pc.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${pc.t_bonus} mån</span></div>` : ''}
+                ${pc.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb}</span></div>` : ''}
+                ${kompStr ? `<div class="detail-row"><span>Kompetens</span><span>${kompStr}</span></div>` : ''}
             </div>
             <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${pc.not_text || ''}</p>
         `;
@@ -719,17 +719,18 @@ function showAssetDetail(card, player) {
         const ac = player.arbetschef;
         if (!ac) return;
         const kompStr = Object.entries(ac.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
+        const motstand = ac.handelsemotstand || '';
         html = `
             <h3>${ac.namn}</h3>
             <div class="card-type">Arbetschef — ${ac.specialisering || ''}</div>
             <div class="detail-grid">
-                <div class="detail-row"><span>Erfarenhet</span><span>+${ac.erfarenhet || 0}</span></div>
-                <div class="detail-row"><span>Motstånd</span><span>${ac.handelsemotstand || '—'}</span></div>
-                <div class="detail-row"><span>Riskbuffert</span><span>+${ac.rb || 0}</span></div>
-                ${ac.q_bonus ? `<div class="detail-row"><span>Kvalitet</span><span>+${ac.q_bonus}</span></div>` : ''}
-                ${ac.h_bonus ? `<div class="detail-row"><span>Hållbarhet</span><span>+${ac.h_bonus}</span></div>` : ''}
-                ${ac.t_bonus ? `<div class="detail-row"><span>Tid</span><span>-${ac.t_bonus} mån</span></div>` : ''}
-                ${kompStr ? `<div class="detail-row"><span>Kompetenser</span><span>${kompStr}</span></div>` : ''}
+                ${ac.erfarenhet ? `<div class="detail-row"><span>Erfarenhet (alla händelsekort)</span><span>+${ac.erfarenhet}</span></div>` : ''}
+                ${(ac.lindring && motstand) ? `<div class="detail-row"><span>Slag avseende ${motstand}</span><span>+${ac.lindring}</span></div>` : ''}
+                ${ac.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${ac.q_bonus}</span></div>` : ''}
+                ${ac.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${ac.h_bonus}</span></div>` : ''}
+                ${ac.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${ac.t_bonus} mån</span></div>` : ''}
+                ${ac.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${ac.rb}</span></div>` : ''}
+                ${kompStr ? `<div class="detail-row"><span>Kompetens</span><span>${kompStr}</span></div>` : ''}
             </div>
             <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${ac.not_text || ''}</p>
         `;
@@ -799,7 +800,12 @@ function renderCompanion() {
         html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
         html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKTCHEF</div>';
         html += '<div style="font-weight:600">' + pc.namn + '</div>';
-        html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + ' | Lindring: +' + (pc.lindring || pc.kapacitet || 0) + ' | Nämnd: +' + (pc.namnd_bonus || 0) + '</div>';
+        var _pcMot = pc.handelsemotstand || '';
+        var _pcLin = pc.lindring || pc.kapacitet || 0;
+        var _pcParts = [];
+        if (_pcLin && _pcMot) _pcParts.push('+' + _pcLin + ' på slag avseende ' + _pcMot);
+        if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' på slag avseende Nämndbeslut');
+        html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + (_pcParts.length ? ' | ' + _pcParts.join(' | ') : '') + '</div>';
         html += '</div>';
     }
 

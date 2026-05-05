@@ -148,7 +148,7 @@ async function refresh() {
             html += `<div class="lb-entry ${topClass}">
                 <div class="lb-rank">${pMedal || e.rank}</div>
                 <div class="lb-info">
-                    <div class="lb-name">${e.block_name || e.name}</div>
+                    <div class="lb-name">${e.name || e.block_name}</div>
                     <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta}</div>
                     <div class="lb-tier" style="color:${pTier.color}">${pTier.emoji} ${pTier.label}</div>
                 </div>

@@ -401,7 +401,30 @@ const S = {
     quizQuestions: [],
     _quizTimer: null,
     _quizAnswered: false,
+    _modlanShownPhase: null,
 };
+
+function showModlanAlert(phase, anskKvar) {
+    var mc = document.getElementById('modal-container');
+    if (!mc) return;
+    var html = '<div class="modal-overlay" style="background:rgba(180,20,20,0.65)">';
+    html += '<div class="modal" style="background:#c41e1e;color:white;border:4px solid #ff3333;max-width:520px;text-align:center;box-shadow:0 0 40px rgba(255,0,0,0.6)">';
+    html += '<div style="padding:20px 18px">';
+    html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:8px;opacity:0.85">⚠️ KRITISKT LÄGE ⚠️</div>';
+    html += '<div style="font-size:1.5rem;font-weight:700;margin-bottom:10px;line-height:1.2">Moderbolagslån måste tecknas!</div>';
+    html += '<div style="font-size:14px;line-height:1.5;margin-bottom:12px">ABT-budgeten är negativ (<strong>' + Math.round(anskKvar) + ' Mkr</strong>). Du måste ta moderbolagslån för att täcka underskottet.</div>';
+    html += '<div style="background:rgba(0,0,0,0.25);border-radius:6px;padding:10px;font-size:13px;margin-bottom:14px;text-align:left">';
+    html += '• Varje lån ger <strong>+95 Mkr</strong> till budgeten<br>';
+    html += '• Skuld: <strong>100 Mkr/st</strong> som ska återbetalas<br>';
+    html += '• Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp';
+    html += '</div>';
+    html += '<button class="btn-primary" id="modlan-ack" style="background:white;color:#c41e1e;border:none;padding:10px 26px;border-radius:6px;font-weight:700;font-size:1rem;cursor:pointer">Jag förstår</button>';
+    html += '</div></div></div>';
+    mc.innerHTML = html;
+    S._modlanShownPhase = phase;
+    var ack = document.getElementById('modlan-ack');
+    if (ack) ack.addEventListener('click', function() { mc.innerHTML = ''; });
+}
 
 function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1155,7 +1178,9 @@ function renderPlayer() {
     const editPC = step === 'choose_pc';
     const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3 || isPhase4;
     const editProjects = step === 'projects';
-    const editProjectsRemove = step === 'namndbeslut';
+    // Tillåt borttagning både under nämndbeslut och efteråt (rb_invest), så att
+    // projekt som inte slank igenom kan tas bort manuellt.
+    const editProjectsRemove = step === 'namndbeslut' || step === 'rb_invest';
     const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
     const showRbInvest = step === 'rb_invest';
 
@@ -1292,9 +1317,13 @@ function renderPlayer() {
 
     // Rb-investering step
     if (showRbInvest) {
-        const rbLeft = p.riskbuffertar - (p.rb_spent_q || 0) - (p.rb_spent_h || 0) - (p.rb_spent_t || 0);
+        // Samma totalformel som Sammanst\u00e4llning: spelar-Rb + PC.rb + AC.rb
+        const _rbPcInv = p.projektchef ? (p.projektchef.rb || 0) : 0;
+        const _rbAcInv = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
+        const _rbTotalInv = (p.riskbuffertar || 0) + _rbPcInv + _rbAcInv;
+        const rbLeft = _rbTotalInv - (p.rb_spent_q || 0) - (p.rb_spent_h || 0) - (p.rb_spent_t || 0);
         html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
-        html += '<div class="asset-label">F\u00f6rdela riskbuffertar (' + p.riskbuffertar + ' tillg\u00e4ngliga)</div>';
+        html += '<div class="asset-label">F\u00f6rdela riskbuffertar (' + _rbTotalInv + ' tillg\u00e4ngliga)</div>';
         // S\u00e4nk-rader: minus-knappen \u00d6KAR s\u00e4nkningen (mer negativt), plus-knappen
         // \u00e5terst\u00e4ller mot 0. V\u00e4rdet visas som negativt s\u00e5 "\u22121" = "Q-krav -1".
         var _rbq = p.rb_spent_q || 0, _rbh = p.rb_spent_h || 0, _rbt = p.rb_spent_t || 0;
@@ -1447,13 +1476,14 @@ function renderPlayer() {
         var _konsKH = p.gf_kons_q_h || 0;
         var _konsHQ = p.gf_kons_h_q || 0;
         var _konsHH = p.gf_kons_h_h || 0;
-        var _totQ = 6 + _projQ + p.q_krav - (p.rb_spent_q || 0);
-        var _totH = 6 + _projH + p.h_krav - (p.rb_spent_h || 0);
+        // PC/AC q/h_bonus sänker krav-sidan direkt (samma logik som Sammanställning)
+        var _totQ = Math.max(0, 6 + _projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQ - _acQ);
+        var _totH = Math.max(0, 6 + _projH + p.h_krav - (p.rb_spent_h || 0) - _pcH - _acH);
         var _baseT = 12 + _maxProjT;
         var _totT = Math.max(8, _baseT - (p.rb_spent_t || 0));
         // Q/H kan inte sjunka under 0 — kortantal cap:as då på krav-värdet
-        var _curQ = Math.max(0, _plQ + _plEvQ + _gfQ + _pcQ + _acQ + _konsTQ + _konsKQ + _konsHQ);
-        var _curH = Math.max(0, _plH + _plEvH + _gfH + _pcH + _acH + _konsTH + _konsKH + _konsHH);
+        var _curQ = Math.max(0, _plQ + _plEvQ + _gfQ + _konsTQ + _konsKQ + _konsHQ);
+        var _curH = Math.max(0, _plH + _plEvH + _gfH + _konsTH + _konsKH + _konsHH);
         var _curT = Math.max(8, _totT + _plT + _plEvT + _gfT - _pcT - _acT);
         var konsKortT = Math.max(0, _curT - 12);
         var konsKortQ = Math.max(0, _totQ - _curQ);
@@ -1466,8 +1496,8 @@ function renderPlayer() {
         // TID först — kan påverka Q, H och kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--warning)">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
-        html += counterRow('Kostnad (Mkr)', p.gf_kons_t, 'gf_kons_t', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_t, 'gf_kons_t', true);
         html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
         html += '</div>';
@@ -1475,8 +1505,8 @@ function renderPlayer() {
         // KVALITET — bara kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--info)">Kvalitet (' + konsKortQ + ' kort)</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
-        html += counterRow('Kostnad (Mkr)', p.gf_kons_q, 'gf_kons_q', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_q, 'gf_kons_q', true);
         html += counterRow('Q-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_q || 0, 'gf_kons_q_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_h || 0, 'gf_kons_q_h', true);
         html += '</div>';
@@ -1484,8 +1514,8 @@ function renderPlayer() {
         // HÅLLBARHET — bara kostnad
         html += '<div style="padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--success)">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan p\u00e5verka kostnad, Q och H. Justera per kort som dras.</div>';
-        html += counterRow('Kostnad (Mkr)', p.gf_kons_h, 'gf_kons_h', true);
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_h, 'gf_kons_h', true);
         html += counterRow('Q-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_q || 0, 'gf_kons_h_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_h || 0, 'gf_kons_h_h', true);
         html += '</div>';
@@ -1506,10 +1536,17 @@ function renderPlayer() {
         var _pQ2 = p.projects.reduce(function(s,pr){return s+(pr.kvalitet||0);},0);
         var _pH2 = p.projects.reduce(function(s,pr){return s+(pr.hallbarhet||0);},0);
         var _mT2 = p.projects.reduce(function(m,pr){return Math.max(m,pr.tid||0);},0);
-        var _tQ2 = 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0);
-        var _tH2 = 6 + _pH2 + p.h_krav - (p.rb_spent_h||0);
+        // PC/AC sänker krav-sidan
+        var _pcQ2 = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
+        var _pcH2 = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
+        var _pcT2 = p.projektchef ? (p.projektchef.t_bonus || 0) : 0;
+        var _acQ2 = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
+        var _acH2 = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
+        var _acT2 = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
+        var _tQ2 = Math.max(0, 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0) - _pcQ2 - _acQ2);
+        var _tH2 = Math.max(0, 6 + _pH2 + p.h_krav - (p.rb_spent_h||0) - _pcH2 - _acH2);
         var _bT2 = 12 + _mT2;
-        var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2);
+        var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2 - _pcT2 - _acT2);
         var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2)) + Math.max(0,_tH2-(_plH2+_gfH2)) + Math.max(0,_cT2-12);
         // Suppliers below level 3
         var lowLevSupp = 0;
@@ -1559,7 +1596,7 @@ function renderPlayer() {
         // Step 1: TB
         html += '<div style="border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px">';
         html += '<div style="color:var(--ink-mid);font-size:12px;font-weight:600">1. T\u00e4ckningsbidrag</div>';
-        html += '<div>TB (anskaffn. kvar): <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong></div>';
+        html += '<div>TB (ABT-budget kvar): <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong></div>';
         html += '</div>';
 
         // Step 2: BRF överlämning till förening
@@ -1748,9 +1785,9 @@ function renderPlayer() {
             var yieldPct = isBostader ? p.f4_yield_bostader : p.f4_yield_kommersiellt;
             var dn = f.driftnetto || 0;  // Mkr per kvartal
             // Energiklass affects MV: C=1.00 referens, A=1.10 / B=1.05 / D=0.95 / E=0 (E ger 0 FV-bidrag — hård bestraffning)
-            var eklassOrder = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0};
-            var eklassFactor = eklassOrder[(f.energiklass||'C').toUpperCase()] || 1.0;
-            var mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100) * eklassFactor) : 0;
+            // Marknadsvärde i den löpande visningen: bara DN/yield. Energiklass-
+            // faktorn appliceras endast i slututräkningen (regelbok §9.2).
+            var mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100)) : 0;
             html += '<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin:6px 0;background:var(--paper-deep)">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center">';
             html += '<strong style="color:' + (TYPE_COLORS[f.typ]||'var(--ink-mid)') + '">' + f.namn + '</strong>';
@@ -2005,23 +2042,43 @@ function renderPlayer() {
             var _btaTotal = _btaOwned + _btaSoldBrf;
 
             // Slutpoäng = (Fastighetspoäng + Kassa + TB) ÷ (BTA/1000) × f(n)
-            var _summa = _summaFastpoang + _kassaJusterad + _tb4;
-            var _perKvm = _btaTotal > 0 ? _summa / _btaTotal * 1000 : _summa;
+            var _summa = (_summaFastpoang || 0) + (_kassaJusterad || 0) + (_tb4 || 0);
+            if (!isFinite(_summa)) _summa = 0;
+            var _perKvm = _btaTotal > 0 ? (_summa / _btaTotal * 1000) : _summa;
+            if (!isFinite(_perKvm)) _perKvm = 0;
 
-            // f(n)
+            // f(n) — beräkna lokalt eftersom Sammanställningens curQ/curH inte är
+            // i scope än (rendreras längre ned i samma funktion)
             var _projQslut = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
             var _projHslut = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
             var _maxProjTslut = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-            var _totQslut = 6 + _projQslut + p.q_krav - (p.rb_spent_q || 0);
-            var _totHslut = 6 + _projHslut + p.h_krav - (p.rb_spent_h || 0);
+            var _pcQslut = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
+            var _pcHslut = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
+            var _pcTslut = p.projektchef ? (p.projektchef.t_bonus || 0) : 0;
+            var _acQslut = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
+            var _acHslut = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
+            var _acTslut = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
+            var _totQslut = Math.max(0, 6 + _projQslut + (p.q_krav||0) - (p.rb_spent_q || 0) - _pcQslut - _acQslut);
+            var _totHslut = Math.max(0, 6 + _projHslut + (p.h_krav||0) - (p.rb_spent_h || 0) - _pcHslut - _acHslut);
             var _baseTslut = 12 + _maxProjTslut;
-            var _curTslut = Math.max(8, _baseTslut - (p.rb_spent_t || 0));
-            var _nQslut = Math.max(0, _totQslut - curQ);
-            var _nHslut = Math.max(0, _totHslut - curH);
+            var _curTslut = Math.max(8, _baseTslut - (p.rb_spent_t || 0) - _pcTslut - _acTslut);
+            // Aktuella Q/H-värden (planering + händelser + genomförande + konsekvenskort)
+            var _chSl = p.pl_choices || {}, _evSl = p.pl_events || {}, _gfSl = p.gf_phases || {};
+            var _plQs = 0, _plHs = 0, _evQs = 0, _evHs = 0, _gfQs = 0, _gfHs = 0;
+            for (var _ks in _chSl) { _plQs += _chSl[_ks].q || 0; _plHs += _chSl[_ks].h || 0; }
+            for (var _ks in _evSl) { _evQs += _evSl[_ks].q || 0; _evHs += _evSl[_ks].h || 0; }
+            for (var _fs in _gfSl) { _gfQs += _gfSl[_fs].q || 0; _gfHs += _gfSl[_fs].h || 0; }
+            var _konsQs = (p.gf_kons_t_q || 0) + (p.gf_kons_q_q || 0) + (p.gf_kons_h_q || 0);
+            var _konsHs = (p.gf_kons_t_h || 0) + (p.gf_kons_q_h || 0) + (p.gf_kons_h_h || 0);
+            var _curQslut = Math.max(0, _plQs + _evQs + _gfQs + _konsQs);
+            var _curHslut = Math.max(0, _plHs + _evHs + _gfHs + _konsHs);
+            var _nQslut = Math.max(0, _totQslut - _curQslut);
+            var _nHslut = Math.max(0, _totHslut - _curHslut);
             var _nTslut = Math.max(0, _curTslut - 12);
             var _nSlut = _nQslut + _nHslut + _nTslut;
             var _fnSlut = deviationFactor(_nSlut);
-            var _score = _perKvm * _fnSlut;
+            if (!isFinite(_fnSlut)) _fnSlut = 1.0;
+            var _score = isFinite(_perKvm * _fnSlut) ? (_perKvm * _fnSlut) : 0;
 
             // Render — steg för steg
             html += '<div class="asset-card" style="border-left-color:var(--burgundy);background:var(--paper-deep)">';
@@ -2064,7 +2121,7 @@ function renderPlayer() {
             html += '</div>';
 
             // Slutberäkning + f(n) → Slutpoäng
-            var _fnPctSlut = Math.round(_fnSlut*100);
+            var _fnPctSlut = isFinite(_fnSlut) ? Math.round(_fnSlut*100) : 100;
             var _fnColorSlut = _fnPctSlut >= 90 ? 'var(--success)' : (_fnPctSlut >= 70 ? 'var(--burgundy)' : 'var(--danger)');
             html += '<div style="margin-top:10px;padding:10px;background:var(--paper);border-radius:6px;border:1px dashed var(--burgundy)">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:6px">Slutber\u00e4kning</div>';
@@ -2125,8 +2182,13 @@ function renderPlayer() {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        const totalQ = 6 + projQ + p.q_krav - (p.rb_spent_q || 0);
-        const totalH = 6 + projH + p.h_krav - (p.rb_spent_h || 0);
+        // PC/AC sänker krav-sidan direkt (q_bonus/h_bonus = sänker Q/H-krav)
+        const _pcQk = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
+        const _pcHk = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
+        const _acQk = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
+        const _acHk = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
+        const totalQ = Math.max(0, 6 + projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQk - _acQk);
+        const totalH = Math.max(0, 6 + projH + p.h_krav - (p.rb_spent_h || 0) - _pcHk - _acHk);
         const baseT = 12 + maxProjT;
         const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
@@ -2167,8 +2229,10 @@ function renderPlayer() {
         var konsHallQ = p.gf_kons_h_q || 0;
         var konsHallH = p.gf_kons_h_h || 0;
         // Q/H kan inte sjunka under 0 på scoreboarden
-        var curQ = Math.max(0, plQ + plEvQ + gfQ + pcQ + acQ + konsTimeQ + konsKvalQ + konsHallQ);
-        var curH = Math.max(0, plH + plEvH + gfH + pcH + acH + konsTimeH + konsKvalH + konsHallH);
+        // Obs: pcQ/pcH/acQ/acH räknas redan av på krav-sidan (totalQ/totalH),
+        // ej dubbelt här.
+        var curQ = Math.max(0, plQ + plEvQ + gfQ + konsTimeQ + konsKvalQ + konsHallQ);
+        var curH = Math.max(0, plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH);
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -2207,7 +2271,7 @@ function renderPlayer() {
             rbDetail = ' <span style="color:var(--ink-mid);font-size:11px">(varav ledning: ' + (pcRb + acRb) + ')</span>';
         }
         // ── Rb / Erf / Projekt — kompakt 3-kolumnig rad ──
-        var rbDetail2 = (pcRb || acRb) ? ' <span style="color:var(--ink-faint);font-size:11px">(led ' + (pcRb + acRb) + ')</span>' : '';
+        var rbDetail2 = '';
         var erfDetail = totalErfRaw > 12 ? ' <span style="color:var(--ink-faint);font-size:10px">(' + totalErfRaw + ', tak 12)</span>' : '';
         function _miniCell(label, valHtml) {
             return '<div style="padding:6px 8px;background:var(--bg-card);border-radius:4px;text-align:center">' +
@@ -2227,7 +2291,7 @@ function renderPlayer() {
         html += '<div>BTA <strong style="color:var(--ink)">' + totalBta + '</strong> kvm</div>';
         html += '</div>';
         if (isPhase2 || isPhase3) {
-            html += '<div style="font-size:13px;margin-bottom:6px">Anskaff kvar: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+            html += '<div style="font-size:13px;margin-bottom:6px">ABT-budget: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         }
         // Moderbolagslån — tillgängligt redan i Skede 2.1 om ABT-budget tagit slut (regelboken §6.2)
         if (isPhase2 || isPhase3) {
@@ -2240,6 +2304,10 @@ function renderPlayer() {
                     html += '<div style="font-size:11px;color:var(--danger);margin-top:2px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
                 }
                 html += '</div>';
+            }
+            // Knallröd prompt när lån måste tecknas (visas en gång per fas)
+            if (_abtNeg && _modA21 === 0 && S._modlanShownPhase !== phase) {
+                setTimeout(function() { showModlanAlert(phase, anskKvar); }, 50);
             }
         }
         if (isPhase3) {
@@ -2280,21 +2348,21 @@ function renderPlayer() {
                 html += '<div style="color:var(--danger);font-weight:600">';
                 html += '\ud83d\udfe5 Moderbolags\u00e5n: ' + _modAntal + ' st = <strong>' + (_modAntal * 100) + ' Mkr skuld</strong></div>';
             }
-            html += '<div style="grid-column:1/-1">';
-            html += 'Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
-            if ((p.eget_kapital||0) < 0) {
-                // In Phase 3: count non-BRF projects (future fastigheter). In Phase 4: count actual fastigheter.
-                var _ownedCount = isPhase4
-                    ? (p.fastigheter||[]).filter(function(f){return !f.sold;}).length
-                    : (p.projects||[]).filter(function(pr){return pr.typ !== 'BRF';}).length;
-                html += '<div style="background:var(--danger);color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
-                html += '\u26a0\ufe0f Kassan \u00e4r negativ! ';
-                if (_ownedCount > 1) {
-                    html += 'S\u00e4lj fastigheter ner till 1 st, eller ta moderbola\u200dgs\u00e5n (+95 Mkr/st).';
-                } else {
-                    html += 'Ta moderbola\u200dgs\u00e5n f\u00f6r att t\u00e4cka underskottet (+95 Mkr/st, skuld 100 Mkr/st).';
+            // Kassa visas endast i Skede 3 (F\u00f6rvaltning) \u2014 ej i Skede 2
+            if (isPhase4) {
+                html += '<div style="grid-column:1/-1">';
+                html += 'Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
+                if ((p.eget_kapital||0) < 0) {
+                    var _ownedCount = (p.fastigheter||[]).filter(function(f){return !f.sold;}).length;
+                    html += '<div style="background:var(--danger);color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
+                    html += '\u26a0\ufe0f Kassan \u00e4r negativ! ';
+                    if (_ownedCount > 1) {
+                        html += 'S\u00e4lj fastigheter ner till 1 st, eller ta moderbola\u200dgs\u00e5n (+95 Mkr/st).';
+                    } else {
+                        html += 'Ta moderbola\u200dgs\u00e5n f\u00f6r att t\u00e4cka underskottet (+95 Mkr/st, skuld 100 Mkr/st).';
+                    }
+                    html += '</div>';
                 }
-                html += '</div>';
             }
         }
         // Projected score indicator with ranking + tier
@@ -2428,7 +2496,12 @@ function attachPlayerEvents(container) {
             const key = 'rb_spent_' + target;
             const cur = S.state.player[key] || 0;
             const totalSpent = (S.state.player.rb_spent_q || 0) + (S.state.player.rb_spent_h || 0) + (S.state.player.rb_spent_t || 0);
-            if (totalSpent < S.state.player.riskbuffertar) {
+            // Samma totalformel som Sammanställning: spelar-Rb + PC.rb + AC.rb
+            const _pl = S.state.player;
+            const _rbPc = _pl.projektchef ? (_pl.projektchef.rb || 0) : 0;
+            const _rbAc = _pl.arbetschef ? (_pl.arbetschef.rb || 0) : 0;
+            const _rbTotal = (_pl.riskbuffertar || 0) + _rbPc + _rbAc;
+            if (totalSpent < _rbTotal) {
                 send({ type: 'update_assets', assets: { [key]: cur + 1 } });
             }
         });
@@ -2910,15 +2983,30 @@ function openPCModal() {
     for (const pc of S.pcData) {
         if (taken.indexOf(pc.id) >= 0) continue; // upptagen av lagkamrat
         availableCount++;
-        const motstand = pc.handelsemotstand || 'ingen';
-        const namnd = pc.namnd_bonus ? `, Nämnd +${pc.namnd_bonus}` : '';
+        const motstand = pc.handelsemotstand || '';
         const lindring = pc.lindring || 0;
         const rb = pc.rb || 0;
-        html += `<div class="modal-item" data-pc-id="${pc.id}">
-            <div class="item-name">${pc.namn} <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">— ${pc.specialisering}</span></div>
-            <div class="item-detail">Lindring +${lindring} (${motstand})${namnd} · Rb ${rb}</div>
-            <div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">${pc.not_text || ''}</div>
-        </div>`;
+        const namndB = pc.namnd_bonus || 0;
+        const qB = pc.q_bonus || 0, hB = pc.h_bonus || 0, tB = pc.t_bonus || 0;
+        const komps = pc.kompetenser || {};
+        const kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
+        // Bygg lista av effekter
+        var effekter = [];
+        if (lindring > 0 && motstand) effekter.push('+' + lindring + ' på slag avseende ' + motstand);
+        if (namndB > 0) effekter.push('+' + namndB + ' på slag avseende Nämndbeslut');
+        if (qB > 0) effekter.push('Sänker Q-krav med ' + qB);
+        if (hB > 0) effekter.push('Sänker H-krav med ' + hB);
+        if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' mån');
+        if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
+        if (kompList) effekter.push('Kompetens: ' + kompList);
+        var effektHtml = effekter.length
+            ? '<ul style="margin:4px 0 0 0;padding-left:18px;font-size:0.92rem;color:var(--ink-mid)"><li>' + effekter.join('</li><li>') + '</li></ul>'
+            : '<div class="item-detail" style="color:var(--ink-faint);font-style:italic">Inga direkta bonusar</div>';
+        html += '<div class="modal-item" data-pc-id="' + pc.id + '">' +
+            '<div class="item-name">' + pc.namn + ' <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">— ' + pc.specialisering + '</span></div>' +
+            effektHtml +
+            '<div class="item-detail" style="margin-top:6px;color:var(--ink-mid)">' + (pc.not_text || '') + '</div>' +
+            '</div>';
     }
     if (availableCount === 0) {
         html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla projektchefer är redan valda av lagkamrater i kvarteret.</div>';
@@ -2951,15 +3039,41 @@ function openPlanningModal(stepId) {
     var levels = source[stepDef.key] || [];
     var currentChoice = (S.state.player.pl_choices || {})[stepId];
 
+    // Min-niv\u00e5 krav: parsa "niv\u00e5 N" fr\u00e5n projektkrav per leverant\u00f6rstyp
+    var _minLevel = 1;
+    var _minLevelReason = '';
+    if (isSupplier && S.planningData.supplier_requirements) {
+        var reqDict = S.planningData.supplier_requirements[stepDef.key] || {};
+        var projs = (S.state && S.state.player && S.state.player.projects) || [];
+        for (var _pi = 0; _pi < projs.length; _pi++) {
+            var pr = projs[_pi];
+            var reqText = reqDict[pr.namn] || '';
+            if (!reqText) continue;
+            var m = reqText.match(/(\d+)/);
+            if (m) {
+                var lvNeed = parseInt(m[1], 10);
+                if (lvNeed > _minLevel) {
+                    _minLevel = lvNeed;
+                    _minLevelReason = pr.namn + ' kr\u00e4ver ' + reqText;
+                }
+            }
+        }
+    }
+
     var html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>' + stepDef.name + '</h3></div>';
     html += '<div class="modal-body">';
+    if (_minLevel > 1) {
+        html += '<div style="background:var(--paper-deep);border-left:3px solid var(--burgundy);padding:6px 10px;margin-bottom:8px;font-size:12px;color:var(--ink-mid)">L\u00e4gsta till\u00e5tna niv\u00e5: <strong>' + _minLevel + '</strong> (' + _minLevelReason + ')</div>';
+    }
     for (var i = 0; i < levels.length; i++) {
         var lv = levels[i];
         var sel = currentChoice && currentChoice.niva === lv.niva ? ' selected' : '';
         var cost = isSupplier ? (lv.kostnad || lv.klass_priser?.C || 0) : (lv.kostnad_mkr || lv.kostnad || 0);
-        html += '<div class="modal-item' + sel + '" data-idx="' + i + '">';
-        html += '<div class="item-name">Niv\u00e5 ' + lv.niva + '</div>';
+        var blocked = lv.niva < _minLevel;
+        var blockedStyle = blocked ? ';opacity:0.4;pointer-events:none;background:var(--paper-deep)' : '';
+        html += '<div class="modal-item' + sel + (blocked ? ' blocked' : '') + '" data-idx="' + i + '" data-blocked="' + (blocked ? '1' : '0') + '" style="position:relative' + blockedStyle + '">';
+        html += '<div class="item-name">Niv\u00e5 ' + lv.niva + (blocked ? ' <span style="color:var(--danger);font-size:11px;font-weight:400">(uppfyller ej projektkrav)</span>' : '') + '</div>';
         html += '<div class="item-detail">';
         html += 'Q:' + (lv.q || 0) + ' H:' + (lv.h || 0) + ' T:' + (lv.t || 0) + ' Erf:' + (lv.erfarenhet || 0);
         html += ' | ' + cost + ' Mkr';
@@ -2975,6 +3089,7 @@ function openPlanningModal(stepId) {
 
     mc.querySelectorAll('.modal-item').forEach(function(el) {
         el.addEventListener('click', function() {
+            if (el.dataset.blocked === '1') return;
             var idx = parseInt(el.dataset.idx);
             var lv = levels[idx];
             if (!lv) { console.error('PL: no level at idx', idx); return; }
@@ -3010,13 +3125,28 @@ function openACModal() {
     for (const ac of S.acData) {
         if (taken.indexOf(ac.id) >= 0) continue;
         availableCount++;
-        var motstand = ac.handelsemotstand || 'ingen';
+        var motstand = ac.handelsemotstand || '';
         var komps = ac.kompetenser || {};
         var kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
+        var lindring = ac.lindring || 0;
+        var rb = ac.rb || 0;
+        var erf = ac.erfarenhet || 0;
+        var qB = ac.q_bonus || 0, hB = ac.h_bonus || 0, tB = ac.t_bonus || 0;
+        var effekter = [];
+        if (lindring > 0 && motstand) effekter.push('+' + lindring + ' p\u00e5 slag avseende ' + motstand);
+        if (erf > 0) effekter.push('+' + erf + ' Erfarenhet (lindrar alla h\u00e4ndelsekort)');
+        if (qB > 0) effekter.push('S\u00e4nker Q-krav med ' + qB);
+        if (hB > 0) effekter.push('S\u00e4nker H-krav med ' + hB);
+        if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' m\u00e5n');
+        if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
+        if (kompList) effekter.push('Kompetens: ' + kompList);
+        var effektHtml = effekter.length
+            ? '<ul style="margin:4px 0 0 0;padding-left:18px;font-size:0.92rem;color:var(--ink-mid)"><li>' + effekter.join('</li><li>') + '</li></ul>'
+            : '<div class="item-detail" style="color:var(--ink-faint);font-style:italic">Inga direkta bonusar</div>';
         html += '<div class="modal-item" data-ac-id="' + ac.id + '">' +
             '<div class="item-name">' + ac.namn + ' <span style="color:var(--ink-faint);font-weight:400;font-size:0.85rem">\u2014 ' + ac.specialisering + '</span></div>' +
-            '<div class="item-detail">Erf +' + (ac.erfarenhet || 0) + ' (' + motstand + ') \u00b7 Rb ' + (ac.rb || 0) + (kompList ? ' \u00b7 ' + kompList : '') + '</div>' +
-            '<div class="item-detail" style="margin-top:4px;color:var(--ink-mid)">' + (ac.not_text || '') + '</div>' +
+            effektHtml +
+            '<div class="item-detail" style="margin-top:6px;color:var(--ink-mid)">' + (ac.not_text || '') + '</div>' +
             '</div>';
     }
     if (availableCount === 0) {
@@ -3058,7 +3188,7 @@ async function openFCFSModal(type) {
     for (const s of items) {
         html += '<div class="modal-item" data-staff=\'' + JSON.stringify(s).replace(/'/g,"&#39;") + '\'>'
             + '<div class="item-name">' + s.namn + '</div>'
-            + '<div class="item-detail">' + (s.specialisering||'') + ' | Kap: ' + (s.kapacitet||0)
+            + '<div class="item-detail">' + (s.specialisering||'') + ' | Kapacitet: ' + (s.kapacitet||0)
             + ' | Lön: ' + (s.lon||0) + ' Mkr/kv</div>'
             + '<div class="item-detail" style="color:var(--ink-mid)">' + (s.not_text||s.forhandling||'') + '</div>'
             + '</div>';
