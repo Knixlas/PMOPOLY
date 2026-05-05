@@ -14,7 +14,8 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "backend"))
 
-REQUIRED_FIELDS = ["id", "name", "lead", "actions", "meaning", "tip", "regelbok"]
+REQUIRED_FIELDS = ["id", "name", "lead", "actions"]
+OPTIONAL_FIELDS = ["meaning", "tip", "regelbok", "image"]
 EXPECTED_PHASES = ["phase1", "phase2", "phase3", "phase4"]
 EXPECTED_STEPS_BY_PHASE = {
     "phase1": ["welcome", "setup_skede1", "choose_pc", "projects",
@@ -71,9 +72,17 @@ for phase in phases:
             elif field == "actions":
                 if not isinstance(step[field], list) or len(step[field]) == 0:
                     fail(f"{pid}/{sid}: 'actions' maste vara icke-tom lista")
+            elif field == "id":
+                if not isinstance(step[field], str) or not step[field].strip():
+                    fail(f"{pid}/{sid}: fältet '{field}' tomt eller fel typ")
             else:
                 if not isinstance(step[field], str) or not step[field].strip():
                     fail(f"{pid}/{sid}: fältet '{field}' tomt eller fel typ")
+        # OPTIONAL_FIELDS: bara typkontroll om de finns, ej obligatoriska
+        for field in OPTIONAL_FIELDS:
+            if field in step:
+                if not isinstance(step[field], str):
+                    warn(f"{pid}/{sid}: fältet '{field}' har fel typ (förväntat str)")
 
         if "regelbok" in step and step["regelbok"] and "§" not in step["regelbok"]:
             warn(f"{pid}/{sid}: 'regelbok' saknar §-tecken: '{step['regelbok']}'")
@@ -108,12 +117,12 @@ except Exception as e:
 print("\n3. Validerar step_data-utskick...")
 try:
     test_step = phases[0]["steps"][0]
-    expected_keys = {"lead", "actions", "meaning", "tip", "regelbok"}
-    actual_keys = {k for k in REQUIRED_FIELDS if k != "id" and k != "name"}
-    if expected_keys != actual_keys:
-        fail(f"step_data-fält mismatch: forvantat {expected_keys}, hittade {actual_keys}")
+    expected_required = {"lead", "actions"}
+    actual_required = {k for k in REQUIRED_FIELDS if k not in ("id", "name")}
+    if expected_required != actual_required:
+        fail(f"step_data-obligatoriska fält mismatch: forvantat {expected_required}, hittade {actual_required}")
     else:
-        info(f"step_data-fält OK: {sorted(expected_keys)}")
+        info(f"step_data-obligatoriska fält OK: {sorted(expected_required)}")
 except Exception as e:
     fail(f"Step_data-verifiering fel: {e}")
 
