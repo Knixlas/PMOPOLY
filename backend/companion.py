@@ -551,7 +551,7 @@ class CompanionRoom:
     quiz_scores: Dict[str, float] = field(default_factory=dict)
     quiz_correct_counts: Dict[str, int] = field(default_factory=dict)
     quiz_answer_times: Dict[str, List[float]] = field(default_factory=dict)
-    quiz_count_in_score: bool = False
+    quiz_count_in_score: bool = True
     quiz_questions_sent: List[str] = field(default_factory=list)
     game_finalized: bool = False
     # Pågående auktion vid fastighetsförsäljning. None när ingen aktiv.

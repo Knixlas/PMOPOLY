@@ -922,9 +922,30 @@ function _fetchLeaderboard() {
     if (!S.roomCode) return;
     fetch('/api/companion/leaderboard/' + S.roomCode).then(function(r) { return r.json(); }).then(function(data) {
         S.lastLeaderboard = data;
-        // Re-render to update ranking display
-        render();
+        _updatePlayerRanking();
     }).catch(function() {});
+}
+
+// Uppdatera #player-ranking-elementet i DOM:n efter leaderboard-fetch.
+function _updatePlayerRanking() {
+    var el = document.getElementById('player-ranking');
+    if (!el) return;
+    var lb = S.lastLeaderboard;
+    if (!lb || !lb.players) {
+        el.textContent = 'Ranking ej tillgänglig än.';
+        return;
+    }
+    var me = lb.players.find(function(e) { return e.id === S.playerId; });
+    if (!me) {
+        el.innerHTML = 'Du finns inte med i rankningen än.';
+        return;
+    }
+    var medals = {1: '🥇', 2: '🥈', 3: '🥉'};
+    var medal = medals[me.rank] || '';
+    var totalScore = me.profit_score;
+    var label = lb.all_final ? 'Slutpoäng (slutgiltig)' : (lb.any_final ? 'Slutpoäng (preliminärt)' : 'Vinstchans');
+    el.innerHTML = '<div style="font-weight:700;color:var(--ink);font-size:15px">' + medal + ' #' + me.rank + ' av ' + (lb.total_players || lb.players.length) + '</div>' +
+        '<div style="font-size:12px;color:var(--ink-mid);margin-top:2px">' + label + ': ' + totalScore + ' Mkr</div>';
 }
 
 // ── Lobby ──
@@ -2320,7 +2341,9 @@ function renderPlayer() {
             var _perKvm = _btaTotal > 0 ? (_summa / _btaTotal * 1000) : _summa;
             if (!isFinite(_perKvm)) _perKvm = 0;
             // Quizpoäng — adderas på slutpoängen (regelbok §13)
-            var _quizScore = (S.state && S.state.quiz_scores && S.state.quiz_scores[S.playerId]) || 0;
+            // Spelar-state har "quiz_score" (egen poäng); GM-state har "quiz_scores" (dict).
+            var _quizScore = (S.state && S.state.quiz_score) ||
+                             (S.state && S.state.quiz_scores && S.state.quiz_scores[S.playerId]) || 0;
 
             // f(n) — beräkna lokalt eftersom Sammanställningens curQ/curH inte är
             // i scope än (rendreras längre ned i samma funktion)
@@ -2418,7 +2441,7 @@ function renderPlayer() {
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:4px">Slutpo\u00e4ng</div>';
             html += '<strong style="color:var(--burgundy)">' + Math.round(_score*10)/10 + '</strong></div>';
 
-            // Fetch ranking
+            // Ranking \u2014 h\u00e4mta + visa cachad leaderboard direkt om den finns
             html += '<div id="player-ranking" style="margin-top:12px;color:var(--ink-mid);font-size:13px;text-align:center">H\u00e4mtar ranking...</div>';
             html += '</div>';
 
@@ -2426,6 +2449,11 @@ function renderPlayer() {
             if (Math.round((p.f4_final_score||0)*10) !== Math.round(_score*10)) {
                 send({ type: 'update_assets', assets: { f4_final_score: Math.round(_score*10)/10 } });
             }
+            // Trigga leaderboard-h\u00e4mtning + uppdatera #player-ranking
+            setTimeout(function() {
+                if (typeof _fetchLeaderboard === 'function') _fetchLeaderboard();
+                _updatePlayerRanking();
+            }, 100);
         }
     } catch(e) { console.error('[F4 render error]', e); html += '<div style="color:red">Skede 3 renderingsfel: ' + e.message + '</div>'; }
     }
