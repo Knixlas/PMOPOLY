@@ -1646,25 +1646,29 @@ function renderPlayer() {
         }
         html += '</div>';
 
-        // Step 4: Moderbolagslån
+        // Step 4: Moderbolagslån — auto-räknas, ingen manuell justering
         html += '<div style="border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px">';
         html += '<div style="color:var(--ink-mid);font-size:12px;font-weight:600">4. Moderbola\u200dgs\u00e5n</div>';
-        if (kassaBeforeLoan >= 0 && modLanAntal === 0) {
-            html += '<div style="font-size:13px;color:var(--success)">Kassan \u00e4r positiv \u2014 inget l\u00e5n beh\u00f6vs.</div>';
-        } else {
-            html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:4px">Varje l\u00e5n ger +95 Mkr till kassan (skuld: 100 Mkr/st). M\u00e5ste betalas tillbaka innan du kan investera.</div>';
+        // Auto-räkna behövda lån utifrån kassan-innan-lån
+        var _autoNeed = kassaBeforeLoan < 0 ? Math.ceil(-kassaBeforeLoan / 95) : 0;
+        if (_autoNeed > modLanAntal) {
+            setTimeout(function() {
+                send({ type: 'update_assets', assets: { gf_moderbolagslan_antal: _autoNeed } });
+            }, 50);
         }
-        html += counterRow('Moderbola\u200dgs\u00e5n (antal)', modLanAntal, 'gf_moderbolagslan_antal', false);
-        if (modLanAntal > 0) {
-            html += '<div style="font-size:12px;color:var(--danger);margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till Kassa: +' + modLanTillskott + ' Mkr</div>';
-            // Tydlig förklaring av vad som händer i övergången till Skede 3
+        var _modLanShow = Math.max(modLanAntal, _autoNeed);
+        if (_modLanShow === 0) {
+            html += '<div style="font-size:13px;color:var(--success)">Kassan är positiv — inget lån behövs.</div>';
+        } else {
+            html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:4px">Varje lån ger +95 Mkr till kassan (skuld 100 Mkr/st). Återbetalas i slutvärderingen.</div>';
+            html += '<div style="font-size:14px;font-weight:700;color:var(--danger);margin:6px 0">' + _modLanShow + ' moderbolagslån (auto)</div>';
+            html += '<div style="font-size:12px;color:var(--ink-mid)">+' + (_modLanShow * 95) + ' Mkr tillskott till kassa · ' + (_modLanShow * 100) + ' Mkr skuld</div>';
             html += '<div style="background:rgba(196,30,30,0.08);border:1px solid var(--danger);border-radius:6px;padding:10px;margin:8px 0;font-size:12px;color:var(--ink)">';
-            html += '<div style="font-weight:700;color:var(--danger);margin-bottom:4px">⚠️ Vad händer med lånet i Skede 3?</div>';
+            html += '<div style="font-weight:700;color:var(--danger);margin-bottom:4px">\u26a0\ufe0f Vad händer med lånet i Skede 3?</div>';
             html += '<div style="line-height:1.5">';
-            html += '• Lånet följer med in i Skede 3 (Förvaltning) som en aktiv skuld på <strong>' + modLanSkuld + ' Mkr</strong>.<br>';
-            html += '• Tvångsförsäljning av fastigheter krävs tills lånet är återbetalat.<br>';
-            html += '• Varje gång du säljer en fastighet med kassa ≥ 100 Mkr återbetalas 1 lån (−100 Mkr) — du får en bekräftelseruta innan det sker.<br>';
-            html += '• Köpstopp + uppgraderingsstopp gäller tills lånet är slut.';
+            html += '• Lånet följer med in i Skede 3 (Förvaltning) som en aktiv skuld på <strong>' + (_modLanShow * 100) + ' Mkr</strong>.<br>';
+            html += '• Köpstopp + uppgraderingsstopp gäller tills lånet är slut.<br>';
+            html += '• Skulden dras från kassan i slutvärderingen — straffaktor ×2,00 om kassan blir negativ.';
             html += '</div></div>';
         }
         html += '</div>';
@@ -1784,6 +1788,16 @@ function renderPlayer() {
         var _isQuarter = _qNum > 0;
         // Kvartalsspiralen \u2014 GM-styrt substeg l\u00e4ses fr\u00e5n rumstate
         var _spiralLabels = ['Yield', 'S\u00e4lj', 'Marknad', 'K\u00f6p', 'Personal', 'Driftnetto', 'H\u00e4ndelser', 'Energi'];
+        var _spiralDesc = [
+            'GM drar yieldkort (ej i Q1). Justera siffrorna n\u00e4r kortet \u00e4r dragit.',
+            'Tv\u00e5ngsf\u00f6rs\u00e4ljning f\u00f6rst om kassan \u00e4r negativ. Annars valfri f\u00f6rs\u00e4ljning.',
+            'GM uppdaterar marknaden med nya fastigheter (Q1: 3, Q2: 2, Q3: 1, Q4: 0).',
+            'Budgivning p\u00e5 sekund\u00e4rmarknaden. K\u00f6p-knappen t\u00e4nds nu \u2014 DD-kort dras manuellt p\u00e5 spelbr\u00e4det och p\u00e5verkan knappas in.',
+            'Anst\u00e4ll ev. ny FS f\u00f6r att t\u00e4cka antalet \u00e4gda fastigheter.',
+            'Driftnetto + l\u00f6nekostnad bokf\u00f6rs automatiskt i kassan n\u00e4r du n\u00e5r detta steg.',
+            'Omv\u00e4rldskort dras (samma f\u00f6r alla). Kvartalsh\u00e4ndelse + h\u00e4ndelsekort per fastighet \u2014 knappa in p\u00e5verkan.',
+            'Energiuppgraderingar (3 Mkr/steg). Q1: max 3 unika \u00b7 Q2: max 2 \u00b7 Q3: max 1 \u00b7 Q4: ej till\u00e5tet.',
+        ];
         var _spiralCount = _spiralLabels.length;
         var _spiralState = (S.state && S.state.f4_spiral_substep) || {};
         var _curSub = _isQuarter ? Math.max(0, Math.min(_spiralCount - 1, _spiralState[step] || 0)) : 0;
@@ -1798,6 +1812,14 @@ function renderPlayer() {
         var _canEnergi = !_isQuarter || _curSub === 7;
         var _canEvents = !_isQuarter || _curSub === 6;
         var _canYield  = !_isQuarter || _curSub === 0;
+        // Ljusröd highlight på den AKTIVA sektionen för respektive substeg
+        var _hlYield   = _isQuarter && _curSub === 0 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlSell    = _isQuarter && _curSub === 1 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlBuy     = _isQuarter && _curSub === 3 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlPersonal= _isQuarter && _curSub === 4 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlDrift   = _isQuarter && _curSub === 5 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlEvents  = _isQuarter && _curSub === 6 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
+        var _hlEnergi  = _isQuarter && _curSub === 7 ? ';background:rgba(196,30,30,0.07);box-shadow:inset 0 0 0 2px var(--danger)' : '';
         if (_isQuarter) {
             // Personal cost summary
             var _fcLon = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
@@ -1812,11 +1834,10 @@ function renderPlayer() {
             html += '</div></div>';
 
             // Kvartalsspiralen \u2014 read-only indikator (GM stegar)
-            html += '<div style="background:var(--paper-deep);border:1px solid var(--burgundy);border-radius:8px;padding:10px;margin:8px 0">';
-            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Spiralsteg ' + (_curSub + 1) + ' / ' + _spiralCount + '</div>';
-            html += '<div style="font-weight:700;color:var(--ink);font-size:1.05rem">' + _spiralLabels[_curSub] + '</div>';
-            html += '</div>';
+            html += '<div style="background:var(--paper-deep);border:1px solid var(--burgundy);border-radius:8px;padding:14px;margin:8px 0;text-align:center">';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Spiralsteg ' + (_curSub + 1) + ' / ' + _spiralCount + '</div>';
+            html += '<div style="font-weight:700;color:var(--burgundy);font-size:1.4rem;margin-bottom:6px">' + _spiralLabels[_curSub] + '</div>';
+            html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:10px;line-height:1.4">' + _spiralDesc[_curSub] + '</div>';
             // Stegsp\u00e4rr-prickar
             html += '<div style="display:flex;gap:4px;margin-bottom:6px">';
             for (var _si = 0; _si < _spiralCount; _si++) {
@@ -1824,7 +1845,7 @@ function renderPlayer() {
                 html += '<div title="' + _spiralLabels[_si] + '" style="flex:1;height:6px;border-radius:3px;' + _stat + '"></div>';
             }
             html += '</div>';
-            html += '<div style="font-size:11px;color:var(--ink-faint);text-align:center">Spelledaren stegar fram er genom spiralen</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint)">Spelledaren stegar fram er genom spiralen</div>';
             html += '</div>';
         }
 
@@ -1879,10 +1900,11 @@ function renderPlayer() {
             html += '</div>';
             // Marknadsvärde
             html += '<div style="font-size:13px;color:var(--ink-mid)">DN: ' + dn + ' Mkr/kv | Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:var(--success)">' + mv + ' Mkr</strong></div>';
-            // Händelsekort per kvartal (persistent expand state)
+            // Händelsekort per kvartal — auto-expanderad i Händelser-substeg, annars
+            // collapsad om inte spelaren själv expanderat dem.
             var events = f.events || [];
             var _fastId = f.id || ('fi-' + fi);
-            var _evExpanded = S.expandedFastEvents.has(_fastId);
+            var _evExpanded = S.expandedFastEvents.has(_fastId) || (_isQuarter && _curSub === 6);
             html += '<div style="margin-top:6px">';
             html += '<div style="font-size:12px;color:var(--burgundy);cursor:pointer" class="f4-toggle-events" data-fi="' + fi + '" data-fid="' + _fastId + '">H\u00e4ndelsekort (' + events.length + ') ' + (_evExpanded ? '\u25BE' : '\u25B8') + '</div>';
             html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="' + (_evExpanded ? '' : 'display:none') + ';margin-top:4px">';
@@ -1939,7 +1961,7 @@ function renderPlayer() {
 
             var _dnDoneKey = 'dn_' + step;
             var _dnAdded = (p.steps_done || {})[_dnDoneKey] === true;
-            html += '<div class="asset-card" style="border-left-color:var(--success)">';
+            html += '<div class="asset-card" style="border-left-color:var(--success)' + _hlDrift + '">';
             html += '<div class="asset-label">\uD83D\uDCB0 RESULTAT Q' + (_driftQIdx + 1) + '</div>';
             // Per-fastighet DN
             for (var _di = 0; _di < _ownedForDN.length; _di++) {
@@ -1989,7 +2011,7 @@ function renderPlayer() {
             var _ownsType = _unsoldFasts.some(function(f) { return f.typ === _kev.typ; });
             var _f4Q_ke = p.f4_quarters || {};
             var _hEk = (_f4Q_ke[step] || {}).handelse_ek || 0;
-            html += '<div class="asset-card" style="border-left-color:' + _kev.color + '">';
+            html += '<div class="asset-card" style="border-left-color:' + _kev.color + _hlEvents + '">';
             html += '<div class="asset-label">\uD83C\uDFB2 KVARTALSH\u00c4NDELSE</div>';
             html += '<div style="font-size:14px;color:' + _kev.color + ';margin-bottom:8px">' + _kev.icon + ' ' + _kev.text + '</div>';
             if (_ownsType) {
@@ -2010,7 +2032,7 @@ function renderPlayer() {
             var _f4Q = p.f4_quarters || {};
             var _qData = _f4Q[step] || {};
             var _omEk = _qData.omvarld_ek || 0;
-            html += '<div class="asset-card" style="border-left-color:#8e44ad">';
+            html += '<div class="asset-card" style="border-left-color:#8e44ad' + _hlEvents + '">';
             html += '<div class="asset-label">\uD83C\uDF0D OMV\u00c4RLDSKORT</div>';
             html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:8px">Justera Kassa och energiklass enligt det dragna kortet. Energiklass \u00e4ndras per fastighet ovan.</div>';
             html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
@@ -2026,7 +2048,7 @@ function renderPlayer() {
         // I kvartal är yielden bara redigerbar i substeg "Yield" (substep 0).
         var _yieldReadOnly = (step === 'f4_q1') || (_isQuarter && !_canYield);
         if (true) {
-            html += '<div class="asset-card" style="border-left-color:var(--info)">';
+            html += '<div class="asset-card" style="border-left-color:var(--info)' + _hlYield + '">';
             html += '<div class="asset-label">YIELD</div>';
             html += '<div style="font-size:14px">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
@@ -2081,8 +2103,12 @@ function renderPlayer() {
             });
             var _summaFastpoang = _fastpoangPerF.reduce(function(s,x){return s+x.fastpoang;},0);
 
-            // Steg 2: Kassa (justerad) = EK × (0.10 om pos, 2.00 om neg)
-            var _ek4 = p.eget_kapital || 0;
+            // Steg 2: Kassa (efter återbetalning av modlan) × EK-faktor
+            var _ek4Raw = p.eget_kapital || 0;
+            var _modAntalSlut = p.gf_moderbolagslan_antal || 0;
+            var _modSkuldSlut = _modAntalSlut * 100;
+            // Återbetalning sker som sista handling före slutpoäng (regelbok §6.2 + §9.1)
+            var _ek4 = _ek4Raw - _modSkuldSlut;
             var _ekFactor = _ek4 >= 0 ? 0.10 : 2.00;
             var _kassaJusterad = _ekFactor * _ek4;
 
@@ -2161,8 +2187,13 @@ function renderPlayer() {
             // Steg 2: Kassa (justerad)
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 2 \u00b7 Kassa (justerad)</div>';
-            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">Kassa \u00d7 0,10 om positiv, \u00d7 2,00 om negativ (straffaktor)</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Kassa ' + Math.round(_ek4) + ' Mkr \u00d7 ' + (_ek4 >= 0 ? '0,10' : '<span style="color:var(--danger)">2,00</span>') + '</span><span><strong style="color:' + (_kassaJusterad >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_kassaJusterad*10)/10 + ' Mkr</strong></span></div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">\u00c5terbetala moderbolagsl\u00e5n (\u2212100 Mkr/st), sedan \u00d7 0,10 om positiv eller \u00d7 2,00 om negativ (straffaktor).</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Kassa innan \u00e5terbetalning</span><span>' + Math.round(_ek4Raw) + ' Mkr</span></div>';
+            if (_modAntalSlut > 0) {
+                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u2212 \u00c5terbetalning av ' + _modAntalSlut + ' moderbolagsl\u00e5n</span><span style="color:var(--danger)">\u2212' + _modSkuldSlut + ' Mkr</span></div>';
+            }
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:4px;margin-top:4px;font-weight:600"><span>Kassa efter \u00e5terbetalning</span><span style="color:' + (_ek4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_ek4) + ' Mkr</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00d7 ' + (_ek4 >= 0 ? '0,10' : '<span style="color:var(--danger)">2,00</span>') + '</span><span><strong style="color:' + (_kassaJusterad >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_kassaJusterad*10)/10 + ' Mkr</strong></span></div>';
             html += '</div>';
 
             // Steg 3: TB
@@ -3791,13 +3822,24 @@ function renderGM() {
         var _isQ = /^f4_q[1-4]$/.test(_curStep);
         if (_isQ) {
             var _labels = ['Yield', 'Sälj', 'Marknad', 'Köp', 'Personal', 'Driftnetto', 'Händelser', 'Energi'];
+            var _labelDesc = [
+                'Dra yieldkort (ej i Q1). Kvarter justerar siffrorna.',
+                'Tvångsförsäljning först om kassan är negativ. Annars valfri försäljning.',
+                'Uppdatera marknaden med nya fastigheter (Q1: 3, Q2: 2, Q3: 1, Q4: 0).',
+                'Budgivning på sekundärmarknaden. DD-kort dras manuellt på spelbrädet.',
+                'Ev. anställning av FS för att täcka kapacitet.',
+                'Driftnetto + lönekostnad bokförs automatiskt.',
+                'Omvärldskort + kvartalshändelse + händelsekort per fastighetstyp.',
+                'Energiuppgraderingar (3 Mkr/steg). Q4: ej tillåtet.',
+            ];
             var _spiralState = st.f4_spiral_substep || {};
             var _cur = Math.max(0, Math.min(7, _spiralState[_curStep] || 0));
             var _qNum = _curStep.replace('f4_q', '');
             var sh = '';
-            sh += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-            sh += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Kvartalsspiral · Q' + _qNum + ' · ' + (_cur + 1) + '/8</div>';
-            sh += '<div style="font-weight:700;font-size:1.05rem">' + _labels[_cur] + '</div>';
+            sh += '<div style="text-align:center;margin-bottom:8px">';
+            sh += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy);margin-bottom:2px">Kvartalsspiral · Q' + _qNum + ' · steg ' + (_cur + 1) + '/8</div>';
+            sh += '<div style="font-weight:700;font-size:1.3rem;color:var(--burgundy)">' + _labels[_cur] + '</div>';
+            sh += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px;line-height:1.4">' + _labelDesc[_cur] + '</div>';
             sh += '</div>';
             sh += '<div style="display:flex;gap:4px;margin-bottom:10px">';
             for (var _i = 0; _i < 8; _i++) {
