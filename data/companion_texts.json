@@ -49,14 +49,14 @@
         {
           "id": "projects",
           "name": "Projektval & PU-brädet",
-          "lead": "Nu rör ni er runt PU-brädet i två varv. På varje runda får ni välja projekt, hantera politik/dialog-händelser, eller utöka tomten. Brädet har 24 rutor, fyra hörnrutor är specialfall.",
+          "lead": "Nu rör ni er runt PU-brädet i två varv. På varje runda får ni välja projekt, dra händelsekort, eller utöka tomten. Brädet har 24 rutor, fyra hörnrutor är specialfall.",
           "actions": [
             "Klicka \"Välj första projekt\" — ett projekt sätter Q-/H-krav och utvecklingskostnad",
             "Slå D6 och flytta medsols (på er tur)",
             "Ni kommer kunna hamna på:",
-            "Projekt-ruta: ta projektet eller lägg i projektbanken",
-            "Stjärna: +1 riskbuffert",
-            "Dialog/Politik: dra kort, slå D20 + PC-lindring",
+            "Projektruta: ta projektet eller lägg i projektbanken",
+            "Ta en riskbuffert: +1 riskbuffert",
+            "Händelsekort: dra kort, slå D20 + PC-lindring",
             "Stadsbyggnadskontoret: dra markexpansion (5 Mkr/styck)",
             "Stadshuset: ta, byt eller lämna projekt",
             "Länsstyrelsen: +2 fördelat på Q och H (t.ex. +2 Q, +1 Q och +1 H, eller +2 H) — du väljer",
@@ -171,8 +171,8 @@
           "actions": [
             "Klicka \"Välj Arbetschef\" i companion",
             "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), Q/H/T-bonus",
-            "Lägst ABT-kostnad väljer först — companion visar turordning",
-            "Samma AC kan bara väljas en gång per kvarter"
+            "Lägst ABT-kostnad väljer först",
+            "Samma AC kan bara väljas en gång per stadsdel"
           ],
           "meaning": "+1 erfarenhet = +1 på alla D20-slag i Skede 2 + 3 (max +12). Kompetenser används i Skede 2.2 för att betala FAS-kort.",
           "tip": "Alla AC är ungefär lika starka — välj efter er strategi snarare än \"bäst i tabellen\".",
@@ -192,7 +192,7 @@
             "Ordning: Stödfunktioner → Mark → Husunderbyggnad → Digitalisering → Stomme → Installationer → Operativt team → Gemensamma arbeten → Yttertak → Fasader → Marknadsteam → Stomkomplettering → Inv. ytskikt"
           ],
           "meaning": "I verkligheten är planeringen där projekt vinner eller förlorar. De flesta byggproblem kan spåras tillbaka till planeringen.\nMen styrningen, kanske någon säger. Absolut - men den sätter man i planeringen. Sedan är det mest att hålla i och hålla ut.",
-          "tip": "Billiga leverantörer = lägre Q/H men sparar pengar. Men nivå 1-2 innebär garantikostnader. Sträva mot att nå målen, kanske till och med att ni ska gå lite över? Sikta mot himlen, och hamna i trädtopparna.",
+          "tip": "Billiga leverantörer = lägre Q/H men sparar pengar. Men nivå 1-2 innebär garantikostnader. Sträva mot att nå målen, kanske till och med att ni ska gå lite över? Sikta mot himlen, och hamna i trädtopparna.\n\nTips: det händer ofta saker under produktion, så se till att ha en rimlig riskbuffert med er in i genomförandet.",
           "regelbok": "§5.3, §5.5"
         },
         {
