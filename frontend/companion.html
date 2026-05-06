@@ -326,6 +326,8 @@ input.qf-opt { flex: 1 !important; width: auto !important; min-width: 0; }
             <a href="/companion/analytics" target="_blank" style="color:var(--info);font-size:13px">Analytics</a>
         </div>
         <div id="gm-omvarld-panel" style="display:none"></div>
+        <!-- Kvartalsspiral-kontroller (visas bara på f4_q*-steg) -->
+        <div id="gm-spiral-panel" style="display:none;margin-top:10px;padding:10px;background:var(--paper-deep);border:1px solid var(--burgundy);border-radius:8px"></div>
     </div>
 
     <!-- Tab switcher -->
@@ -1780,11 +1782,11 @@ function renderPlayer() {
         // Quarter header for f4_q1-q4
         var _qNum = {'f4_q1':1,'f4_q2':2,'f4_q3':3,'f4_q4':4}[step] || 0;
         var _isQuarter = _qNum > 0;
-        // Kvartalsspiralen \u2014 substeg-state (0..7)
+        // Kvartalsspiralen \u2014 GM-styrt substeg l\u00e4ses fr\u00e5n rumstate
         var _spiralLabels = ['Yield', 'S\u00e4lj', 'Marknad', 'K\u00f6p', 'Personal', 'Driftnetto', 'H\u00e4ndelser', 'Energi'];
         var _spiralCount = _spiralLabels.length;
-        var _substeps = (p.f4_substeps || {});
-        var _curSub = _isQuarter ? Math.max(0, Math.min(_spiralCount - 1, _substeps[step] || 0)) : 0;
+        var _spiralState = (S.state && S.state.f4_spiral_substep) || {};
+        var _curSub = _isQuarter ? Math.max(0, Math.min(_spiralCount - 1, _spiralState[step] || 0)) : 0;
         // Helpers att kolla om en del av spiralen \u00e4r aktiv
         function _spiralActive(idx) { return _isQuarter && _curSub === idx; }
         function _spiralPast(idx)   { return _isQuarter && _curSub >  idx; }
@@ -1809,27 +1811,20 @@ function renderPlayer() {
             html += '<span>L\u00f6nekostnad: <strong style="color:var(--danger)">-' + _totalLon + ' Mkr/kv</strong></span>';
             html += '</div></div>';
 
-            // Kvartalsspiralen \u2014 visa pos + F\u00f6reg\u00e5ende/N\u00e4sta-knappar
+            // Kvartalsspiralen \u2014 read-only indikator (GM stegar)
             html += '<div style="background:var(--paper-deep);border:1px solid var(--burgundy);border-radius:8px;padding:10px;margin:8px 0">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Kvartalsspiral \u00b7 ' + (_curSub + 1) + ' / ' + _spiralCount + '</div>';
-            html += '<div style="font-weight:700;color:var(--ink)">' + _spiralLabels[_curSub] + '</div>';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Spiralsteg ' + (_curSub + 1) + ' / ' + _spiralCount + '</div>';
+            html += '<div style="font-weight:700;color:var(--ink);font-size:1.05rem">' + _spiralLabels[_curSub] + '</div>';
             html += '</div>';
             // Stegsp\u00e4rr-prickar
-            html += '<div style="display:flex;gap:4px;margin-bottom:8px">';
+            html += '<div style="display:flex;gap:4px;margin-bottom:6px">';
             for (var _si = 0; _si < _spiralCount; _si++) {
                 var _stat = _si === _curSub ? 'background:var(--burgundy)' : (_si < _curSub ? 'background:var(--success)' : 'background:var(--paper-edge)');
                 html += '<div title="' + _spiralLabels[_si] + '" style="flex:1;height:6px;border-radius:3px;' + _stat + '"></div>';
             }
             html += '</div>';
-            html += '<div style="display:flex;gap:8px">';
-            html += '<button class="btn-secondary" data-action="spiral-prev" ' + (_curSub === 0 ? 'disabled' : '') + ' style="flex:1;padding:8px;font-size:13px' + (_curSub === 0 ? ';opacity:0.4;cursor:not-allowed' : '') + '">\u25c0 F\u00f6reg\u00e5ende</button>';
-            if (_curSub < _spiralCount - 1) {
-                html += '<button class="btn-primary" data-action="spiral-next" style="flex:2;padding:8px;font-size:13px;background:var(--burgundy);color:white">N\u00e4sta: ' + _spiralLabels[_curSub + 1] + ' \u25b6</button>';
-            } else {
-                html += '<button class="btn-primary" data-action="spiral-done" style="flex:2;padding:8px;font-size:13px;background:var(--success);color:white">\u2713 Klar med kvartal ' + _qNum + '</button>';
-            }
-            html += '</div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);text-align:center">Spelledaren stegar fram er genom spiralen</div>';
             html += '</div>';
         }
 
@@ -2512,37 +2507,7 @@ function attachPlayerEvents(container) {
             send({ type: 'mark_done', step: el.dataset.step });
         });
     });
-    // Kvartalsspiralen — Föregående/Nästa-knappar
-    container.querySelectorAll('[data-action="spiral-prev"]').forEach(function(el) {
-        el.addEventListener('click', function() {
-            var step = S.state && S.state.step;
-            if (!step) return;
-            var subs = Object.assign({}, (S.state.player && S.state.player.f4_substeps) || {});
-            var cur = subs[step] || 0;
-            if (cur > 0) {
-                subs[step] = cur - 1;
-                send({ type: 'update_assets', assets: { f4_substeps: subs } });
-            }
-        });
-    });
-    container.querySelectorAll('[data-action="spiral-next"]').forEach(function(el) {
-        el.addEventListener('click', function() {
-            var step = S.state && S.state.step;
-            if (!step) return;
-            var subs = Object.assign({}, (S.state.player && S.state.player.f4_substeps) || {});
-            var cur = subs[step] || 0;
-            if (cur < 7) {
-                subs[step] = cur + 1;
-                send({ type: 'update_assets', assets: { f4_substeps: subs } });
-            }
-        });
-    });
-    container.querySelectorAll('[data-action="spiral-done"]').forEach(function(el) {
-        el.addEventListener('click', function() {
-            // Markera kvartalet som klart — GM tar oss till nästa kvartal
-            send({ type: 'mark_done', step: S.state.step });
-        });
-    });
+    // Kvartalsspiralen styrs av GM — inga player-side prev/next-handlers
     container.querySelectorAll('[data-action="unmark-done"]').forEach(function(el) {
         el.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -3791,6 +3756,46 @@ function renderGM() {
     // Omvärldskort panel removed — players handle manually in physical play mode
     var _omPanel = document.getElementById('gm-omvarld-panel');
     if (_omPanel) _omPanel.style.display = 'none';
+
+    // Kvartalsspiral-panel: visa när vi är på f4_q*-steg
+    var _spiralPanel = document.getElementById('gm-spiral-panel');
+    if (_spiralPanel) {
+        var _curStep = st.step || '';
+        var _isQ = /^f4_q[1-4]$/.test(_curStep);
+        if (_isQ) {
+            var _labels = ['Yield', 'Sälj', 'Marknad', 'Köp', 'Personal', 'Driftnetto', 'Händelser', 'Energi'];
+            var _spiralState = st.f4_spiral_substep || {};
+            var _cur = Math.max(0, Math.min(7, _spiralState[_curStep] || 0));
+            var _qNum = _curStep.replace('f4_q', '');
+            var sh = '';
+            sh += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+            sh += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Kvartalsspiral · Q' + _qNum + ' · ' + (_cur + 1) + '/8</div>';
+            sh += '<div style="font-weight:700;font-size:1.05rem">' + _labels[_cur] + '</div>';
+            sh += '</div>';
+            sh += '<div style="display:flex;gap:4px;margin-bottom:10px">';
+            for (var _i = 0; _i < 8; _i++) {
+                var _bg = _i === _cur ? 'var(--burgundy)' : (_i < _cur ? 'var(--success)' : 'var(--paper-edge)');
+                sh += '<div title="' + _labels[_i] + '" data-action="gm-spiral-set" data-idx="' + _i + '" style="flex:1;height:14px;border-radius:3px;background:' + _bg + ';cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:' + (_i <= _cur ? '#fff' : 'var(--ink-faint)') + ';font-weight:700">' + _labels[_i].charAt(0) + '</div>';
+            }
+            sh += '</div>';
+            sh += '<div style="display:flex;gap:8px">';
+            sh += '<button class="btn-secondary" id="gm-spiral-prev" ' + (_cur === 0 ? 'disabled' : '') + ' style="flex:1;padding:8px;font-size:13px' + (_cur === 0 ? ';opacity:0.4;cursor:not-allowed' : '') + '">◀ Föregående delsteg</button>';
+            sh += '<button class="btn-primary" id="gm-spiral-next" ' + (_cur === 7 ? 'disabled' : '') + ' style="flex:2;padding:8px;font-size:13px;background:var(--burgundy);color:white' + (_cur === 7 ? ';opacity:0.4;cursor:not-allowed' : '') + '">' + (_cur === 7 ? 'Sista delsteget — gå till nästa kvartal med "Nästa steg"' : 'Nästa delsteg: ' + _labels[_cur + 1] + ' ▶') + '</button>';
+            sh += '</div>';
+            _spiralPanel.innerHTML = sh;
+            _spiralPanel.style.display = '';
+            // Attach handlers
+            var _prev = document.getElementById('gm-spiral-prev');
+            if (_prev && _cur > 0) _prev.onclick = function() { send({ type: 'spiral_substep', delta: -1 }); };
+            var _next = document.getElementById('gm-spiral-next');
+            if (_next && _cur < 7) _next.onclick = function() { send({ type: 'spiral_substep', delta: 1 }); };
+            _spiralPanel.querySelectorAll('[data-action="gm-spiral-set"]').forEach(function(el) {
+                el.onclick = function() { send({ type: 'spiral_substep', set: parseInt(el.dataset.idx) }); };
+            });
+        } else {
+            _spiralPanel.style.display = 'none';
+        }
+    }
 
     // Disable nav buttons if game finalized
     const prevBtn = document.getElementById('btn-prev-step');

@@ -541,6 +541,9 @@ class CompanionRoom:
     game_mode: str = "test"  # "test" or "serious"
     logger: Optional[object] = None  # GameLogger instance for serious games
     f4_omvarldskort: Dict[str, dict] = field(default_factory=dict)  # step_id -> drawn omvärldskort
+    # Kvartalsspiralen — GM-styrt substeg per kvartal (f4_q1..q4 -> 0..7).
+    # Alla spelare synkroniseras till samma substep så GM styr tempot.
+    f4_spiral_substep: Dict[str, int] = field(default_factory=dict)
     # Quiz state
     quiz_questions: List[dict] = field(default_factory=list)
     quiz_active: Optional[ActiveQuiz] = None
@@ -712,6 +715,7 @@ class CompanionRoom:
             "game_mode": self.game_mode,
             "log_event_count": len(self.logger.events) if self.logger else 0,
             "f4_omvarldskort": self.f4_omvarldskort,
+            "f4_spiral_substep": self.f4_spiral_substep,
             "game_finalized": self.game_finalized,
             # Quiz state for GM
             "quiz_count_in_score": self.quiz_count_in_score,
@@ -773,6 +777,7 @@ class CompanionRoom:
             "player": player.to_dict(),
             "quarter_taken": quarter_taken,
             "f4_omvarldskort": self.f4_omvarldskort,
+            "f4_spiral_substep": self.f4_spiral_substep,
             "game_finalized": self.game_finalized,
             "quiz_score": round(self.quiz_scores.get(player_id, 0), 1),
             "quiz_count_in_score": self.quiz_count_in_score,
@@ -1013,6 +1018,20 @@ class CompanionManager:
                     last_phase = PHASES[-1]
                     if room.step_idx == len(last_phase["steps"]) - 1:
                         room.logger.finalize(room)
+            await self.broadcast_state(room)
+
+        elif msg_type == "spiral_substep" and player.is_gm:
+            # GM stegar genom kvartalsspiralen (Yield → Sälj → ... → Energi).
+            # data: { "delta": 1 | -1 } eller { "set": int }
+            step = room.current_step
+            step_id = step["id"] if step else None
+            if step_id and step_id.startswith("f4_q"):
+                cur = room.f4_spiral_substep.get(step_id, 0)
+                if "set" in data:
+                    new = int(data.get("set", 0))
+                else:
+                    new = cur + int(data.get("delta", 1))
+                room.f4_spiral_substep[step_id] = max(0, min(7, new))
             await self.broadcast_state(room)
 
         elif msg_type == "prev_step" and player.is_gm:
