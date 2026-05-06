@@ -554,6 +554,13 @@ class CompanionRoom:
     quiz_count_in_score: bool = False
     quiz_questions_sent: List[str] = field(default_factory=list)
     game_finalized: bool = False
+    # Pågående auktion vid fastighetsförsäljning. None när ingen aktiv.
+    # Struktur: {
+    #   seller_id, fastighet (dict), mv (markvärde),
+    #   bidders: { player_id: "pending" | "skip" | "won" },
+    #   winner: {player_id, kopeskilling} | None,
+    # }
+    auction: Optional[dict] = None
 
     @property
     def current_phase(self):
@@ -736,6 +743,7 @@ class CompanionRoom:
             "log_event_count": len(self.logger.events) if self.logger else 0,
             "f4_omvarldskort": self.f4_omvarldskort,
             "f4_spiral_substep": self.f4_spiral_substep,
+            "auction": self.auction,
             "game_finalized": self.game_finalized,
             # Quiz state for GM
             "quiz_count_in_score": self.quiz_count_in_score,
@@ -808,6 +816,7 @@ class CompanionRoom:
             "quarter_taken": quarter_taken,
             "f4_omvarldskort": self.f4_omvarldskort,
             "f4_spiral_substep": self.f4_spiral_substep,
+            "auction": self.auction,
             "game_finalized": self.game_finalized,
             "quiz_score": round(self.quiz_scores.get(player_id, 0), 1),
             "quiz_count_in_score": self.quiz_count_in_score,
@@ -1049,6 +1058,127 @@ class CompanionManager:
                     if room.step_idx == len(last_phase["steps"]) - 1:
                         room.logger.finalize(room)
             await self.broadcast_state(room)
+
+        # ── Fastighetsauktion (Skede 3) ──
+        # Säljaren startar; alla andra (icke-GM) spelare i rummet får prompt.
+        # En auktion per rum åt gången.
+        elif msg_type == "auction_start" and not player.is_gm:
+            if room.auction:
+                return  # En auktion redan aktiv
+            fast_id = data.get("fastighet_id")
+            fast = next((f for f in (player.fastigheter or [])
+                         if f.get("id") == fast_id and not f.get("sold")), None)
+            if not fast:
+                return
+            # MV beräknas på serversida för konsistent "bankens bud" (80 %)
+            yld = (player.f4_yield_bostader if (fast.get("typ", "").upper() == "HYRESRÄTT")
+                   else player.f4_yield_kommersiellt) or 5.0
+            dn = fast.get("driftnetto", 0)
+            mv = round((4 * dn) / (yld / 100)) if yld > 0 else (fast.get("anskaffning", 0))
+            bidders = {pid: "pending" for pid, p in room.players.items()
+                       if not p.is_gm and pid != player.id}
+            room.auction = {
+                "seller_id": player.id,
+                "seller_name": player.name,
+                "fastighet": fast,
+                "mv": mv,
+                "bank_bid": int(round(mv * 0.8)),
+                "bidders": bidders,
+                "winner": None,
+            }
+            await self.broadcast_state(room)
+
+        elif msg_type == "auction_respond" and not player.is_gm:
+            if not room.auction or player.id == room.auction["seller_id"]:
+                return
+            response = data.get("response")  # "skip" | "won"
+            if response == "skip":
+                room.auction["bidders"][player.id] = "skip"
+            elif response == "won":
+                kop = float(data.get("kopeskilling", 0) or 0)
+                if kop <= 0:
+                    return
+                room.auction["bidders"][player.id] = "won"
+                room.auction["winner"] = {
+                    "player_id": player.id,
+                    "player_name": player.name,
+                    "kopeskilling": kop,
+                }
+            await self.broadcast_state(room)
+
+        elif msg_type == "auction_finalize" and not player.is_gm:
+            if not room.auction or player.id != room.auction["seller_id"]:
+                return
+            decision = data.get("decision")  # "bank" | "accept" | "cancel"
+            seller = player
+            fast_id = room.auction["fastighet"].get("id")
+            seller_fasts = list(seller.fastigheter or [])
+            fast_idx = next((i for i, f in enumerate(seller_fasts)
+                             if f.get("id") == fast_id), -1)
+            if fast_idx < 0 and decision != "cancel":
+                room.auction = None
+                await self.broadcast_state(room)
+                return
+
+            if decision == "cancel":
+                room.auction = None
+                await self.broadcast_state(room)
+                return
+
+            if decision == "bank":
+                kop = room.auction["bank_bid"]
+                # Banken köper hela. 30 % till säljarens kassa, lånedel löses,
+                # auto-repay moderbolagslån om kassan ≥ 100 Mkr.
+                earn = round(kop * 0.30, 1)
+                seller_fasts[fast_idx]["sold"] = True
+                seller_fasts[fast_idx]["kopeskilling"] = kop
+                seller_fasts[fast_idx]["sold_to"] = "Banken"
+                new_ek = (seller.eget_kapital or 0) + earn
+                # Auto-repay modlan
+                modlan = seller.gf_moderbolagslan_antal or 0
+                while modlan > 0 and new_ek >= 100:
+                    new_ek -= 100
+                    modlan -= 1
+                seller.fastigheter = seller_fasts
+                seller.eget_kapital = round(new_ek, 1)
+                seller.gf_moderbolagslan_antal = modlan
+                room.auction = None
+                await self.broadcast_state(room)
+                return
+
+            if decision == "accept":
+                winner = room.auction.get("winner")
+                if not winner:
+                    return
+                buyer = room.players.get(winner["player_id"])
+                if not buyer:
+                    return
+                kop = float(winner["kopeskilling"])
+                # Säljaren får 30 %, modlan auto-repay
+                earn = round(kop * 0.30, 1)
+                seller_fasts[fast_idx]["sold"] = True
+                seller_fasts[fast_idx]["kopeskilling"] = kop
+                seller_fasts[fast_idx]["sold_to"] = buyer.name
+                new_ek_seller = (seller.eget_kapital or 0) + earn
+                seller_modlan = seller.gf_moderbolagslan_antal or 0
+                while seller_modlan > 0 and new_ek_seller >= 100:
+                    new_ek_seller -= 100
+                    seller_modlan -= 1
+                seller.fastigheter = seller_fasts
+                seller.eget_kapital = round(new_ek_seller, 1)
+                seller.gf_moderbolagslan_antal = seller_modlan
+                # Köparen betalar 30 % kontant, lägger till fastigheten
+                bought = dict(room.auction["fastighet"])
+                bought["sold"] = False
+                bought["anskaffning"] = kop  # ny anskaffning
+                bought["kopeskilling"] = 0
+                buyer_fasts = list(buyer.fastigheter or [])
+                buyer_fasts.append(bought)
+                buyer.fastigheter = buyer_fasts
+                buyer.eget_kapital = round((buyer.eget_kapital or 0) - earn, 1)
+                room.auction = None
+                await self.broadcast_state(room)
+                return
 
         elif msg_type == "spiral_substep" and player.is_gm:
             # GM stegar genom kvartalsspiralen (Yield → Sälj → ... → Energi).

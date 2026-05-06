@@ -407,6 +407,99 @@ const S = {
     _modlanRepaidShown: {},  // key (phase + count) -> bool, så vi inte spammar gröna popupen
 };
 
+// ── Auktionsmodal: visas när någon säljer en fastighet ──
+function showAuctionUI(auction) {
+    var mc = document.getElementById('modal-container');
+    if (!auction) {
+        // Ingen pågående auktion — stäng ev. öppen modal
+        if (mc && mc.querySelector('.auction-modal')) mc.innerHTML = '';
+        S._auctionState = null;
+        return;
+    }
+    var isSeller = auction.seller_id === S.playerId;
+    var myStatus = (auction.bidders || {})[S.playerId];
+    // Spårning: visa modalen bara när state ändrats (annars fastnar input)
+    var stateKey = auction.seller_id + '/' + (auction.fastighet && auction.fastighet.id) + '/' + (auction.winner ? auction.winner.player_id : '') + '/' + JSON.stringify(auction.bidders);
+    if (S._auctionState === stateKey) return;
+    S._auctionState = stateKey;
+    var f = auction.fastighet || {};
+    var html = '<div class="modal-overlay auction-modal" style="background:rgba(26,20,16,0.7)">';
+    html += '<div class="modal" style="max-width:520px">';
+    html += '<div class="modal-header" style="background:#1B365D;color:#D1CDC0"><h3>🔨 Auktion — ' + (f.namn || '') + '</h3></div>';
+    html += '<div class="modal-body">';
+    html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:10px">' +
+        '<strong>' + (auction.seller_name || 'Säljare') + '</strong> säljer ' + (f.typ || '') + ' (BTA: ' + (f.bta || 0) + ', DN: ' + (f.driftnetto || 0) + ' Mkr/kv).' +
+        '<br>Marknadsvärde (MV): <strong>' + (auction.mv || 0) + ' Mkr</strong> · Bankens bud (80 %): <strong>' + (auction.bank_bid || 0) + ' Mkr</strong>' +
+        '</div>';
+
+    if (isSeller) {
+        // Säljarens vy: visa bud-status och välj utfall
+        var pendingCount = 0, skipCount = 0;
+        for (var pid in auction.bidders) {
+            if (auction.bidders[pid] === 'pending') pendingCount++;
+            else if (auction.bidders[pid] === 'skip') skipCount++;
+        }
+        var totalBidders = Object.keys(auction.bidders).length;
+        html += '<div style="background:var(--paper-deep);border-radius:6px;padding:10px;margin-bottom:10px">';
+        html += '<div style="font-size:12px;color:var(--ink-mid)">Status:</div>';
+        html += '<div>' + (totalBidders - pendingCount) + ' / ' + totalBidders + ' har svarat · ' + skipCount + ' avstod</div>';
+        if (auction.winner) {
+            html += '<div style="margin-top:8px;font-weight:700;color:var(--success)">Vinnare: ' + auction.winner.player_name + ' med ' + auction.winner.kopeskilling + ' Mkr</div>';
+        }
+        html += '</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:8px">';
+        if (auction.winner) {
+            html += '<button id="auction-accept" style="background:var(--success);color:white;border:none;padding:12px;border-radius:6px;font-weight:700;cursor:pointer">Acceptera bud (' + auction.winner.kopeskilling + ' Mkr) ✓</button>';
+        }
+        html += '<button id="auction-bank" style="background:var(--burgundy);color:white;border:none;padding:12px;border-radius:6px;font-weight:700;cursor:pointer">Sälj till banken (' + auction.bank_bid + ' Mkr)</button>';
+        html += '<button id="auction-cancel" style="background:transparent;color:var(--ink-mid);border:1px solid var(--border);padding:10px;border-radius:6px;cursor:pointer">Avbryt auktionen</button>';
+        html += '</div>';
+    } else {
+        // Köparens vy
+        if (myStatus === 'skip') {
+            html += '<div style="text-align:center;padding:20px;color:var(--ink-mid);font-style:italic">Du har avstått från denna auktion.</div>';
+            html += '<button id="auction-close" style="width:100%;background:transparent;color:var(--ink-mid);border:1px solid var(--border);padding:10px;border-radius:6px;cursor:pointer">Stäng</button>';
+        } else if (myStatus === 'won') {
+            html += '<div style="text-align:center;padding:20px;color:var(--success);font-weight:700">Du har angett dig som vinnare. Väntar på säljaren...</div>';
+            html += '<button id="auction-close" style="width:100%;background:transparent;color:var(--ink-mid);border:1px solid var(--border);padding:10px;border-radius:6px;cursor:pointer">Stäng</button>';
+        } else {
+            html += '<div style="font-size:14px;margin-bottom:10px">Vill du buda på fastigheten? Diskutera vid bordet — när budgivningen är avgjord:</div>';
+            html += '<div style="display:flex;flex-direction:column;gap:8px">';
+            html += '<button id="auction-won" style="background:var(--success);color:white;border:none;padding:12px;border-radius:6px;font-weight:700;cursor:pointer">Jag vann budgivningen ✓</button>';
+            html += '<button id="auction-skip" style="background:var(--ink-mid);color:white;border:none;padding:10px;border-radius:6px;cursor:pointer">Jag avstår</button>';
+            html += '</div>';
+        }
+    }
+    html += '</div></div></div>';
+    mc.innerHTML = html;
+
+    // Handlers
+    var btnAccept = document.getElementById('auction-accept');
+    if (btnAccept) btnAccept.onclick = function() { send({ type: 'auction_finalize', decision: 'accept' }); };
+    var btnBank = document.getElementById('auction-bank');
+    if (btnBank) btnBank.onclick = function() {
+        if (confirm('Sälj till banken för ' + auction.bank_bid + ' Mkr (80 % av MV)?\nDu får 30 % av köpeskillingen kontant. Ev. moderbolagslån återbetalas auto.')) {
+            send({ type: 'auction_finalize', decision: 'bank' });
+        }
+    };
+    var btnCancel = document.getElementById('auction-cancel');
+    if (btnCancel) btnCancel.onclick = function() {
+        if (confirm('Avbryt auktionen utan att sälja?')) send({ type: 'auction_finalize', decision: 'cancel' });
+    };
+    var btnWon = document.getElementById('auction-won');
+    if (btnWon) btnWon.onclick = function() {
+        var kop = prompt('Vilken köpeskilling betalar du? (Mkr) — du betalar 30 % kontant från din kassa.');
+        if (kop === null) return;
+        var n = parseFloat(String(kop).replace(',', '.')) || 0;
+        if (n <= 0) { alert('Ange ett positivt belopp.'); return; }
+        send({ type: 'auction_respond', response: 'won', kopeskilling: n });
+    };
+    var btnSkip = document.getElementById('auction-skip');
+    if (btnSkip) btnSkip.onclick = function() { send({ type: 'auction_respond', response: 'skip' }); };
+    var btnClose = document.getElementById('auction-close');
+    if (btnClose) btnClose.onclick = function() { mc.innerHTML = ''; };
+}
+
 function showModlanRepaidAlert(loansRepaid, kassaAfter) {
     var mc = document.getElementById('modal-container');
     if (!mc) return;
@@ -542,6 +635,10 @@ function connectWs(code, playerId) {
             if (_wsSendQueue.length === 0) {
                 S.state = data.state;
                 render();
+                // Player: kolla aktiv auktion (sälj-flöde mellan spelare)
+                if (!S.isGM) {
+                    showAuctionUI(data.state.auction);
+                }
                 // Player: check for unanswered active quiz on reconnect.
                 // Bara visa modalen om det är en NY fråga (inte vid varje state-update),
                 // annars startar timern om varje gång någon annan svarar.
@@ -2983,53 +3080,21 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { [key]: Math.max(0.25, cur + dir) } });
         });
     });
-    // Phase 4: Sell fastighet
+    // Phase 4: Sell fastighet — startar en auktion som broadcastas till
+    // alla andra spelare. Säljaren bekräftar valet och servern lägger upp
+    // auction-state. Logiken nedan körs från säljarens knapp.
     container.querySelectorAll('.f4-sell-btn').forEach(function(el) {
         el.addEventListener('click', function() {
             var fi = parseInt(el.dataset.fi);
-            var kopeskilling = prompt('Ange köpeskilling (Mkr) — kassan får 30 %, resten löser banklånet:');
-            if (kopeskilling === null) return;
-            kopeskilling = parseFloat(kopeskilling.replace(',','.')) || 0;
-            var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
-            if (!fasts[fi]) return;
-            // 70 % löser bankens lånedel, 30 % går till kassan (regelboken §8.6)
-            var earn = Math.round(kopeskilling * 0.30 * 10) / 10;
-            var newEk = (S.state.player.eget_kapital || 0) + earn;
-            // Beräkna moderbolagslån som kommer återbetalas (1 lån = 100 Mkr skuld)
-            var modLan = S.state.player.gf_moderbolagslan_antal || 0;
-            var loansRepaid = 0;
-            var simEk = newEk;
-            while (modLan - loansRepaid > 0 && simEk >= 100) {
-                simEk -= 100;
-                loansRepaid += 1;
+            var fasts = S.state.player.fastigheter || [];
+            var f = fasts[fi];
+            if (!f || f.sold) return;
+            if (S.state.auction) {
+                alert('En auktion pågår redan i rummet — vänta tills den är klar.');
+                return;
             }
-            // Be om explicit bekräftelse innan moderbolagslån återbetalas
-            if (loansRepaid > 0) {
-                var confirmMsg = fasts[fi].namn + ' säljs för ' + kopeskilling + ' Mkr.\n' +
-                    '• 30 % till kassan: +' + earn + ' Mkr\n' +
-                    '• Kassan blir: ' + Math.round(newEk) + ' Mkr\n\n' +
-                    '⚠️ DETTA KOMMER ÅTERBETALA ' + loansRepaid + ' MODERBOLAGSLÅN:\n' +
-                    '• −' + (loansRepaid * 100) + ' Mkr från kassan\n' +
-                    '• Kassan efter återbetalning: ' + Math.round(newEk - loansRepaid * 100) + ' Mkr\n' +
-                    '• Lån kvar: ' + (modLan - loansRepaid) + ' st' +
-                    ((modLan - loansRepaid === 0) ? '\n• Tvångsförsäljning upphör!' : '') +
-                    '\n\nFortsätt?';
-                if (!confirm(confirmMsg)) return;
-            }
-            // Tillämpa återbetalningen
-            newEk -= loansRepaid * 100;
-            modLan -= loansRepaid;
-            fasts[fi].sold = true;
-            fasts[fi].kopeskilling = kopeskilling;
-            var assets = { fastigheter: fasts, eget_kapital: newEk };
-            if (loansRepaid > 0) assets.gf_moderbolagslan_antal = modLan;
-            send({ type: 'update_assets', assets: assets });
-            var msg = fasts[fi].namn + ' såld för ' + kopeskilling + ' Mkr.\n+' + earn + ' Mkr till kassan (30 %).';
-            if (loansRepaid > 0) {
-                msg += '\n\n' + loansRepaid + ' moderbolagslån återbetalat (−' + (loansRepaid * 100) + ' Mkr).';
-                if (modLan === 0) msg += '\nTvångsförsäljningen upphör.';
-            }
-            alert(msg);
+            if (!confirm('Starta auktion för "' + f.namn + '"?\n\nAlla andra spelare får en prompt om att buda. När budgivningen vid bordet är klar väljer du "Acceptera bud" eller "Sälj till banken".')) return;
+            send({ type: 'auction_start', fastighet_id: f.id });
         });
     });
     // Phase 4: Driftnetto now auto-added in render (no manual button needed)
