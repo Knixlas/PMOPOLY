@@ -308,6 +308,10 @@ class CompanionPlayer:
     f4_personal_cost: float = 0.0  # Per-quarter FC+FS salary
     f4_final_score: float = 0.0
     f4_market_bought: Dict[str, int] = field(default_factory=dict)  # step_id -> num bought this quarter
+    # Kvartalsspiralen: index 0..7 per kvartal som visar var spelaren är
+    # i delstegssekvensen (Yield → Sälj → Marknad → Köp → Personal → Driftnetto
+    # → Händelser → Energiuppgradering).
+    f4_substeps: Dict[str, int] = field(default_factory=dict)  # f4_qN -> 0..7
     steps_done: Dict[str, bool] = field(default_factory=dict)
     prev_profit_score: float = 0.0  # Previous projected score for trend arrow
 
@@ -466,6 +470,7 @@ class CompanionPlayer:
             "f4_upgrades_per_quarter": self.f4_upgrades_per_quarter,
             "f4_final_score": round(self.f4_final_score, 1),
             "f4_market_bought": self.f4_market_bought,
+            "f4_substeps": self.f4_substeps,
             "steps_done": self.steps_done,
             "prev_profit_score": round(self.prev_profit_score, 1),
             "profit_score": self.profit_score,
@@ -1173,6 +1178,8 @@ class CompanionManager:
                 player.f4_final_score = float(assets["f4_final_score"])
             if "f4_market_bought" in assets:
                 player.f4_market_bought = assets["f4_market_bought"]
+            if "f4_substeps" in assets:
+                player.f4_substeps = assets["f4_substeps"]
             # Log asset changes for serious games
             if room.game_mode == "serious" and room.logger:
                 step = room.current_step

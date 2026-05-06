@@ -583,8 +583,9 @@ function isStepDone(p, stepId) {
     return (p.steps_done || {})[stepId] === true;
 }
 
-// ── Måluppfyllelse-faktor f(n) per regelboken §9.2 ──
+// ── Måluppfyllelse-faktor μ (Mu) per regelboken §9.2 ──
 // n = summan av Q-, H- och T-avvikelser. n=0 → 100 %, n=10 → 50 %, n≥60 → 0 %.
+// (Internt namn deviationFactor — display-namn är μ.)
 function deviationFactor(n) {
     var T = {0:1.00,1:0.90,2:0.82,3:0.75,4:0.70,5:0.65,6:0.61,7:0.58,8:0.55,9:0.52,10:0.50};
     if (n <= 0) return 1.00;
@@ -1093,13 +1094,13 @@ var REGELBOK_QUICKREF = [
         ]
     },
     {
-        section: 'Slutformel & f(n)',
+        section: 'Slutformel & μ',
         items: [
             { ref: '§9.1', t: 'Råpoäng = (FV × 30% × Energibonus + EK_faktor × Eget kapital + TB) ÷ (BTA / 1000).' },
             { ref: '§9.1', t: 'EK_faktor = 0.10 om EK ≥ 0, annars 2.00 (asymmetrin förhindrar "sälj-allt"-strategin och straffar moderbolagslån).' },
-            { ref: '§9.2', t: 'f(n) straffaktor (n = summan av Q-, H-, T-avvikelser):' },
+            { ref: '§9.2', t: 'μ (Mu) straffaktor (n = summan av Q-, H-, T-avvikelser):' },
             { ref: '§9.2 tabell', t: 'n=0→100% · 1→90 · 2→82 · 3→75 · 4→70 · 5→65 · 6→61 · 7→58 · 8→55 · 9→52 · 10→50 · sedan linjärt mot 0.' },
-            { ref: '§13', t: 'Slutpoäng = Råpoäng × f(n). Vinnaren har högst slutpoäng.' },
+            { ref: '§13', t: 'Slutpoäng = Råpoäng × μ + Quizpoäng. Vinnaren har högst slutpoäng.' },
         ]
     },
 ];
@@ -1644,6 +1645,15 @@ function renderPlayer() {
         html += counterRow('Moderbola\u200dgs\u00e5n (antal)', modLanAntal, 'gf_moderbolagslan_antal', false);
         if (modLanAntal > 0) {
             html += '<div style="font-size:12px;color:var(--danger);margin:4px 0">Skuld: ' + modLanSkuld + ' Mkr | Tillskott till Kassa: +' + modLanTillskott + ' Mkr</div>';
+            // Tydlig förklaring av vad som händer i övergången till Skede 3
+            html += '<div style="background:rgba(196,30,30,0.08);border:1px solid var(--danger);border-radius:6px;padding:10px;margin:8px 0;font-size:12px;color:var(--ink)">';
+            html += '<div style="font-weight:700;color:var(--danger);margin-bottom:4px">⚠️ Vad händer med lånet i Skede 3?</div>';
+            html += '<div style="line-height:1.5">';
+            html += '• Lånet följer med in i Skede 3 (Förvaltning) som en aktiv skuld på <strong>' + modLanSkuld + ' Mkr</strong>.<br>';
+            html += '• Tvångsförsäljning av fastigheter krävs tills lånet är återbetalat.<br>';
+            html += '• Varje gång du säljer en fastighet med kassa ≥ 100 Mkr återbetalas 1 lån (−100 Mkr) — du får en bekräftelseruta innan det sker.<br>';
+            html += '• Köpstopp + uppgraderingsstopp gäller tills lånet är slut.';
+            html += '</div></div>';
         }
         html += '</div>';
 
@@ -1746,6 +1756,10 @@ function renderPlayer() {
         var _buySellSteps = ['f4_forbered','f4_q1','f4_q2','f4_q3','f4_q4'];
         var _canBuySell = _buySellSteps.indexOf(step) >= 0;
         var _hasModLan = _modLan > 0;
+        // Spiralspärr: i kvartal är sälj bara aktivt på substeg 1, köp på substeg 3,
+        // energi på substeg 7, händelse-knappar på substeg 6.
+        // I f4_forbered är allt aktivt utan spärr.
+        // (variablerna _canSell/_canBuy/_canEnergi/_canEvents används nedan)
         if (_hasModLan && _ownedCount > 1) {
             html += '<div style="background:var(--paper-deep);border:2px solid var(--danger);border-radius:8px;padding:12px;margin-bottom:8px;color:var(--danger);font-weight:700;text-align:center">';
             html += '\u26a0\ufe0f Tv\u00e5ngsf\u00f6rs\u00e4ljning kr\u00e4vs! Du har moderbolags\u00e5n och fler \u00e4n 1 fastighet.</div>';
@@ -1754,6 +1768,22 @@ function renderPlayer() {
         // Quarter header for f4_q1-q4
         var _qNum = {'f4_q1':1,'f4_q2':2,'f4_q3':3,'f4_q4':4}[step] || 0;
         var _isQuarter = _qNum > 0;
+        // Kvartalsspiralen \u2014 substeg-state (0..7)
+        var _spiralLabels = ['Yield', 'S\u00e4lj', 'Marknad', 'K\u00f6p', 'Personal', 'Driftnetto', 'H\u00e4ndelser', 'Energi'];
+        var _spiralCount = _spiralLabels.length;
+        var _substeps = (p.f4_substeps || {});
+        var _curSub = _isQuarter ? Math.max(0, Math.min(_spiralCount - 1, _substeps[step] || 0)) : 0;
+        // Helpers att kolla om en del av spiralen \u00e4r aktiv
+        function _spiralActive(idx) { return _isQuarter && _curSub === idx; }
+        function _spiralPast(idx)   { return _isQuarter && _curSub >  idx; }
+        function _spiralFuture(idx) { return _isQuarter && _curSub <  idx; }
+        // Kanon: vilka actions \u00e4r till\u00e5tna i nuvarande substeg?
+        // I f4_forbered (ej kvartal) \u00e4r allt aktivt \u2014 i kvartal endast aktivt p\u00e5 r\u00e4tt substeg
+        var _canSell   = _canBuySell && (!_isQuarter || _curSub === 1);
+        var _canBuy    = _canBuySell && (!_isQuarter || _curSub === 3);
+        var _canEnergi = !_isQuarter || _curSub === 7;
+        var _canEvents = !_isQuarter || _curSub === 6;
+        var _canYield  = !_isQuarter || _curSub === 0;
         if (_isQuarter) {
             // Personal cost summary
             var _fcLon = p.fastighetschef ? (p.fastighetschef.lon || 0) : 0;
@@ -1766,6 +1796,29 @@ function renderPlayer() {
             html += '<span>Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></span>';
             html += '<span>L\u00f6nekostnad: <strong style="color:var(--danger)">-' + _totalLon + ' Mkr/kv</strong></span>';
             html += '</div></div>';
+
+            // Kvartalsspiralen \u2014 visa pos + F\u00f6reg\u00e5ende/N\u00e4sta-knappar
+            html += '<div style="background:var(--paper-deep);border:1px solid var(--burgundy);border-radius:8px;padding:10px;margin:8px 0">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+            html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--burgundy)">Kvartalsspiral \u00b7 ' + (_curSub + 1) + ' / ' + _spiralCount + '</div>';
+            html += '<div style="font-weight:700;color:var(--ink)">' + _spiralLabels[_curSub] + '</div>';
+            html += '</div>';
+            // Stegsp\u00e4rr-prickar
+            html += '<div style="display:flex;gap:4px;margin-bottom:8px">';
+            for (var _si = 0; _si < _spiralCount; _si++) {
+                var _stat = _si === _curSub ? 'background:var(--burgundy)' : (_si < _curSub ? 'background:var(--success)' : 'background:var(--paper-edge)');
+                html += '<div title="' + _spiralLabels[_si] + '" style="flex:1;height:6px;border-radius:3px;' + _stat + '"></div>';
+            }
+            html += '</div>';
+            html += '<div style="display:flex;gap:8px">';
+            html += '<button class="btn-secondary" data-action="spiral-prev" ' + (_curSub === 0 ? 'disabled' : '') + ' style="flex:1;padding:8px;font-size:13px' + (_curSub === 0 ? ';opacity:0.4;cursor:not-allowed' : '') + '">\u25c0 F\u00f6reg\u00e5ende</button>';
+            if (_curSub < _spiralCount - 1) {
+                html += '<button class="btn-primary" data-action="spiral-next" style="flex:2;padding:8px;font-size:13px;background:var(--burgundy);color:white">N\u00e4sta: ' + _spiralLabels[_curSub + 1] + ' \u25b6</button>';
+            } else {
+                html += '<button class="btn-primary" data-action="spiral-done" style="flex:2;padding:8px;font-size:13px;background:var(--success);color:white">\u2713 Klar med kvartal ' + _qNum + '</button>';
+            }
+            html += '</div>';
+            html += '</div>';
         }
 
         // Fastigheter (each as own card)
@@ -1802,6 +1855,10 @@ function renderPlayer() {
                 html += '<span style="color:var(--danger);font-size:12px">Ej tillg\u00e4ngligt med aktivt moderbolags\u00e5n</span>';
                 // Show current energiklass only
                 html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'D') + '</span>';
+            } else if (!_canEnergi) {
+                // Visa nuvarande klass utan klick — vi är inte i Energi-substeg
+                html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'D') + '</span>';
+                html += '<span style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-left:4px">(uppgradering i spiralsteg "Energi")</span>';
             } else {
                 for (var ei = 0; ei < EKLASS.length; ei++) {
                     var ek = EKLASS[ei];
@@ -1831,9 +1888,11 @@ function renderPlayer() {
                 html += '</div>';
             }
             html += '</div></div>';
-            // Sell button (only at buy/sell steps)
-            if (_canBuySell) {
+            // Sell button \u2014 bara aktiv p\u00e5 substeg "S\u00e4lj" (eller alltid utanf\u00f6r kvartal)
+            if (_canSell) {
                 html += '<div class="f4-sell-btn" data-fi="' + fi + '" style="cursor:pointer;color:var(--danger);font-size:12px;margin-top:4px">S\u00e4lj fastighet</div>';
+            } else if (_canBuySell && _isQuarter) {
+                html += '<div style="color:var(--ink-faint);font-size:11px;margin-top:4px;font-style:italic">S\u00e4lj-knappen t\u00e4nds i spiralsteg "S\u00e4lj"</div>';
             }
             html += '</div>';
         }
@@ -1847,27 +1906,12 @@ function renderPlayer() {
             }
             html += '</div>';
         }
-        // Market expansion per quarter
-        var _marketMax = {'f4_q1':3,'f4_q2':2,'f4_q3':1,'f4_q4':0};
-        var _mktBought = ((p.f4_market_bought || {})[step] || 0);
-        var _mktMax = _marketMax[step] !== undefined ? _marketMax[step] : 0;
-        var _mktLeft = Math.max(0, _mktMax - _mktBought);
-        if (_canBuySell) {
-            html += '<div style="background:var(--paper-edge);border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px">';
-            if (_mktMax === 0) {
-                html += '<span style="color:var(--ink-mid)">Inga fastigheter finns att k\u00f6pa p\u00e5 marknaden i nul\u00e4get.</span>';
-            } else if (_mktLeft > 0) {
-                html += '<span style="color:var(--info)">Marknad: <strong>' + _mktLeft + '</strong> fastigheter tillg\u00e4ngliga.</span>';
-            } else {
-                html += '<span style="color:var(--ink-mid)">Marknad: inga fler fastigheter tillg\u00e4ngliga detta kvartal.</span>';
-            }
-            html += '</div>';
-        }
-        // Buy new property (only at buy/sell steps, no moderbolagslån, and market slots left)
-        if (_canBuySell && !_hasModLan && _mktLeft > 0) {
-            html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:var(--success);margin-top:6px;font-size:13px">+ K\u00f6p fastighet (' + _mktLeft + ' kvar)</div>';
-        } else if (_canBuySell && !_hasModLan && _mktMax > 0 && _mktLeft === 0) {
-            html += '<div style="color:var(--ink-mid);font-size:12px;margin-top:6px">\u2713 Marknadskvot uppn\u00e5dd detta kvartal.</div>';
+        // Köp-knappen: alltid tänd när substeg = "Köp" och inget moderbolagslån finns.
+        // Companion håller INTE koll på antal tillgängliga fastigheter — det sköter spelbrädet.
+        if (_canBuy && !_hasModLan) {
+            html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:var(--success);margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
+        } else if (_canBuySell && _isQuarter && !_hasModLan && !_canBuy) {
+            html += '<div style="color:var(--ink-faint);font-size:11px;margin-top:6px;font-style:italic">K\u00f6p-knappen t\u00e4nds i spiralsteg "K\u00f6p"</div>';
         } else if (_canBuySell && _hasModLan) {
             html += '<div style="color:var(--danger);font-size:12px;margin-top:6px">Ej till\u00e5tet med aktivt moderbolags\u00e5n</div>';
         }
@@ -1908,13 +1952,17 @@ function renderPlayer() {
             html += '<span style="font-size:15px;font-weight:700;color:' + (_nettoKvartal >= 0 ? 'var(--success)' : 'var(--danger)') + '">Netto: ' + (_nettoKvartal >= 0 ? '+' : '') + _nettoKvartal + ' Mkr/kv</span>';
             if (_dnAdded) {
                 html += '<span style="color:var(--success);font-size:13px">\u2713 Tillagd i Kassa</span>';
+            } else if (_isQuarter && _curSub < 5) {
+                html += '<span style="color:var(--ink-faint);font-size:11px;font-style:italic">L\u00e4ggs till i spiralsteg "Driftnetto"</span>';
             } else {
                 html += '<span style="color:var(--burgundy);font-size:12px" id="dn-auto-pending">L\u00e4ggs till automatiskt...</span>';
             }
             html += '</div>';
             html += '</div>';
-            // Auto-add DN + personal cost to Kassa if not already done
-            if (!_dnAdded) {
+            // Auto-add DN + personal cost to Kassa \u2014 bara n\u00e4r vi n\u00e5tt substeg 5 i kvartal
+            // (i f4_forbered eller utan kvartal: k\u00f6r direkt som tidigare)
+            var _shouldAutoDN = !_dnAdded && (!_isQuarter || _curSub >= 5);
+            if (_shouldAutoDN) {
                 setTimeout(function() {
                     send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + _nettoKvartal } });
                     send({ type: 'mark_done', step: 'dn_' + S.state.step });
@@ -1968,7 +2016,8 @@ function renderPlayer() {
 
         // Yield input (visible in phase 4). I Q1 gäller ingångsvärden — inget yieldkort
         // dras alltså, så yielden är låst. I Q2-Q4 dras yieldkort i början av varvet.
-        var _yieldReadOnly = (step === 'f4_q1');
+        // I kvartal är yielden bara redigerbar i substeg "Yield" (substep 0).
+        var _yieldReadOnly = (step === 'f4_q1') || (_isQuarter && !_canYield);
         if (true) {
             html += '<div class="asset-card" style="border-left-color:var(--info)">';
             html += '<div class="asset-label">YIELD</div>';
@@ -1989,8 +2038,10 @@ function renderPlayer() {
                 html += '<span><span class="f4-yield-btn" data-type="kommersiellt" data-d="-0.5">\u2212</span> <strong>' + p.f4_yield_kommersiellt.toFixed(1) + '%</strong> <span class="f4-yield-btn" data-type="kommersiellt" data-d="0.5">+</span></span>';
             }
             html += '</div>';
-            if (_yieldReadOnly) {
+            if (step === 'f4_q1') {
                 html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:4px">Q1: ing\u00e5ngsv\u00e4rden g\u00e4ller (4 % bost\u00e4der, 5 % kommersiellt) \u2014 inget yieldkort dras detta kvartal.</div>';
+            } else if (_isQuarter && !_canYield) {
+                html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-top:4px">Yield justeras i spiralsteg "Yield"</div>';
             }
             html += '</div></div>';
         }
@@ -2043,11 +2094,13 @@ function renderPlayer() {
             var _btaSoldBrf = _soldBrf.reduce(function(s,f){return s+(f.bta||0);},0);
             var _btaTotal = _btaOwned + _btaSoldBrf;
 
-            // Slutpoäng = (Fastighetspoäng + Kassa + TB) ÷ (BTA/1000) × f(n)
+            // Slutpoäng = (Fastighetspoäng + Kassa + TB) ÷ (BTA/1000) × μ + Quiz
             var _summa = (_summaFastpoang || 0) + (_kassaJusterad || 0) + (_tb4 || 0);
             if (!isFinite(_summa)) _summa = 0;
             var _perKvm = _btaTotal > 0 ? (_summa / _btaTotal * 1000) : _summa;
             if (!isFinite(_perKvm)) _perKvm = 0;
+            // Quizpoäng — adderas på slutpoängen (regelbok §13)
+            var _quizScore = (S.state && S.state.quiz_scores && S.state.quiz_scores[S.playerId]) || 0;
 
             // f(n) — beräkna lokalt eftersom Sammanställningens curQ/curH inte är
             // i scope än (rendreras längre ned i samma funktion)
@@ -2080,7 +2133,8 @@ function renderPlayer() {
             var _nSlut = _nQslut + _nHslut + _nTslut;
             var _fnSlut = deviationFactor(_nSlut);
             if (!isFinite(_fnSlut)) _fnSlut = 1.0;
-            var _score = isFinite(_perKvm * _fnSlut) ? (_perKvm * _fnSlut) : 0;
+            var _scoreBeforeQuiz = isFinite(_perKvm * _fnSlut) ? (_perKvm * _fnSlut) : 0;
+            var _score = _scoreBeforeQuiz + _quizScore;
 
             // Render — steg för steg
             html += '<div class="asset-card" style="border-left-color:var(--burgundy);background:var(--paper-deep)">';
@@ -2122,14 +2176,16 @@ function renderPlayer() {
             html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Total BTA</span><span>' + _btaTotal + ' kvm</span></div>';
             html += '</div>';
 
-            // Slutberäkning + f(n) → Slutpoäng
+            // Slutberäkning + μ + Quiz → Slutpoäng
             var _fnPctSlut = isFinite(_fnSlut) ? Math.round(_fnSlut*100) : 100;
             var _fnColorSlut = _fnPctSlut >= 90 ? 'var(--success)' : (_fnPctSlut >= 70 ? 'var(--burgundy)' : 'var(--danger)');
             html += '<div style="margin-top:10px;padding:10px;background:var(--paper);border-radius:6px;border:1px dashed var(--burgundy)">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:6px">Slutber\u00e4kning</div>';
             html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>(Fastighetspo\u00e4ng + Kassa + TB)</span><span>' + Math.round(_summa*10)/10 + ' Mkr</span></div>';
             html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00f7 BTA/1000 (' + _btaTotal + ' kvm)</span><span>' + Math.round(_perKvm*10)/10 + '</span></div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px"><span>\u00d7 f(n) \u2014 n = ' + _nSlut + ' avvikelser (Q:' + _nQslut + ' H:' + _nHslut + ' T:' + _nTslut + ')</span><span style="color:' + _fnColorSlut + '"><strong>\u00d7' + _fnSlut.toFixed(2) + ' (' + _fnPctSlut + ' %)</strong></span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px"><span>\u00d7 \u03bc \u2014 n = ' + _nSlut + ' avvikelser (Q:' + _nQslut + ' H:' + _nHslut + ' T:' + _nTslut + ')</span><span style="color:' + _fnColorSlut + '"><strong>\u00d7' + _fnSlut.toFixed(2) + ' (' + _fnPctSlut + ' %)</strong></span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px;border-top:1px dashed var(--border);padding-top:4px"><span>Delsumma (poäng × μ)</span><span>' + Math.round(_scoreBeforeQuiz*10)/10 + '</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>+ Quizpoäng</span><span style="color:' + (_quizScore > 0 ? 'var(--success)' : 'var(--ink-mid)') + '">+' + (Math.round(_quizScore*10)/10) + '</span></div>';
             html += '</div>';
 
             html += '<div style="border-top:2px solid var(--burgundy);padding-top:10px;margin-top:10px;font-size:22px;text-align:center">';
@@ -2334,7 +2390,7 @@ function renderPlayer() {
             var fn = nTotal <= 0 ? 1.00 : (fnTable[nTotal] !== undefined ? fnTable[nTotal] : Math.max(0, (50 - (nTotal - 10)) / 100));
             var fnPct = Math.round(fn * 100);
             var fnColor = fnPct >= 90 ? 'var(--success)' : (fnPct >= 70 ? 'var(--burgundy)' : 'var(--danger)');
-            html += '<div style="font-size:12px;color:var(--ink-mid)">Måluppfyllelse f(n): <strong style="color:' + fnColor + '">' + fnPct + '%</strong> (n=' + nTotal + ' avvikelser → multipliceras på slutpoängen)</div>';
+            html += '<div style="font-size:12px;color:var(--ink-mid)">Måluppfyllelse μ: <strong style="color:' + fnColor + '">' + fnPct + '%</strong> (n=' + nTotal + ' avvikelser → multipliceras på slutpoängen)</div>';
         }
         // TB & TG (after genomförande)
         if (isPhase3 || isPhase4) {
@@ -2442,6 +2498,37 @@ function attachPlayerEvents(container) {
     container.querySelectorAll('[data-action="mark-done"]').forEach(function(el) {
         el.addEventListener('click', function() {
             send({ type: 'mark_done', step: el.dataset.step });
+        });
+    });
+    // Kvartalsspiralen — Föregående/Nästa-knappar
+    container.querySelectorAll('[data-action="spiral-prev"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var step = S.state && S.state.step;
+            if (!step) return;
+            var subs = Object.assign({}, (S.state.player && S.state.player.f4_substeps) || {});
+            var cur = subs[step] || 0;
+            if (cur > 0) {
+                subs[step] = cur - 1;
+                send({ type: 'update_assets', assets: { f4_substeps: subs } });
+            }
+        });
+    });
+    container.querySelectorAll('[data-action="spiral-next"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var step = S.state && S.state.step;
+            if (!step) return;
+            var subs = Object.assign({}, (S.state.player && S.state.player.f4_substeps) || {});
+            var cur = subs[step] || 0;
+            if (cur < 7) {
+                subs[step] = cur + 1;
+                send({ type: 'update_assets', assets: { f4_substeps: subs } });
+            }
+        });
+    });
+    container.querySelectorAll('[data-action="spiral-done"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            // Markera kvartalet som klart — GM tar oss till nästa kvartal
+            send({ type: 'mark_done', step: S.state.step });
         });
     });
     container.querySelectorAll('[data-action="unmark-done"]').forEach(function(el) {
@@ -2777,14 +2864,30 @@ function attachPlayerEvents(container) {
             // 70 % löser bankens lånedel, 30 % går till kassan (regelboken §8.6)
             var earn = Math.round(kopeskilling * 0.30 * 10) / 10;
             var newEk = (S.state.player.eget_kapital || 0) + earn;
-            // Lös moderbolagslån direkt så fort kassan har 100 Mkr (1 lån = 100 Mkr skuld)
+            // Beräkna moderbolagslån som kommer återbetalas (1 lån = 100 Mkr skuld)
             var modLan = S.state.player.gf_moderbolagslan_antal || 0;
             var loansRepaid = 0;
-            while (modLan > 0 && newEk >= 100) {
-                newEk -= 100;
-                modLan -= 1;
+            var simEk = newEk;
+            while (modLan - loansRepaid > 0 && simEk >= 100) {
+                simEk -= 100;
                 loansRepaid += 1;
             }
+            // Be om explicit bekräftelse innan moderbolagslån återbetalas
+            if (loansRepaid > 0) {
+                var confirmMsg = fasts[fi].namn + ' säljs för ' + kopeskilling + ' Mkr.\n' +
+                    '• 30 % till kassan: +' + earn + ' Mkr\n' +
+                    '• Kassan blir: ' + Math.round(newEk) + ' Mkr\n\n' +
+                    '⚠️ DETTA KOMMER ÅTERBETALA ' + loansRepaid + ' MODERBOLAGSLÅN:\n' +
+                    '• −' + (loansRepaid * 100) + ' Mkr från kassan\n' +
+                    '• Kassan efter återbetalning: ' + Math.round(newEk - loansRepaid * 100) + ' Mkr\n' +
+                    '• Lån kvar: ' + (modLan - loansRepaid) + ' st' +
+                    ((modLan - loansRepaid === 0) ? '\n• Tvångsförsäljning upphör!' : '') +
+                    '\n\nFortsätt?';
+                if (!confirm(confirmMsg)) return;
+            }
+            // Tillämpa återbetalningen
+            newEk -= loansRepaid * 100;
+            modLan -= loansRepaid;
             fasts[fi].sold = true;
             fasts[fi].kopeskilling = kopeskilling;
             var assets = { fastigheter: fasts, eget_kapital: newEk };
