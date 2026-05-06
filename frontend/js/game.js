@@ -699,7 +699,6 @@ function showAssetDetail(card, player) {
     } else if (type === 'pc') {
         const pc = player.projektchef;
         if (!pc) return;
-        const kompStr = Object.entries(pc.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
         const motstand = pc.handelsemotstand || '';
         html = `
             <h3>${pc.namn}</h3>
@@ -711,14 +710,12 @@ function showAssetDetail(card, player) {
                 ${pc.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${pc.h_bonus}</span></div>` : ''}
                 ${pc.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${pc.t_bonus} mån</span></div>` : ''}
                 ${pc.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb}</span></div>` : ''}
-                ${kompStr ? `<div class="detail-row"><span>Kompetens</span><span>${kompStr}</span></div>` : ''}
             </div>
             <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${pc.not_text || ''}</p>
         `;
     } else if (type === 'ac') {
         const ac = player.arbetschef;
         if (!ac) return;
-        const kompStr = Object.entries(ac.kompetenser || {}).filter(([,v]) => v > 0).map(([k,v]) => `${k}: ${v}`).join(', ');
         const motstand = ac.handelsemotstand || '';
         html = `
             <h3>${ac.namn}</h3>
@@ -726,11 +723,10 @@ function showAssetDetail(card, player) {
             <div class="detail-grid">
                 ${ac.erfarenhet ? `<div class="detail-row"><span>Erfarenhet (alla händelsekort)</span><span>+${ac.erfarenhet}</span></div>` : ''}
                 ${(ac.lindring && motstand) ? `<div class="detail-row"><span>Slag avseende ${motstand}</span><span>+${ac.lindring}</span></div>` : ''}
-                ${ac.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${ac.q_bonus}</span></div>` : ''}
-                ${ac.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${ac.h_bonus}</span></div>` : ''}
+                ${ac.q_bonus ? `<div class="detail-row"><span>Höjer Q-nuläget</span><span>+${ac.q_bonus}</span></div>` : ''}
+                ${ac.h_bonus ? `<div class="detail-row"><span>Höjer H-nuläget</span><span>+${ac.h_bonus}</span></div>` : ''}
                 ${ac.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${ac.t_bonus} mån</span></div>` : ''}
                 ${ac.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${ac.rb}</span></div>` : ''}
-                ${kompStr ? `<div class="detail-row"><span>Kompetens</span><span>${kompStr}</span></div>` : ''}
             </div>
             <p style="margin-top:12px;color:var(--text-muted);font-size:0.85rem">${ac.not_text || ''}</p>
         `;

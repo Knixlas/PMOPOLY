@@ -1514,15 +1514,15 @@ function renderPlayer() {
         var _konsKH = p.gf_kons_q_h || 0;
         var _konsHQ = p.gf_kons_h_q || 0;
         var _konsHH = p.gf_kons_h_h || 0;
-        // PC/AC q/h_bonus sänker krav-sidan direkt (samma logik som Sammanställning)
-        var _totQ = Math.max(0, 6 + _projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQ - _acQ);
-        var _totH = Math.max(0, 6 + _projH + p.h_krav - (p.rb_spent_h || 0) - _pcH - _acH);
+        // PC sänker krav-sidan; AC höjer nuläget (curQ/curH) — kravkuben låst efter Skede 1.
+        var _totQ = Math.max(0, 6 + _projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQ);
+        var _totH = Math.max(0, 6 + _projH + p.h_krav - (p.rb_spent_h || 0) - _pcH);
         var _baseT = 12 + _maxProjT;
         var _totT = Math.max(8, _baseT - (p.rb_spent_t || 0));
         // Q/H får visa negativt så spelaren ser cascade-effekten av konsekvenskort.
-        // konsKortQ/H clampas separat på max(0, _totQ - _curQ).
-        var _curQ = _plQ + _plEvQ + _gfQ + _konsTQ + _konsKQ + _konsHQ;
-        var _curH = _plH + _plEvH + _gfH + _konsTH + _konsKH + _konsHH;
+        // AC q/h_bonus höjer nuläget. konsKortQ/H clampas separat.
+        var _curQ = _plQ + _plEvQ + _gfQ + _konsTQ + _konsKQ + _konsHQ + _acQ;
+        var _curH = _plH + _plEvH + _gfH + _konsTH + _konsKH + _konsHH + _acH;
         var _curT = Math.max(8, _totT + _plT + _plEvT + _gfT - _pcT - _acT);
         var konsKortT = Math.max(0, _curT - 12);
         var konsKortQ = Math.max(0, _totQ - _curQ);
@@ -1582,11 +1582,12 @@ function renderPlayer() {
         var _acQ2 = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
         var _acH2 = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
         var _acT2 = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
-        var _tQ2 = Math.max(0, 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0) - _pcQ2 - _acQ2);
-        var _tH2 = Math.max(0, 6 + _pH2 + p.h_krav - (p.rb_spent_h||0) - _pcH2 - _acH2);
+        // PC sänker krav, AC höjer nuläget (kravkuben låst efter Skede 1)
+        var _tQ2 = Math.max(0, 6 + _pQ2 + p.q_krav - (p.rb_spent_q||0) - _pcQ2);
+        var _tH2 = Math.max(0, 6 + _pH2 + p.h_krav - (p.rb_spent_h||0) - _pcH2);
         var _bT2 = 12 + _mT2;
         var _cT2 = Math.max(8, _bT2 - (p.rb_spent_t||0) + _plT2 + _gfT2 - _pcT2 - _acT2);
-        var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2)) + Math.max(0,_tH2-(_plH2+_gfH2)) + Math.max(0,_cT2-12);
+        var konsKort = Math.max(0,_tQ2-(_plQ2+_gfQ2+_acQ2)) + Math.max(0,_tH2-(_plH2+_gfH2+_acH2)) + Math.max(0,_cT2-12);
         // Suppliers below level 3
         var lowLevSupp = 0;
         for (var _sk in _chc) { if ((_chc[_sk].niva||1) < 3) lowLevSupp++; }
@@ -2188,11 +2189,12 @@ function renderPlayer() {
             var _acQslut = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
             var _acHslut = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
             var _acTslut = p.arbetschef ? (p.arbetschef.t_bonus || 0) : 0;
-            var _totQslut = Math.max(0, 6 + _projQslut + (p.q_krav||0) - (p.rb_spent_q || 0) - _pcQslut - _acQslut);
-            var _totHslut = Math.max(0, 6 + _projHslut + (p.h_krav||0) - (p.rb_spent_h || 0) - _pcHslut - _acHslut);
+            // PC sänker krav, AC höjer nuläget (kravkuben låst efter Skede 1)
+            var _totQslut = Math.max(0, 6 + _projQslut + (p.q_krav||0) - (p.rb_spent_q || 0) - _pcQslut);
+            var _totHslut = Math.max(0, 6 + _projHslut + (p.h_krav||0) - (p.rb_spent_h || 0) - _pcHslut);
             var _baseTslut = 12 + _maxProjTslut;
             var _curTslut = Math.max(8, _baseTslut - (p.rb_spent_t || 0) - _pcTslut - _acTslut);
-            // Aktuella Q/H-värden (planering + händelser + genomförande + konsekvenskort)
+            // Aktuella Q/H-värden (planering + händelser + genomförande + konsekvenskort + AC-bonus)
             var _chSl = p.pl_choices || {}, _evSl = p.pl_events || {}, _gfSl = p.gf_phases || {};
             var _plQs = 0, _plHs = 0, _evQs = 0, _evHs = 0, _gfQs = 0, _gfHs = 0;
             for (var _ks in _chSl) { _plQs += _chSl[_ks].q || 0; _plHs += _chSl[_ks].h || 0; }
@@ -2200,8 +2202,8 @@ function renderPlayer() {
             for (var _fs in _gfSl) { _gfQs += _gfSl[_fs].q || 0; _gfHs += _gfSl[_fs].h || 0; }
             var _konsQs = (p.gf_kons_t_q || 0) + (p.gf_kons_q_q || 0) + (p.gf_kons_h_q || 0);
             var _konsHs = (p.gf_kons_t_h || 0) + (p.gf_kons_q_h || 0) + (p.gf_kons_h_h || 0);
-            var _curQslut = Math.max(0, _plQs + _evQs + _gfQs + _konsQs);
-            var _curHslut = Math.max(0, _plHs + _evHs + _gfHs + _konsHs);
+            var _curQslut = Math.max(0, _plQs + _evQs + _gfQs + _konsQs + _acQslut);
+            var _curHslut = Math.max(0, _plHs + _evHs + _gfHs + _konsHs + _acHslut);
             var _nQslut = Math.max(0, _totQslut - _curQslut);
             var _nHslut = Math.max(0, _totHslut - _curHslut);
             var _nTslut = Math.max(0, _curTslut - 12);
@@ -2320,13 +2322,12 @@ function renderPlayer() {
         const projQ = p.projects.reduce(function(s, pr) { return s + (pr.kvalitet || 0); }, 0);
         const projH = p.projects.reduce(function(s, pr) { return s + (pr.hallbarhet || 0); }, 0);
         const maxProjT = p.projects.reduce(function(m, pr) { return Math.max(m, pr.tid || 0); }, 0);
-        // PC/AC sänker krav-sidan direkt (q_bonus/h_bonus = sänker Q/H-krav)
+        // PC sänker krav-sidan (kravkuben rörs i Skede 1).
+        // AC däremot HÖJER nuläget (curQ/curH) — kravkuben är låst efter Skede 1.
         const _pcQk = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
         const _pcHk = p.projektchef ? (p.projektchef.h_bonus || 0) : 0;
-        const _acQk = p.arbetschef ? (p.arbetschef.q_bonus || 0) : 0;
-        const _acHk = p.arbetschef ? (p.arbetschef.h_bonus || 0) : 0;
-        const totalQ = Math.max(0, 6 + projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQk - _acQk);
-        const totalH = Math.max(0, 6 + projH + p.h_krav - (p.rb_spent_h || 0) - _pcHk - _acHk);
+        const totalQ = Math.max(0, 6 + projQ + p.q_krav - (p.rb_spent_q || 0) - _pcQk);
+        const totalH = Math.max(0, 6 + projH + p.h_krav - (p.rb_spent_h || 0) - _pcHk);
         const baseT = 12 + maxProjT;
         const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
@@ -2367,9 +2368,10 @@ function renderPlayer() {
         var konsHallQ = p.gf_kons_h_q || 0;
         var konsHallH = p.gf_kons_h_h || 0;
         // Q/H får visa negativt så spelaren ser konsekvenskorts-cascadens effekt.
-        // pcQ/pcH/acQ/acH räknas redan av på krav-sidan (totalQ/totalH).
-        var curQ = plQ + plEvQ + gfQ + konsTimeQ + konsKvalQ + konsHallQ;
-        var curH = plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH;
+        // PC q/h_bonus räknas redan av på krav-sidan. AC q/h_bonus däremot HÖJER
+        // nuläget (curQ/curH) — kravkuben är låst efter Skede 1.
+        var curQ = plQ + plEvQ + gfQ + konsTimeQ + konsKvalQ + konsHallQ + acQ;
+        var curH = plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH + acH;
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -2761,8 +2763,16 @@ function attachPlayerEvents(container) {
         el.addEventListener('click', () => {
             const key = el.dataset.key;
             const cur = S.state.player[key] || 0;
-            const min = el.dataset.allowNeg ? -99 : 0;
+            let min = el.dataset.allowNeg ? -99 : 0;
+            // Spärra Rb-decr så total-Rb (player + PC + AC) inte går under 0
+            if (key === 'riskbuffertar') {
+                const _pl = S.state.player;
+                const _pcRb = _pl.projektchef ? (_pl.projektchef.rb || 0) : 0;
+                const _acRb = _pl.arbetschef ? (_pl.arbetschef.rb || 0) : 0;
+                min = Math.max(min, -(_pcRb + _acRb));
+            }
             var newVal = Math.max(min, cur - 1);
+            if (newVal === cur) return;  // ingen ändring (spärr)
             var assets = { [key]: newVal };
             // Moderbolagslån: removing a loan subtracts 95 Mkr from Kassa
             if (key === 'gf_moderbolagslan_antal' && newVal < cur) {
@@ -3167,7 +3177,7 @@ function openPCModal() {
         if (hB > 0) effekter.push('Sänker H-krav med ' + hB);
         if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' mån');
         if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
-        if (kompList) effekter.push('Kompetens: ' + kompList);
+        // Företagskulturkompetenser visas inte längre i PrC-presentationen
         var effektHtml = effekter.length
             ? '<ul style="margin:4px 0 0 0;padding-left:18px;font-size:0.92rem;color:var(--ink-mid)"><li>' + effekter.join('</li><li>') + '</li></ul>'
             : '<div class="item-detail" style="color:var(--ink-faint);font-style:italic">Inga direkta bonusar</div>';
@@ -3304,11 +3314,11 @@ function openACModal() {
         var effekter = [];
         if (lindring > 0 && motstand) effekter.push('+' + lindring + ' p\u00e5 slag avseende ' + motstand);
         if (erf > 0) effekter.push('+' + erf + ' Erfarenhet (lindrar alla h\u00e4ndelsekort)');
-        if (qB > 0) effekter.push('S\u00e4nker Q-krav med ' + qB);
-        if (hB > 0) effekter.push('S\u00e4nker H-krav med ' + hB);
+        if (qB > 0) effekter.push('H\u00f6jer Q-nul\u00e4get med ' + qB);
+        if (hB > 0) effekter.push('H\u00f6jer H-nul\u00e4get med ' + hB);
         if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' m\u00e5n');
         if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
-        if (kompList) effekter.push('Kompetens: ' + kompList);
+        // Företagskulturkompetenser visas inte längre i AC-presentationen
         var effektHtml = effekter.length
             ? '<ul style="margin:4px 0 0 0;padding-left:18px;font-size:0.92rem;color:var(--ink-mid)"><li>' + effekter.join('</li><li>') + '</li></ul>'
             : '<div class="item-detail" style="color:var(--ink-faint);font-style:italic">Inga direkta bonusar</div>';

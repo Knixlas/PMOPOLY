@@ -295,7 +295,7 @@ function renderChoosePC(panel, pending) {
         if (pc.h_bonus) effekter.push(`Sänker H-krav med ${pc.h_bonus}`);
         if (pc.t_bonus) effekter.push(`Kortar byggtid med ${pc.t_bonus} mån`);
         if (pc.rb) effekter.push(`+${pc.rb} Riskbuffert`);
-        if (komp) effekter.push(`Kompetens: ${komp}`);
+        // Företagskulturkompetenser visas inte längre när PrC presenteras
         const effektHtml = effekter.length
             ? `<ul style="margin:2px 0 0 0;padding-left:18px"><li>${effekter.join('</li><li>')}</li></ul>`
             : '';
