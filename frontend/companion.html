@@ -404,7 +404,29 @@ const S = {
     _quizTimer: null,
     _quizAnswered: false,
     _modlanShownPhase: null,
+    _modlanRepaidShown: {},  // key (phase + count) -> bool, så vi inte spammar gröna popupen
 };
+
+function showModlanRepaidAlert(loansRepaid, kassaAfter) {
+    var mc = document.getElementById('modal-container');
+    if (!mc) return;
+    var html = '<div class="modal-overlay" style="background:rgba(46,125,50,0.55)">';
+    html += '<div class="modal" style="background:#2E7D32;color:white;border:4px solid #4CAF50;max-width:520px;text-align:center;box-shadow:0 0 40px rgba(76,175,80,0.6)">';
+    html += '<div style="padding:20px 18px">';
+    html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:8px;opacity:0.9">✓ ÅTERBETALAT</div>';
+    html += '<div style="font-size:1.5rem;font-weight:700;margin-bottom:10px;line-height:1.2">' + loansRepaid + ' moderbolagslån återbetalat!</div>';
+    html += '<div style="font-size:14px;line-height:1.5;margin-bottom:12px">Kassan har täckt skulden — lånen är borta. Inga restriktioner i Skede 3.</div>';
+    html += '<div style="background:rgba(0,0,0,0.20);border-radius:6px;padding:10px;font-size:13px;margin-bottom:14px;text-align:left">';
+    html += '• −' + (loansRepaid * 100) + ' Mkr från kassan<br>';
+    html += '• Lån återbetalade: <strong>' + loansRepaid + ' st</strong><br>';
+    html += '• Kassa efter återbetalning: <strong>' + Math.round(kassaAfter) + ' Mkr</strong>';
+    html += '</div>';
+    html += '<button class="btn-primary" id="modlan-repaid-ack" style="background:white;color:#2E7D32;border:none;padding:10px 26px;border-radius:6px;font-weight:700;font-size:1rem;cursor:pointer">Toppen!</button>';
+    html += '</div></div></div>';
+    mc.innerHTML = html;
+    var ack = document.getElementById('modlan-repaid-ack');
+    if (ack) ack.addEventListener('click', function() { mc.innerHTML = ''; });
+}
 
 function showModlanAlert(phase, anskKvar) {
     var mc = document.getElementById('modal-container');
@@ -1595,14 +1617,28 @@ function renderPlayer() {
 
         var rorlig = p.gf_brf_rorlig || 0;
         var modLanAntal = p.gf_moderbolagslan_antal || 0;
-        var modLanSkuld = modLanAntal * 100;
-        var modLanTillskott = modLanAntal * 95;
 
-        // EK = BRF fast + TB + rörlig + moderbolagslån tillskott - moderbolagslån skuld
-        var calcEK = brfFast + tb + rorlig + modLanTillskott - modLanSkuld;
-
+        // Beräkna kassa STEG-FÖR-STEG:
+        //   1) Naturlig kassa (TB + BRF + rörlig)
+        //   2) Auto-ta lån om kassan är negativ (ceil(-kassa/95))
+        //   3) Lägg till tillskott från alla lån (95/st)
+        //   4) Återbetala så många lån som kassan tillåter (100/st)
         var nonBrfProj = p.projects.filter(function(pr) { return pr.typ !== 'BRF'; });
         var kassaBeforeLoan = brfFast + tb + rorlig;
+        var _autoNeedNew = kassaBeforeLoan < 0 ? Math.ceil(-kassaBeforeLoan / 95) : 0;
+        var _loansTaken = Math.max(modLanAntal, _autoNeedNew);
+        var modLanSkuld = _loansTaken * 100;
+        var modLanTillskott = _loansTaken * 95;
+        var _kassaWithTillskott = kassaBeforeLoan + modLanTillskott;
+        var _loansRepaid = 0;
+        var _kassaAfterRepay = _kassaWithTillskott;
+        var _remainingLoans = _loansTaken;
+        while (_remainingLoans > 0 && _kassaAfterRepay >= 100) {
+            _kassaAfterRepay -= 100;
+            _remainingLoans -= 1;
+            _loansRepaid += 1;
+        }
+        var calcEK = _kassaAfterRepay;
 
         html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
         html += '<div class="asset-label" style="color:var(--burgundy)">\uD83D\uDD11 \u00d6VERL\u00c4MNING TILL F\u00d6RVALTNING</div>';
@@ -1646,30 +1682,30 @@ function renderPlayer() {
         }
         html += '</div>';
 
-        // Step 4: Moderbolagslån — auto-räknas, ingen manuell justering
+        // Step 4: Moderbolagslån — auto-tas + auto-återbetalas när kassan tillåter
         html += '<div style="border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px">';
         html += '<div style="color:var(--ink-mid);font-size:12px;font-weight:600">4. Moderbola\u200dgs\u00e5n</div>';
-        // Auto-räkna behövda lån utifrån kassan-innan-lån
-        var _autoNeed = kassaBeforeLoan < 0 ? Math.ceil(-kassaBeforeLoan / 95) : 0;
-        if (_autoNeed > modLanAntal) {
-            setTimeout(function() {
-                send({ type: 'update_assets', assets: { gf_moderbolagslan_antal: _autoNeed } });
-            }, 50);
-        }
-        var _modLanShow = Math.max(modLanAntal, _autoNeed);
-        if (_modLanShow === 0) {
+        if (_loansTaken === 0) {
             html += '<div style="font-size:13px;color:var(--success)">Kassan är positiv — inget lån behövs.</div>';
         } else {
-            html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:4px">Varje lån ger +95 Mkr till kassan (skuld 100 Mkr/st). Återbetalas i slutvärderingen.</div>';
-            html += '<div style="font-size:14px;font-weight:700;color:var(--danger);margin:6px 0">' + _modLanShow + ' moderbolagslån (auto)</div>';
-            html += '<div style="font-size:12px;color:var(--ink-mid)">+' + (_modLanShow * 95) + ' Mkr tillskott till kassa · ' + (_modLanShow * 100) + ' Mkr skuld</div>';
-            html += '<div style="background:rgba(196,30,30,0.08);border:1px solid var(--danger);border-radius:6px;padding:10px;margin:8px 0;font-size:12px;color:var(--ink)">';
-            html += '<div style="font-weight:700;color:var(--danger);margin-bottom:4px">\u26a0\ufe0f Vad händer med lånet i Skede 3?</div>';
-            html += '<div style="line-height:1.5">';
-            html += '• Lånet följer med in i Skede 3 (Förvaltning) som en aktiv skuld på <strong>' + (_modLanShow * 100) + ' Mkr</strong>.<br>';
-            html += '• Köpstopp + uppgraderingsstopp gäller tills lånet är slut.<br>';
-            html += '• Skulden dras från kassan i slutvärderingen — straffaktor ×2,00 om kassan blir negativ.';
-            html += '</div></div>';
+            html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:4px">Varje lån ger +95 Mkr (skuld 100 Mkr/st). Återbetalas direkt om kassan ≥ 100 Mkr.</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Lån tagna (auto)</span><span><strong>' + _loansTaken + ' st</strong></span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>+ Tillskott till kassa</span><span style="color:var(--success)">+' + modLanTillskott + ' Mkr</span></div>';
+            if (_loansRepaid > 0) {
+                html += '<div style="background:rgba(46,125,50,0.10);border:1px solid var(--success);border-radius:6px;padding:8px;margin:6px 0">';
+                html += '<div style="font-size:13px;font-weight:700;color:var(--success);margin-bottom:2px">\u2713 ' + _loansRepaid + ' lån återbetalat (auto)</div>';
+                html += '<div style="font-size:12px;color:var(--ink-mid)">Kassan täckte skulden — \u2212' + (_loansRepaid * 100) + ' Mkr dras från kassan, lånen är borta. Inga restriktioner i Skede 3 om alla lån är slut.</div>';
+                html += '</div>';
+            }
+            if (_remainingLoans > 0) {
+                html += '<div style="background:rgba(196,30,30,0.08);border:1px solid var(--danger);border-radius:6px;padding:10px;margin:6px 0;font-size:12px;color:var(--ink)">';
+                html += '<div style="font-weight:700;color:var(--danger);margin-bottom:4px">\u26a0\ufe0f ' + _remainingLoans + ' lån följer med in i Skede 3</div>';
+                html += '<div style="line-height:1.5">';
+                html += '• Aktiv skuld in i Skede 3: <strong>' + (_remainingLoans * 100) + ' Mkr</strong>.<br>';
+                html += '• Köpstopp + uppgraderingsstopp gäller tills lånet är slut.<br>';
+                html += '• Återstående skuld dras från kassan i slutvärderingen — straffaktor ×2,00 om kassan blir negativ.';
+                html += '</div></div>';
+            }
         }
         html += '</div>';
 
@@ -1679,9 +1715,21 @@ function renderPlayer() {
         html += '</div>';
         html += '</div></div>';
 
-        // Auto-set eget_kapital so it carries to phase 4
-        if (Math.round(p.eget_kapital||0) !== Math.round(calcEK)) {
-            send({ type: 'update_assets', assets: { eget_kapital: Math.round(calcEK) } });
+        // Auto-set eget_kapital + uppdatera modlan_antal om lån återbetalats.
+        var _ekChanged = Math.round(p.eget_kapital||0) !== Math.round(calcEK);
+        var _loansChanged = _remainingLoans !== modLanAntal;
+        if (_ekChanged || _loansChanged) {
+            var _patch = { eget_kapital: Math.round(calcEK) };
+            if (_loansChanged) _patch.gf_moderbolagslan_antal = _remainingLoans;
+            send({ type: 'update_assets', assets: _patch });
+            // Grön prompt om vi just återbetalade lån (visa en gång per "tillstånd")
+            if (_loansRepaid > 0) {
+                var _key = 'repaid_' + modLanAntal + '_to_' + _remainingLoans;
+                if (!S._modlanRepaidShown[_key]) {
+                    S._modlanRepaidShown[_key] = true;
+                    setTimeout(function() { showModlanRepaidAlert(_loansRepaid, calcEK); }, 100);
+                }
+            }
         }
     }
 
