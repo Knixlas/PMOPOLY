@@ -488,10 +488,16 @@ function showAuctionUI(auction) {
     };
     var btnWon = document.getElementById('auction-won');
     if (btnWon) btnWon.onclick = function() {
-        var kop = prompt('Vilken köpeskilling betalar du? (Mkr) — du betalar 30 % kontant från din kassa.');
+        var myCash = (S.state && S.state.player && S.state.player.eget_kapital) || 0;
+        var kop = prompt('Vilken köpeskilling betalar du? (Mkr)\n— du betalar 30 % kontant från din kassa.\nDin kassa: ' + Math.round(myCash) + ' Mkr (= max köpeskilling ' + Math.round(myCash / 0.30) + ' Mkr).');
         if (kop === null) return;
         var n = parseFloat(String(kop).replace(',', '.')) || 0;
         if (n <= 0) { alert('Ange ett positivt belopp.'); return; }
+        var cashNeeded = n * 0.30;
+        if (cashNeeded > myCash) {
+            alert('Du har inte råd!\n\nKöpeskilling ' + n + ' Mkr kräver ' + Math.round(cashNeeded * 10) / 10 + ' Mkr (30 %) kontant, men din kassa är ' + Math.round(myCash) + ' Mkr.');
+            return;
+        }
         send({ type: 'auction_respond', response: 'won', kopeskilling: n });
     };
     var btnSkip = document.getElementById('auction-skip');

@@ -1107,6 +1107,12 @@ class CompanionManager:
                 kop = float(data.get("kopeskilling", 0) or 0)
                 if kop <= 0:
                     return
+                # Spärr: 30 % av köpeskillingen måste rymmas i köparens kassa
+                cash_needed = kop * 0.30
+                if (player.eget_kapital or 0) < cash_needed:
+                    # Tyst avvisning — frontend gör pre-check med tydligt
+                    # felmeddelande, så detta är bara backend-säkerhet.
+                    return
                 room.auction["bidders"][player.id] = "won"
                 room.auction["winner"] = {
                     "player_id": player.id,
@@ -1163,6 +1169,11 @@ class CompanionManager:
                 if not buyer:
                     return
                 kop = float(winner["kopeskilling"])
+                # Dubbelcheck: köparens kassa kan ha ändrats efter att budet
+                # registrerades — om de inte längre har råd, avbryt accepten.
+                cash_needed = kop * 0.30
+                if (buyer.eget_kapital or 0) < cash_needed:
+                    return
                 # Säljaren får 30 %, modlan auto-repay
                 earn = round(kop * 0.30, 1)
                 seller_fasts[fast_idx]["sold"] = True
