@@ -128,8 +128,15 @@ async function refresh() {
 
         // Player ranking
         const players = data.players || [];
+        const isFinalMode = data.any_final;
         const maxScore = Math.max(1, ...players.map(e => e.profit_score));
         let html = '';
+        // Header som signalerar om det är vinstchans eller slutpoäng
+        if (isFinalMode) {
+            html += '<div style="text-align:center;font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--burgundy);margin-bottom:8px">' + (data.all_final ? 'Slutpoäng — slutgiltig' : 'Slutpoäng (preliminärt)') + '</div>';
+        } else {
+            html += '<div style="text-align:center;font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:8px">Vinstchans</div>';
+        }
         for (const e of players) {
             const barW = Math.round((e.profit_score / maxScore) * 100);
             var pTier = getTier(e.profit_score);
@@ -137,24 +144,28 @@ async function refresh() {
             var pMedal = pMedals[e.rank] || '';
             var topClass = e.rank === 1 ? 'lb-gold' : (e.rank === 2 ? 'lb-silver' : (e.rank === 3 ? 'lb-bronze' : ''));
 
-            // Trend arrow
+            // Trend arrow (bara i vinstchans-läge — slutpoängen rör sig inte)
             var trendHtml = '';
-            if (e.prev_profit_score && e.profit_score > e.prev_profit_score + 0.5) {
-                trendHtml = '<span class="lb-trend-up"> ▲</span>';
-            } else if (e.prev_profit_score && e.profit_score < e.prev_profit_score - 0.5) {
-                trendHtml = '<span class="lb-trend-down"> ▼</span>';
+            if (!e.is_final_score) {
+                if (e.prev_profit_score && e.profit_score > e.prev_profit_score + 0.5) {
+                    trendHtml = '<span class="lb-trend-up"> ▲</span>';
+                } else if (e.prev_profit_score && e.profit_score < e.prev_profit_score - 0.5) {
+                    trendHtml = '<span class="lb-trend-down"> ▼</span>';
+                }
             }
+
+            var scoreLabel = e.is_final_score ? 'Slutpoäng' : 'Vinstchans';
 
             html += `<div class="lb-entry ${topClass}">
                 <div class="lb-rank">${pMedal || e.rank}</div>
                 <div class="lb-info">
                     <div class="lb-name">${e.name || e.block_name}</div>
                     <div class="lb-detail">${e.district} | ${e.num_projects} projekt | BTA: ${e.total_bta}</div>
-                    <div class="lb-tier" style="color:${pTier.color}">${pTier.emoji} ${pTier.label}</div>
+                    <div class="lb-tier" style="color:${pTier.color}">${pTier.emoji} ${pTier.label}${e.is_final_score ? ' · Slutgiltig' : ''}</div>
                 </div>
                 <div class="lb-score">
                     <div class="lb-score-val" style="color:${pTier.color}">${e.profit_score}${trendHtml}</div>
-                    <div class="lb-score-label">#${e.rank} av ${data.total_players || players.length}</div>
+                    <div class="lb-score-label">${scoreLabel} · #${e.rank} av ${data.total_players || players.length}</div>
                     <div class="lb-bar-bg"><div class="lb-bar" style="width:${barW}%"></div></div>
                 </div>
             </div>`;

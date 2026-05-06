@@ -321,8 +321,8 @@ class CompanionPlayer:
             return self.projektchef is not None
         elif step_id == "choose_ac":
             return self.arbetschef is not None
-        elif step_id == "projects":
-            return len(self.projects) > 0
+        # 'projects' (PU-brädet) markeras INTE auto-klar — spelaren måste manuellt
+        # bekräfta efter de två varven, innan nämndbeslut.
         elif step_id == "planning":
             return len(self.pl_choices) >= 13
         elif step_id == "gf_abt_ek":
@@ -636,14 +636,24 @@ class CompanionRoom:
         }
 
     def leaderboard(self) -> dict:
-        """All players and districts ranked by profit_score."""
+        """All players and districts ranked. Använder f4_final_score om alla
+        spelare har en sådan (= alla nått slutvärderingen), annars
+        profit_score (vinstchans). Quizpoäng adderas alltid (se §13)."""
         all_p = [p for p in self.players.values() if not p.is_gm and p.projects]
-        ranked = sorted(all_p, key=lambda p: p.profit_score + (self.quiz_scores.get(p.id, 0) if self.quiz_count_in_score else 0), reverse=True)
+        # Slutpoäng-mode: när minst en spelare har f4_final_score satt
+        any_final = any(p.f4_final_score and p.f4_final_score != 0 for p in all_p)
+
+        def _score_for(p):
+            base = p.f4_final_score if (any_final and p.f4_final_score) else p.profit_score
+            return base + self.quiz_scores.get(p.id, 0)
+
+        ranked = sorted(all_p, key=_score_for, reverse=True)
         total_players = len(ranked)
         players = []
         for i, p in enumerate(ranked):
             q_name = self.quarter_names[p.quarter_idx] if p.quarter_idx < len(self.quarter_names) else "?"
-            score = p.profit_score + (self.quiz_scores.get(p.id, 0) if self.quiz_count_in_score else 0)
+            score = _score_for(p)
+            is_final_score = any_final and p.f4_final_score and p.f4_final_score != 0
             players.append({
                 "rank": i + 1,
                 "total_players": total_players,
@@ -653,7 +663,8 @@ class CompanionRoom:
                 "block_name": p.block_name,
                 "quarter": q_name,
                 "district": q_name,
-                "profit_score": score,
+                "profit_score": round(score, 1),
+                "is_final_score": is_final_score,
                 "prev_profit_score": round(p.prev_profit_score, 1),
                 "num_projects": len(p.projects),
                 "total_bta": sum(pr.get("bta", 0) for pr in p.projects),
@@ -686,7 +697,16 @@ class CompanionRoom:
             d["district_rank"] = i + 1
             d["total_districts"] = total_districts
 
-        return {"players": players, "districts": districts, "total_players": total_players, "total_districts": total_districts}
+        return {
+            "players": players,
+            "districts": districts,
+            "total_players": total_players,
+            "total_districts": total_districts,
+            "any_final": any_final,
+            "all_final": any_final and all(
+                bool(p.f4_final_score and p.f4_final_score != 0) for p in all_p
+            ),
+        }
 
     def to_dict(self):
         phase = self.current_phase
@@ -753,11 +773,21 @@ class CompanionRoom:
         teammates = [p for p in self.players.values()
                      if p.quarter_idx == player.quarter_idx
                      and not p.is_gm and p.id != player_id]
+        # Projekt-ID:n som lagkamrater redan tagit — frontend filtrerar bort
+        # dessa ur Add-projekt-modalen så samma projekt inte väljs två gånger
+        # i samma kvarter.
+        teammate_project_ids = []
+        for t in teammates:
+            for proj in (t.projects or []):
+                pid = proj.get("id") if isinstance(proj, dict) else None
+                if pid:
+                    teammate_project_ids.append(pid)
         quarter_taken = {
             "pc_ids": [t.projektchef.get("id") for t in teammates
                        if t.projektchef and t.projektchef.get("id")],
             "ac_ids": [t.arbetschef.get("id") for t in teammates
                        if t.arbetschef and t.arbetschef.get("id")],
+            "project_ids": teammate_project_ids,
         }
         return {
             "code": self.code,

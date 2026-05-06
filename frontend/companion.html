@@ -1346,9 +1346,10 @@ function renderPlayer() {
     if (showCounters && !showRbInvest) {
         html += '<div class="asset-card counters">';
         html += '<div class="asset-label">\u00c4ndringar fr\u00e5n kort & spelbr\u00e4de</div>';
-        html += counterRow('Kvalitet (Q)', p.q_krav, 'q_krav', true);
-        html += counterRow('H\u00e5llbarhet (H)', p.h_krav, 'h_krav', true);
-        html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar');
+        html += counterRow('Kvalitetskrav (Q-krav)', p.q_krav, 'q_krav', true);
+        html += counterRow('H\u00e5llbarhetskrav (H-krav)', p.h_krav, 'h_krav', true);
+        // Riskbuffertar i \u00e4ndringsf\u00e4ltet f\u00e5r g\u00e5 under 0 (relativt \u2014 kort kan dra ner)
+        html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar', true);
         html += '</div>';
     }
 
@@ -1518,9 +1519,10 @@ function renderPlayer() {
         var _totH = Math.max(0, 6 + _projH + p.h_krav - (p.rb_spent_h || 0) - _pcH - _acH);
         var _baseT = 12 + _maxProjT;
         var _totT = Math.max(8, _baseT - (p.rb_spent_t || 0));
-        // Q/H kan inte sjunka under 0 — kortantal cap:as då på krav-värdet
-        var _curQ = Math.max(0, _plQ + _plEvQ + _gfQ + _konsTQ + _konsKQ + _konsHQ);
-        var _curH = Math.max(0, _plH + _plEvH + _gfH + _konsTH + _konsKH + _konsHH);
+        // Q/H får visa negativt så spelaren ser cascade-effekten av konsekvenskort.
+        // konsKortQ/H clampas separat på max(0, _totQ - _curQ).
+        var _curQ = _plQ + _plEvQ + _gfQ + _konsTQ + _konsKQ + _konsHQ;
+        var _curH = _plH + _plEvH + _gfH + _konsTH + _konsKH + _konsHH;
         var _curT = Math.max(8, _totT + _plT + _plEvT + _gfT - _pcT - _acT);
         var konsKortT = Math.max(0, _curT - 12);
         var konsKortQ = Math.max(0, _totQ - _curQ);
@@ -1959,7 +1961,7 @@ function renderPlayer() {
             html += '</div></div>';
             // Sell button \u2014 bara aktiv p\u00e5 substeg "S\u00e4lj" (eller alltid utanf\u00f6r kvartal)
             if (_canSell) {
-                html += '<div class="f4-sell-btn" data-fi="' + fi + '" style="cursor:pointer;color:var(--danger);font-size:12px;margin-top:4px">S\u00e4lj fastighet</div>';
+                html += '<button class="f4-sell-btn" data-fi="' + fi + '" style="cursor:pointer;background:var(--danger);color:white;border:none;border-radius:6px;padding:10px 14px;font-size:14px;font-weight:600;margin-top:8px;width:100%">S\u00e4lj fastighet</button>';
             } else if (_canBuySell && _isQuarter) {
                 html += '<div style="color:var(--ink-faint);font-size:11px;margin-top:4px;font-style:italic">S\u00e4lj-knappen t\u00e4nds i spiralsteg "S\u00e4lj"</div>';
             }
@@ -1978,7 +1980,7 @@ function renderPlayer() {
         // Köp-knappen: alltid tänd när substeg = "Köp" och inget moderbolagslån finns.
         // Companion håller INTE koll på antal tillgängliga fastigheter — det sköter spelbrädet.
         if (_canBuy && !_hasModLan) {
-            html += '<div class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;color:var(--success);margin-top:6px;font-size:13px">+ K\u00f6p fastighet</div>';
+            html += '<button class="choose-btn" data-action="buy_fastighet" style="cursor:pointer;background:var(--success);color:white;border:none;border-radius:6px;padding:12px 16px;font-size:15px;font-weight:600;margin-top:8px;width:100%">+ K\u00f6p fastighet</button>';
         } else if (_canBuySell && _isQuarter && !_hasModLan && !_canBuy) {
             html += '<div style="color:var(--ink-faint);font-size:11px;margin-top:6px;font-style:italic">K\u00f6p-knappen t\u00e4nds i spiralsteg "K\u00f6p"</div>';
         } else if (_canBuySell && _hasModLan) {
@@ -2364,11 +2366,10 @@ function renderPlayer() {
         var konsKvalH = p.gf_kons_q_h || 0;
         var konsHallQ = p.gf_kons_h_q || 0;
         var konsHallH = p.gf_kons_h_h || 0;
-        // Q/H kan inte sjunka under 0 på scoreboarden
-        // Obs: pcQ/pcH/acQ/acH räknas redan av på krav-sidan (totalQ/totalH),
-        // ej dubbelt här.
-        var curQ = Math.max(0, plQ + plEvQ + gfQ + konsTimeQ + konsKvalQ + konsHallQ);
-        var curH = Math.max(0, plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH);
+        // Q/H får visa negativt så spelaren ser konsekvenskorts-cascadens effekt.
+        // pcQ/pcH/acQ/acH räknas redan av på krav-sidan (totalQ/totalH).
+        var curQ = plQ + plEvQ + gfQ + konsTimeQ + konsKvalQ + konsHallQ;
+        var curH = plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH;
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
@@ -2429,37 +2430,34 @@ function renderPlayer() {
         if (isPhase2 || isPhase3) {
             html += '<div style="font-size:13px;margin-bottom:6px">ABT-budget: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         }
-        // Moderbolagslån — auto-tas när ABT-budget går minus (regelboken §6.2)
-        // Antal lån = ceil(|deficit| / 95) så att tillskottet täcker underskottet.
+        // Moderbolagslån i Skede 2 (PL/GF) är BARA en VARNING — själva lånet
+        // aktiveras först i gf_abt_ek-steget (övergången till Skede 3).
+        // Här visar vi orange varning om ABT-budgeten är negativ så spelaren
+        // kan välja att ändra strategi innan lånet "låses in".
         if (isPhase2 || isPhase3) {
             var _modA21 = p.gf_moderbolagslan_antal || 0;
             var _abtNeg = anskKvar < 0;
             var _neededLoans = _abtNeg ? Math.ceil(-anskKvar / 95) : 0;
-            // Auto-justera om antalet inte stämmer (men låt aldrig auto-minska under
-            // vad användaren själv har — manuella val i gf_abt_ek bevaras).
-            if (_neededLoans > _modA21) {
-                setTimeout(function() {
-                    send({ type: 'update_assets', assets: { gf_moderbolagslan_antal: _neededLoans } });
-                }, 50);
-            }
-            // Visa alltid lån-raden (även 0 st) så spelaren ser status hela tiden
-            var _showLoans = Math.max(_modA21, _neededLoans);
-            var _abtAfter = anskKvar + _showLoans * 95;
             html += '<div style="border-top:1px dashed var(--border);padding-top:6px;margin-top:6px">';
-            if (_showLoans > 0) {
-                html += '<div style="font-size:13px;font-weight:600;color:var(--danger)">Moderbolagslån: ' + _showLoans + ' st (auto)</div>';
+            if (_abtNeg) {
+                // Orange varning — inget lån tas än, men det kommer behövas vid Skede 3-övergången
+                html += '<div style="background:rgba(255,140,0,0.10);border:1px solid #ff8c00;border-radius:6px;padding:8px 10px;font-size:13px;color:var(--ink)">';
+                html += '<div style="font-weight:700;color:#ff8c00;margin-bottom:2px">⚠ Risk för moderbolagslån</div>';
+                html += '<div style="font-size:12px;color:var(--ink-mid)">Om ABT-budgeten fortsätter vara negativ (' + Math.round(anskKvar) + ' Mkr) kommer du behöva ta <strong>' + _neededLoans + ' moderbolagslån</strong> vid övergången till Skede 3 (+95 Mkr/st, skuld 100 Mkr/st). Hitta sätt att sänka kostnaderna eller acceptera lånet.</div>';
+                html += '</div>';
+            } else if (_modA21 > 0) {
+                // Spelaren har redan tagit lån (t.ex. via gf_abt_ek)
+                html += '<div style="font-size:13px;font-weight:600;color:var(--danger)">Moderbolagslån: ' + _modA21 + ' st</div>';
                 html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:2px">';
-                html += '+' + (_showLoans * 95) + ' Mkr tillskott · ' + (_showLoans * 100) + ' Mkr skuld · ABT efter lån: <strong style="color:' + (_abtAfter >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_abtAfter) + ' Mkr</strong>';
+                html += '+' + (_modA21 * 95) + ' Mkr tillskott · ' + (_modA21 * 100) + ' Mkr skuld';
                 html += '</div>';
                 html += '<div style="font-size:11px;color:var(--danger);margin-top:4px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
             } else {
-                html += '<div style="font-size:13px;color:var(--ink-mid)">Moderbolagslån: <strong>0 st</strong></div>';
+                html += '<div style="font-size:13px;color:var(--ink-mid)">Inga moderbolagslån — kassan är positiv.</div>';
             }
             html += '</div>';
-            // Knallröd prompt när lån behöver tecknas (visas en gång per fas)
-            if (_abtNeg && _modA21 === 0 && S._modlanShownPhase !== phase) {
-                setTimeout(function() { showModlanAlert(phase, anskKvar); }, 50);
-            }
+            // (Knallröd prompt borttagen — orange varning ovan räcker.
+            // Det skarpa lånet aktiveras först i gf_abt_ek-steget.)
         }
         if (isPhase3) {
             // Tidskort Q/H impact: reduce krav
@@ -2528,11 +2526,13 @@ function renderPlayer() {
             }
             html += '</div>';
         }
-        // Projected score indicator with ranking + tier
-        if (_projScore) {
-            var _tier = getTier(_projScore);
+        // Score indicator: visa "Slutpoäng" om f4_final_score finns, annars "Vinstchans"
+        var _isFinal = (p.f4_final_score && p.f4_final_score !== 0) || step === 'f4_slut';
+        if (_projScore || _isFinal) {
+            var _displayScore = _isFinal ? (p.f4_final_score || _projScore) : _projScore;
+            var _tier = getTier(_displayScore);
             html += '<div style="border-top:1px solid var(--border);padding-top:6px;margin-top:6px">';
-            html += 'Vinstchans: ' + renderTrendScore(_projScore, _prevScore);
+            html += (_isFinal ? '<strong>Slutpoäng:</strong> ' : 'Vinstchans: ') + renderTrendScore(_displayScore, _prevScore);
             // Show cached ranking if available
             if (S.lastLeaderboard) {
                 var _lb = S.lastLeaderboard;
@@ -2542,7 +2542,7 @@ function renderPlayer() {
                     html += '#' + _myEntry.rank + ' av ' + (_lb.total_players || _lb.players.length) + '</span>';
                 }
             }
-            html += ' ' + tierBadge(_projScore);
+            html += ' ' + tierBadge(_displayScore);
             html += '</div>';
         }
         html += '</div></div>';
@@ -3390,12 +3390,17 @@ function openProjectModal(typ, triplePrice) {
     const mc = document.getElementById('modal-container');
     const available = S.projectData[typ] || [];
     const currentIds = new Set((S.state.player.projects || []).map(p => p.id));
+    // Lagkamraters projekt — filtreras bort så samma projekt inte tas två gånger
+    const teammateIds = new Set((S.state && S.state.quarter_taken && S.state.quarter_taken.project_ids) || []);
     const priceLabel = triplePrice ? ' (3\u00d7 pris!)' : '';
 
     let html = '<div class="modal-overlay"><div class="modal">';
     html += '<div class="modal-header"><h3>' + typ + '-projekt' + priceLabel + '</h3></div>';
     html += '<div class="modal-body">';
+    let availableCount = 0;
     for (const proj of available) {
+        if (teammateIds.has(proj.id)) continue;
+        availableCount++;
         const sel = currentIds.has(proj.id) ? ' selected' : '';
         const kostnad = triplePrice ? proj.kostnad * 3 : proj.kostnad;
         const projData = JSON.stringify(proj).replace(/'/g, "&#39;");
@@ -3405,6 +3410,11 @@ function openProjectModal(typ, triplePrice) {
             ' | Anskaff: ' + proj.anskaffning + ' Mkr | Kostnad: ' + kostnad + ' Mkr' +
             (triplePrice ? ' <span style="color:var(--warning)">(3\u00d7)</span>' : '') + '</div>' +
             '</div>';
+    }
+    if (availableCount === 0) {
+        html += '<div style="text-align:center;padding:20px;color:var(--ink-faint);font-style:italic">Alla ' + typ + '-projekt är redan tagna av lagkamrater.</div>';
+    } else if (teammateIds.size > 0) {
+        html += '<div style="text-align:center;padding:8px;color:var(--ink-faint);font-size:0.85rem;font-style:italic">' + teammateIds.size + ' projekt redan tagna i kvarteret (filtrerade bort).</div>';
     }
     html += '</div>';
     html += '<div class="modal-footer"><button class="btn-secondary" id="modal-close">Stäng</button></div>';
