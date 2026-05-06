@@ -2358,19 +2358,33 @@ function renderPlayer() {
         if (isPhase2 || isPhase3) {
             html += '<div style="font-size:13px;margin-bottom:6px">ABT-budget: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         }
-        // Moderbolagslån — tillgängligt redan i Skede 2.1 om ABT-budget tagit slut (regelboken §6.2)
+        // Moderbolagslån — auto-tas när ABT-budget går minus (regelboken §6.2)
+        // Antal lån = ceil(|deficit| / 95) så att tillskottet täcker underskottet.
         if (isPhase2 || isPhase3) {
             var _modA21 = p.gf_moderbolagslan_antal || 0;
             var _abtNeg = anskKvar < 0;
+            var _neededLoans = _abtNeg ? Math.ceil(-anskKvar / 95) : 0;
+            // Auto-justera om antalet inte stämmer (men låt aldrig auto-minska under
+            // vad användaren själv har — manuella val i gf_abt_ek bevaras).
+            if (_neededLoans > _modA21) {
+                setTimeout(function() {
+                    send({ type: 'update_assets', assets: { gf_moderbolagslan_antal: _neededLoans } });
+                }, 50);
+            }
             if (_modA21 > 0 || _abtNeg) {
-                html += '<div style="border-top:1px dashed var(--border);padding-top:4px;margin-top:4px">';
-                html += counterRow('Moderbolagslån (antal · 95 Mkr in / 100 Mkr skuld)', _modA21, 'gf_moderbolagslan_antal', false);
-                if (_modA21 > 0) {
-                    html += '<div style="font-size:11px;color:var(--danger);margin-top:2px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
+                var _showLoans = Math.max(_modA21, _neededLoans);
+                var _abtAfter = anskKvar + _showLoans * 95;
+                html += '<div style="border-top:1px dashed var(--border);padding-top:6px;margin-top:6px">';
+                html += '<div style="font-size:13px;font-weight:600;color:var(--danger)">Moderbolagslån: ' + _showLoans + ' st (auto)</div>';
+                html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:2px">';
+                html += '+' + (_showLoans * 95) + ' Mkr tillskott · ' + (_showLoans * 100) + ' Mkr skuld · ABT efter lån: <strong style="color:' + (_abtAfter >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_abtAfter) + ' Mkr</strong>';
+                html += '</div>';
+                if (_showLoans > 0) {
+                    html += '<div style="font-size:11px;color:var(--danger);margin-top:4px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
                 }
                 html += '</div>';
             }
-            // Knallröd prompt när lån måste tecknas (visas en gång per fas)
+            // Knallröd prompt när lån behöver tecknas (visas en gång per fas)
             if (_abtNeg && _modA21 === 0 && S._modlanShownPhase !== phase) {
                 setTimeout(function() { showModlanAlert(phase, anskKvar); }, 50);
             }
