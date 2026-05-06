@@ -1078,11 +1078,10 @@ class CompanionManager:
                    else player.f4_yield_kommersiellt) or 5.0
             dn = fast.get("driftnetto", 0)
             mv = round((4 * dn) / (yld / 100)) if yld > 0 else (fast.get("anskaffning", 0))
-            # Bidders: bara spelare i andra kvarter (inte säljarens lagkamrater)
+            # Bidders: alla andra spelare (= andra kvarter eftersom 1 kvarter = 1 spelare)
+            # GM exkluderas alltid; säljaren själv exkluderas via pid != player.id.
             bidders = {pid: "pending" for pid, p in room.players.items()
-                       if not p.is_gm
-                       and pid != player.id
-                       and p.quarter_idx != player.quarter_idx}
+                       if not p.is_gm and pid != player.id}
             room.auction = {
                 "seller_id": player.id,
                 "seller_name": player.name,
@@ -1097,9 +1096,10 @@ class CompanionManager:
         elif msg_type == "auction_respond" and not player.is_gm:
             if not room.auction or player.id == room.auction["seller_id"]:
                 return
-            # Bara spelare som är listade som bidders (= andra kvarter) får svara
+            # Lägg till spelaren i bidders om de saknas (kan hända om de joinade
+            # rummet efter att auktionen startade)
             if player.id not in room.auction.get("bidders", {}):
-                return
+                room.auction.setdefault("bidders", {})[player.id] = "pending"
             response = data.get("response")  # "skip" | "won"
             if response == "skip":
                 room.auction["bidders"][player.id] = "skip"
