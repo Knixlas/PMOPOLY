@@ -2371,19 +2371,20 @@ function renderPlayer() {
                     send({ type: 'update_assets', assets: { gf_moderbolagslan_antal: _neededLoans } });
                 }, 50);
             }
-            if (_modA21 > 0 || _abtNeg) {
-                var _showLoans = Math.max(_modA21, _neededLoans);
-                var _abtAfter = anskKvar + _showLoans * 95;
-                html += '<div style="border-top:1px dashed var(--border);padding-top:6px;margin-top:6px">';
+            // Visa alltid lån-raden (även 0 st) så spelaren ser status hela tiden
+            var _showLoans = Math.max(_modA21, _neededLoans);
+            var _abtAfter = anskKvar + _showLoans * 95;
+            html += '<div style="border-top:1px dashed var(--border);padding-top:6px;margin-top:6px">';
+            if (_showLoans > 0) {
                 html += '<div style="font-size:13px;font-weight:600;color:var(--danger)">Moderbolagslån: ' + _showLoans + ' st (auto)</div>';
                 html += '<div style="font-size:12px;color:var(--ink-mid);margin-top:2px">';
                 html += '+' + (_showLoans * 95) + ' Mkr tillskott · ' + (_showLoans * 100) + ' Mkr skuld · ABT efter lån: <strong style="color:' + (_abtAfter >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_abtAfter) + ' Mkr</strong>';
                 html += '</div>';
-                if (_showLoans > 0) {
-                    html += '<div style="font-size:11px;color:var(--danger);margin-top:4px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
-                }
-                html += '</div>';
+                html += '<div style="font-size:11px;color:var(--danger);margin-top:4px">Konsekvenser i Skede 3: säljkrav till 1 fastighet, köpstopp, uppgraderingsstopp.</div>';
+            } else {
+                html += '<div style="font-size:13px;color:var(--ink-mid)">Moderbolagslån: <strong>0 st</strong></div>';
             }
+            html += '</div>';
             // Knallröd prompt när lån behöver tecknas (visas en gång per fas)
             if (_abtNeg && _modA21 === 0 && S._modlanShownPhase !== phase) {
                 setTimeout(function() { showModlanAlert(phase, anskKvar); }, 50);
@@ -2421,28 +2422,40 @@ function renderPlayer() {
             html += 'TB: <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong>';
             html += ' &nbsp; TG: <strong style="color:' + (tg >= 20 ? 'var(--success)' : (tg >= 0 ? 'var(--burgundy)' : 'var(--danger)')) + '">' + tg + '%</strong>';
             html += '</div>';
-            // Moderbolagslån
-            var _modAntal = p.gf_moderbolagslan_antal || 0;
-            if (_modAntal > 0) {
-                html += '<div style="color:var(--danger);font-weight:600">';
-                html += '\ud83d\udfe5 Moderbolags\u00e5n: ' + _modAntal + ' st = <strong>' + (_modAntal * 100) + ' Mkr skuld</strong></div>';
-            }
-            // Kassa visas endast i Skede 3 (F\u00f6rvaltning) \u2014 ej i Skede 2
+            // Kassa visas endast i Skede 3 (Förvaltning) — ej i Skede 2
             if (isPhase4) {
+                var _ek4 = p.eget_kapital || 0;
+                // Auto-ta moderbolagslån om kassan är negativ (Skede 3)
+                var _modAntal4 = p.gf_moderbolagslan_antal || 0;
+                var _kassaNeg4 = _ek4 < 0;
+                var _extraLoans4 = _kassaNeg4 ? Math.ceil(-_ek4 / 95) : 0;
+                if (_extraLoans4 > 0) {
+                    setTimeout(function() {
+                        // Lägg till lån + tillskott till kassa atomiskt
+                        send({ type: 'update_assets', assets: {
+                            gf_moderbolagslan_antal: _modAntal4 + _extraLoans4,
+                            eget_kapital: _ek4 + _extraLoans4 * 95,
+                        }});
+                    }, 50);
+                }
                 html += '<div style="grid-column:1/-1">';
-                html += 'Kassa: <strong style="color:' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</strong></div>';
-                if ((p.eget_kapital||0) < 0) {
-                    var _ownedCount = (p.fastigheter||[]).filter(function(f){return !f.sold;}).length;
+                html += 'Kassa: <strong style="color:' + (_ek4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_ek4) + ' Mkr</strong></div>';
+                if (_extraLoans4 > 0) {
                     html += '<div style="background:var(--danger);color:white;padding:8px 12px;border-radius:6px;margin-top:4px;font-weight:600">';
-                    html += '\u26a0\ufe0f Kassan \u00e4r negativ! ';
-                    if (_ownedCount > 1) {
-                        html += 'S\u00e4lj fastigheter ner till 1 st, eller ta moderbola\u200dgs\u00e5n (+95 Mkr/st).';
-                    } else {
-                        html += 'Ta moderbola\u200dgs\u00e5n f\u00f6r att t\u00e4cka underskottet (+95 Mkr/st, skuld 100 Mkr/st).';
-                    }
+                    html += '\u26a0\ufe0f Tar automatiskt ' + _extraLoans4 + ' moderbolagslån (+' + (_extraLoans4 * 95) + ' Mkr) för att täcka underskottet.';
                     html += '</div>';
                 }
             }
+            // Moderbolagslån — visa alltid raden (även 0)
+            var _modAntal = p.gf_moderbolagslan_antal || 0;
+            var _modColor = _modAntal > 0 ? 'var(--danger)' : 'var(--ink-mid)';
+            html += '<div style="font-size:13px;color:' + _modColor + ';margin-top:2px">';
+            if (_modAntal > 0) {
+                html += '\ud83d\udfe5 Moderbolagslån: <strong>' + _modAntal + ' st</strong> = ' + (_modAntal * 100) + ' Mkr skuld';
+            } else {
+                html += 'Moderbolagslån: <strong>0 st</strong>';
+            }
+            html += '</div>';
         }
         // Projected score indicator with ranking + tier
         if (_projScore) {
