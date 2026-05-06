@@ -542,15 +542,22 @@ function connectWs(code, playerId) {
             if (_wsSendQueue.length === 0) {
                 S.state = data.state;
                 render();
-                // Player: check for unanswered active quiz on reconnect
+                // Player: check for unanswered active quiz on reconnect.
+                // Bara visa modalen om det är en NY fråga (inte vid varje state-update),
+                // annars startar timern om varje gång någon annan svarar.
                 if (!S.isGM && data.state.quiz_active_question && !S._quizAnswered) {
-                    showQuizModal(data.state.quiz_active_question);
+                    var _qId = data.state.quiz_active_question.id || data.state.quiz_active_question.text;
+                    if (S._quizModalShownFor !== _qId) {
+                        S._quizModalShownFor = _qId;
+                        showQuizModal(data.state.quiz_active_question);
+                    }
                 }
             } else {
                 console.warn('WS STATE skipped (queue not empty)');
             }
         } else if (data.type === 'quiz_question') {
             S._quizAnswered = false;
+            S._quizModalShownFor = data.question && (data.question.id || data.question.text);
             showQuizModal(data.question);
         } else if (data.type === 'quiz_feedback') {
             showQuizFeedback(data);
@@ -1467,21 +1474,40 @@ function renderPlayer() {
     // Phase 3: Byggfaser (only in gf_byggfaser step)
     if (step === 'gf_byggfaser') {
         var gfPhases = p.gf_phases || {};
+        // Pris per kulturkort per fas (regelbok \u00a73.5)
+        var KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8];
         html += '<div class="asset-card" style="border-left-color:var(--warning)">';
         html += '<div class="asset-label">Byggfaser (1\u20138)</div>';
         for (var fi = 1; fi <= 8; fi++) {
             var fk = '' + fi;
             var gf = gfPhases[fk] || {};
-            var hasData = (gf.q || gf.h || gf.t || gf.abt);
+            var kultPris = KULTUR_PRIS[fi - 1];
+            var kultAntal = gf.kultur || 0;
+            var kultKostnad = kultAntal * kultPris;
+            var hasData = (gf.q || gf.h || gf.t || gf.abt || kultAntal);
             html += '<div style="border-bottom:1px solid var(--paper-deep);padding:6px 0">';
             html += '<div style="font-weight:600;font-size:14px">Fas ' + fi + (hasData ? '' : ' <span style="color:var(--ink-faint);font-weight:400">\u2014 ej registrerad</span>') + '</div>';
             html += '<div style="display:flex;gap:8px;margin-top:4px;font-size:13px;flex-wrap:wrap">';
             html += '<span>Q: <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="-1">\u2212</span> <strong>' + (gf.q||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="q" data-dir="1">+</span></span>';
             html += '<span>H: <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="-1">\u2212</span> <strong>' + (gf.h||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="h" data-dir="1">+</span></span>';
             html += '<span>T: <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="-1">\u2212</span> <strong>' + (gf.t||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="t" data-dir="1">+</span></span>';
-            html += '<span>Kostn (Mkr): <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
-            html += '</div></div>';
+            html += '<span>H\u00e4ndelse-kostn (Mkr): <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="-1">\u2212</span> <strong>' + (gf.abt||0) + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="abt" data-dir="1">+</span></span>';
+            html += '</div>';
+            // Kulturkort-rad
+            html += '<div style="display:flex;gap:8px;margin-top:4px;font-size:13px;flex-wrap:wrap;color:var(--burgundy)">';
+            html += '<span>Kulturkort (' + kultPris + ' Mkr/st): <span class="gf-btn" data-fas="' + fk + '" data-field="kultur" data-dir="-1">\u2212</span> <strong>' + kultAntal + '</strong> <span class="gf-btn" data-fas="' + fk + '" data-field="kultur" data-dir="1">+</span> <span style="color:var(--ink-mid);font-size:12px">= ' + kultKostnad + ' Mkr</span></span>';
+            html += '</div>';
+            html += '</div>';
         }
+        // Summa kulturkort
+        var _kultSumma = 0;
+        for (var _ki = 1; _ki <= 8; _ki++) {
+            var _gk = gfPhases['' + _ki] || {};
+            _kultSumma += (_gk.kultur || 0) * KULTUR_PRIS[_ki - 1];
+        }
+        html += '<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--paper-deep);font-size:13px;display:flex;justify-content:space-between">';
+        html += '<span style="color:var(--burgundy);font-weight:600">Kulturkort totalt</span>';
+        html += '<strong>' + _kultSumma + ' Mkr</strong></div>';
         html += '</div>';
     }
 
@@ -1650,7 +1676,7 @@ function renderPlayer() {
         // Step 1: TB
         html += '<div style="border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px">';
         html += '<div style="color:var(--ink-mid);font-size:12px;font-weight:600">1. T\u00e4ckningsbidrag</div>';
-        html += '<div>TB (ABT-budget kvar): <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong></div>';
+        html += '<div>Täckningsbidrag (TB) — ABT-budget kvar: <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong></div>';
         html += '</div>';
 
         // Step 2: BRF överlämning till förening
@@ -1777,8 +1803,9 @@ function renderPlayer() {
         html += '<div class="asset-label">FASTIGHETSCHEF (FC)</div>';
         if (p.fastighetschef) {
             var _fcKap = p.fastighetschef.kapacitet || 1;
+            var _fcForh = p.fastighetschef.forhandling ? ' | F\u00f6rhandlingst\u00e4rning: ' + p.fastighetschef.forhandling : '';
             html += '<div><strong>' + p.fastighetschef.namn + '</strong><br>'
-                + '<span style="color:var(--ink-mid)">' + (p.fastighetschef.specialisering||'') + ' | Kapacitet: ' + _fcKap + ' projekt | L\u00f6n: ' + (p.fastighetschef.lon||0) + ' Mkr/kv</span></div>';
+                + '<span style="color:var(--ink-mid)">' + (p.fastighetschef.specialisering||'') + ' | Kapacitet: ' + _fcKap + ' projekt | L\u00f6n: ' + (p.fastighetschef.lon||0) + ' Mkr/kv' + _fcForh + '</span></div>';
         } else {
             html += '<div class="choose-btn" data-choose="fc" style="cursor:pointer;color:var(--burgundy)">+ V\u00e4lj Fastighetschef</div>';
         }
@@ -1823,6 +1850,12 @@ function renderPlayer() {
         if (_hasModLan) {
             html += '<div style="background:rgba(196,30,30,0.07);border:1px solid var(--danger);border-radius:8px;padding:10px;margin-bottom:8px;color:var(--ink);font-size:13px">';
             html += '<strong style="color:var(--danger)">' + _modLan + ' aktivt moderbolagsl\u00e5n (' + (_modLan*100) + ' Mkr skuld)</strong> \u2014 k\u00f6pstopp + uppgraderingsstopp g\u00e4ller. \u00c5terbetalas automatiskt om kassan n\u00e5r 100 Mkr (vid s\u00e4lj eller int\u00e4kt). \u00c5terst\u00e5ende skuld dras fr\u00e5n kassan i slutv\u00e4rderingen.';
+            html += '</div>';
+        }
+        // F\u00f6rtydligande p\u00e5 f4_forbered: bara tv\u00e5ngsf\u00f6rs\u00e4ljningar \u00e4r i spel
+        if (step === 'f4_forbered') {
+            html += '<div style="background:rgba(255,140,0,0.08);border:1px solid #ff8c00;border-radius:8px;padding:10px;margin-bottom:8px;color:var(--ink);font-size:13px">';
+            html += '<strong style="color:#ff8c00">Innan kvartal 1-spiralen</strong> \u2014 det enda k\u00f6p/s\u00e4lj som kan g\u00f6ras h\u00e4r \u00e4r <strong>tv\u00e5ngsf\u00f6rs\u00e4ljningar</strong> (kvarter med aktivt moderbolagsl\u00e5n som m\u00e5ste s\u00e4lja). P\u00e5 samma s\u00e4tt: bara tv\u00e5ngss\u00e4ljda fastigheter finns att k\u00f6pa.';
             html += '</div>';
         }
 
@@ -1942,7 +1975,8 @@ function renderPlayer() {
             }
             html += '</div>';
             // Marknadsvärde
-            html += '<div style="font-size:13px;color:var(--ink-mid)">DN: ' + dn + ' Mkr/kv | Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:var(--success)">' + mv + ' Mkr</strong></div>';
+            var _mv80 = Math.round(mv * 0.8);
+            html += '<div style="font-size:13px;color:var(--ink-mid)">DN: ' + dn + ' Mkr/kv | Anskaff: ' + f.anskaffning + ' Mkr | MV: <strong style="color:var(--success)">' + mv + ' Mkr</strong> <span style="color:var(--ink-faint);font-size:12px">(80 % = ' + _mv80 + ' Mkr — bankens bud)</span></div>';
             // Händelsekort per kvartal — auto-expanderad i Händelser-substeg, annars
             // collapsad om inte spelaren själv expanderat dem.
             var events = f.events || [];
@@ -2032,12 +2066,19 @@ function renderPlayer() {
             html += '</div>';
             html += '</div>';
             // Auto-add DN + personal cost to Kassa \u2014 bara n\u00e4r vi n\u00e5tt substeg 5 i kvartal
-            // (i f4_forbered eller utan kvartal: k\u00f6r direkt som tidigare)
-            var _shouldAutoDN = !_dnAdded && (!_isQuarter || _curSub >= 5);
+            // (i f4_forbered eller utan kvartal: k\u00f6r direkt som tidigare).
+            // L\u00e5s per-step s\u00e5 vi inte skickar flera parallella update_assets om render
+            // k\u00f6rs flera g\u00e5nger innan servern hunnit svara med mark_done.
+            S._dnSending = S._dnSending || {};
+            var _dnKey = 'dn_' + step;
+            var _shouldAutoDN = !_dnAdded && !S._dnSending[_dnKey] && (!_isQuarter || _curSub >= 5);
             if (_shouldAutoDN) {
+                S._dnSending[_dnKey] = true;
                 setTimeout(function() {
                     send({ type: 'update_assets', assets: { eget_kapital: (S.state.player.eget_kapital || 0) + _nettoKvartal } });
-                    send({ type: 'mark_done', step: 'dn_' + S.state.step });
+                    send({ type: 'mark_done', step: _dnKey });
+                    // Beh\u00e5ll l\u00e5set \u2014 n\u00e4r server svarar \u00e4r _dnAdded = true s\u00e5 vi kommer
+                    // inte trigga igen. Locket nollst\u00e4lls naturligt vid steg-byte.
                 }, 500);
             }
         }
@@ -2121,7 +2162,7 @@ function renderPlayer() {
         // Kassa summary at bottom of quarter
         if (_isQuarter) {
             html += '<div style="background:var(--paper);border:2px solid ' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + ';border-radius:10px;padding:12px;margin:10px 0;text-align:center">';
-            html += '<div style="font-size:13px;color:var(--ink-mid)">Kassa efter kvartal ' + _qNum + '</div>';
+            html += '<div style="font-size:13px;color:var(--ink-mid)">Kassa kvartal ' + _qNum + '</div>';
             html += '<div style="font-size:22px;font-weight:900;color:' + ((p.eget_kapital||0) >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(p.eget_kapital||0) + ' Mkr</div>';
             html += '</div>';
         }
@@ -2346,8 +2387,14 @@ function renderPlayer() {
         for (var k in choices) { var ch = choices[k]; plQ += ch.q||0; plH += ch.h||0; plT += ch.t||0; plErf += ch.erf||0; plCost += ch.cost||0; }
         for (var k in plEvts) { var ev = plEvts[k]; plEvQ += ev.q||0; plEvH += ev.h||0; plEvT += ev.t||0; plEvAbt += ev.abt||0; }
         var gfP = p.gf_phases || {};
-        var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0;
-        for (var f in gfP) { gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0; }
+        var gfQ = 0, gfH = 0, gfT = 0, gfAbt = 0, gfKulturAbt = 0;
+        // Kulturkort-pris per fas (regelbok §3.5): 2,2,3,4,5,6,7,8
+        var _KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8];
+        for (var f in gfP) {
+            gfQ += gfP[f].q||0; gfH += gfP[f].h||0; gfT += gfP[f].t||0; gfAbt += gfP[f].abt||0;
+            var _fIdx = parseInt(f) - 1;
+            if (_fIdx >= 0 && _fIdx < 8) gfKulturAbt += (gfP[f].kultur||0) * _KULTUR_PRIS[_fIdx];
+        }
 
         // PC/AC direct bonuses (Q, H, T, Rb, Erfarenhet)
         var pcQ = p.projektchef ? (p.projektchef.q_bonus || 0) : 0;
@@ -2374,8 +2421,10 @@ function renderPlayer() {
         var curH = plH + plEvH + gfH + konsTimeH + konsKvalH + konsHallH + acH;
         var curT = Math.max(8, totalT + plT + plEvT + gfT - pcT - acT);
         var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
-        var totalAbtUsed = plCost + plEvAbt + gfAbt + konsAbt;
+        var totalAbtUsed = plCost + plEvAbt + gfAbt + gfKulturAbt + konsAbt;
         var anskKvar = totalAnsk - totalKost - totalAbtUsed;
+        // ABT-budget vid start av Skede 2 = totalAnsk - totalKost (innan plCost m.m.)
+        var abtStart = totalAnsk - totalKost;
 
         // ── KRAV-block (Q | H | T tillsammans, scoreboard-stil) ──
         var showCur = (isPhase2 || isPhase3 || isPhase4);
@@ -2430,7 +2479,8 @@ function renderPlayer() {
         html += '<div>BTA <strong style="color:var(--ink)">' + totalBta + '</strong> kvm</div>';
         html += '</div>';
         if (isPhase2 || isPhase3) {
-            html += '<div style="font-size:13px;margin-bottom:6px">ABT-budget: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
+            html += '<div style="font-size:13px;margin-bottom:2px">ABT-budget vid start (Skede 2): <strong>' + Math.round(abtStart) + ' Mkr</strong></div>';
+            html += '<div style="font-size:13px;margin-bottom:6px">Kvar av ABT-budget: <strong style="color:' + (anskKvar >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(anskKvar) + ' Mkr</strong></div>';
         }
         // Moderbolagslån i Skede 2 (PL/GF) är BARA en VARNING — själva lånet
         // aktiveras först i gf_abt_ek-steget (övergången till Skede 3).
@@ -2490,8 +2540,8 @@ function renderPlayer() {
             var tb = anskKvar;
             var tg = (totalAnsk > 0) ? Math.round((tb / totalAnsk) * 100) : 0;
             html += '<div style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">';
-            html += 'TB: <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong>';
-            html += ' &nbsp; TG: <strong style="color:' + (tg >= 20 ? 'var(--success)' : (tg >= 0 ? 'var(--burgundy)' : 'var(--danger)')) + '">' + tg + '%</strong>';
+            html += 'Täckningsbidrag (TB): <strong style="color:' + (tb >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(tb) + ' Mkr</strong>';
+            html += ' &nbsp; Täckningsgrad (TG): <strong style="color:' + (tg >= 20 ? 'var(--success)' : (tg >= 0 ? 'var(--burgundy)' : 'var(--danger)')) + '">' + tg + '%</strong>';
             html += '</div>';
             // Kassa visas endast i Skede 3 (Förvaltning) — ej i Skede 2
             if (isPhase4) {
@@ -2714,7 +2764,10 @@ function attachPlayerEvents(container) {
             var dir = parseInt(el.dataset.dir);
             var gfPhases = Object.assign({}, S.state.player.gf_phases || {});
             var gf = Object.assign({}, gfPhases[fas] || {});
-            gf[field] = (gf[field] || 0) + dir;
+            var newVal = (gf[field] || 0) + dir;
+            // Kulturkort kan inte gå under 0
+            if (field === 'kultur' && newVal < 0) return;
+            gf[field] = newVal;
             gfPhases[fas] = gf;
             send({ type: 'update_assets', assets: { gf_phases: gfPhases } });
         });
@@ -3365,11 +3418,12 @@ async function openFCFSModal(type) {
     html += '<div class="modal-header"><h3>' + title + '</h3></div>';
     html += '<div class="modal-body">';
     for (const s of items) {
+        var _forhText = s.forhandling ? ' | Förhandlingstärning: ' + s.forhandling : '';
         html += '<div class="modal-item" data-staff=\'' + JSON.stringify(s).replace(/'/g,"&#39;") + '\'>'
             + '<div class="item-name">' + s.namn + '</div>'
             + '<div class="item-detail">' + (s.specialisering||'') + ' | Kapacitet: ' + (s.kapacitet||0) + ' projekt'
-            + ' | Lön: ' + (s.lon||0) + ' Mkr/kv</div>'
-            + '<div class="item-detail" style="color:var(--ink-mid)">' + (s.not_text||s.forhandling||'') + '</div>'
+            + ' | Lön: ' + (s.lon||0) + ' Mkr/kv' + _forhText + '</div>'
+            + '<div class="item-detail" style="color:var(--ink-mid)">' + (s.not_text||'') + '</div>'
             + '</div>';
     }
     html += '</div>';
@@ -3551,6 +3605,7 @@ function showQuizFeedback(data) {
 
 function showQuizClosed(data) {
     if (S._quizTimer) { clearInterval(S._quizTimer); S._quizTimer = null; }
+    S._quizModalShownFor = null;  // återställ så nästa fråga öppnar modal
     const mc = document.getElementById('quiz-modal-container');
     const modal = mc.querySelector('.quiz-modal');
     if (!modal) {
