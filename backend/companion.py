@@ -1060,8 +1060,11 @@ class CompanionManager:
             await self.broadcast_state(room)
 
         # ── Fastighetsauktion (Skede 3) ──
-        # Säljaren startar; alla andra (icke-GM) spelare i rummet får prompt.
-        # En auktion per rum åt gången.
+        # Säljaren startar; alla andra kvarter inom samma stadsdel (= rum) får
+        # budprompten. Kvarter = 1 spelare i normalfall, men om flera spelare
+        # delar samma quarter_idx (t.ex. flera flikar) exkluderas de — de är
+        # samma kvarter och budar inte mot sig själva.
+        # En auktion per rum (stadsdel) åt gången.
         elif msg_type == "auction_start" and not player.is_gm:
             if room.auction:
                 return  # En auktion redan aktiv
@@ -1075,8 +1078,11 @@ class CompanionManager:
                    else player.f4_yield_kommersiellt) or 5.0
             dn = fast.get("driftnetto", 0)
             mv = round((4 * dn) / (yld / 100)) if yld > 0 else (fast.get("anskaffning", 0))
+            # Bidders: bara spelare i andra kvarter (inte säljarens lagkamrater)
             bidders = {pid: "pending" for pid, p in room.players.items()
-                       if not p.is_gm and pid != player.id}
+                       if not p.is_gm
+                       and pid != player.id
+                       and p.quarter_idx != player.quarter_idx}
             room.auction = {
                 "seller_id": player.id,
                 "seller_name": player.name,
@@ -1090,6 +1096,9 @@ class CompanionManager:
 
         elif msg_type == "auction_respond" and not player.is_gm:
             if not room.auction or player.id == room.auction["seller_id"]:
+                return
+            # Bara spelare som är listade som bidders (= andra kvarter) får svara
+            if player.id not in room.auction.get("bidders", {}):
                 return
             response = data.get("response")  # "skip" | "won"
             if response == "skip":
