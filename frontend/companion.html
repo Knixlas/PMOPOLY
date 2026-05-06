@@ -1167,24 +1167,34 @@ function renderPlayer() {
     const isPhase3 = phase === 'phase3';
     const isPhase4 = phase === 'phase4';
 
-    const PH1_STEPS = ['choose_pc', 'projects', 'namndbeslut', 'rb_invest'];
-    const PH2_STEPS = ['choose_ac', 'planning', 'planning_summary'];
-    const PH3_STEPS = ['gf_byggfaser', 'gf_konsekvens', 'gf_garanti', 'gf_abt_ek'];
+    // Phase 1 step-ordning (matchar companion_texts.json)
+    const PH1_STEPS = ['welcome', 'setup_skede1', 'choose_pc', 'projects',
+                       'namndbeslut', 'placement', 'remove_unplaced',
+                       'anskaffning', 'rb_invest'];
+    const PH2_STEPS = ['transition_skede2', 'choose_ac', 'planning', 'planning_summary'];
+    const PH3_STEPS = ['transition_skede3', 'gf_byggfaser', 'gf_konsekvens',
+                       'gf_garanti', 'gf_abt_ek'];
     const ph1Idx = PH1_STEPS.indexOf(step);
     const ph2Idx = PH2_STEPS.indexOf(step);
     const ph3Idx = PH3_STEPS.indexOf(step);
+    // Steg som ska visa projektlistan (från och med projects och framåt)
+    const PH1_PROJECT_STEPS = ['projects', 'namndbeslut', 'placement',
+                               'remove_unplaced', 'anskaffning', 'rb_invest'];
+    // Steg som ska visa Q/H/Rb-räknare (från och med projects, men inte rb_invest)
+    const PH1_COUNTER_STEPS = ['projects', 'namndbeslut', 'placement',
+                               'remove_unplaced', 'anskaffning'];
 
     // Phase 1 visibility
-    const showPC = ph1Idx >= 0 || isPhase2 || isPhase3 || isPhase4;
+    const showPC = ph1Idx >= PH1_STEPS.indexOf('choose_pc') || isPhase2 || isPhase3 || isPhase4;
     const editPC = step === 'choose_pc';
-    const showProjects = ph1Idx >= 1 || isPhase2 || isPhase3 || isPhase4;
+    const showProjects = PH1_PROJECT_STEPS.indexOf(step) >= 0 || isPhase2 || isPhase3 || isPhase4;
     const editProjects = step === 'projects';
     // Tillåt borttagning under nämndbeslut, remove_unplaced och rb_invest så att
     // projekt som inte slank igenom eller inte placerades kan tas bort manuellt.
     const editProjectsRemove = step === 'namndbeslut' || step === 'remove_unplaced' || step === 'rb_invest';
     // 3×-köp av nytt projekt: bara i namndbeslut (för att ersätta avslagna projekt)
     const allowBuy3x = step === 'namndbeslut';
-    const showCounters = (ph1Idx >= 1 && step !== 'rb_invest') || false;
+    const showCounters = PH1_COUNTER_STEPS.indexOf(step) >= 0;
     const showRbInvest = step === 'rb_invest';
 
     // Phase 2 visibility
@@ -1718,8 +1728,9 @@ function renderPlayer() {
         html += '<div class="asset-card" style="border-left-color:#16a085">';
         html += '<div class="asset-label">FASTIGHETSCHEF (FC)</div>';
         if (p.fastighetschef) {
+            var _fcKap = p.fastighetschef.kapacitet || 1;
             html += '<div><strong>' + p.fastighetschef.namn + '</strong><br>'
-                + '<span style="color:var(--ink-mid)">' + (p.fastighetschef.specialisering||'') + ' | L\u00f6n: ' + (p.fastighetschef.lon||0) + ' Mkr/kv</span></div>';
+                + '<span style="color:var(--ink-mid)">' + (p.fastighetschef.specialisering||'') + ' | Kapacitet: ' + _fcKap + ' projekt | L\u00f6n: ' + (p.fastighetschef.lon||0) + ' Mkr/kv</span></div>';
         } else {
             html += '<div class="choose-btn" data-choose="fc" style="cursor:pointer;color:var(--burgundy)">+ V\u00e4lj Fastighetschef</div>';
         }
@@ -1732,8 +1743,9 @@ function renderPlayer() {
         for (var fsi = 0; fsi < fsList.length; fsi++) {
             var fsItem = fsList[fsi];
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--paper-deep)">';
+            var _fsKap = fsItem.kapacitet || 1;
             html += '<div><strong>' + fsItem.namn + '</strong><br>'
-                + '<span style="color:var(--ink-mid)">' + (fsItem.specialisering||'') + ' | L\u00f6n: ' + (fsItem.lon||0) + ' Mkr/kv</span></div>';
+                + '<span style="color:var(--ink-mid)">' + (fsItem.specialisering||'') + ' | Kapacitet: ' + _fsKap + ' projekt | L\u00f6n: ' + (fsItem.lon||0) + ' Mkr/kv</span></div>';
             html += '<span class="f4-remove-fs" data-fsi="' + fsi + '" style="cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px">\u2715</span>';
             html += '</div>';
         }
@@ -3289,7 +3301,7 @@ async function openFCFSModal(type) {
     for (const s of items) {
         html += '<div class="modal-item" data-staff=\'' + JSON.stringify(s).replace(/'/g,"&#39;") + '\'>'
             + '<div class="item-name">' + s.namn + '</div>'
-            + '<div class="item-detail">' + (s.specialisering||'') + ' | Kapacitet: ' + (s.kapacitet||0)
+            + '<div class="item-detail">' + (s.specialisering||'') + ' | Kapacitet: ' + (s.kapacitet||0) + ' projekt'
             + ' | Lön: ' + (s.lon||0) + ' Mkr/kv</div>'
             + '<div class="item-detail" style="color:var(--ink-mid)">' + (s.not_text||s.forhandling||'') + '</div>'
             + '</div>';
