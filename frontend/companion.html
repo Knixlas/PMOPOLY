@@ -1737,31 +1737,26 @@ function renderPlayer() {
         var EKLASS = ['E','D','C','B','A'];
         var TYPE_COLORS = {'BRF':'#d4a017','HYRESRÄTT':'var(--danger)','FÖRSKOLA':'var(--success)','LOKAL':'#2980b9','KONTOR':'#8e44ad'};
 
-        // Auto-convert projects to fastigheter if not done yet
+        // Auto-convert projects to fastigheter if not done yet.
+        // BRF-projekten räknades ALREDAN in i kassan i gf_abt_ek (calcEK = brfFast + tb + ...),
+        // så vi adderar INTE brfEk här — det skulle ge dubbelräkning.
         if (fasts.length === 0 && p.projects.length > 0 && !S._f4converted) {
             S._f4converted = true;
             var autoFasts = [];
-            var brfEk = 0;
             for (var _ap of p.projects) {
-                if (_ap.typ === 'BRF') {
-                    brfEk += (_ap.marknadsvarde || _ap.anskaffning) - _ap.anskaffning;
-                } else {
-                    autoFasts.push({
-                        id: _ap.id, namn: _ap.namn, typ: _ap.typ, bta: _ap.bta,
-                        anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'D',
-                        marknadsvarde: _ap.marknadsvarde || _ap.anskaffning,
-                        driftnetto: _ap.driftnetto || 0,
-                        events: [], sold: false, kopeskilling: 0
-                    });
-                }
+                if (_ap.typ === 'BRF') continue;  // BRF lämnas till föreningen, blir inga fastigheter
+                autoFasts.push({
+                    id: _ap.id, namn: _ap.namn, typ: _ap.typ, bta: _ap.bta,
+                    anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'D',
+                    marknadsvarde: _ap.marknadsvarde || _ap.anskaffning,
+                    driftnetto: _ap.driftnetto || 0,
+                    events: [], sold: false, kopeskilling: 0
+                });
             }
             fasts = autoFasts;
             p.fastigheter = autoFasts;
-            console.log('[F4] Auto-converting ' + p.projects.length + ' projects → ' + autoFasts.length + ' fastigheter, BRF EK: ' + brfEk);
-            send({ type: 'update_assets', assets: {
-                fastigheter: autoFasts,
-                eget_kapital: (p.eget_kapital || 0) + brfEk
-            }});
+            console.log('[F4] Auto-converting ' + p.projects.length + ' projects → ' + autoFasts.length + ' fastigheter (BRF redan i kassan från gf_abt_ek)');
+            send({ type: 'update_assets', assets: { fastigheter: autoFasts } });
         }
         // Use locally set fastigheter if server hasn't responded yet
         if (fasts.length === 0 && p.fastigheter && p.fastigheter.length > 0) {
@@ -1822,9 +1817,10 @@ function renderPlayer() {
         // energi på substeg 7, händelse-knappar på substeg 6.
         // I f4_forbered är allt aktivt utan spärr.
         // (variablerna _canSell/_canBuy/_canEnergi/_canEvents används nedan)
-        if (_hasModLan && _ownedCount > 1) {
-            html += '<div style="background:var(--paper-deep);border:2px solid var(--danger);border-radius:8px;padding:12px;margin-bottom:8px;color:var(--danger);font-weight:700;text-align:center">';
-            html += '\u26a0\ufe0f Tv\u00e5ngsf\u00f6rs\u00e4ljning kr\u00e4vs! Du har moderbolags\u00e5n och fler \u00e4n 1 fastighet.</div>';
+        if (_hasModLan) {
+            html += '<div style="background:rgba(196,30,30,0.07);border:1px solid var(--danger);border-radius:8px;padding:10px;margin-bottom:8px;color:var(--ink);font-size:13px">';
+            html += '<strong style="color:var(--danger)">' + _modLan + ' aktivt moderbolagsl\u00e5n (' + (_modLan*100) + ' Mkr skuld)</strong> \u2014 k\u00f6pstopp + uppgraderingsstopp g\u00e4ller. \u00c5terbetalas automatiskt om kassan n\u00e5r 100 Mkr (vid s\u00e4lj eller int\u00e4kt). \u00c5terst\u00e5ende skuld dras fr\u00e5n kassan i slutv\u00e4rderingen.';
+            html += '</div>';
         }
 
         // Quarter header for f4_q1-q4
@@ -2792,30 +2788,23 @@ function attachPlayerEvents(container) {
             send({ type: 'update_assets', assets: { fastighetsskotare: fsList } });
         });
     });
-    // Phase 4: Convert projects to fastigheter
+    // Phase 4: Convert projects to fastigheter (manuell knapp).
+    // BRF räknades redan i kassan via gf_abt_ek — adderar inte brfEk här.
     container.querySelectorAll('[data-action="convert_projects"]').forEach(el => {
         el.addEventListener('click', () => {
             var p = S.state.player;
             var fasts = [];
-            var brfEk = 0;
             for (var pr of (p.projects || [])) {
-                if (pr.typ === 'BRF') {
-                    // BRF sold: EK += MV - anskaffning
-                    brfEk += (pr.marknadsvarde || pr.anskaffning) - pr.anskaffning;
-                } else {
-                    fasts.push({
-                        id: pr.id, namn: pr.namn, typ: pr.typ, bta: pr.bta,
-                        anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'D',
-                        marknadsvarde: pr.marknadsvarde || pr.anskaffning,
-                        driftnetto: pr.driftnetto || 0,
-                        events: [], sold: false, kopeskilling: 0
-                    });
-                }
+                if (pr.typ === 'BRF') continue;
+                fasts.push({
+                    id: pr.id, namn: pr.namn, typ: pr.typ, bta: pr.bta,
+                    anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'D',
+                    marknadsvarde: pr.marknadsvarde || pr.anskaffning,
+                    driftnetto: pr.driftnetto || 0,
+                    events: [], sold: false, kopeskilling: 0
+                });
             }
-            send({ type: 'update_assets', assets: {
-                fastigheter: fasts,
-                eget_kapital: (p.eget_kapital || 0) + brfEk
-            }});
+            send({ type: 'update_assets', assets: { fastigheter: fasts } });
         });
     });
     // Phase 4: Energiklass buttons (med limit per kvartal + 3 Mkr/steg)
