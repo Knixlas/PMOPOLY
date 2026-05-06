@@ -1676,10 +1676,6 @@ function renderPlayer() {
         html += '<div style="color:var(--ink-mid);font-size:12px;font-weight:600">3. Kassa innan l\u00e5n</div>';
         html += '<div>TB + BRF-int\u00e4kt + r\u00f6rlig = <strong style="color:' + (kassaBeforeLoan >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(kassaBeforeLoan) + ' Mkr</strong></div>';
         html += '<div style="font-size:13px;color:var(--ink-mid)">\u00d6verl\u00e4mnade fastigheter: <strong>' + nonBrfProj.length + ' st</strong> (ej BRF)</div>';
-        if (kassaBeforeLoan < 0 && nonBrfProj.length > 1) {
-            html += '<div style="background:var(--paper-deep);border:1px solid var(--danger);border-radius:6px;padding:8px;margin:6px 0;color:var(--danger);font-size:13px">';
-            html += '\u26a0\ufe0f Kassan \u00e4r negativ! S\u00e4lj fastigheter tills du har max 1 kvar, eller ta moderbola\u200dgs\u00e5n.</div>';
-        }
         html += '</div>';
 
         // Step 4: Moderbolagslån — auto-tas + auto-återbetalas när kassan tillåter
