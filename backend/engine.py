@@ -231,14 +231,12 @@ def _handle_board(room: GameRoom, player: Player, action: dict) -> dict:
         # Player clicked "Roll D20" in card modal
         card = room.temp.get("current_card")
         d20_result = roll("D20")
-        # PC lindring: add bonus if PC's motstand matches card type
+        # PC erfarenhet lindrar alla händelsekort i Skede 1 (samma logik som
+        # AC i Skede 2-3) — Lindring/Händelsemotstand är historik som ersattes.
         pc_bonus = 0
         if player.projektchef:
-            card_typ = card.typ if hasattr(card, 'typ') else card.get("typ", "")
-            motstand = player.projektchef.get("handelsemotstand", "")
-            if card_typ and card_typ.lower() in motstand.lower():
-                pc_bonus = player.projektchef.get("lindring", 0)
-                d20_result += pc_bonus
+            pc_bonus = player.projektchef.get("erfarenhet", 0)
+            d20_result += pc_bonus
         effect = _get_card_effect(card, d20_result)
         room.temp["d20_result"] = d20_result
 

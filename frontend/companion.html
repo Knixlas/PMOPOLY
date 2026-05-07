@@ -735,7 +735,7 @@ function projectedScore(p, phase) {
     var totalAnsk = projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
     var totalBta = projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
     var projKost = (p.dev_cost_total || projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0));
-    var markKost = 15 + (p.mark_expansions || 0) * 5;
+    var markKost = 10 + (p.mark_expansions || 0) * 5;
     var totalKost = projKost + markKost;
     var totalQ = p.q_krav || 0;
     var totalH = p.h_krav || 0;
@@ -1787,7 +1787,7 @@ function renderPlayer() {
         // TB = Anskaffning − (utv.kostnad + tomt + markexp + planeringskostnad
         // + planeringshändelser + faskort-händelser + kulturkort + konsekvens + garanti).
         var _projAnsk = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
-        var _projKost = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
+        var _projKost = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 10 + (p.mark_expansions||0)*5;
         var _chc3 = p.pl_choices||{}, _plEv3 = p.pl_events||{}, _gfP3 = p.gf_phases||{};
         var KULTUR_PRIS_TB = [2, 2, 3, 4, 5, 6, 7, 8];
         var _abtUsed = 0;
@@ -2373,7 +2373,7 @@ function renderPlayer() {
 
             // Steg 3: TB i ABT
             var _pAnsk4 = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
-            var _pKost4 = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
+            var _pKost4 = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 10 + (p.mark_expansions||0)*5;
             var _abt4 = 0;
             var _ch4 = p.pl_choices||{}; for(var k in _ch4) _abt4 += _ch4[k].cost||0;
             var _ev4 = p.pl_events||{}; for(var k in _ev4) _abt4 += _ev4[k].abt||0;
@@ -2555,7 +2555,7 @@ function renderPlayer() {
         const totalT = Math.max(8, baseT - (p.rb_spent_t || 0));
         const totalAnsk = p.projects.reduce(function(s, pr) { return s + (pr.anskaffning || 0); }, 0);
         const projKost = p.dev_cost_total || p.projects.reduce(function(s, pr) { return s + (pr.kostnad || 0); }, 0);
-        const markKost = 15;
+        const markKost = 10;
         const expKost = (p.mark_expansions || 0) * 5;
         const totalKost = projKost + markKost + expKost;
         const totalBta = p.projects.reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
@@ -2664,6 +2664,45 @@ function renderPlayer() {
         html += '<div>Anskaff <strong style="color:var(--ink)">' + totalAnsk + '</strong> Mkr</div>';
         html += '<div>Utv.kostn <strong style="color:var(--ink)">' + totalKost + '</strong> Mkr</div>';
         html += '<div>BTA <strong style="color:var(--ink)">' + totalBta + '</strong> kvm</div>';
+        html += '</div>';
+
+        // ── Klasser-rad (BTA-klass / BYA-klass / Kvarterstyp) ──
+        // BTA-klass: A 500-5000 / B 5001-7000 / C 7001-9000 / D >9000
+        function _btaKlass(bta) {
+            if (bta <= 0) return '—';
+            if (bta <= 5000) return 'A';
+            if (bta <= 7000) return 'B';
+            if (bta <= 9000) return 'C';
+            return 'D';
+        }
+        // BYA = sum(formfaktor × 250) per projekt + ev. fördelning på markexpansion-rutor
+        var totalBya = p.projects.reduce(function(s, pr) { return s + (pr.formfaktor || 0) * 250; }, 0);
+        function _byaKlass(bya) {
+            if (bya <= 0) return '—';
+            if (bya <= 4000) return 'A';
+            if (bya <= 4750) return 'B';
+            if (bya <= 5000) return 'C';
+            return 'D';
+        }
+        // Kvarterstyp: enbart bostäder = BOSTÄDER, bostäder + 1 typ = BOSTÄDER+1,
+        // i övrigt ÖVRIGA (inkl. inga bostäder).
+        var _typesSeen = {};
+        var _hasBostad = false;
+        for (var _pi = 0; _pi < p.projects.length; _pi++) {
+            var _typ = (p.projects[_pi].typ || '').toUpperCase();
+            if (_typ === 'BRF' || _typ === 'HYRESRÄTT') _hasBostad = true;
+            else if (_typ) _typesSeen[_typ] = true;
+        }
+        var _otherCount = Object.keys(_typesSeen).length;
+        var _kvartersTyp;
+        if (!_hasBostad) _kvartersTyp = 'Övriga';
+        else if (_otherCount === 0) _kvartersTyp = 'Bostäder';
+        else if (_otherCount === 1) _kvartersTyp = 'Bostäder+1';
+        else _kvartersTyp = 'Övriga';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;font-size:12px;color:var(--ink-mid)">';
+        html += '<div>BTA-klass <strong style="color:var(--ink)">' + _btaKlass(totalBta) + '</strong></div>';
+        html += '<div>BYA-klass <strong style="color:var(--ink)">' + _byaKlass(totalBya) + '</strong> <span style="color:var(--ink-faint)">(' + totalBya + ' kvm)</span></div>';
+        html += '<div>Kvarterstyp <strong style="color:var(--ink)">' + _kvartersTyp + '</strong></div>';
         html += '</div>';
         if (isPhase2 || isPhase3) {
             html += '<div style="font-size:13px;margin-bottom:2px">ABT-budget vid start (Skede 2): <strong>' + Math.round(abtStart) + ' Mkr</strong></div>';
@@ -3393,7 +3432,7 @@ function openPCModal() {
     for (const pc of S.pcData) {
         if (taken.indexOf(pc.id) >= 0) continue; // upptagen av lagkamrat
         availableCount++;
-        const lindring = pc.lindring || 0;
+        const erf = pc.erfarenhet || 0;
         const rb = pc.rb || 0;
         const namndB = pc.namnd_bonus || 0;
         const qB = pc.q_bonus || 0, hB = pc.h_bonus || 0, tB = pc.t_bonus || 0;
@@ -3401,7 +3440,7 @@ function openPCModal() {
         const kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
         // Bygg lista av effekter
         var effekter = [];
-        if (lindring > 0) effekter.push('+' + lindring + ' Lindring (politik/dialog)');
+        if (erf > 0) effekter.push('+' + erf + ' Erfarenhet (lindrar alla händelsekort)');
         if (namndB > 0) effekter.push('+' + namndB + ' Nämndslag');
         if (hB > 0) effekter.push('Sänker H-krav med ' + hB);
         if (qB > 0) effekter.push('Sänker Q-krav med ' + qB);

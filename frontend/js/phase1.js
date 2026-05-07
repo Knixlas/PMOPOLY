@@ -285,10 +285,10 @@ function renderChoosePC(panel, pending) {
     let html = `<h3>Välj Projektchef (PC)</h3><p>${pending.message}</p>`;
     const options = pending.available || [];
     for (const pc of options) {
-        const lindring = pc.lindring || 0;
+        const erf = pc.erfarenhet || 0;
         const komp = pc.kompetenser ? Object.entries(pc.kompetenser).map(([k,v]) => `${k}:${v}`).join(', ') : '';
         const effekter = [];
-        if (lindring > 0) effekter.push(`+${lindring} Lindring (politik/dialog)`);
+        if (erf > 0) effekter.push(`+${erf} Erfarenhet (lindrar alla händelsekort)`);
         if (pc.namnd_bonus) effekter.push(`+${pc.namnd_bonus} Nämndslag`);
         if (pc.h_bonus) effekter.push(`Sänker H-krav med ${pc.h_bonus}`);
         if (pc.q_bonus) effekter.push(`Sänker Q-krav med ${pc.q_bonus}`);

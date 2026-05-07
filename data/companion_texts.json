@@ -39,11 +39,11 @@
           "lead": "Varje kvarter väljer en projektchef (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
           "actions": [
             "Klicka \"Välj Projektchef\" i companion",
-            "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndslag (D20 vid nämndbeslut), H-/Q-/T-bonus, Kompetens",
+            "Jämför attribut: Riskbuffertar (Rb), Erfarenhet (lindrar alla händelsekort), Nämndslag (D20 vid nämndbeslut), H-/Q-/T-bonus, Kompetens",
             "Inom kvarteret väljer ni i tur och ordning — samma person kan bara väljas en gång per kvarter"
           ],
           "meaning": "PrC är en av kvarterets viktigaste resurser. Personerna är ungefär lika starka — det är profilen som skiljer.",
-          "tip": "Välj efter er strategi: hög lindring för PU-brädet, högt nämndslag för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
+          "tip": "Välj efter er strategi: hög erfarenhet för att lindra händelsekort på PU-brädet, högt nämndslag för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
           "regelbok": "§3.8"
         },
         {
@@ -116,7 +116,7 @@
           "actions": [
             "Companion summerar automatiskt:",
             "  Anskaffning (intäkt från projekten)",
-            "  minus 15 Mkr för tomten",
+            "  minus 10 Mkr för tomten",
             "  minus 5 Mkr per markexpansion",
             "  minus Utvecklingskostnad för alla projekt (även ej placerade)",
             "  = ABT-budget",

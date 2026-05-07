@@ -26,11 +26,11 @@ PHASES = [
             "Varje spelare väljer 1 av 10 projektchefer. Gratis.\n\n"
             "Attribut att jämföra:\n"
             "• Riskbuffertar (Rb) — säkerhetsmarginal\n"
-            "• Lindring — bonus på politik/dialogkort under PU-brädet\n"
+            "• Erfarenhet — lindrar alla händelsekort under PU-brädet\n"
             "• Nämndslag — D20-bonus vid nämndbeslut (steg 1.8)\n"
             "• H-/Q-/T-bonus — tillämpas i Skede 2.1\n"
             "• Kompetens — spelbar som kort i Skede 2.2\n\n"
-            "Tips: Hög lindring = bra under PU-brädet. Högt nämndslag = tryggare med BRF. "
+            "Tips: Hög erfarenhet = bra under PU-brädet. Högt nämndslag = tryggare med BRF. "
             "Hög Rb = mer flexibilitet senare."},
         {"id": "projects", "name": "1.4–1.6 Projektval & Brädspel", "help":
             "Välj ett startprojekt (1.4), sedan spelas PU-brädet (1.5–1.6).\n\n"
@@ -374,7 +374,7 @@ class CompanionPlayer:
         + konsekvenskort + garantibesiktning."""
         KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8]  # fas 1-8
         total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
-        total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
+        total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 10 + self.mark_expansions * 5
         abt_used = 0
         for ch in (self.pl_choices or {}).values():
             abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
@@ -421,7 +421,7 @@ class CompanionPlayer:
                 risk_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
                 pc_bonus = 0
                 if self.projektchef:
-                    pc_bonus = self.projektchef.get("lindring", 0) * 2
+                    pc_bonus = self.projektchef.get("erfarenhet", 0) * 2
                     pc_bonus += self.projektchef.get("namnd_bonus", 0) * 3
                 tb = risk_bonus + pc_bonus + self.riskbuffertar * 3
         else:

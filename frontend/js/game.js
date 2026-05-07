@@ -703,7 +703,7 @@ function showAssetDetail(card, player) {
             <h3>${pc.namn}</h3>
             <div class="card-type">Projektchef — ${pc.specialisering || ''}</div>
             <div class="detail-grid">
-                ${pc.lindring ? `<div class="detail-row"><span>Lindring (politik/dialog)</span><span>+${pc.lindring}</span></div>` : ''}
+                ${pc.erfarenhet ? `<div class="detail-row"><span>Erfarenhet (lindrar alla händelsekort)</span><span>+${pc.erfarenhet}</span></div>` : ''}
                 ${pc.namnd_bonus ? `<div class="detail-row"><span>Nämndslag</span><span>+${pc.namnd_bonus}</span></div>` : ''}
                 ${pc.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${pc.h_bonus}</span></div>` : ''}
                 ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
@@ -795,9 +795,9 @@ function renderCompanion() {
         html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
         html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKTCHEF</div>';
         html += '<div style="font-weight:600">' + pc.namn + '</div>';
-        var _pcLin = pc.lindring || pc.kapacitet || 0;
+        var _pcErf = pc.erfarenhet || 0;
         var _pcParts = [];
-        if (_pcLin) _pcParts.push('+' + _pcLin + ' Lindring (politik/dialog)');
+        if (_pcErf) _pcParts.push('+' + _pcErf + ' Erfarenhet');
         if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' Nämndslag');
         html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + (_pcParts.length ? ' | ' + _pcParts.join(' | ') : '') + '</div>';
         html += '</div>';

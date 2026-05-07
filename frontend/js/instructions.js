@@ -73,7 +73,7 @@ export const INSTRUCTIONS = {
         rules:
             "Nu räknas ekonomin ihop automatiskt.\n\n" +
             "• Intäkter = summan av alla projekts anskaffningsvärden\n" +
-            "• Kostnader = mark (15 Mkr) + expansioner + projektkostnader\n" +
+            "• Kostnader = mark (10 Mkr) + expansioner + projektkostnader\n" +
             "• ABT (budget) = Intäkter − Kostnader\n\n" +
             "Om kostnaderna överstiger intäkterna behöver du ta moderbolagslån. " +
             "Varje lån på 100 Mkr ger 95 Mkr netto (5 Mkr i avgift).",

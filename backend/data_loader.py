@@ -563,7 +563,9 @@ def load_pc_ac_staff() -> Dict[str, list]:
             "t_bonus": safe_int(row.get("T")),
         }
         if roll == "PC":
-            entry["lindring"] = safe_int(row.get("Lindring"))
+            # Lindring slopas på PrC — istället används Erfarenhet som lindrar
+            # alla händelsekort i Skede 1 (samma mekanik som AC i Skede 2-3).
+            entry["erfarenhet"] = safe_int(row.get("Erfarenhet"))
             entry["namnd_bonus"] = safe_int(row.get("Nämnd", row.get("N\xe4mnd", 0)))
             entry["lon"] = 0  # PC cost handled differently now
         elif roll == "AC":
