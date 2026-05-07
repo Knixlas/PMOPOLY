@@ -1615,7 +1615,11 @@ function renderPlayer() {
         // p\u00e5 faskortet (f\u00f6rdelas p\u00e5 Q/H/T av spelaren).
         var _rbPcGf = p.projektchef ? (p.projektchef.rb || 0) : 0;
         var _rbAcGf = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
-        var _rbAvail = (p.riskbuffertar || 0) + _rbPcGf + _rbAcGf;
+        // Rb fr\u00e5n organisationer valda i Skede 2.1 (suppliers har inte Rb).
+        var _rbOrgGf = 0;
+        var _plChGf = p.pl_choices || {};
+        for (var _kCh in _plChGf) _rbOrgGf += (_plChGf[_kCh].rb || 0);
+        var _rbAvail = (p.riskbuffertar || 0) + _rbPcGf + _rbAcGf + _rbOrgGf;
         html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
         html += '<div class="asset-label">Riskbuffertar \u2014 Skede 2.2</div>';
         html += '<div style="font-size:12px;color:var(--ink-mid);font-style:italic;margin-bottom:6px">' +
@@ -2620,7 +2624,12 @@ function renderPlayer() {
         html += _kravCell('Tid (mån)', '#A8501F', String(curT), 'mål 12 · start ' + baseT, tColor, true);
         html += '</div>';
         // (T-v\u00e4rdet ing\u00e5r nu i KRAV-blocket ovan)
-        var totalRb = (p.riskbuffertar || 0) + pcRb + acRb;
+        // Rb-totalen inkluderar player.riskbuffertar (insamlad i Skede 1) +
+        // PC.rb + AC.rb + Rb fr\u00e5n valda organisationer i Skede 2.1.
+        var orgRb = 0;
+        var _plChSum = p.pl_choices || {};
+        for (var _kSum in _plChSum) orgRb += (_plChSum[_kSum].rb || 0);
+        var totalRb = (p.riskbuffertar || 0) + pcRb + acRb + orgRb;
         var rbSpent = (p.rb_spent_q || 0) + (p.rb_spent_h || 0) + (p.rb_spent_t || 0);
         var rbKvar = totalRb - rbSpent;
         // Erfarenhetstaket är 12 (regelboken §10 + §1.7)
@@ -2886,11 +2895,14 @@ function attachPlayerEvents(container) {
             const key = 'rb_spent_' + target;
             const cur = S.state.player[key] || 0;
             const totalSpent = (S.state.player.rb_spent_q || 0) + (S.state.player.rb_spent_h || 0) + (S.state.player.rb_spent_t || 0);
-            // Samma totalformel som Sammanställning: spelar-Rb + PC.rb + AC.rb
+            // Samma totalformel som Sammanställning: spelar-Rb + PC.rb + AC.rb + org-Rb
             const _pl = S.state.player;
             const _rbPc = _pl.projektchef ? (_pl.projektchef.rb || 0) : 0;
             const _rbAc = _pl.arbetschef ? (_pl.arbetschef.rb || 0) : 0;
-            const _rbTotal = (_pl.riskbuffertar || 0) + _rbPc + _rbAc;
+            let _rbOrg = 0;
+            const _ch = _pl.pl_choices || {};
+            for (const _k in _ch) _rbOrg += (_ch[_k].rb || 0);
+            const _rbTotal = (_pl.riskbuffertar || 0) + _rbPc + _rbAc + _rbOrg;
             if (totalSpent < _rbTotal) {
                 send({ type: 'update_assets', assets: { [key]: cur + 1 } });
             }
@@ -2991,12 +3003,15 @@ function attachPlayerEvents(container) {
             const key = el.dataset.key;
             const cur = S.state.player[key] || 0;
             let min = el.dataset.allowNeg ? -99 : 0;
-            // Spärra Rb-decr så total-Rb (player + PC + AC) inte går under 0
+            // Spärra Rb-decr så total-Rb (player + PC + AC + org-Rb) inte går under 0
             if (key === 'riskbuffertar') {
                 const _pl = S.state.player;
                 const _pcRb = _pl.projektchef ? (_pl.projektchef.rb || 0) : 0;
                 const _acRb = _pl.arbetschef ? (_pl.arbetschef.rb || 0) : 0;
-                min = Math.max(min, -(_pcRb + _acRb));
+                let _orgRb = 0;
+                const _ch = _pl.pl_choices || {};
+                for (const _k in _ch) _orgRb += (_ch[_k].rb || 0);
+                min = Math.max(min, -(_pcRb + _acRb + _orgRb));
             }
             var newVal = Math.max(min, cur - 1);
             if (newVal === cur) return;  // ingen ändring (spärr)
