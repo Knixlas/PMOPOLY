@@ -1481,6 +1481,8 @@ function renderPlayer() {
         html += counterRow('Kvalitetskrav (Q-krav)', p.q_krav, 'q_krav', true);
         // Riskbuffertar i \u00e4ndringsf\u00e4ltet f\u00e5r g\u00e5 under 0 (relativt \u2014 kort kan dra ner)
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar', true);
+        // Markexpansioner (Stadsbyggnadskontoret-rutan, 5 Mkr/st \u2014 dras fr\u00e5n anskaffningen)
+        html += counterRow('Markexpansioner (5 Mkr/st)', p.mark_expansions || 0, 'mark_expansions', false);
         html += '</div>';
     }
 
