@@ -2107,16 +2107,20 @@ function renderPlayer() {
             // Energiklass affects MV: C=1.00 referens, A=1.10 / B=1.05 / D=0.95 / E=0 (E ger 0 FV-bidrag — hård bestraffning)
             // Marknadsvärde i den löpande visningen: bara DN/yield. Energiklass-
             // faktorn appliceras endast i slututräkningen (regelbok §9.2).
-            // Skala projektkortets MV med yield-delta. Vid startyield (4 % bostäder,
-            // 5 % kommersiellt) → MV = projektkortets MV exakt. Faller tillbaka på
-            // (4 × DN)/yield om kort-MV saknas (sekundärmarknads-köp).
+            // MV-räkning:
+            //   • Yield oförändrad (= startvärde 4 % bostäder / 5 % kommersiellt)
+            //     → använd projektkortets MV exakt (handsatt per projekt i CSV).
+            //   • Yield ändrad → använd regelbokens formel MV = 4 × DN / yield.
             var startYield = isBostader ? 4.0 : 5.0;
             var baseMV = f.marknadsvarde || 0;
+            var yieldUnchanged = yieldPct > 0 && Math.abs(yieldPct - startYield) < 0.01;
             var mv;
-            if (baseMV > 0 && yieldPct > 0) {
-                mv = Math.round(baseMV * (startYield / yieldPct));
+            if (yieldUnchanged && baseMV > 0) {
+                mv = baseMV;
+            } else if (yieldPct > 0) {
+                mv = Math.round((4 * dn) / (yieldPct / 100));
             } else {
-                mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100)) : 0;
+                mv = 0;
             }
             html += '<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin:6px 0;background:var(--paper-deep)">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center">';
@@ -3185,11 +3189,22 @@ function attachPlayerEvents(container) {
                 alert('En auktion pågår redan i rummet — vänta tills den är klar.');
                 return;
             }
-            // Räkna fram aktuellt MV och bankbud (80 %) så säljaren ser dem upfront
+            // Räkna fram aktuellt MV och bankbud (80 %) så säljaren ser dem upfront.
+            // Samma regel som i fastighetsraden: kort-MV vid oförändrad yield,
+            // formel 4×DN/yield när yielden ändrats.
             var _isBost = (f.typ || '').toUpperCase() === 'HYRESRÄTT';
             var _yld = _isBost ? (S.state.player.f4_yield_bostader || 4) : (S.state.player.f4_yield_kommersiellt || 5);
+            var _startY = _isBost ? 4.0 : 5.0;
             var _dn = f.driftnetto || 0;
-            var _mv = _yld > 0 ? Math.round((4 * _dn) / (_yld / 100)) : 0;
+            var _baseMv = f.marknadsvarde || 0;
+            var _mv;
+            if (_yld > 0 && Math.abs(_yld - _startY) < 0.01 && _baseMv > 0) {
+                _mv = _baseMv;
+            } else if (_yld > 0) {
+                _mv = Math.round((4 * _dn) / (_yld / 100));
+            } else {
+                _mv = 0;
+            }
             var _bankBid = Math.round(_mv * 0.8);
             if (!confirm('Starta auktion för "' + f.namn + '"?\n\nMarknadsvärde (MV): ' + _mv + ' Mkr\nBankens bud (80 %): ' + _bankBid + ' Mkr — lägsta accepterade bud.\n\nAlla andra spelare får en prompt om att buda. När budgivningen vid bordet är klar väljer du "Acceptera bud" eller "Sälj till banken".')) return;
             send({ type: 'auction_start', fastighet_id: f.id });
