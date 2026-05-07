@@ -1,9 +1,9 @@
-Klass;Typ;Kvm;@bildsida;@textsida;fill_color;line_color;ordning_bild;ordning_text
-A;BTA;500-5000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;1;4
-B;BTA;5001-7000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;2;3
-C;BTA;7001-9000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;3;2
-D;BTA;>9000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;4;1
-A;BYA;500-4000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;5;8
-B;BYA;4001-4750;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;6;7
-C;BYA;4751-5000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;7;6
-D;BYA;>5000;C:\Users\niklas.sviden\OneDrive - Åke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#1B365D;#D4AF37;8;5
+Klass;Typ;Kvm;@bildsida;@textsida;fill_color;line_color;ordning_bild;ordning_text;skede_color;bakskede;ID;bakgrund_color
+A;BTA;500-5000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#7b5020;#D4AF37;1;4;#7b5020;#fdf6f0;BTA_1;#7b5020
+B;BTA;5001-7000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#7b5020;#D4AF37;2;3;#7b5020;#fdf6f0;BTA_2;#7b5020
+C;BTA;7001-9000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#7b5020;#D4AF37;3;2;#7b5020;#fdf6f0;BTA_3;#7b5020
+D;BTA;>9000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BTA-KLASS.png;;#7b5020;#D4AF37;4;1;#7b5020;#fdf6f0;BTA_4;#7b5020
+A;BYA;500-4000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BYA-KLASS.png;;#2F3D44;#5D737E;1;4;#DDA063;#FAF1E8;BYA_1;#2F3D44
+B;BYA;4001-4750;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BYA-KLASS.png;;#2F3D44;#5D737E;2;3;#DDA063;#FAF1E8;BYA_2;#2F3D44
+C;BYA;4751-5000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BYA-KLASS.png;;#2F3D44;#5D737E;3;2;#DDA063;#FAF1E8;BYA_3;#2F3D44
+D;BYA;>5000;C:\Users\niklas.sviden\OneDrive - Ã…ke Sundvalls Byggnads AB\SPELET 2\Bilder\Skapade bilder\Projekt BYA-KLASS.png;;#2F3D44;#5D737E;4;1;#DDA063;#FAF1E8;BYA_4;#2F3D44
