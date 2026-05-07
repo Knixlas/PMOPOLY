@@ -2460,28 +2460,28 @@ function renderPlayer() {
             html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">30 % av MV \u00d7 energibonus (A:1,10 \u00b7 B:1,05 \u00b7 C:1,00 \u00b7 D:0,95 \u00b7 E:0)</div>';
             _fastpoangPerF.forEach(function(x) {
                 var bonusColor = x.bonus >= 1 ? 'var(--success)' : (x.bonus === 0 ? 'var(--danger)' : 'var(--warning)');
-                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + x.namn + ' (MV ' + Math.round(x.mv) + ' Mkr \u00b7 ' + x.ek + ' <span style="color:' + bonusColor + '">\u00d7' + x.bonus + '</span>)</span><span><strong>' + Math.round(x.fastpoang*10)/10 + ' Mkr</strong></span></div>';
+                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + x.namn + ' (MV ' + Math.round(x.mv) + ' \u00b7 ' + x.ek + ' <span style="color:' + bonusColor + '">\u00d7' + x.bonus + '</span>)</span><span><strong>' + Math.round(x.fastpoang*10)/10 + '</strong></span></div>';
             });
-            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Summa fastighetspo\u00e4ng</span><span>' + Math.round(_summaFastpoang*10)/10 + ' Mkr</span></div>';
+            html += '<div style="border-top:1px dashed var(--border);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-weight:600"><span>Summa fastighetspo\u00e4ng</span><span>' + Math.round(_summaFastpoang*10)/10 + '</span></div>';
             html += '</div>';
 
             // Steg 2: Kassa (justerad)
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 2 \u00b7 Kassa (justerad)</div>';
-            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">\u00c5terbetala moderbolagsl\u00e5n (\u2212100 Mkr/st), sedan \u00d7 0,10 om positiv eller \u00d7 2,00 om negativ (straffaktor).</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Kassa innan \u00e5terbetalning</span><span>' + Math.round(_ek4Raw) + ' Mkr</span></div>';
+            html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">\u00c5terbetala moderbolagsl\u00e5n (\u2212100/st), sedan \u00d7 0,10 om positiv eller \u00d7 2,00 om negativ (straffaktor).</div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>Kassa innan \u00e5terbetalning</span><span>' + Math.round(_ek4Raw) + '</span></div>';
             if (_modAntalSlut > 0) {
-                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u2212 \u00c5terbetalning av ' + _modAntalSlut + ' moderbolagsl\u00e5n</span><span style="color:var(--danger)">\u2212' + _modSkuldSlut + ' Mkr</span></div>';
+                html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u2212 \u00c5terbetalning av ' + _modAntalSlut + ' moderbolagsl\u00e5n</span><span style="color:var(--danger)">\u2212' + _modSkuldSlut + '</span></div>';
             }
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:4px;margin-top:4px;font-weight:600"><span>Kassa efter \u00e5terbetalning</span><span style="color:' + (_ek4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_ek4) + ' Mkr</span></div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00d7 ' + (_ek4 >= 0 ? '0,10' : '<span style="color:var(--danger)">2,00</span>') + '</span><span><strong style="color:' + (_kassaJusterad >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_kassaJusterad*10)/10 + ' Mkr</strong></span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:4px;margin-top:4px;font-weight:600"><span>Kassa efter \u00e5terbetalning</span><span style="color:' + (_ek4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_ek4) + '</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00d7 ' + (_ek4 >= 0 ? '0,10' : '<span style="color:var(--danger)">2,00</span>') + '</span><span><strong style="color:' + (_kassaJusterad >= 0 ? 'inherit' : 'var(--danger)') + '">' + Math.round(_kassaJusterad*10)/10 + '</strong></span></div>';
             html += '</div>';
 
             // Steg 3: TB
             html += '<div style="margin-top:8px;padding:8px 10px;background:var(--paper);border-radius:6px">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:4px">Steg 3 \u00b7 TB (t\u00e4ckningsbidrag i ABT)</div>';
             html += '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:4px">Anskaffning \u2212 utvecklingskostnad \u2212 ABT-kostnader</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + Math.round(_pAnsk4) + ' \u2212 ' + Math.round(_pKost4) + ' \u2212 ' + Math.round(_abt4) + '</span><span><strong style="color:' + (_tb4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_tb4) + ' Mkr</strong></span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>' + Math.round(_pAnsk4) + ' \u2212 ' + Math.round(_pKost4) + ' \u2212 ' + Math.round(_abt4) + '</span><span><strong style="color:' + (_tb4 >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + Math.round(_tb4) + '</strong></span></div>';
             html += '</div>';
 
             // Steg 4: BTA (inkl sålda BRF:er)
