@@ -147,7 +147,7 @@ table.grid.tall td.fillable { height: 38px; }
     <h3>Placerade projekt (efter nämnd + placering)</h3>
     <table class="grid">
         <thead>
-            <tr><th>#</th><th>Namn</th><th>Typ</th><th>BTA (kvm)</th><th>Anskaffn. (Mkr)</th><th>Utv.kost (Mkr)</th><th>Q</th><th>H</th><th>T</th></tr>
+            <tr><th>#</th><th>Namn</th><th>Typ</th><th>BTA (kvm)</th><th>Utv.kost (Mkr)</th><th>Anskaffn. (Mkr)</th><th>H</th><th>Q</th><th>T</th></tr>
         </thead>
         <tbody>
             <tr><td>1</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
@@ -156,10 +156,31 @@ table.grid.tall td.fillable { height: 38px; }
             <tr><td>4</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
             <tr><td>5</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
             <tr><td>6</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>7</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>8</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>9</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>10</td><td class="fillable"></td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
             <tr><th colspan="3">Summa</th><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
         </tbody>
     </table>
-    <div class="note">Ej placerade projekt: utv.kostnaden ska <strong>fortfarande betalas</strong> (sunk cost) men Q/H-krav justeras tillbaka.</div>
+    <div class="note">Ej placerade projekt: utv.kostnaden ska <strong>fortfarande betalas</strong> (sunk cost) men H-/Q-krav justeras tillbaka.</div>
+
+    <h3>Ändringar pga händelsekort (politik/dialog) + spelbräde</h3>
+    <table class="grid">
+        <thead>
+            <tr><th>#</th><th>Källa (kort/ruta)</th><th>± H-krav</th><th>± Q-krav</th><th>± Riskbuffert</th><th>± Markexpansion</th><th>Not</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td>2</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td>3</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td>4</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td>5</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><td>6</td><td class="fillable"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
+            <tr><th colspan="2">Summa ändringar</th><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><th></th></tr>
+        </tbody>
+    </table>
+    <div class="note">Hörnrutor (Länsstyrelsen/Skönhetsrådet), politik- och dialogkort, samt stjärnor på PU-brädet ändrar krav/Rb under Skede 1.</div>
 </div>
 
 <!-- ── SIDA 2: SKEDE 1 — BALANS & RESULTAT ── -->
@@ -170,8 +191,8 @@ table.grid.tall td.fillable { height: 38px; }
     <div class="two-col">
         <div class="col-balance">
             <div class="col-title">Balansräkning · efter Skede 1</div>
-            <div class="field"><span class="label">Q-krav</span><span class="value"></span></div>
             <div class="field"><span class="label">H-krav</span><span class="value"></span></div>
+            <div class="field"><span class="label">Q-krav</span><span class="value"></span></div>
             <div class="field"><span class="label">T-start</span><span class="value"></span><span class="unit">mån</span></div>
             <div class="field"><span class="label">Riskbuffertar kvar</span><span class="value"></span><span class="unit">st</span></div>
             <div class="field"><span class="label">Markexpansioner</span><span class="value"></span><span class="unit">st</span></div>
@@ -180,19 +201,19 @@ table.grid.tall td.fillable { height: 38px; }
         </div>
         <div class="col-result">
             <div class="col-title">Resultaträkning · Skede 1</div>
-            <div class="field"><span class="label">Anskaffning (alla projekt)</span><span class="value"></span><span class="unit">Mkr</span></div>
-            <div class="field"><span class="label">− Tomtkostnad</span><span class="value">15</span><span class="unit">Mkr</span></div>
-            <div class="field"><span class="label">− Markexpansioner (×5)</span><span class="value"></span><span class="unit">Mkr</span></div>
             <div class="field"><span class="label">− Utv.kostnad (alla projekt)</span><span class="value"></span><span class="unit">Mkr</span></div>
             <div class="field"><span class="label">− 3×-köp (om gjort)</span><span class="value"></span><span class="unit">Mkr</span></div>
+            <div class="field"><span class="label">− Tomtkostnad</span><span class="value">15</span><span class="unit">Mkr</span></div>
+            <div class="field"><span class="label">− Markexpansioner (×5)</span><span class="value"></span><span class="unit">Mkr</span></div>
+            <div class="field"><span class="label">+ Anskaffning (alla projekt)</span><span class="value"></span><span class="unit">Mkr</span></div>
             <div class="box-sum"><span class="label">= ABT-budget vid start (Skede 2)</span><span class="value"></span></div>
         </div>
     </div>
 
     <h3>Riskbuffert-investering (sänker krav)</h3>
     <div class="field-row">
-        <div class="field"><span class="label">−Q-krav (Rb)</span><span class="value"></span></div>
         <div class="field"><span class="label">−H-krav (Rb)</span><span class="value"></span></div>
+        <div class="field"><span class="label">−Q-krav (Rb)</span><span class="value"></span></div>
         <div class="field"><span class="label">−T (Rb)</span><span class="value"></span></div>
     </div>
     <div class="note"><strong>§3.6, §5.2:</strong> 1 Rb = 1 stegs sänkning. Rb som sparas till Skede 2.2 kan användas som omslag på dåliga D20.</div>
@@ -225,7 +246,7 @@ table.grid.tall td.fillable { height: 38px; }
     <h3>De 13 planeringslagren</h3>
     <table class="grid">
         <thead>
-            <tr><th>#</th><th>Lager</th><th>Typ</th><th>Niv.</th><th>Kostn. (Mkr)</th><th>Q</th><th>H</th><th>T</th><th>Erf</th><th>Händelsekort (Q/H/T/ABT)</th></tr>
+            <tr><th>#</th><th>Lager</th><th>Typ</th><th>Niv.</th><th>Kostn. (Mkr)</th><th>H</th><th>Q</th><th>T</th><th>Erf</th><th>Händelsekort (H/Q/T/ABT)</th></tr>
         </thead>
         <tbody>
             <tr><td>1</td><td>Stödfunktioner</td><td>Org</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable"></td></tr>
@@ -248,8 +269,8 @@ table.grid.tall td.fillable { height: 38px; }
     <div class="two-col">
         <div class="col-balance">
             <div class="col-title">Balans · efter Skede 2.1</div>
-            <div class="field"><span class="label">Q-nuläge (curQ)</span><span class="value"></span></div>
             <div class="field"><span class="label">H-nuläge (curH)</span><span class="value"></span></div>
+            <div class="field"><span class="label">Q-nuläge (curQ)</span><span class="value"></span></div>
             <div class="field"><span class="label">T (byggtid)</span><span class="value"></span><span class="unit">mån</span></div>
             <div class="field"><span class="label">Erfarenhet (max 12)</span><span class="value"></span></div>
             <div class="field"><span class="label">Riskbuffertar kvar</span><span class="value"></span><span class="unit">st</span></div>
@@ -272,7 +293,7 @@ table.grid.tall td.fillable { height: 38px; }
     <h3>Byggfaser 1–8 — händelsekort + kulturkort</h3>
     <table class="grid">
         <thead>
-            <tr><th>Fas</th><th>Pris kultur (Mkr)</th><th>Antal kultur</th><th>Kultur-kostnad</th><th>Q</th><th>H</th><th>T</th><th>Händelse-ABT</th></tr>
+            <tr><th>Fas</th><th>Pris kultur (Mkr)</th><th>Antal kultur</th><th>Kultur-kostnad</th><th>H</th><th>Q</th><th>T</th><th>Händelse-ABT</th></tr>
         </thead>
         <tbody>
             <tr><td>1</td><td class="num">2</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
@@ -287,15 +308,15 @@ table.grid.tall td.fillable { height: 38px; }
         </tbody>
     </table>
 
-    <h3>Konsekvenskort (T → Q → H)</h3>
+    <h3>Konsekvenskort (T → H → Q)</h3>
     <table class="grid">
         <thead>
-            <tr><th>Korttyp</th><th>Antal kort</th><th>Total ABT-kostnad</th><th>Q-påverkan</th><th>H-påverkan</th></tr>
+            <tr><th>Korttyp</th><th>Antal kort</th><th>Total ABT-kostnad</th><th>H-påverkan</th><th>Q-påverkan</th></tr>
         </thead>
         <tbody>
             <tr><td>Tidskort (T)</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
-            <tr><td>Kvalitetskort (Q)</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
             <tr><td>Hållbarhetskort (H)</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
+            <tr><td>Kvalitetskort (Q)</td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td><td class="fillable num"></td></tr>
         </tbody>
     </table>
 
@@ -330,10 +351,10 @@ table.grid.tall td.fillable { height: 38px; }
     <div class="two-col">
         <div class="col-balance">
             <div class="col-title">Balans · efter Skede 2.2</div>
-            <div class="field"><span class="label">Q-nuläge (curQ)</span><span class="value"></span></div>
             <div class="field"><span class="label">H-nuläge (curH)</span><span class="value"></span></div>
+            <div class="field"><span class="label">Q-nuläge (curQ)</span><span class="value"></span></div>
             <div class="field"><span class="label">T (byggtid)</span><span class="value"></span><span class="unit">mån</span></div>
-            <div class="field"><span class="label">Avvikelser n (Q+H+T)</span><span class="value"></span></div>
+            <div class="field"><span class="label">Avvikelser n (H+Q+T)</span><span class="value"></span></div>
             <div class="field"><span class="label">Aktiva moderbolagslån</span><span class="value"></span><span class="unit">st</span></div>
             <div class="field"><span class="label">Skuld (=lån × 100)</span><span class="value"></span><span class="unit">Mkr</span></div>
             <div class="field"><span class="label"><strong>Kassa in i Skede 3</strong></span><span class="value"></span><span class="unit">Mkr</span></div>
@@ -624,8 +645,8 @@ table.grid.tall td.fillable { height: 38px; }
 
     <h2>μ (Mu) — straffaktor för avvikelser</h2>
     <div class="field-row">
-        <div class="field"><span class="label">Q-avvikelse</span><span class="value"></span></div>
         <div class="field"><span class="label">H-avvikelse</span><span class="value"></span></div>
+        <div class="field"><span class="label">Q-avvikelse</span><span class="value"></span></div>
         <div class="field"><span class="label">T-avvikelse</span><span class="value"></span></div>
     </div>
     <div class="field-wide"><span class="label">n = summa avvikelser</span><span class="value"></span></div>

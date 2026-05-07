@@ -1220,7 +1220,7 @@ var REGELBOK_QUICKREF = [
         section: 'Skede 1 — Projektutveckling',
         items: [
             { ref: '§3.1, §5.2', t: 'T-utfallet startar på 12. I Skede 2-setup höjs det med kvarterets största T-värde (max +2 till 14). Sjunker aldrig under 8.' },
-            { ref: '§4.2', t: 'Anskaffningskostnad = grundpris × formfaktor. Hög formfaktor = dyr tomt.' },
+            { ref: '§5.1', t: 'Anskaffning = budget för planering + genomförande. Utvecklingskostnad = vad det kostar att ta fram projektet (betalas alltid, även för icke-placerade).' },
         ]
     },
     {
@@ -1477,8 +1477,8 @@ function renderPlayer() {
     if (showCounters && !showRbInvest) {
         html += '<div class="asset-card counters">';
         html += '<div class="asset-label">\u00c4ndringar fr\u00e5n kort & spelbr\u00e4de</div>';
-        html += counterRow('Kvalitetskrav (Q-krav)', p.q_krav, 'q_krav', true);
         html += counterRow('H\u00e5llbarhetskrav (H-krav)', p.h_krav, 'h_krav', true);
+        html += counterRow('Kvalitetskrav (Q-krav)', p.q_krav, 'q_krav', true);
         // Riskbuffertar i \u00e4ndringsf\u00e4ltet f\u00e5r g\u00e5 under 0 (relativt \u2014 kort kan dra ner)
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar', true);
         html += '</div>';
@@ -1496,14 +1496,14 @@ function renderPlayer() {
         // S\u00e4nk-rader: minus-knappen \u00d6KAR s\u00e4nkningen (mer negativt), plus-knappen
         // \u00e5terst\u00e4ller mot 0. V\u00e4rdet visas som negativt s\u00e5 "\u22121" = "Q-krav -1".
         var _rbq = p.rb_spent_q || 0, _rbh = p.rb_spent_h || 0, _rbt = p.rb_spent_t || 0;
-        html += '<div class="counter-row"><div class="label">S\u00e4nk Q-krav</div><div class="counter-controls">';
-        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">\u2212</button>';
-        html += '<div class="counter-val" style="color:' + (_rbq > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbq > 0 ? '\u2212' + _rbq : '0') + '</div>';
-        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk H-krav</div><div class="counter-controls">';
         html += '<button class="counter-btn" data-action="rb-incr" data-target="h">\u2212</button>';
         html += '<div class="counter-val" style="color:' + (_rbh > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbh > 0 ? '\u2212' + _rbh : '0') + '</div>';
         html += '<button class="counter-btn" data-action="rb-decr" data-target="h">+</button></div></div>';
+        html += '<div class="counter-row"><div class="label">S\u00e4nk Q-krav</div><div class="counter-controls">';
+        html += '<button class="counter-btn" data-action="rb-incr" data-target="q">\u2212</button>';
+        html += '<div class="counter-val" style="color:' + (_rbq > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbq > 0 ? '\u2212' + _rbq : '0') + '</div>';
+        html += '<button class="counter-btn" data-action="rb-decr" data-target="q">+</button></div></div>';
         html += '<div class="counter-row"><div class="label">S\u00e4nk T (byggtid)</div><div class="counter-controls">';
         html += '<button class="counter-btn" data-action="rb-incr" data-target="t">\u2212</button>';
         html += '<div class="counter-val" style="color:' + (_rbt > 0 ? 'var(--burgundy)' : 'var(--ink-mid)') + '">' + (_rbt > 0 ? '\u2212' + _rbt : '0') + '</div>';
@@ -1635,7 +1635,7 @@ function renderPlayer() {
         html += '</div>';
     }
 
-    // Phase 3: Konsekvenskort — Tid, Kvalitet, Hållbarhet
+    // Phase 3: Konsekvenskort — Tid, Hållbarhet, Kvalitet
     if (step === 'gf_konsekvens') {
         // Calculate cards per category using the SAME formula as Sammanställning,
         // so kons-card penalties cascade: hållbarhetskort som sänker Q triggar
@@ -1680,33 +1680,33 @@ function renderPlayer() {
 
         html += '<div class="asset-card" style="border-left-color:var(--danger)">';
         html += '<div class="asset-label">KONSEKVENSKORT</div>';
-        html += '<div style="font-size:14px;margin-bottom:8px">Antal kort: T:' + konsKortT + ' Q:' + konsKortQ + ' H:' + konsKortH + ' = <strong>' + (konsKortT+konsKortQ+konsKortH) + ' kort</strong></div>';
+        html += '<div style="font-size:14px;margin-bottom:8px">Antal kort: T:' + konsKortT + ' H:' + konsKortH + ' Q:' + konsKortQ + ' = <strong>' + (konsKortT+konsKortQ+konsKortH) + ' kort</strong></div>';
 
         // TID först — kan påverka Q, H och kostnad
         html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--warning)">Tid (' + konsKortT + ' kort) — dras f\u00f6rst</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, H och Q. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
         html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_t, 'gf_kons_t', true);
-        html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_h || 0, 'gf_kons_t_h', true);
-        html += '</div>';
-
-        // KVALITET — bara kostnad
-        html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
-        html += '<div style="font-weight:600;color:var(--info)">Kvalitet (' + konsKortQ + ' kort)</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
-        html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_q, 'gf_kons_q', true);
-        html += counterRow('Q-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_q || 0, 'gf_kons_q_q', true);
-        html += counterRow('H-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_h || 0, 'gf_kons_q_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n tidskort (s\u00e4nker)', p.gf_kons_t_q || 0, 'gf_kons_t_q', true);
         html += '</div>';
 
         // HÅLLBARHET — bara kostnad
-        html += '<div style="padding:8px 0">';
+        html += '<div style="border-bottom:1px solid var(--paper-deep);padding:8px 0">';
         html += '<div style="font-weight:600;color:var(--success)">H\u00e5llbarhet (' + konsKortH + ' kort)</div>';
-        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, Q och H. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, H och Q. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
         html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_h, 'gf_kons_h', true);
-        html += counterRow('Q-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_q || 0, 'gf_kons_h_q', true);
         html += counterRow('H-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_h || 0, 'gf_kons_h_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n h\u00e5llbarhetskort (s\u00e4nker)', p.gf_kons_h_q || 0, 'gf_kons_h_q', true);
+        html += '</div>';
+
+        // KVALITET — bara kostnad
+        html += '<div style="padding:8px 0">';
+        html += '<div style="font-weight:600;color:var(--info)">Kvalitet (' + konsKortQ + ' kort)</div>';
+        html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-bottom:4px">Korten kan minska TB, H och Q. Justera per kort som dras (s\u00e4tt beloppet som -x Mkr).</div>';
+        html += counterRow('Minska TB (Mkr) — sätt som -x', p.gf_kons_q, 'gf_kons_q', true);
+        html += counterRow('H-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_h || 0, 'gf_kons_q_h', true);
+        html += counterRow('Q-p\u00e5verkan fr\u00e5n kvalitetskort (s\u00e4nker)', p.gf_kons_q_q || 0, 'gf_kons_q_q', true);
         html += '</div>';
         html += '</div>';
     }
@@ -2572,8 +2572,8 @@ function renderPlayer() {
                    '</div>';
         }
         html += '<div style="display:flex;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;overflow:hidden">';
-        html += _kravCell('Kvalitet', '#1565C0', qMain, showCur ? 'krav ' + totalQ : 'krav', qColor);
         html += _kravCell('Hållbarhet', '#2E7D32', hMain, showCur ? 'krav ' + totalH : 'krav', hColor);
+        html += _kravCell('Kvalitet', '#1565C0', qMain, showCur ? 'krav ' + totalQ : 'krav', qColor);
         html += _kravCell('Tid (mån)', '#A8501F', String(curT), 'mål 12 · start ' + baseT, tColor, true);
         html += '</div>';
         // (T-v\u00e4rdet ing\u00e5r nu i KRAV-blocket ovan)
@@ -3314,7 +3314,6 @@ function openPCModal() {
     for (const pc of S.pcData) {
         if (taken.indexOf(pc.id) >= 0) continue; // upptagen av lagkamrat
         availableCount++;
-        const motstand = pc.handelsemotstand || '';
         const lindring = pc.lindring || 0;
         const rb = pc.rb || 0;
         const namndB = pc.namnd_bonus || 0;
@@ -3323,10 +3322,10 @@ function openPCModal() {
         const kompList = Object.keys(komps).map(function(k) { return k + '+' + komps[k]; }).join(' ');
         // Bygg lista av effekter
         var effekter = [];
-        if (lindring > 0 && motstand) effekter.push('+' + lindring + ' på slag avseende ' + motstand);
-        if (namndB > 0) effekter.push('+' + namndB + ' på slag avseende Nämndbeslut');
-        if (qB > 0) effekter.push('Sänker Q-krav med ' + qB);
+        if (lindring > 0) effekter.push('+' + lindring + ' Lindring (politik/dialog)');
+        if (namndB > 0) effekter.push('+' + namndB + ' Nämndslag');
         if (hB > 0) effekter.push('Sänker H-krav med ' + hB);
+        if (qB > 0) effekter.push('Sänker Q-krav med ' + qB);
         if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' mån');
         if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
         // Företagskulturkompetenser visas inte längre i PrC-presentationen
@@ -3466,8 +3465,8 @@ function openACModal() {
         var effekter = [];
         if (lindring > 0 && motstand) effekter.push('+' + lindring + ' p\u00e5 slag avseende ' + motstand);
         if (erf > 0) effekter.push('+' + erf + ' Erfarenhet (lindrar alla h\u00e4ndelsekort)');
-        if (qB > 0) effekter.push('H\u00f6jer Q-nul\u00e4get med ' + qB);
         if (hB > 0) effekter.push('H\u00f6jer H-nul\u00e4get med ' + hB);
+        if (qB > 0) effekter.push('H\u00f6jer Q-nul\u00e4get med ' + qB);
         if (tB > 0) effekter.push('Kortar byggtid med ' + tB + ' m\u00e5n');
         if (rb > 0) effekter.push('+' + rb + ' Riskbuffert');
         // Företagskulturkompetenser visas inte längre i AC-presentationen
@@ -3569,9 +3568,10 @@ function openProjectModal(typ, triplePrice) {
         const projData = JSON.stringify(proj).replace(/'/g, "&#39;");
         html += '<div class="modal-item' + sel + '" data-proj=\'' + projData + '\'>' +
             '<div class="item-name">' + (proj.namn || proj.id) + '</div>' +
-            '<div class="item-detail">BTA: ' + proj.bta + ' | Form: ' + proj.formfaktor +
-            ' | Anskaff: ' + proj.anskaffning + ' Mkr | Kostnad: ' + kostnad + ' Mkr' +
-            (triplePrice ? ' <span style="color:var(--warning)">(3\u00d7)</span>' : '') + '</div>' +
+            '<div class="item-detail">BTA: ' + proj.bta +
+            ' | Utv.kostnad: ' + kostnad + ' Mkr' +
+            (triplePrice ? ' <span style="color:var(--warning)">(3\u00d7)</span>' : '') +
+            ' | Anskaffning: ' + proj.anskaffning + ' Mkr' + '</div>' +
             '</div>';
     }
     if (availableCount === 0) {
@@ -4208,7 +4208,9 @@ function renderGMQuarters(st) {
             if (p.step_done) { icon = '\uD83D\uDFE2'; c = 'var(--success)'; }
             else if (p.step_has_data) { icon = '\uD83D\uDFE1'; c = 'var(--burgundy)'; }
             else { icon = '\uD83D\uDD34'; c = 'var(--danger)'; }
-            return '<span style="color:' + c + '">' + icon + ' ' + p.name + '</span>';
+            var pBta = (p.projects || []).reduce(function(s, pr) { return s + (pr.bta || 0); }, 0);
+            var btaStr = pBta > 0 ? ' <span style="color:var(--ink-faint);font-size:0.85em">(' + pBta + ' kvm)</span>' : '';
+            return '<span style="color:' + c + '">' + icon + ' ' + p.name + btaStr + '</span>';
         }).join('');
 
         // District ranking info
@@ -4233,8 +4235,9 @@ function renderGMQuarters(st) {
             distRankHtml +
             '<div class="quarter-stat"><span>Projekt</span><span class="val">' + q.total_projects + '</span></div>' +
             '<div class="quarter-stat"><span>Total BTA</span><span class="val">' + q.total_bta + ' kvm</span></div>' +
-            '<div class="quarter-stat"><span>Snitt Q-krav</span><span class="val">' + q.avg_q_krav + '</span></div>' +
-            '<div class="quarter-stat"><span>Snitt H-krav</span><span class="val">' + q.avg_h_krav + '</span></div>' +
+            '<div class="quarter-stat"><span>H-krav (totalt)</span><span class="val">' + (q.total_h_krav != null ? q.total_h_krav : q.avg_h_krav) + '</span></div>' +
+            '<div class="quarter-stat"><span>Q-krav (totalt)</span><span class="val">' + (q.total_q_krav != null ? q.total_q_krav : q.avg_q_krav) + '</span></div>' +
+            '<div class="quarter-stat"><span>Riskbuffertar (totalt)</span><span class="val">' + (q.total_rb != null ? q.total_rb : 0) + '</span></div>' +
             '<div class="quarter-players">' + playerSpans + '</div>' +
             '</div>'
         );

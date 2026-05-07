@@ -27,10 +27,10 @@ PHASES = [
             "Attribut att jämföra:\n"
             "• Riskbuffertar (Rb) — säkerhetsmarginal\n"
             "• Lindring — bonus på politik/dialogkort under PU-brädet\n"
-            "• Nämndbonus — bonus vid nämndbeslut (steg 1.8)\n"
-            "• Q/H/T-bonus — tillämpas i Skede 2.1\n"
+            "• Nämndslag — D20-bonus vid nämndbeslut (steg 1.8)\n"
+            "• H-/Q-/T-bonus — tillämpas i Skede 2.1\n"
             "• Kompetens — spelbar som kort i Skede 2.2\n\n"
-            "Tips: Hög lindring = bra under PU-brädet. Hög nämndbonus = tryggare med BRF. "
+            "Tips: Hög lindring = bra under PU-brädet. Högt nämndslag = tryggare med BRF. "
             "Hög Rb = mer flexibilitet senare."},
         {"id": "projects", "name": "1.4–1.6 Projektval & Brädspel", "help":
             "Välj ett startprojekt (1.4), sedan spelas PU-brädet (1.5–1.6).\n\n"
@@ -38,15 +38,14 @@ PHASES = [
             "• Projektrutor — ta ett projekt av typen\n"
             "• Stadshuset — ta, byt eller lämna tillbaka\n"
             "• Stjärna — +1 riskbuffert\n"
-            "• Skönhetsrådet — −2 Q-krav\n"
-            "• Länsstyrelsen — −2 H-krav\n"
-            "• Dialogkort — slå D20 + PC-lindring\n"
-            "• Politikkort — slå D20 + PC-lindring\n"
+            "• Länsstyrelsen — höjer valfritt krav (Q eller H), totalt +2 steg\n"
+            "• Skönhetsrådet — sänker valfritt krav (Q eller H), totalt −2 steg\n"
+            "• Politik/dialog-händelsekort — slå D20 + PC-lindring\n"
             "• Stadsbyggnadskontoret — markexpansion (+5 Mkr)\n\n"
-            "Registrera dina projekt och uppdatera Q/H/Rb med +/- knapparna.\n"
+            "Registrera dina projekt och uppdatera H/Q/Rb med +/- knapparna.\n"
             "Tips: Max 9 projekt. KOMPLEX kvarter (bostäder + 2 andra typer) ger svårast händelsekort."},
         {"id": "namndbeslut", "name": "1.8 Nämndbeslut", "help":
-            "Projekt med nämndkrav > 1: slå D20 + PC:s nämndbonus.\n\n"
+            "Projekt med nämndkrav > 1: slå D20 + PC:s nämndslag.\n\n"
             "• Resultat ≥ krav = godkänt\n"
             "• Misslyckat: använd Rb för omslag, eller ta bort projektet\n"
             "• Utvecklingskostnaden är redan betald\n\n"
@@ -55,8 +54,8 @@ PHASES = [
             "Tips: Rb kan rädda ett misslyckat projekt — värt det för dyra projekt!"},
         {"id": "rb_invest", "name": "1.12 Rb-investering", "help":
             "Fördela kvarvarande riskbuffertar:\n\n"
-            "• −1 Q-krav per Rb\n"
             "• −1 H-krav per Rb\n"
+            "• −1 Q-krav per Rb\n"
             "• −1 T (byggtid) per Rb\n\n"
             "Resterande Rb sparas till Skede 2.2 (omslag på händelsekort).\n"
             "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i Skede 2.1."},
@@ -83,8 +82,8 @@ PHASES = [
             "Tips: Kolla TG (täckningsgrad) varje steg. Under 20%? Dags att välja billigare."},
         {"id": "planning_summary", "name": "2.5 Planeringssummering", "help":
             "Kontrollera dina värden:\n\n"
-            "• Q vs Q-krav — uppfyllt?\n"
             "• H vs H-krav — uppfyllt?\n"
+            "• Q vs Q-krav — uppfyllt?\n"
             "• T (byggtid i månader)\n"
             "• ABT kvar — tillräcklig marginal?\n"
             "• Erfarenhet — påverkar Skede 2.2\n\n"
@@ -579,8 +578,11 @@ class CompanionRoom:
         qp = [p for p in self.players.values() if p.quarter_idx == quarter_idx and not p.is_gm]
         total_projects = sum(len(p.projects) for p in qp)
         total_bta = sum(sum(pr.get("bta", 0) for pr in p.projects) for p in qp)
-        avg_q = round(sum(p.q_krav for p in qp) / max(len(qp), 1), 1)
-        avg_h = round(sum(p.h_krav for p in qp) / max(len(qp), 1), 1)
+        # Sammanställning: total Q/H/Rb (alla spelare i kvarteret delar state, så
+        # detta är värdet för kvarteret som helhet — inte ett genomsnitt).
+        total_q = max((p.q_krav for p in qp), default=0)
+        total_h = max((p.h_krav for p in qp), default=0)
+        total_rb = max((p.riskbuffertar for p in qp), default=0)
         return {
             "quarter_idx": quarter_idx,
             "name": self.quarter_names[quarter_idx] if quarter_idx < len(self.quarter_names) else f"Kvarter {quarter_idx + 1}",
@@ -588,8 +590,12 @@ class CompanionRoom:
             "num_players": len(qp),
             "total_projects": total_projects,
             "total_bta": total_bta,
-            "avg_q_krav": avg_q,
-            "avg_h_krav": avg_h,
+            "total_q_krav": total_q,
+            "total_h_krav": total_h,
+            "total_rb": total_rb,
+            # Bakåtkompat. — frontend kan fortfarande använda gamla namnen
+            "avg_q_krav": total_q,
+            "avg_h_krav": total_h,
             "players": [self._player_with_status(p) for p in qp],
         }
 

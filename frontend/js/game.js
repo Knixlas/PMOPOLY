@@ -699,15 +699,14 @@ function showAssetDetail(card, player) {
     } else if (type === 'pc') {
         const pc = player.projektchef;
         if (!pc) return;
-        const motstand = pc.handelsemotstand || '';
         html = `
             <h3>${pc.namn}</h3>
             <div class="card-type">Projektchef — ${pc.specialisering || ''}</div>
             <div class="detail-grid">
-                ${(pc.lindring && motstand) ? `<div class="detail-row"><span>Slag avseende ${motstand}</span><span>+${pc.lindring}</span></div>` : ''}
-                ${pc.namnd_bonus ? `<div class="detail-row"><span>Slag avseende Nämndbeslut</span><span>+${pc.namnd_bonus}</span></div>` : ''}
-                ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
+                ${pc.lindring ? `<div class="detail-row"><span>Lindring (politik/dialog)</span><span>+${pc.lindring}</span></div>` : ''}
+                ${pc.namnd_bonus ? `<div class="detail-row"><span>Nämndslag</span><span>+${pc.namnd_bonus}</span></div>` : ''}
                 ${pc.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${pc.h_bonus}</span></div>` : ''}
+                ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
                 ${pc.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${pc.t_bonus} mån</span></div>` : ''}
                 ${pc.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb}</span></div>` : ''}
             </div>
@@ -796,11 +795,10 @@ function renderCompanion() {
         html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
         html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKTCHEF</div>';
         html += '<div style="font-weight:600">' + pc.namn + '</div>';
-        var _pcMot = pc.handelsemotstand || '';
         var _pcLin = pc.lindring || pc.kapacitet || 0;
         var _pcParts = [];
-        if (_pcLin && _pcMot) _pcParts.push('+' + _pcLin + ' på slag avseende ' + _pcMot);
-        if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' på slag avseende Nämndbeslut');
+        if (_pcLin) _pcParts.push('+' + _pcLin + ' Lindring (politik/dialog)');
+        if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' Nämndslag');
         html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + (_pcParts.length ? ' | ' + _pcParts.join(' | ') : '') + '</div>';
         html += '</div>';
     }

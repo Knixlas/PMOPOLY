@@ -39,11 +39,11 @@
           "lead": "Varje kvarter väljer en projektchef (PrC). PrC:n leder projektet genom utvecklingen — i verkligheten ansvarig för budget, nämndkontakt och riskhantering.",
           "actions": [
             "Klicka \"Välj Projektchef\" i companion",
-            "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndbonus (D20 vid nämndbeslut), Q/H/T-bonus, Kompetens",
+            "Jämför attribut: Riskbuffertar (Rb), Lindring (politik/dialog-bonus), Nämndslag (D20 vid nämndbeslut), H-/Q-/T-bonus, Kompetens",
             "Inom kvarteret väljer ni i tur och ordning — samma person kan bara väljas en gång per kvarter"
           ],
           "meaning": "PrC är en av kvarterets viktigaste resurser. Personerna är ungefär lika starka — det är profilen som skiljer.",
-          "tip": "Välj efter er strategi: hög lindring för PU-brädet, hög nämndbonus för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
+          "tip": "Välj efter er strategi: hög lindring för PU-brädet, högt nämndslag för BRF-tunga kvarter, hög Rb för flexibilitet senare.",
           "regelbok": "§3.8"
         },
         {
@@ -51,7 +51,7 @@
           "name": "Projektval & PU-brädet",
           "lead": "Nu rör ni er runt PU-brädet i två varv. På varje runda får ni välja projekt, dra händelsekort, eller utöka tomten. Brädet har 24 rutor, fyra hörnrutor är specialfall.",
           "actions": [
-            "Klicka \"Välj första projekt\" — ett projekt sätter Q-/H-krav och utvecklingskostnad",
+            "Klicka \"Välj första projekt\" — ett projekt sätter H-/Q-krav och utvecklingskostnad",
             "Slå D6 och flytta medsols (på er tur)",
             "Ni kommer kunna hamna på:",
             "Projektruta: ta projektet eller lägg i projektbanken",
@@ -70,9 +70,9 @@
         {
           "id": "namndbeslut",
           "name": "Nämndbeslut",
-          "lead": "Innan ni får placera projekten måste nämnden godkänna dem. För varje projekt med nämndkrav slår ni D20 + PC:s nämndbonus (erfarenhet räknas inte).",
+          "lead": "Innan ni får placera projekten måste nämnden godkänna dem. För varje projekt med nämndkrav slår ni D20 + PC:s nämndslag (erfarenhet räknas inte).",
           "actions": [
-            "Slå D20 + nämndbonus per projekt",
+            "Slå D20 + nämndslag per projekt",
             "Resultat ≥ nämndkravet = godkänt",
             "Misslyckat: använd 1 riskbonus för omslag, eller ta bort projektet (✕-knappen) och lägg det i Projektbanken",
             "Efter nämnden är passerad:",
@@ -90,7 +90,7 @@
             "Passa in projektformerna fysiskt på er tomt",
             "Inget projekt får sticka ut utanför mark + expansioner",
             "Övre lager: bara bostäder, måste täckas helt av projekt under",
-            "Justera tillbaka Q-/H-krav om ni inte placerade ett projekt",
+            "Justera tillbaka H-/Q-krav om ni inte placerade ett projekt",
             "Lägg ej placerade projekt i projektbanken (utvecklingskostnaden ska fortfarande betalas)."
           ],
           "meaning": "I verkligheten är detta byggrättsligt mer komplicerat, men i Åkepol får man bygga enligt dessa regler.",
@@ -100,7 +100,7 @@
         {
           "id": "remove_unplaced",
           "name": "Ta bort ej placerade projekt",
-          "lead": "Projekt som inte fick plats på er mark läggs tillbaka i projektbanken. Q- och H-kraven sjunker eftersom de borttagna projekten inte längre bidrar — men utvecklingskostnaden för dem ska betalas och ligger kvar i Utv.kostn.",
+          "lead": "Projekt som inte fick plats på er mark läggs tillbaka i projektbanken. H- och Q-kraven sjunker eftersom de borttagna projekten inte längre bidrar — men utvecklingskostnaden för dem ska betalas och ligger kvar i Utv.kostn.",
           "actions": [
             "Sätt T-nuläge (färgad kub) = 12 + högsta projektets T (max 14)"
           ],
@@ -134,10 +134,10 @@
           "lead": "Det här är sista chansen att påverka kraven: använd era kvarvarande riskbuffertar för att sänka Q-, H- eller T-kravet. 1 Rb = 1 steg. Resterande Rb sparas till Skede 2.2 (omslag på dåliga slag).",
           "actions": [
             "Använd ± knappar för att fördela Rb:",
-            "  −1 Q-krav per Rb",
             "  −1 H-krav per Rb",
+            "  −1 Q-krav per Rb",
             "  −1 T per Rb",
-            "Golv: T ≥ 8, Q-krav ≥ 0, H-krav ≥ 0"
+            "Golv: T ≥ 8, H-krav ≥ 0, Q-krav ≥ 0"
           ],
           "meaning": "Det är sista chansen att flytta målstolparna. Sparade riskbuffertar fungerar som omslag-försäkring i Skede 2.2 istället.\nDet mål som ska nås för tid (T) är 12. Men ni kan ha projekt som ökar detta 1 eller 2 steg. Men inte summan av dem, utan det som är högsta värdet. Så maximalt 2.\nDetta kan sedan sänkas med riskbuffertar.",
           "tip": "Är det värt att vänta med riskbufferterna, eller lyckas ni bygga en projektgenomförandegrupp med tillräckligt stor erfarenhet för att ändå vara relativt förskonad från extrema utfall? Vad räcker ABT-budgeten till i nästa steg?",
@@ -161,7 +161,7 @@
             "Lägg fram Skede 2-brädet, med blå baksida (Planering + Genomförande använder samma)",
             "Färgade Q-, H-nulägeskuber börjar på 0. Erfarenhet kan ha ökats, beroende på val av projektchef. Annars sätts den röda kuben på 0."
           ],
-          "tip": "Q och H börjar på 0 och justeras uppåt under spelets gång (planering, leverantörer, händelsekort). Målet är att nå Q-/H-kraven.",
+          "tip": "H och Q börjar på 0 och justeras uppåt under spelets gång (planering, leverantörer, händelsekort). Målet är att nå H-/Q-kraven.",
           "regelbok": "§5.1, §5.2"
         },
         {
@@ -170,7 +170,7 @@
           "lead": "Varje kvarter väljer en arbetschef (AC). Kvarteret med lägst ABT-kostnad väljer först. AC ger erfarenhetsbonus på alla händelsekort i Skede 2 + 3.",
           "actions": [
             "Klicka \"Välj Arbetschef\" i companion",
-            "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), Q/H/T-bonus",
+            "Jämför: Rb, Erfarenhet (taket är 12), Kompetens (STA/KOM/SAM/NOG/INN/ABM), H-/Q-/T-bonus",
             "Lägst ABT-kostnad väljer först",
             "Samma AC kan bara väljas en gång per stadsdel"
           ],
@@ -186,7 +186,7 @@
             "Per steg:",
             "  1. Välj ett av fyra alternativ (leverantör nivå 1–4 eller organisation)",
             "  2. Betala kostnaden från ABT-budget (BYA/BTA-klass styr priset)",
-            "  3. Justera Q, H, T, erfarenhet enligt valet",
+            "  3. Justera H, Q, T, erfarenhet enligt valet",
             "  4. Dra händelsekort: D20 + erfarenhet → utför kortets effekt",
             "  5. Leverantörer nivå 1 eller 2 sparas på scoreboard (drar garanti-kort vid skedesavslut)",
             "Ordning: Stödfunktioner → Mark → Husunderbyggnad → Digitalisering → Stomme → Installationer → Operativt team → Gemensamma arbeten → Yttertak → Fasader → Marknadsteam → Stomkomplettering → Inv. ytskikt"
@@ -200,8 +200,8 @@
           "name": "Sammanfattning Skede 2.1",
           "lead": "13 steg klara. Kontrollera era värden innan ni går in i Skede 2.2 — det är så här det ser ut när byggstart sker.",
           "actions": [
-            "Q-utfall vs Q-krav — uppfyllt redan?",
             "H-utfall vs H-krav — uppfyllt redan?",
+            "Q-utfall vs Q-krav — uppfyllt redan?",
             "T-utfall (mål: 12)",
             "ABT-budget kvar — finns marginal till Genomförandet?",
             "Erfarenhet (max 12, gäller hela Skede 2)",
@@ -223,7 +223,7 @@
           "image": "Spelbrade_Skede2_2_Setup.png",
           "lead": "Samma bräde som 2.1, men nu byggs projekten. 8 utförandefaser. Ni betalar med organisationens \"extra energi\" i form av kompetens (eller tar konsekvensen av att låta bli).",
           "actions": [
-            "Plocka fram alla GF-kort (gröna): FAS-kort, konsekvenskort (Q/H/T), garantibesiktning, kulturkort",
+            "Plocka fram alla GF-kort (gröna): FAS-kort, konsekvenskort (T/H/Q), garantibesiktning, kulturkort",
             "Leverantörer nivå 1–2 ska ligga i sin ruta på scoreboarden, så att ni minns hur många garantikort som ska dras efter de 8 faserna."
           ],
           "meaning": "Företagskultur (kulturkorten) är \"extraenergi\" — det lilla extra hela teamet kan ge utöver normalnivå. Begränsad mängd, först till kvarn (80 kort delas av alla kvarter).",
@@ -239,7 +239,7 @@
             "  1. Köp ev. kulturkort (frivilligt, kostar 2–8 Mkr beroende på fas)",
             "  2. Vänd FAS-kortet — välj kolumn baserat på er kvarterstyp",
             "  3. Välj utfallsnivå:",
-            "     Röd (negativ): ingen kostnad, straff i Q/H/T eller kostnader",
+            "     Röd (negativ): ingen kostnad, straff i T/H/Q eller kostnader",
             "     Gul: lägre kompetenskrav, mildare utfall",
             "     Grön (låg effekt): moderat kompetenskrav, ofta neutralt",
             "     Mörkgrön (bonus): högsta kompetenskrav, kan ge tidsvinst, Q-bonus eller B-ÄTA-intäkt",
@@ -254,17 +254,17 @@
         },
         {
           "id": "gf_konsekvens",
-          "name": "Konsekvenser (T → Q → H)",
+          "name": "Konsekvenser (T → H → Q)",
           "lead": "Nu jämförs era utfall mot kraven. Avvikelser ger konsekvenskort som drar er nedåt.",
           "actions": [
             "Tid: för varje månad er T överstiger 12, dra ett konsekvenskort-Tid",
-            "Kvalitet: för varje steg ert Q-utfall understiger Q-kravet, dra konsekvenskort-Kvalitet",
             "Hållbarhet: för varje steg ert H-utfall understiger H-kravet, dra konsekvenskort-Hållbarhet",
+            "Kvalitet: för varje steg ert Q-utfall understiger Q-kravet, dra konsekvenskort-Kvalitet",
             "Per kort: slå D20 + erfarenhet, effekt = ABT-kostnad",
-            "Q/H-loopen kan rulla på (vissa kort sänker utfallet ytterligare → fler kort)",
+            "H-/Q-loopen kan rulla på (vissa kort sänker utfallet ytterligare → fler kort)",
             "CFO antecknar antalet dragna konsekvenskort — påverkar antal garantikort i nästa steg"
           ],
-          "meaning": "Avvikelser från Q/H/T-mål påverkar slutpoängen via Mu-parametern",
+          "meaning": "Avvikelser från H-/Q-/T-mål påverkar slutpoängen via Mu-parametern",
           "tip": "En enstaka avvikelse tar 10 % av totalpoängen. Lite sent att berätta nu kanske, men det kan inte vara en nyhet att krav ska uppfyllas i projekt.",
           "regelbok": "§7.1–§7.3, §9.2"
         },
