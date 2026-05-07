@@ -751,10 +751,16 @@ function projectedScore(p, phase) {
     curQ = Math.max(0, curQ);
     curH = Math.max(0, curH);
 
-    // Byggfas totals
+    // Byggfas totals (inkl. kulturkort 2-8 Mkr/st enligt fas)
     var gfP = p.gf_phases || {};
+    var KULTUR_PRIS_PS = [2, 2, 3, 4, 5, 6, 7, 8];
     var gfAbt = 0;
-    for (var f in gfP) { gfAbt += gfP[f].abt||0; }
+    for (var f in gfP) {
+        gfAbt += gfP[f].abt||0;
+        var _fNum = parseInt(f, 10);
+        var _kult = gfP[f].kultur || 0;
+        if (_kult && _fNum >= 1 && _fNum <= 8) gfAbt += _kult * KULTUR_PRIS_PS[_fNum - 1];
+    }
     var konsAbt = (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
 
     // BRF values (used in multiple phases)
@@ -1482,7 +1488,9 @@ function renderPlayer() {
         // Riskbuffertar i \u00e4ndringsf\u00e4ltet f\u00e5r g\u00e5 under 0 (relativt \u2014 kort kan dra ner)
         html += counterRow('Riskbuffertar', p.riskbuffertar, 'riskbuffertar', true);
         // Markexpansioner (Stadsbyggnadskontoret-rutan, 5 Mkr/st \u2014 dras fr\u00e5n anskaffningen)
-        html += counterRow('Markexpansioner (5 Mkr/st)', p.mark_expansions || 0, 'mark_expansions', false);
+        html += counterRow('Markexpansioner \u2014 antal bitar (5 Mkr/st)', p.mark_expansions || 0, 'mark_expansions', false);
+        // Total antal rutor \u00f6ver alla bitar \u2014 p\u00e5verkar BYA-klassen
+        html += counterRow('Markexpansion \u2014 antal rutor (f\u00f6r BYA)', p.mark_expansion_cells || 0, 'mark_expansion_cells', false);
         html += '</div>';
     }
 
@@ -1602,6 +1610,20 @@ function renderPlayer() {
         var gfPhases = p.gf_phases || {};
         // Pris per kulturkort per fas (regelbok \u00a73.5)
         var KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8];
+
+        // Rb-r\u00e4knare f\u00f6r Skede 2.2 \u2014 varje f\u00f6rbrukad Rb ger +3 valfria po\u00e4ng
+        // p\u00e5 faskortet (f\u00f6rdelas p\u00e5 Q/H/T av spelaren).
+        var _rbPcGf = p.projektchef ? (p.projektchef.rb || 0) : 0;
+        var _rbAcGf = p.arbetschef ? (p.arbetschef.rb || 0) : 0;
+        var _rbAvail = (p.riskbuffertar || 0) + _rbPcGf + _rbAcGf;
+        html += '<div class="asset-card" style="border-left-color:var(--burgundy)">';
+        html += '<div class="asset-label">Riskbuffertar \u2014 Skede 2.2</div>';
+        html += '<div style="font-size:12px;color:var(--ink-mid);font-style:italic;margin-bottom:6px">' +
+            'Tillg\u00e4ngligt: <strong>' + _rbAvail + '</strong> Rb. Varje f\u00f6rbrukad Rb ger <strong>+3 valfria po\u00e4ng</strong> ' +
+            'att f\u00f6rdela p\u00e5 H/Q/T i en fas. S\u00e4nk r\u00e4knaren h\u00e4r n\u00e4r ni anv\u00e4nder en Rb, och justera fasens H/Q/T manuellt.</div>';
+        html += counterRow('Riskbuffertar (spelar\u00adjustering)', p.riskbuffertar, 'riskbuffertar', true);
+        html += '</div>';
+
         html += '<div class="asset-card" style="border-left-color:var(--warning)">';
         html += '<div class="asset-label">Byggfaser (1\u20138)</div>';
         for (var fi = 1; fi <= 8; fi++) {
@@ -1758,15 +1780,24 @@ function renderPlayer() {
         var brfProj = p.projects.filter(function(pr) { return pr.typ === 'BRF'; });
         var brfFast = brfProj.reduce(function(s, pr) { return s + ((pr.marknadsvarde||pr.anskaffning) - pr.anskaffning); }, 0);
 
-        // TB = anskaffning kvar (already calculated as anskKvar above in summary)
-        // Recalculate here for use
+        // TB = Anskaffning − (utv.kostnad + tomt + markexp + planeringskostnad
+        // + planeringshändelser + faskort-händelser + kulturkort + konsekvens + garanti).
         var _projAnsk = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
         var _projKost = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 15 + (p.mark_expansions||0)*5;
         var _chc3 = p.pl_choices||{}, _plEv3 = p.pl_events||{}, _gfP3 = p.gf_phases||{};
+        var KULTUR_PRIS_TB = [2, 2, 3, 4, 5, 6, 7, 8];
         var _abtUsed = 0;
         for (var _k3 in _chc3) _abtUsed += _chc3[_k3].cost||0;
         for (var _k3 in _plEv3) _abtUsed += _plEv3[_k3].abt||0;
-        for (var _f3 in _gfP3) _abtUsed += _gfP3[_f3].abt||0;
+        for (var _f3 in _gfP3) {
+            _abtUsed += _gfP3[_f3].abt||0;
+            // Kulturkort köpta i fas n: antal × pris(n)
+            var _fIdx = parseInt(_f3, 10);
+            var _kult = _gfP3[_f3].kultur || 0;
+            if (_kult && _fIdx >= 1 && _fIdx <= 8) {
+                _abtUsed += _kult * KULTUR_PRIS_TB[_fIdx - 1];
+            }
+        }
         _abtUsed += (p.gf_kons_q||0) + (p.gf_kons_h||0) + (p.gf_kons_t||0) + (p.gf_garanti_abt||0);
         var tb = _projAnsk - _projKost - _abtUsed;
 
@@ -1902,7 +1933,7 @@ function renderPlayer() {
                 if (_ap.typ === 'BRF') continue;  // BRF lämnas till föreningen, blir inga fastigheter
                 autoFasts.push({
                     id: _ap.id, namn: _ap.namn, typ: _ap.typ, bta: _ap.bta,
-                    anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'D',
+                    anskaffning: _ap.anskaffning, energiklass: _ap.energiklass || 'C',
                     marknadsvarde: _ap.marknadsvarde || _ap.anskaffning,
                     driftnetto: _ap.driftnetto || 0,
                     events: [], sold: false, kopeskilling: 0
@@ -2072,7 +2103,17 @@ function renderPlayer() {
             // Energiklass affects MV: C=1.00 referens, A=1.10 / B=1.05 / D=0.95 / E=0 (E ger 0 FV-bidrag — hård bestraffning)
             // Marknadsvärde i den löpande visningen: bara DN/yield. Energiklass-
             // faktorn appliceras endast i slututräkningen (regelbok §9.2).
-            var mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100)) : 0;
+            // Skala projektkortets MV med yield-delta. Vid startyield (4 % bostäder,
+            // 5 % kommersiellt) → MV = projektkortets MV exakt. Faller tillbaka på
+            // (4 × DN)/yield om kort-MV saknas (sekundärmarknads-köp).
+            var startYield = isBostader ? 4.0 : 5.0;
+            var baseMV = f.marknadsvarde || 0;
+            var mv;
+            if (baseMV > 0 && yieldPct > 0) {
+                mv = Math.round(baseMV * (startYield / yieldPct));
+            } else {
+                mv = yieldPct > 0 ? Math.round((4 * dn) / (yieldPct / 100)) : 0;
+            }
             html += '<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin:6px 0;background:var(--paper-deep)">';
             html += '<div style="display:flex;justify-content:space-between;align-items:center">';
             html += '<strong style="color:' + (TYPE_COLORS[f.typ]||'var(--ink-mid)') + '">' + f.namn + '</strong>';
@@ -2084,15 +2125,15 @@ function renderPlayer() {
             if (_hasModLan) {
                 html += '<span style="color:var(--danger);font-size:12px">Ej tillg\u00e4ngligt med aktivt moderbolags\u00e5n</span>';
                 // Show current energiklass only
-                html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'D') + '</span>';
+                html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'C') + '</span>';
             } else if (!_canEnergi) {
                 // Visa nuvarande klass utan klick — vi är inte i Energi-substeg
-                html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'D') + '</span>';
+                html += '<span style="padding:2px 6px;border-radius:4px;font-weight:700;background:var(--burgundy);color:#fff">' + (f.energiklass||'C') + '</span>';
                 html += '<span style="font-size:11px;color:var(--ink-faint);font-style:italic;margin-left:4px">(uppgradering i spiralsteg "Energi")</span>';
             } else {
                 for (var ei = 0; ei < EKLASS.length; ei++) {
                     var ek = EKLASS[ei];
-                    var isActive = (f.energiklass||'D') === ek;
+                    var isActive = (f.energiklass||'C') === ek;
                     html += '<span class="f4-eklass-btn" data-fi="' + fi + '" data-eklass="' + ek + '" '
                         + 'style="cursor:pointer;padding:2px 6px;border-radius:4px;font-weight:700;'
                         + (isActive ? 'background:var(--burgundy);color:#fff' : 'background:#2a3a4a;color:var(--ink-mid)')
@@ -2227,9 +2268,9 @@ function renderPlayer() {
             if (_ownsType) {
                 html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
                 html += '<span>Kassa-effekt:</span>';
-                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="-1" style="cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px">\u2212</span>';
+                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="-0.5" style="cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px">\u2212</span>';
                 html += '<strong style="color:' + (_hEk >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + _hEk + ' Mkr</strong>';
-                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="1" style="cursor:pointer;color:var(--success);font-size:18px;padding:0 4px">+</span>';
+                html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="handelse_ek" data-d="0.5" style="cursor:pointer;color:var(--success);font-size:18px;padding:0 4px">+</span>';
                 html += '</div>';
             } else {
                 html += '<div style="font-size:13px;color:var(--ink-faint);font-style:italic">Du f\u00f6rvaltar inga ' + _kev.typ.toLowerCase() + ' \u2014 detta kvartal p\u00e5verkas du inte.</div>';
@@ -2247,9 +2288,9 @@ function renderPlayer() {
             html += '<div style="font-size:13px;color:var(--ink-mid);margin-bottom:8px">Justera Kassa och energiklass enligt det dragna kortet. Energiklass \u00e4ndras per fastighet ovan.</div>';
             html += '<div style="display:flex;align-items:center;gap:10px;font-size:14px">';
             html += '<span>Kassa-effekt:</span>';
-            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="-1" style="cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px">\u2212</span>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="-0.5" style="cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px">\u2212</span>';
             html += '<strong style="color:' + (_omEk >= 0 ? 'var(--success)' : 'var(--danger)') + '">' + _omEk + ' Mkr</strong>';
-            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="1" style="cursor:pointer;color:var(--success);font-size:18px;padding:0 4px">+</span>';
+            html += '<span class="f4-q-adj-btn" data-step="' + step + '" data-field="omvarld_ek" data-d="0.5" style="cursor:pointer;color:var(--success);font-size:18px;padding:0 4px">+</span>';
             html += '</div></div>';
         }
 
@@ -2994,7 +3035,7 @@ function attachPlayerEvents(container) {
                 if (pr.typ === 'BRF') continue;
                 fasts.push({
                     id: pr.id, namn: pr.namn, typ: pr.typ, bta: pr.bta,
-                    anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'D',
+                    anskaffning: pr.anskaffning, energiklass: pr.energiklass || 'C',
                     marknadsvarde: pr.marknadsvarde || pr.anskaffning,
                     driftnetto: pr.driftnetto || 0,
                     events: [], sold: false, kopeskilling: 0
@@ -3129,7 +3170,13 @@ function attachPlayerEvents(container) {
                 alert('En auktion pågår redan i rummet — vänta tills den är klar.');
                 return;
             }
-            if (!confirm('Starta auktion för "' + f.namn + '"?\n\nAlla andra spelare får en prompt om att buda. När budgivningen vid bordet är klar väljer du "Acceptera bud" eller "Sälj till banken".')) return;
+            // Räkna fram aktuellt MV och bankbud (80 %) så säljaren ser dem upfront
+            var _isBost = (f.typ || '').toUpperCase() === 'HYRESRÄTT';
+            var _yld = _isBost ? (S.state.player.f4_yield_bostader || 4) : (S.state.player.f4_yield_kommersiellt || 5);
+            var _dn = f.driftnetto || 0;
+            var _mv = _yld > 0 ? Math.round((4 * _dn) / (_yld / 100)) : 0;
+            var _bankBid = Math.round(_mv * 0.8);
+            if (!confirm('Starta auktion för "' + f.namn + '"?\n\nMarknadsvärde (MV): ' + _mv + ' Mkr\nBankens bud (80 %): ' + _bankBid + ' Mkr — lägsta accepterade bud.\n\nAlla andra spelare får en prompt om att buda. När budgivningen vid bordet är klar väljer du "Acceptera bud" eller "Sälj till banken".')) return;
             send({ type: 'auction_start', fastighet_id: f.id });
         });
     });

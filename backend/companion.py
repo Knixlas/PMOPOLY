@@ -269,7 +269,8 @@ class CompanionPlayer:
     rb_spent_q: int = 0
     rb_spent_h: int = 0
     rb_spent_t: int = 0
-    mark_expansions: int = 0
+    mark_expansions: int = 0  # Antal bitar (5 Mkr/styck)
+    mark_expansion_cells: int = 0  # Total antal rutor (250 kvm/ruta) — för BYA-klass
     dev_cost_total: float = 0.0  # Aktuell summa av projektens kostnader
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
@@ -366,7 +367,12 @@ class CompanionPlayer:
 
     @property
     def _calc_tb(self) -> float:
-        """Calculate TB (Täckningsbidrag) = anskaffning - kostnader - ABT-förbrukning."""
+        """Calculate TB (Täckningsbidrag) = anskaffning - kostnader - ABT-förbrukning.
+
+        ABT-förbrukning = planeringskostnader + planeringshändelser
+        + faskort-händelser + KULTURKORT (2-8 Mkr/st enligt fas)
+        + konsekvenskort + garantibesiktning."""
+        KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8]  # fas 1-8
         total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
         total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
         abt_used = 0
@@ -374,8 +380,17 @@ class CompanionPlayer:
             abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
         for ev in (self.pl_events or {}).values():
             abt_used += ev.get("abt", 0) if isinstance(ev, dict) else 0
-        for gf in (self.gf_phases or {}).values():
-            abt_used += gf.get("abt", 0) if isinstance(gf, dict) else 0
+        for fas_key, gf in (self.gf_phases or {}).items():
+            if not isinstance(gf, dict):
+                continue
+            abt_used += gf.get("abt", 0)
+            try:
+                fas_idx = int(fas_key)
+            except (TypeError, ValueError):
+                fas_idx = 0
+            kult = gf.get("kultur", 0)
+            if kult and 1 <= fas_idx <= 8:
+                abt_used += kult * KULTUR_PRIS[fas_idx - 1]
         abt_used += getattr(self, 'gf_kons_q', 0) + getattr(self, 'gf_kons_h', 0) + getattr(self, 'gf_kons_t', 0) + getattr(self, 'gf_garanti_abt', 0)
         return total_ansk - total_kost - abt_used
 
@@ -438,6 +453,7 @@ class CompanionPlayer:
             "rb_spent_h": self.rb_spent_h,
             "rb_spent_t": self.rb_spent_t,
             "mark_expansions": self.mark_expansions,
+            "mark_expansion_cells": self.mark_expansion_cells,
             "dev_cost_total": round(self.dev_cost_total, 1),
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
@@ -1323,6 +1339,8 @@ class CompanionManager:
                 player.rb_spent_t = int(assets["rb_spent_t"])
             if "mark_expansions" in assets:
                 player.mark_expansions = int(assets["mark_expansions"])
+            if "mark_expansion_cells" in assets:
+                player.mark_expansion_cells = int(assets["mark_expansion_cells"])
             if "eget_kapital" in assets:
                 player.eget_kapital = float(assets["eget_kapital"])
             if "abt_budget" in assets:
