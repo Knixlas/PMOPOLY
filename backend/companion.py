@@ -374,7 +374,11 @@ class CompanionPlayer:
         + konsekvenskort + garantibesiktning."""
         KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8]  # fas 1-8
         total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
-        total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 10 + self.mark_expansions * 5
+        # dev_cost_total räknar in sunk cost för borttagna projekt (nämnd-avslag,
+        # ej placerade) — fall tillbaka på live-summan om det inte är satt.
+        live_kost = sum(p.get("kostnad", 0) for p in self.projects)
+        proj_kost = self.dev_cost_total if self.dev_cost_total else live_kost
+        total_kost = proj_kost + 10 + self.mark_expansions * 5
         abt_used = 0
         for ch in (self.pl_choices or {}).values():
             abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
@@ -1209,11 +1213,15 @@ class CompanionManager:
                 seller.fastigheter = seller_fasts
                 seller.eget_kapital = round(new_ek_seller, 1)
                 seller.gf_moderbolagslan_antal = seller_modlan
-                # Köparen betalar 30 % kontant, lägger till fastigheten
+                # Köparen betalar 30 % kontant, lägger till fastigheten.
+                # dd_pending-flagga triggar DD-kort-modal i frontend.
                 bought = dict(room.auction["fastighet"])
                 bought["sold"] = False
                 bought["anskaffning"] = kop  # ny anskaffning
                 bought["kopeskilling"] = 0
+                bought["dd_pending"] = True
+                bought["dd_kop"] = kop
+                bought["dd_kontant"] = round(earn, 1)
                 buyer_fasts = list(buyer.fastigheter or [])
                 buyer_fasts.append(bought)
                 buyer.fastigheter = buyer_fasts

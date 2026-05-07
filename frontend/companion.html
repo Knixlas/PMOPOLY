@@ -644,6 +644,18 @@ function connectWs(code, playerId) {
                 // Player: kolla aktiv auktion (sälj-flöde mellan spelare)
                 if (!S.isGM) {
                     showAuctionUI(data.state.auction);
+                    // Trigga DD-kort för fastighet vunnen via auktion (dd_pending-flagga
+                    // sätts av backend i auction_finalize accept). Visas en gång per
+                    // fastighet — när spelaren applicerar DD nollas flaggan.
+                    var _myFasts = (data.state.player && data.state.player.fastigheter) || [];
+                    for (var _fi = 0; _fi < _myFasts.length; _fi++) {
+                        var _f = _myFasts[_fi];
+                        if (_f && _f.dd_pending && S._ddPromptedFor !== _f.id) {
+                            S._ddPromptedFor = _f.id;
+                            showAuctionDDKortModal(_fi, _f);
+                            break;  // bara en åt gången
+                        }
+                    }
                 }
                 // Player: check for unanswered active quiz on reconnect.
                 // Bara visa modalen om det är en NY fråga (inte vid varje state-update),
@@ -1786,8 +1798,11 @@ function renderPlayer() {
 
         // TB = Anskaffning − (utv.kostnad + tomt + markexp + planeringskostnad
         // + planeringshändelser + faskort-händelser + kulturkort + konsekvens + garanti).
+        // dev_cost_total inkluderar sunk cost för borttagna projekt (nämnd-avslag,
+        // ej placerade) — samma fallback-logik som Sammanställningen använder.
         var _projAnsk = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
-        var _projKost = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 10 + (p.mark_expansions||0)*5;
+        var _projKostBase = p.dev_cost_total || p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0);
+        var _projKost = _projKostBase + 10 + (p.mark_expansions||0)*5;
         var _chc3 = p.pl_choices||{}, _plEv3 = p.pl_events||{}, _gfP3 = p.gf_phases||{};
         var KULTUR_PRIS_TB = [2, 2, 3, 4, 5, 6, 7, 8];
         var _abtUsed = 0;
@@ -2159,13 +2174,14 @@ function renderPlayer() {
             var _evExpanded = S.expandedFastEvents.has(_fastId) || (_isQuarter && _curSub === 6);
             html += '<div style="margin-top:6px">';
             html += '<div style="font-size:12px;color:var(--burgundy);cursor:pointer" class="f4-toggle-events" data-fi="' + fi + '" data-fid="' + _fastId + '">H\u00e4ndelsekort (' + events.length + ') ' + (_evExpanded ? '\u25BE' : '\u25B8') + '</div>';
-            html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="' + (_evExpanded ? '' : 'display:none') + ';margin-top:4px">';
+            html += '<div class="f4-events-list" id="f4-events-' + fi + '" style="' + (_evExpanded ? '' : 'display:none') + ';margin-top:6px">';
+            html += '<div style="font-size:11px;color:var(--ink-faint);font-style:italic;padding:4px 6px;border-left:2px solid var(--burgundy);margin-bottom:6px">Effekter från händelsekort som dras per kvartal. <strong>Energi-händelse-pilarna ändrar energiklassen pga händelsen</strong> — det är <em>inte</em> en energiuppgradering (de görs i spiralsteget "Energi" och kostar 3 Mkr/steg).</div>';
             for (var qi = 1; qi <= 4; qi++) {
                 var ev = events.find(function(e) { return e.kvartal === qi; }) || {};
-                html += '<div style="display:flex;gap:8px;font-size:12px;padding:2px 0">';
-                html += '<span style="color:var(--ink-mid);width:30px">Q' + qi + ':</span>';
-                html += '<span>Kassa: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="-0.5">\u2212</span> <strong>' + (ev.ek||0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="0.5">+</span></span>';
-                html += '<span>Energi: <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="-1">\u25BC</span> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="1">\u25B2</span></span>';
+                html += '<div style="display:flex;gap:10px;font-size:12px;padding:6px 8px;background:var(--paper);border-radius:6px;margin-bottom:4px;align-items:center;flex-wrap:wrap">';
+                html += '<span style="color:var(--burgundy);font-weight:700;width:30px">Q' + qi + '</span>';
+                html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:var(--bg-card);border-radius:4px"><span style="color:var(--ink-mid);font-size:11px">Kassa</span> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="-0.5" style="cursor:pointer;color:var(--danger);padding:0 4px">\u2212</span> <strong>' + (ev.ek||0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="ek" data-d="0.5" style="cursor:pointer;color:var(--success);padding:0 4px">+</span></span>';
+                html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#FFF3E0;border:1px dashed #ff8c00;border-radius:4px"><span style="color:#b25a00;font-size:11px;font-weight:700">Energi-h\u00E4ndelse</span> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="-1" style="cursor:pointer;font-size:15px;padding:0 4px;color:var(--danger)">\u25BC</span> <strong style="min-width:14px;text-align:center">' + (ev.energi || 0) + '</strong> <span class="f4-ev-btn" data-fi="' + fi + '" data-q="' + qi + '" data-f="energi" data-d="1" style="cursor:pointer;font-size:15px;padding:0 4px;color:var(--success)">\u25B2</span></span>';
                 html += '</div>';
             }
             html += '</div></div>';
@@ -2347,8 +2363,10 @@ function renderPlayer() {
         // Slutvärdering
         if (step === 'f4_slut') {
             var _ownedF = fasts.filter(function(f){return !f.sold;});
-            var _soldBrf = fasts.filter(function(f){
-                return f.sold && (f.typ||'').toUpperCase() === 'BRF';
+            // BRF-projekt blir aldrig fastigheter (de säljs till föreningen vid
+            // Skede 2.2 → 3-övergången) — hämta dem direkt från projects-listan.
+            var _soldBrf = (p.projects || []).filter(function(pr) {
+                return (pr.typ || '').toUpperCase() === 'BRF';
             });
             var _eklMap = {'A':1.10,'B':1.05,'C':1.00,'D':0.95,'E':0};
 
@@ -2371,9 +2389,10 @@ function renderPlayer() {
             var _ekFactor = _ek4 >= 0 ? 0.10 : 2.00;
             var _kassaJusterad = _ekFactor * _ek4;
 
-            // Steg 3: TB i ABT
+            // Steg 3: TB i ABT (dev_cost_total inkluderar sunk cost för borttagna)
             var _pAnsk4 = p.projects.reduce(function(s,pr){return s+(pr.anskaffning||0);},0);
-            var _pKost4 = p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0) + 10 + (p.mark_expansions||0)*5;
+            var _pKost4Base = p.dev_cost_total || p.projects.reduce(function(s,pr){return s+(pr.kostnad||0);},0);
+            var _pKost4 = _pKost4Base + 10 + (p.mark_expansions||0)*5;
             var _abt4 = 0;
             var _ch4 = p.pl_choices||{}; for(var k in _ch4) _abt4 += _ch4[k].cost||0;
             var _ev4 = p.pl_events||{}; for(var k in _ev4) _abt4 += _ev4[k].abt||0;
@@ -2481,7 +2500,7 @@ function renderPlayer() {
             var _fnColorSlut = _fnPctSlut >= 90 ? 'var(--success)' : (_fnPctSlut >= 70 ? 'var(--burgundy)' : 'var(--danger)');
             html += '<div style="margin-top:10px;padding:10px;background:var(--paper);border-radius:6px;border:1px dashed var(--burgundy)">';
             html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);margin-bottom:6px">Slutber\u00e4kning</div>';
-            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>(Fastighetspo\u00e4ng + Kassa + TB)</span><span>' + Math.round(_summa*10)/10 + ' Mkr</span></div>';
+            html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>(Fastighetspo\u00e4ng + Kassa + TB)</span><span>' + Math.round(_summa*10)/10 + '</span></div>';
             html += '<div style="font-size:13px;display:flex;justify-content:space-between"><span>\u00f7 BTA/1000 (' + _btaTotal + ' kvm)</span><span>' + Math.round(_perKvm*10)/10 + '</span></div>';
             html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px"><span>\u00d7 \u03bc \u2014 n = ' + _nSlut + ' avvikelser (Q:' + _nQslut + ' H:' + _nHslut + ' T:' + _nTslut + ')</span><span style="color:' + _fnColorSlut + '"><strong>\u00d7' + _fnSlut.toFixed(2) + ' (' + _fnPctSlut + ' %)</strong></span></div>';
             html += '<div style="font-size:13px;display:flex;justify-content:space-between;margin-top:4px;border-top:1px dashed var(--border);padding-top:4px"><span>Delsumma (poäng × μ)</span><span>' + Math.round(_scoreBeforeQuiz*10)/10 + '</span></div>';
@@ -3333,6 +3352,59 @@ function attachPlayerEvents(container) {
 }
 
 // ── PC Modal ──
+// ── DD-kort Modal — fastighet vunnen via auktion ──
+// Triggas automatiskt när backend sätter dd_pending=true på en fastighet
+// (auction_finalize accept). Applicerar DD-effekten i EK och nollar flaggan.
+function showAuctionDDKortModal(fIdx, f) {
+    var mc = document.getElementById('modal-container');
+    var html = '<div class="modal-overlay"><div class="modal">';
+    html += '<div class="modal-header" style="background:#1B365D"><h3 style="color:#D1CDC0">Due Diligence — ' + f.namn + '</h3></div>';
+    html += '<div class="modal-body">';
+    var _kop = f.dd_kop || f.anskaffning || 0;
+    var _kontant = f.dd_kontant || 0;
+    html += '<div style="color:var(--ink-mid);font-size:13px;margin-bottom:14px">Vunnen i auktion för <strong>' + _kop + ' Mkr</strong> (betalt ' + _kontant + ' Mkr kontant). Dra ett DD-kort på spelbrädet och notera påverkan här.</div>';
+    html += '<div style="background:var(--paper-deep);border-radius:8px;padding:14px;text-align:center">';
+    html += '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:10px">Påverkan på Kassa (Mkr)</div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center">';
+    html += '<button class="counter-btn" id="addd-minus" style="font-size:18px;padding:6px 14px">−</button>';
+    html += '<input id="addd-input" type="number" value="0" step="0.5" style="width:120px;text-align:center;font-size:22px;font-weight:700;padding:6px;background:var(--paper);border:1px solid var(--border);border-radius:6px;color:var(--ink)">';
+    html += '<button class="counter-btn" id="addd-plus" style="font-size:18px;padding:6px 14px">+</button>';
+    html += '</div>';
+    html += '<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Negativt belopp för kostnad, positivt för bonus. Lämna 0 om kortet var neutralt.</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="modal-footer" style="display:flex;gap:8px">';
+    html += '<button class="btn-primary" id="btn-addd-apply" style="flex:1;background:#1B365D">Applicera & stäng</button>';
+    html += '</div>';
+    html += '</div></div>';
+    mc.innerHTML = html;
+    var input = document.getElementById('addd-input');
+    document.getElementById('addd-minus').addEventListener('click', function() {
+        var v = parseFloat(input.value || '0') - 0.5;
+        input.value = (v % 1 === 0) ? v.toFixed(0) : v.toFixed(1);
+    });
+    document.getElementById('addd-plus').addEventListener('click', function() {
+        var v = parseFloat(input.value || '0') + 0.5;
+        input.value = (v % 1 === 0) ? v.toFixed(0) : v.toFixed(1);
+    });
+    document.getElementById('btn-addd-apply').addEventListener('click', function() {
+        var delta = parseFloat(input.value || '0') || 0;
+        // Nolla dd_pending-flaggan så modalen inte triggas igen.
+        var fasts = JSON.parse(JSON.stringify(S.state.player.fastigheter || []));
+        if (fasts[fIdx]) {
+            delete fasts[fIdx].dd_pending;
+            delete fasts[fIdx].dd_kop;
+            delete fasts[fIdx].dd_kontant;
+        }
+        var assets = { fastigheter: fasts };
+        if (delta !== 0) {
+            assets.eget_kapital = Math.round(((S.state.player.eget_kapital || 0) + delta) * 10) / 10;
+        }
+        send({ type: 'update_assets', assets: assets });
+        mc.innerHTML = '';
+    });
+}
+
 // ── DD-kort Modal ──
 // Spelaren drar DD-kortet manuellt på spelbrädet. Companion bara registrerar
 // effekten (+/- Mkr i EK) som spelaren knappar in.
