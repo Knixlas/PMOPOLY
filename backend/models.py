@@ -63,6 +63,10 @@ class Project:
     sam: int = 0
     pro: int = 0
     abm: int = 0
+    # Förvaltning 2.0 – förtryckta värden från F2_fastighetskort.csv (None när data saknas).
+    bas_dn: Optional[int] = None
+    lanebelopp: Optional[int] = None
+    rantekostnad_kvartal: Optional[int] = None
 
     def to_dict(self) -> dict:
         return {
@@ -74,6 +78,8 @@ class Project:
             "tid": self.tid, "riskbuffert": self.riskbuffert,
             "namndbeslut": self.namndbeslut, "energiklass": self.energiklass,
             "driftnetto": self.driftnetto, "forekomst": self.forekomst,
+            "bas_dn": self.bas_dn, "lanebelopp": self.lanebelopp,
+            "rantekostnad_kvartal": self.rantekostnad_kvartal,
         }
 
 
@@ -374,6 +380,11 @@ class Player:
     f4_fv_30: float = 0.0
     f4_real_ek: float = 0.0
     f4_tb: float = 0.0
+    # Förvaltning 2.0 — set av fastighetsnamn med röd margin call-markör.
+    f4_margin_call_props: set = field(default_factory=set)
+    # Förvaltning 2.0 — restkort (1 per 0,25 Mkr residual vid kvartalsavrundning,
+    # autokonverteras till 1 Mkr cash när 4 ackumulerats). Persisterar mellan kvartal.
+    f4_restkort: int = 0
 
     @property
     def total_bta(self) -> int:
@@ -549,6 +560,8 @@ class Player:
             "f4_fv_30": round(self.f4_fv_30, 1),
             "f4_real_ek": round(self.f4_real_ek, 1),
             "f4_tb": round(self.f4_tb, 1),
+            "f4_margin_call_props": sorted(self.f4_margin_call_props),
+            "f4_restkort": self.f4_restkort,
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
             "projektchef": self.projektchef,

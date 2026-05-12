@@ -38,6 +38,16 @@ DIRECT = [
     ("4. Förvaltning/F_omvärldskort.csv",          "4_forvaltning/F_omvärldskort.csv"),
     ("4. Förvaltning/F_personal.csv",              "4_forvaltning/F_personal.csv"),
     ("4. Förvaltning/F_yield.csv",                 "4_forvaltning/F_yield.csv"),
+    # Nya Förvaltning 2.0 – designdokument 2026-05-09 (fastigheter centrum, MV-tabell, FC/FS-arketyper).
+    ("4. Förvaltning/Nya Förvaltning/F2_fastighetskort.csv", "4_forvaltning_v2/F2_fastighetskort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_DD.csv",             "4_forvaltning_v2/F2_DD.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_FC_personal.csv",    "4_forvaltning_v2/F2_FC_personal.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_FS_personal.csv",    "4_forvaltning_v2/F2_FS_personal.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_garantikort.csv",    "4_forvaltning_v2/F2_garantikort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_konsekvenskort.csv", "4_forvaltning_v2/F2_konsekvenskort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_kvartal.csv",        "4_forvaltning_v2/F2_kvartal.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_omvärldskort.csv",   "4_forvaltning_v2/F2_omvärldskort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_händelsekort.csv",   "4_forvaltning_v2/F2_händelsekort.csv"),
 ]
 
 # (src1, src2, dst) — slå ihop två CSV-filer (en header från första)

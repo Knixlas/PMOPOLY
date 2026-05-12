@@ -9,32 +9,33 @@ import { renderPhase3Action } from './phase3.js';
 import { renderPhase4Action } from './phase4.js';
 import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag, selectPiece, getSelectState, openPieceModal } from './puzzle.js';
 
-// Board square definitions (must match backend config.py)
+// Board square definitions — Skede 1-brädet enligt PU_spelbräde2.pdf (2026-05-12).
+// Måste matcha backend/config.py: BOARD_SQUARES.
 const BOARD_SQUARES = [
-    { nr: 1, typ: "start", namn: "Stadsbyggnads-kontoret" },
-    { nr: 2, typ: "projekt", namn: "Förskola", projekt_typer: ["FÖRSKOLOR"] },
-    { nr: 3, typ: "projekt", namn: "Hyresrätt", projekt_typer: ["Hyresrätt"] },
-    { nr: 4, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 5, typ: "projekt", namn: "BRF", projekt_typer: ["BRF"] },
-    { nr: 6, typ: "stjarna", namn: "Stjärna" },
-    { nr: 7, typ: "stadshuset", namn: "Stadshuset" },
-    { nr: 8, typ: "projekt", namn: "Lokal", projekt_typer: ["LOKAL"] },
-    { nr: 9, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 10, typ: "projekt", namn: "BRF + Kontor", projekt_typer: ["BRF", "KONTOR"] },
-    { nr: 11, typ: "projekt", namn: "Kontor", projekt_typer: ["KONTOR"] },
-    { nr: 12, typ: "stjarna", namn: "Stjärna" },
-    { nr: 13, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 14, typ: "projekt", namn: "Lokal + Hyresrätt", projekt_typer: ["LOKAL", "Hyresrätt"] },
-    { nr: 15, typ: "lansstyrelsen", namn: "Länsstyrelsen" },
-    { nr: 16, typ: "projekt", namn: "Förskola", projekt_typer: ["FÖRSKOLOR"] },
-    { nr: 17, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 18, typ: "projekt", namn: "Lokal + Förskola", projekt_typer: ["LOKAL", "FÖRSKOLOR"] },
-    { nr: 19, typ: "skonhetsradet", namn: "Skönhetsrådet" },
-    { nr: 20, typ: "stjarna", namn: "Stjärna" },
-    { nr: 21, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 22, typ: "projekt", namn: "Hyresrätt", projekt_typer: ["Hyresrätt"] },
-    { nr: 23, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 24, typ: "projekt", namn: "BRF", projekt_typer: ["BRF"] },
+    { nr: 1,  typ: "start",         namn: "Stadsbyggnads-kontoret" },
+    { nr: 2,  typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 3,  typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 4,  typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 5,  typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 6,  typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 7,  typ: "skonhetsradet", namn: "Skönhetsrådet" },
+    { nr: 8,  typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 9,  typ: "riskbuffert",   namn: "Ta en riskbuffert" },
+    { nr: 10, typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 11, typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 12, typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 13, typ: "stadshuset",    namn: "Stadshuset" },
+    { nr: 14, typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 15, typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 16, typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 17, typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 18, typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 19, typ: "lansstyrelsen", namn: "Länsstyrelsen" },
+    { nr: 20, typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 21, typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 22, typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 23, typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 24, typ: "riskbuffert",   namn: "Ta en riskbuffert" },
 ];
 
 let _lastPhase = null;
@@ -224,19 +225,22 @@ function renderInfoPanel(gs) {
         if (sq) {
             const sqColors = {
                 'start': '#2980b9', 'projekt': '#27ae60', 'kort': '#8e44ad',
-                'stjarna': 'var(--burgundy)', 'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
+                'stjarna': 'var(--burgundy)', 'riskbuffert': 'var(--burgundy)',
+                'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
                 'skonhetsradet': '#16a085'
             };
             const sqIcons = {
                 'start': '🏛️', 'projekt': '🏗️', 'kort': '🃏',
-                'stjarna': '⭐', 'stadshuset': '🏰', 'lansstyrelsen': '⚖️',
+                'stjarna': '⭐', 'riskbuffert': '🛡️',
+                'stadshuset': '🏰', 'lansstyrelsen': '⚖️',
                 'skonhetsradet': '🎨'
             };
             const sqDescriptions = {
                 'start': 'Stadsbyggnadskontoret — startposition.',
                 'projekt': `Här kan du förvärva ett projekt av typ: ${sq.projekt_typer?.join(', ') || ''}`,
-                'kort': `${sq.namn}kort — Dra ett kort och slå D20.`,
+                'kort': `${sq.namn} — Dra ett kort och slå D20.`,
                 'stjarna': '+1 Riskbuffert!',
+                'riskbuffert': '+1 Riskbuffert!',
                 'stadshuset': 'Stadshuset — Möjlighet att utöka tomtmark.',
                 'lansstyrelsen': 'Länsstyrelsen — Minskar H-krav med 2.',
                 'skonhetsradet': 'Skönhetsrådet — Minskar Q-krav med 2.',

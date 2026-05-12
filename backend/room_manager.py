@@ -137,6 +137,7 @@ class GameRoom:
         self.turn_index = (self.turn_index + 1) % len(self.players)
 
     def to_dict(self) -> dict:
+        from config import YIELD_QUEUE_SIZE
         return {
             "room_id": self.room_id,
             "name": self.name,
@@ -147,6 +148,12 @@ class GameRoom:
             "sub_state": self.sub_state,
             "pending_action": self.pending_action,
             "events_log": self.events_log[-20:],  # Last 20 events
+            # Förvaltning 2.0 – marknadskartan + yield-kö (synliga närmaste rörelser).
+            "f4_quarter": self.f4_quarter,
+            "f4_yield_b": round(self.f4_yield_b, 2),
+            "f4_yield_k": round(self.f4_yield_k, 2),
+            "f4_yield_queue_bostader": list(self.f4_yield_cards.get("bostader", []))[:YIELD_QUEUE_SIZE],
+            "f4_yield_queue_kommersiellt": list(self.f4_yield_cards.get("kommersiellt", []))[:YIELD_QUEUE_SIZE],
         }
 
     def to_lobby_dict(self) -> dict:

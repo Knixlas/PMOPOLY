@@ -118,23 +118,135 @@ def load_projects() -> Dict[str, List[Project]]:
     return stacks
 
 
+# ── Förvaltning 2.0: FC/FS-arketyper (separata kortlekar) ──
+
+def load_f2_fc_arketyper() -> List[dict]:
+    """Läs F2_FC_personal.csv (6 fastighetschef-arketyper med passiva egenskaper).
+
+    Kolumner: Roll, ID, Namn, Specialisering, Kapacitet_proj, Lön_Mkr_per_kv,
+    Förhandling (+3/-1/+1/0), Motstånd_konsekvens (+3/-1/+2/0), Specialeffekt, Not.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_FC_personal.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "roll": "FC",
+            "id": nid,
+            "namn": safe_str(r.get("Namn")),
+            "specialisering": safe_str(r.get("Specialisering")),
+            "kapacitet": safe_int(r.get("Kapacitet_proj")),
+            "lon": safe_float(r.get("Lön_Mkr_per_kv")),
+            "forhandling": safe_str(r.get("Förhandling")),
+            "motstand_konsekvens": safe_str(r.get("Motstånd_konsekvens")),
+            "specialeffekt": safe_str(r.get("Specialeffekt")),
+            "not": safe_str(r.get("Not")),
+        })
+    return out
+
+
+def load_f2_fs_arketyper() -> List[dict]:
+    """Läs F2_FS_personal.csv (4 fastighetsspecialist-arketyper med taktiska egenskaper).
+
+    Kolumner: Roll, ID, Namn, Specialisering, Lön_Mkr_per_kv, Effekt_beskrivning, Not.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_FS_personal.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "roll": "FS",
+            "id": nid,
+            "namn": safe_str(r.get("Namn")),
+            "specialisering": safe_str(r.get("Specialisering")),
+            "lon": safe_float(r.get("Lön_Mkr_per_kv")),
+            "effekt_beskrivning": safe_str(r.get("Effekt_beskrivning")),
+            "not": safe_str(r.get("Not")),
+        })
+    return out
+
+
+# ── Förvaltning 2.0: berika projekt med Bas_DN / Lanebelopp / Rantekostnad ──
+
+def enrich_projects_from_f2(stacks: Dict[str, List[Project]]) -> int:
+    """Läs F2_fastighetskort.csv och fyll i bas_dn / lanebelopp / rantekostnad_kvartal
+    på matchande projekt (per Namn). Returnerar antal projekt-instanser som berikats.
+
+    Filen är optional — saknas den lämnas projekten orörda.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_fastighetskort.csv")
+    if not os.path.exists(fp):
+        return 0
+
+    rows = read_csv(fp)
+    by_name: Dict[str, dict] = {}
+    for r in rows:
+        namn = safe_str(r.get("Namn"))
+        if namn:
+            by_name[namn] = r
+
+    enriched = 0
+    for stack in stacks.values():
+        for p in stack:
+            r = by_name.get(p.namn)
+            if not r:
+                continue
+            bd = safe_str(r.get("Bas_DN"))
+            ln = safe_str(r.get("Lanebelopp"))
+            rk = safe_str(r.get("Rantekostnad_kvartal"))
+            if bd:
+                p.bas_dn = safe_int(bd)
+            if ln:
+                p.lanebelopp = safe_int(ln)
+            if rk:
+                p.rantekostnad_kvartal = safe_int(rk)
+            enriched += 1
+    return enriched
+
+
 # ── Politik/Dialog Cards ──
 
 def load_politik_dialog() -> Tuple[List[PolitikDialogCard], List[PolitikDialogCard]]:
+    """Läs PU_poldia.csv. Stödjer både gamla typer (Politik/Dialog) och nya
+    sammanslagna typen HÄNDELSEKORT. Vid HÄNDELSEKORT läggs kortet i BÅDA leken
+    så att brädets gamla 'politik' resp 'dialog'-rutor får dragbara kort.
+
+    Kolumnnamnen för effekter har också ändrats från '2-10' till '2 till 10' osv.
+    """
     rows = read_csv(data_path("poldia"))
     politik = []
     dialog = []
+
+    # Mappning gamla -> nuvarande kolumnnamn för D20-effekter.
+    effect_keys = [
+        ("1", ["1"]),
+        ("2-10", ["2-10", "2 till 10"]),
+        ("11-15", ["11-15", "11 till 15"]),
+        ("16-19", ["16-19", "16 till 19"]),
+        ("20", ["20", "20+"]),
+    ]
 
     for row in rows:
         typ = safe_str(row.get("Typ"))
         if not typ:
             continue
         effects = {}
-        # Columns: 1, 2-10, 11-15, 16-19, 20
-        for key in ["1", "2-10", "11-15", "16-19", "20"]:
-            val = safe_str(row.get(key))
-            if val:
-                effects[key] = val
+        for canonical, aliases in effect_keys:
+            for alias in aliases:
+                val = safe_str(row.get(alias))
+                if val:
+                    effects[canonical] = val
+                    break
 
         card = PolitikDialogCard(
             typ=typ, nr=safe_str(row.get("Nr")),
@@ -142,7 +254,13 @@ def load_politik_dialog() -> Tuple[List[PolitikDialogCard], List[PolitikDialogCa
             text=safe_str(row.get("Text")),
             effects=effects,
         )
-        if typ.lower().startswith("politik"):
+        typ_lower = typ.lower()
+        if "händelsekort" in typ_lower or "handelsekort" in typ_lower:
+            # Ny sammanslagen typ – kortet ska vara dragbart från båda korttyperna
+            # på brädet tills BOARD_SQUARES skrivits om till en gemensam korttyp.
+            politik.append(card)
+            dialog.append(card)
+        elif typ_lower.startswith("politik"):
             politik.append(card)
         else:
             dialog.append(card)
@@ -805,6 +923,11 @@ class GameData:
     def __init__(self):
         load_klass_table()
         self.projects = load_projects()
+        # Förvaltning 2.0 – fyll i förtryckta lånevärden + Bas_DN på projekten.
+        self.f2_enriched_count = enrich_projects_from_f2(self.projects)
+        # Förvaltning 2.0 – FC/FS-arketyper (laddas men kopplas inte in i hire-flödet än).
+        self.f2_fc_arketyper = load_f2_fc_arketyper()
+        self.f2_fs_arketyper = load_f2_fs_arketyper()
         self.politik, self.dialog = load_politik_dialog()
         self.special_cards = load_special_cards()
         self.suppliers = load_suppliers()
@@ -833,7 +956,9 @@ class GameData:
         total_garanti = sum(len(v) for v in self.garanti_cards.values())
         total_mgmt = sum(len(v) for v in self.mgmt_events.values())
         total_yield = sum(len(v) for v in self.yield_cards.values())
-        print(f"  Data loaded: {total_projects} projects, "
+        print(f"  Data loaded: {total_projects} projects "
+              f"({self.f2_enriched_count} berikade via F2_fastighetskort, "
+              f"F2: {len(self.f2_fc_arketyper)} FC + {len(self.f2_fs_arketyper)} FS-arketyper), "
               f"{len(self.politik)} politik, {len(self.dialog)} dialog, "
               f"{sum(len(v) for v in self.suppliers.values())} suppliers, "
               f"{sum(len(v) for v in self.organisations.values())} orgs, "

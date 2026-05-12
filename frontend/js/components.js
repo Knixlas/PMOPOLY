@@ -373,7 +373,8 @@ function truncate(str, max) {
 // ══════════════════════════════════════
 const SQ_COLORS = {
     start: '#2E7D32', projekt: '#1565C0', kort: '#6A1B9A',
-    stjarna: '#F9A825', stadshuset: '#C62828', lansstyrelsen: '#4E342E',
+    stjarna: '#F9A825', riskbuffert: '#F9A825',
+    stadshuset: '#C62828', lansstyrelsen: '#4E342E',
     skonhetsradet: '#AD1457',
 };
 
@@ -410,7 +411,7 @@ function renderSquareOverlays(boardSquares) {
         }
 
         // Type icon
-        const icons = { kort: '🃏', stjarna: '⭐', stadshuset: '🏛', lansstyrelsen: '⚖', skonhetsradet: '🎨', start: '🏁' };
+        const icons = { kort: '🃏', stjarna: '⭐', riskbuffert: '🛡', stadshuset: '🏛', lansstyrelsen: '⚖', skonhetsradet: '🎨', start: '🏁' };
         if (icons[sq.typ]) {
             html += `<text x="${x + SQ_W - 14}" y="${y + 14}" font-size="11">${icons[sq.typ]}</text>`;
         }
