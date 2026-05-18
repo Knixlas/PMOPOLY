@@ -85,7 +85,7 @@ export function handleGameState(gs) {
     }
 
     // Update player bar
-    renderPlayerBar(gs.players, gs.current_player_id, state.playerId);
+    renderPlayerBar(gs.players, gs.current_player_id, state.playerId, gs);
 
     // Update assets panel
     renderAssetsPanel(gs);
@@ -325,7 +325,6 @@ function renderInfoPanel(gs) {
         }
     } else if (gs.phase === 'phase4_forvaltning') {
         const quarter = gs.f4_quarter || pending.quarter || 1;
-        const subState = gs.sub_state || '';
         html += `
             <div class="info-square" style="border-color:var(--burgundy)">
                 <div class="info-sq-icon">🏢</div>
@@ -334,13 +333,17 @@ function renderInfoPanel(gs) {
             </div>
         `;
         if (me) {
-            const props = (me.fastigheter || me.projects || []).length;
+            const fast = (me.fastigheter || []).length;
+            const marginCalls = (me.f4_margin_call_props || []).length;
+            const live = (gs.f4_live_scores || {})[me.id];
             html += `
                 <div class="info-stats">
+                    <div class="info-stat-row"><span>Kvartalscash (DN/4)</span><span>${live ? Math.floor((live.total_dn || 0) / 4) : 0} Mkr</span></div>
+                    <div class="info-stat-row"><span>Total DN/år</span><span>${live ? live.total_dn : 0}</span></div>
                     <div class="info-stat-row"><span>EK</span><span>${me.eget_kapital} Mkr</span></div>
-                    <div class="info-stat-row"><span>Fastigheter</span><span>${props}</span></div>
-                    <div class="info-stat-row"><span>Personal</span><span>${(me.staff || []).length}</span></div>
-                    ${me.abt_loans_net > 0 ? `<div class="info-stat-row"><span>Lån</span><span>${me.abt_loans_net} Mkr</span></div>` : ''}
+                    <div class="info-stat-row"><span>Restkort</span><span>${me.f4_restkort || 0}/3</span></div>
+                    <div class="info-stat-row"><span>Fastigheter</span><span>${fast}${marginCalls ? ` <span style="color:#c00">⚠${marginCalls}</span>` : ''}</span></div>
+                    ${live ? `<div class="info-stat-row"><span>Slutpoäng nu</span><span style="font-weight:700;color:var(--burgundy)">${live.score}</span></div>` : ''}
                 </div>
             `;
         }

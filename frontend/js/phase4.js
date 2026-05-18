@@ -189,7 +189,7 @@ function renderEnergyUpgrade(panel, pending, statusHtml, me) {
         });
     }
 
-    html += `<button class="btn btn-secondary" id="f4-energy-skip">Hoppa över</button>`;
+    html += `<button class="btn btn-secondary" id="f4-energy-skip">Gå till nästa steg</button>`;
     panel.innerHTML = html;
 
     panel.querySelectorAll('.supplier-option:not(.blocked)').forEach(el => {
@@ -228,7 +228,7 @@ function renderMarket(panel, pending, statusHtml) {
     if (pending.can_buy && buyList.some(b => b.can_afford)) {
         html += `<button class="btn btn-primary" id="f4-market-buy">Köp</button>`;
     }
-    html += `<button class="btn btn-secondary" id="f4-market-skip">Hoppa över</button>`;
+    html += `<button class="btn btn-secondary" id="f4-market-skip">Gå till nästa steg</button>`;
     html += `</div>`;
 
     panel.innerHTML = html;
@@ -392,12 +392,19 @@ export function renderPhase4Board(boardElement, gs) {
     const me = gs.players.find(p => p.id === gs.current_player_id) || gs.players[0];
     if (!me) return;
 
-    let html = '<div class="f4-stockboard" style="padding:14px;max-width:100%;font-family:system-ui,sans-serif;">';
+    let html = '<div class="f4-stockboard" style="padding:14px;font-family:system-ui,sans-serif;height:100%;overflow-y:auto;">';
     html += renderYieldBanner(gs);
     html += renderScoreboard(gs);
     html += renderYieldChart(gs);
     html += renderFastighetsPaneler(me);
     html += '</div>';
+    // Säkerställ att board-containern kan scrolla — inga overflow-hidden eller
+    // flex-centrering från SVG-läge som annars klipper bort innehåll.
+    boardElement.style.overflow = 'auto';
+    boardElement.style.height = '100%';
+    boardElement.style.alignItems = 'stretch';
+    boardElement.style.justifyContent = 'flex-start';
+    boardElement.style.padding = '0';
     boardElement.innerHTML = html;
 }
 
@@ -508,12 +515,16 @@ function renderYieldChart(gs) {
     `;
 }
 
+// Energiklass → DN-modifier (matchar backend EK_DN_MODIFIER)
+const EK_DN_MOD = { A: 2, B: 1, C: 0, D: -1, E: -2 };
+
 // Fastigheter i centrum — varje fastighet är en panel med rader under för kort
 function renderFastighetsPaneler(me) {
     const fastigheter = me.fastigheter || [];
     const marginCallSet = new Set(me.f4_margin_call_props || []);
     const garantier = me.f4_energi_garanti || {};
     const ekMap = me.projekt_energiklass || {};
+    const dnBonus = me.driftnetto_bonus || {};
 
     if (fastigheter.length === 0) {
         return '<div class="muted" style="text-align:center;padding:20px">Inga fastigheter att förvalta.</div>';
@@ -521,19 +532,33 @@ function renderFastighetsPaneler(me) {
 
     const cards = fastigheter.map(f => {
         const ek = ekMap[f.namn] || f.energiklass || 'C';
+        const ekMod = EK_DN_MOD[ek] || 0;
+        const bas = f.bas_dn || 0;
+        const synligDn = Math.max(0, bas + ekMod);   // bas + EK-modifier
+        const doltDn = Math.round(dnBonus[f.namn] || 0);
+        const totalDn = synligDn + doltDn;
         const isMarginCall = marginCallSet.has(f.namn);
         const har_garanti = (garantier[f.namn] || 0) > 0;
         const typFarg = EK_TYP_FARG[f.typ] || '#444';
         const border = isMarginCall ? '3px solid #c00' : '1px solid #ccc';
 
-        // Plats för kortrader (DD, konsekvens, garanti, händelsekort, varningskort)
-        // — fylls i när Steg F/G aktiveras. Visar nu bara rubriker som platshållare.
+        // Platshållare för kortrader (DD, konsekvens, garanti, händelsekort).
         const cardRows = `
             <div class="prop-cardrows" style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:0.7em;">
                 <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">DD</div>
                 <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Konsekvens</div>
                 <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Garanti</div>
                 <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Händelse</div>
+            </div>
+        `;
+
+        // DN-rad: stor synlig + liten dold
+        const dnRow = `
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+                <span style="color:#888;font-size:0.78em">DN</span>
+                <span style="font-weight:700;font-size:1.3em">${synligDn}</span>
+                <span style="color:#666;font-size:0.78em">synlig (bas ${bas} ${ekMod >= 0 ? '+' : ''}${ekMod} EK)</span>
+                ${doltDn ? `<span style="color:#a06;font-size:0.85em;font-weight:600">+ ${doltDn} dolt</span>` : '<span style="color:#bbb;font-size:0.78em">+ 0 dolt</span>'}
             </div>
         `;
 
@@ -547,12 +572,12 @@ function renderFastighetsPaneler(me) {
                     <span class="ek-badge" style="background:${ekColor(ek)};color:#fff;padding:3px 9px;border-radius:11px;font-size:0.8em;font-weight:600">EK ${ek}</span>
                 </div>
                 <div style="padding:8px 10px;">
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:0.85em;">
-                        <div><div style="color:#888;font-size:0.78em">Bas-DN</div><div style="font-weight:600">${f.bas_dn || '–'}</div></div>
+                    ${dnRow}
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.85em;">
                         <div><div style="color:#888;font-size:0.78em">Lån</div><div style="font-weight:600">${f.lanebelopp || 0} Mkr</div></div>
                         <div><div style="color:#888;font-size:0.78em">Ränta/kv</div><div style="font-weight:600">${f.rantekostnad_kvartal || 0}</div></div>
                     </div>
-                    ${isMarginCall ? '<div style="margin-top:8px;background:#fee;border:1px solid #c00;color:#c00;padding:5px 8px;border-radius:4px;font-size:0.85em;font-weight:600">⚠ MARGIN CALL — tvångsförsäljning kan inträffa</div>' : ''}
+                    ${isMarginCall ? '<div style="margin-top:8px;background:#fee;border:1px solid #c00;color:#c00;padding:5px 8px;border-radius:4px;font-size:0.85em;font-weight:600">⚠ MV<lån nästa kvartal — tvångsförsäljs vid marknadsfasen</div>' : ''}
                     ${har_garanti ? `<div style="margin-top:8px;background:#efe;border:1px solid #0a7;color:#0a7;padding:5px 8px;border-radius:4px;font-size:0.85em">🎯 Energi-garanti (×${garantier[f.namn]}): nästa uppgradering lyckas automatiskt</div>` : ''}
                     ${cardRows}
                 </div>
@@ -561,7 +586,7 @@ function renderFastighetsPaneler(me) {
     }).join('');
 
     return `
-        <div class="f4-fastigheter" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+        <div class="f4-fastigheter" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
             ${cards}
         </div>
     `;

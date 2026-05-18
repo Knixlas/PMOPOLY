@@ -160,44 +160,73 @@ export function closeCardModal() {
 }
 
 // ── Player Status Bar ──
-export function renderPlayerBar(players, currentPlayerId, myPlayerId) {
+export function renderPlayerBar(players, currentPlayerId, myPlayerId, gs) {
     const bar = document.getElementById('player-bar');
     if (!bar) return;
 
-    bar.innerHTML = players.map(p => `
-        <div class="player-status ${p.id === currentPlayerId ? 'active' : ''}"
-             style="border-color: ${p.id === currentPlayerId ? p.color : 'transparent'}">
-            <div class="ps-name" style="color:${p.color}">
-                ${p.name} ${p.id === myPlayerId ? '(du)' : ''}
+    const isForvaltning = gs && gs.phase === 'phase4_forvaltning';
+    const liveScores = (gs && gs.f4_live_scores) || {};
+
+    bar.innerHTML = players.map(p => {
+        const live = liveScores[p.id];
+        // Skede 3 visar Skede 3-relevant statistik istället för projekt/BTA/Q/H/ABT.
+        const stats = isForvaltning ? `
+            <div class="ps-stat">
+                <div class="label">EK</div>
+                <div class="value">${p.eget_kapital} Mkr</div>
             </div>
-            <div class="ps-stats">
-                <div class="ps-stat">
-                    <div class="label">Projekt</div>
-                    <div class="value">${p.projects?.length || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">BTA</div>
-                    <div class="value">${p.total_bta || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">Rb</div>
-                    <div class="value">${p.riskbuffertar || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">Q-krav</div>
-                    <div class="value">${p.q_krav}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">H-krav</div>
-                    <div class="value">${p.h_krav}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">ABT</div>
-                    <div class="value">${p.abt_budget || 0} Mkr</div>
-                </div>
+            <div class="ps-stat">
+                <div class="label">Fast</div>
+                <div class="value">${(p.fastigheter || []).length}</div>
             </div>
-        </div>
-    `).join('');
+            <div class="ps-stat">
+                <div class="label">DN/år</div>
+                <div class="value">${live ? live.total_dn : 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Restkort</div>
+                <div class="value">${p.f4_restkort || 0}/3</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Poäng nu</div>
+                <div class="value" style="font-weight:700;color:var(--burgundy)">${live ? live.score : '–'}</div>
+            </div>
+        ` : `
+            <div class="ps-stat">
+                <div class="label">Projekt</div>
+                <div class="value">${p.projects?.length || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">BTA</div>
+                <div class="value">${p.total_bta || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Rb</div>
+                <div class="value">${p.riskbuffertar || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Q-krav</div>
+                <div class="value">${p.q_krav}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">H-krav</div>
+                <div class="value">${p.h_krav}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">ABT</div>
+                <div class="value">${p.abt_budget || 0} Mkr</div>
+            </div>
+        `;
+        return `
+            <div class="player-status ${p.id === currentPlayerId ? 'active' : ''}"
+                 style="border-color: ${p.id === currentPlayerId ? p.color : 'transparent'}">
+                <div class="ps-name" style="color:${p.color}">
+                    ${p.name} ${p.id === myPlayerId ? '(du)' : ''}
+                </div>
+                <div class="ps-stats">${stats}</div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ══════════════════════════════════════

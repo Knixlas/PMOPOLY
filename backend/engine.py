@@ -3090,27 +3090,37 @@ def _mv_lookup(eff_dn: int, yield_pct: float, mode: str = "normal") -> int:
 
 
 def _margin_call_scan(room, player, events: list) -> list:
-    """Gå igenom spelarens fastigheter, jämför MV (normalpris) mot förtryckt lån.
-    Sätter player.f4_margin_call_props (set av namn) och loggar händelser.
-    Returnerar en lista med fastigheter i kris.
+    """Sätt röd markör BARA på fastigheter där NÄSTA kvartals MV < lån.
+
+    Vi peekar på första värdet i yield-kön och simulerar yielden efter den
+    rörelsen. Då varnar vi i god tid (1 kvartal innan tvångsförsäljning) utan
+    att vräka spelaren med varningar för varje liten yield-fluktuation som
+    råkar tippa MV under lån just nu.
     """
+    yb_next = room.f4_yield_b + (room.f4_yield_cards.get("bostader", [0])[0]
+                                  if room.f4_yield_cards.get("bostader") else 0)
+    yk_next = room.f4_yield_k + (room.f4_yield_cards.get("kommersiellt", [0])[0]
+                                  if room.f4_yield_cards.get("kommersiellt") else 0)
+
     in_call = []
     new_set = set()
     for prop in player.fastigheter:
         lan = getattr(prop, 'lanebelopp', None) or 0
         if lan <= 0:
             continue
-        y = _prop_yield(prop, room)
+        # Använd nästa kvartals yield för bedömning, inte nuvarande.
+        typ = prop.typ.upper() if hasattr(prop, 'typ') else ""
+        y_next = yb_next if typ.startswith("HYRESR") else yk_next
         eff = _eff_dn(prop, player)
-        mv_normal = _mv_lookup(eff, y, "normal")
-        if mv_normal < lan:
-            in_call.append({"namn": prop.namn, "mv": mv_normal, "lan": lan,
-                            "eff_dn": eff, "yield": round(y, 2)})
+        mv_next = _mv_lookup(eff, y_next, "normal")
+        if mv_next < lan:
+            in_call.append({"namn": prop.namn, "mv_next": mv_next, "lan": lan,
+                            "eff_dn": eff, "yield_next": round(y_next, 2)})
             new_set.add(prop.namn)
             events.append({
                 "type": "event",
-                "text": (f"⚠ {player.name}: MARGIN CALL på {prop.namn} "
-                         f"(MV {mv_normal} < lån {lan} @ yield {y:.2f}%)"),
+                "text": (f"⚠ {player.name}: {prop.namn} riskerar tvångsförsäljning "
+                         f"nästa kvartal (MV {mv_next} < lån {lan} vid yield {y_next:.2f}%)"),
             })
     player.f4_margin_call_props = new_set
     return in_call
@@ -3767,11 +3777,42 @@ def _f4_setup_energy_upgrade(room, player):
 
 
 def _f4_setup_market(room, player, events):
-    """Setup market phase: sell then buy."""
+    """Setup market phase: sell then buy.
+
+    Förvaltning 2.0: Margin call-fastigheter (de som riskerar tvångsförsäljning
+    nästa kvartal) auto-säljs här innan vanlig sell/buy. Spelaren får tvångs-MV
+    (0.7 × normal) — designdok §Margin call.
+    """
     q = room.f4_quarter
     if q > 3 or room.f4_no_trading:
         _f4_finish_player_turn(room, events)
         return
+
+    # Auto-tvångsförsäljning av margin call-fastigheter (designdok §Margin call)
+    margin_call_names = set(player.f4_margin_call_props or set())
+    if margin_call_names:
+        sold = []
+        idx_to_sell = [i for i, p in enumerate(player.fastigheter)
+                        if p.namn in margin_call_names]
+        # Sälj från slutet så index inte skiftar
+        for i in reversed(idx_to_sell):
+            prop = player.fastigheter[i]
+            y = _prop_yield(prop, room)
+            eff = _eff_dn(prop, player)
+            mv_tvang = _mv_lookup(eff, y, "tvang")  # 0.7 × normal MV
+            lan = getattr(prop, 'lanebelopp', 0) or 0
+            net = mv_tvang - lan  # kan vara negativt
+            player.eget_kapital += net
+            player.fastigheter.pop(i)
+            player.projekt_energiklass.pop(prop.namn, None)
+            sold.append(f"{prop.namn} (MV {mv_tvang} − lån {lan} = {net:+d} Mkr)")
+        # Rensa margin call-markörer
+        player.f4_margin_call_props = set()
+        events.append({
+            "type": "event",
+            "text": (f"⚠ {player.name}: AUTO-TVÅNGSFÖRSÄLJNING vid marknadsfas: "
+                     f"{', '.join(sold)}. EK: {player.eget_kapital:.0f} Mkr"),
+        })
 
     real_ek = _calc_real_ek(player)
     has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
