@@ -48,6 +48,7 @@ export function initGame() {
 export function handleGameState(gs) {
     state.gameState = gs;
     window._lastGameState = gs;
+    window._state = state;
 
     // Update phase indicator
     updatePhaseIndicator(gs);

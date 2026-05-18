@@ -4,7 +4,8 @@ from typing import Dict, Set
 from fastapi import WebSocket
 from room_manager import GameRoom, RoomManager
 from models import GamePhase
-from engine import process_action
+import asyncio
+from engine import process_action, ai_default_action
 
 
 class ConnectionManager:
@@ -53,6 +54,35 @@ class ConnectionManager:
                 "type": "game_state",
                 "state": state,
             })
+        # Om pending_action gäller en AI-spelare — kör AI:ns default-val automatiskt.
+        await self._maybe_step_ai(room)
+
+    async def _maybe_step_ai(self, room: GameRoom):
+        """Om pending_action är AI:ns tur: kör AI:s default och rebroadcast.
+        Loopar tills nästa pending_action är en mänsklig spelare (eller ingen)."""
+        for _ in range(30):  # säkerhets-cap
+            pending = room.pending_action
+            if not pending:
+                return
+            pid = pending.get("player_id")
+            if not pid:
+                return
+            player = room.get_player(pid)
+            if not player or not getattr(player, "is_ai", False):
+                return
+            action = ai_default_action(room, player)
+            if not action:
+                return
+            await asyncio.sleep(0.3)  # synligt för spelaren att AI agerar
+            result = process_action(room, pid, action)
+            events = result.get("events", []) if isinstance(result, dict) else []
+            if events:
+                await self.broadcast(room.room_id, {"type": "events", "events": events})
+            if room.phase == GamePhase.PUZZLE_PLACEMENT:
+                await self._broadcast_puzzle_state(room)
+            else:
+                state = room.to_dict()
+                await self.broadcast(room.room_id, {"type": "game_state", "state": state})
 
     async def _broadcast_puzzle_state(self, room: GameRoom):
         """Send per-player puzzle state during puzzle placement."""

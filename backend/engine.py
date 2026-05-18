@@ -3185,6 +3185,143 @@ def _fc_den_lugna_rantereduktion(player) -> int:
     return 0
 
 
+# ── AI-motspelare: enkel default-handler ──────────────────────────────────
+
+def ai_default_action(room, player) -> Optional[dict]:
+    """Returnera ett default-val för en AI-spelare baserat på pending_action.
+
+    Enkel strategi (passiv stand-in):
+      - Hire: välj första tillgänglig FC och FS
+      - Energiuppgradering: alltid skip
+      - Marknad: alltid skip
+      - Sell/Buy: alltid skip
+      - Continue: alltid continue
+    """
+    pending = room.pending_action or {}
+    action = pending.get("action")
+    if not action:
+        return None
+    if action == "f4_hire":
+        avail = pending.get("available", [])
+        has_fc = pending.get("has_fc", False)
+        has_fs = pending.get("has_fs", False)
+        # Hire första saknade rollen
+        for s in avail:
+            roll = s.get("roll", "")
+            if not has_fc and roll == "FC":
+                return {"action": "f4_hire", "value": s["id"]}
+            if not has_fs and roll == "FS":
+                return {"action": "f4_hire", "value": s["id"]}
+        # Ingen kvar att anställa – skicka None (klar)
+        return {"action": "f4_hire", "value": None}
+    if action in ("f4_energy_upgrade", "f4_market", "f4_market_sell", "f4_market_buy"):
+        return {"action": action, "value": None}  # skip / klar
+    if action == "continue":
+        return {"action": "continue"}
+    return None
+
+
+from typing import Optional  # noqa: E402
+
+
+# ── F2-händelsekort: dragning per fastighet + plus/minus-tröskel ──────────
+
+_F2_TYP_TILL_DECK = {
+    "HYRESRÄTT": "HYRESRÄTT",
+    "KONTOR": "KONTOR",
+    "LOKAL": "HANDEL",      # LOKAL/HANDEL delar lek
+    "FÖRSKOLA": "HYRESRÄTT", # förskola räknas som bostäder/HR i händelsekortleken
+}
+
+
+def _f2_handelse_deck_for_typ(game_data, fastighet_typ: str) -> list:
+    """Returnerar lista med F2-händelsekort som passar fastighetstypen."""
+    deck_typ = _F2_TYP_TILL_DECK.get(fastighet_typ.upper(), "HYRESRÄTT")
+    return [k for k in (game_data.f2_handelsekort or [])
+            if k.get("typ") == deck_typ and k.get("effekt") != "stoppkort"]
+
+
+def _dra_handelsekort_per_fastighet(room, player, events: list):
+    """Förvaltning 2.0: vid varje kvartalsstart drar spelaren ett händelsekort
+    per fastighet. Kortet placeras dolt om är_dolt eller effekt är pluskort/minuskort.
+    När 3 pluskort eller 3 minuskort samlats på samma fastighet kasseras alla
+    och bas-DN justeras +1/-1 permanent.
+    """
+    for prop in player.fastigheter:
+        deck = _f2_handelse_deck_for_typ(room.game_data, prop.typ)
+        if not deck:
+            continue
+        kort = random.choice(deck)
+        effekt = kort["effekt"]
+        # Placera på fastigheten
+        stack = player.f4_handelse_per_prop.setdefault(prop.namn, [])
+
+        # Direkt-effekter (synliga, permanenta)
+        if effekt == "+1 dn" or effekt == "+1 DN".lower():
+            prop.bas_dn = (prop.bas_dn or 0) + 1
+            events.append({"type": "event",
+                           "text": f"{player.name}: {prop.namn} drog '{kort['rubrik']}' → +1 DN permanent."})
+            continue
+        if effekt == "-1 dn" or effekt == "-1 DN".lower():
+            prop.bas_dn = max(0, (prop.bas_dn or 0) - 1)
+            events.append({"type": "event",
+                           "text": f"{player.name}: {prop.namn} drog '{kort['rubrik']}' → −1 DN permanent."})
+            continue
+
+        # Plus/minus + varning/energivarning placeras (dolt) på fastigheten
+        stack.append({"id": kort["id"], "rubrik": kort["rubrik"],
+                      "effekt": effekt, "beskrivning": kort["beskrivning"]})
+
+        # Tröskel: 3 plus eller 3 minus → kassera och ±1 bas-DN
+        plus_count = sum(1 for k in stack if k["effekt"] == "pluskort")
+        minus_count = sum(1 for k in stack if k["effekt"] == "minuskort")
+        if plus_count >= 3:
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "pluskort"]
+            prop.bas_dn = (prop.bas_dn or 0) + 1
+            events.append({"type": "event",
+                           "text": f"⬆ {player.name}: {prop.namn} ackumulerade 3 pluskort → +1 bas-DN permanent."})
+        elif minus_count >= 3:
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "minuskort"]
+            prop.bas_dn = max(0, (prop.bas_dn or 0) - 1)
+            events.append({"type": "event",
+                           "text": f"⬇ {player.name}: {prop.namn} ackumulerade 3 minuskort → −1 bas-DN permanent."})
+
+        # Energivarning-tröskel: 3 → -1 EK-steg (designdok)
+        energi_count = sum(1 for k in stack if k["effekt"] == "energivarning")
+        if energi_count >= 3:
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "energivarning"]
+            ek = player.projekt_energiklass.get(prop.namn, prop.energiklass)
+            if ek in ENERGY_CLASSES:
+                idx = ENERGY_CLASSES.index(ek)
+                if idx < len(ENERGY_CLASSES) - 1:
+                    ny_ek = ENERGY_CLASSES[idx + 1]
+                    player.projekt_energiklass[prop.namn] = ny_ek
+                    events.append({"type": "event",
+                                   "text": f"⚠ {player.name}: {prop.namn} ackumulerade 3 energivarningar → EK {ek}→{ny_ek}."})
+
+
+def _dra_personkort(room, player, events: list, fc_n: int = 1, fs_n: int = 1):
+    """Dra fc_n FC-personkort och fs_n FS-personkort till spelarens hand.
+    Cap 6 i hand totalt (designdok). Vid full hand: skippa nya kort."""
+    HAND_CAP = 6
+    decks = [("FC", room.game_data.f2_fc_personkort or [], fc_n),
+             ("FS", room.game_data.f2_fs_personkort or [], fs_n)]
+    dragna = []
+    for roll_name, deck, n in decks:
+        for _ in range(n):
+            if len(player.f4_personkort_hand) >= HAND_CAP:
+                break
+            if deck:
+                kort = dict(random.choice(deck))
+                player.f4_personkort_hand.append(kort)
+                dragna.append(f"{roll_name}: {kort['rubrik']}")
+    if dragna:
+        events.append({
+            "type": "event",
+            "text": f"{player.name} drar personkort: {', '.join(dragna)}",
+        })
+
+
 def calc_live_score(room, player) -> dict:
     """Räkna ett 'live'-slutpoäng utifrån spelarens nuvarande tillstånd.
     Används för att visa hur poängen står just nu under Skede 3 (innan slutvärdering)."""
@@ -3313,6 +3450,12 @@ def _setup_forvaltning(room: GameRoom):
         })
 
     room.f4_hired_ids = set()
+
+    # Förvaltning 2.0 §Kvartal 0: dra händelsekort per fastighet + 2 FC + 2 FS-personkort.
+    for player in room.players:
+        _dra_handelsekort_per_fastighet(room, player, events)
+        _dra_personkort(room, player, events, fc_n=2, fs_n=2)
+
     room.events_log.extend(events)
 
     # Start with hiring for first player
@@ -3414,6 +3557,11 @@ def _f4_start_quarter(room, events):
             "score": live["score"],
         })
     room.f4_history.append(snapshot)
+
+    # Förvaltning 2.0: dra händelsekort per fastighet + 1 FC + 1 FS personkort.
+    for p in room.players:
+        _dra_handelsekort_per_fastighet(room, p, events)
+        _dra_personkort(room, p, events, fc_n=1, fs_n=1)
 
     # World event
     if room.f4_world_events:

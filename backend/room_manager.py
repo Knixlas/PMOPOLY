@@ -86,6 +86,20 @@ class GameRoom:
         self.players.append(p)
         return p
 
+    def add_ai_player(self, name: str = "AI-motspelare") -> Optional[Player]:
+        """Lägg till en passiv AI-spelare. AI:n gör default-val (skip på alla
+        valfria moment, hire första FC + första FS automatiskt). Använd för
+        ensam-läge så man har en motpart att jämföra slutpoäng mot."""
+        if len(self.players) >= 4:
+            return None
+        if self.phase != GamePhase.LOBBY:
+            return None
+        pid = "ai-" + str(uuid.uuid4())[:6]
+        color = PLAYER_COLORS[len(self.players)]
+        p = Player(id=pid, name=name, color=color, is_ai=True)
+        self.players.append(p)
+        return p
+
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:
             if p.id == player_id:

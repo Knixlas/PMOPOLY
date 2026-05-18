@@ -398,6 +398,12 @@ class Player:
     # Sparas vid misslyckad energiuppgradering: nästa försök på SAMMA fastighet
     # blir auto-success utan D20-slag (token konsumeras).
     f4_energi_garanti: Dict[str, int] = field(default_factory=dict)
+    # F2-händelsekort: dolda kort placerade på varje fastighet (namn → lista av kort).
+    f4_handelse_per_prop: Dict[str, list] = field(default_factory=dict)
+    # FC + FS personkort på hand (cap 6 totalt, max 3 av varje per designdok).
+    f4_personkort_hand: list = field(default_factory=list)
+    # Om spelaren är en passiv AI (skippar alla aktiva val).
+    is_ai: bool = False
 
     @property
     def total_bta(self) -> int:
@@ -577,6 +583,9 @@ class Player:
             "f4_restkort": self.f4_restkort,
             "f4_extra_anskaffning": round(self.f4_extra_anskaffning, 1),
             "f4_energi_garanti": dict(self.f4_energi_garanti),
+            "f4_handelse_per_prop": {k: list(v) for k, v in self.f4_handelse_per_prop.items()},
+            "f4_personkort_hand": list(self.f4_personkort_hand),
+            "is_ai": self.is_ai,
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
             "projektchef": self.projektchef,

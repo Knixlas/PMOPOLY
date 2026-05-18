@@ -85,6 +85,20 @@ async def get_room(room_id: str):
     return {"room": room.to_dict()}
 
 
+@app.post("/api/rooms/{room_id}/add_ai")
+async def add_ai(room_id: str, body: dict):
+    """Lägg till en passiv AI-spelare i lobbyn (för solo-läge)."""
+    room = room_mgr.get_room(room_id)
+    if not room:
+        return JSONResponse({"error": "Rum hittades inte"}, status_code=404)
+    name = body.get("name", "AI-motspelare")
+    p = room.add_ai_player(name)
+    if not p:
+        return JSONResponse({"error": "Kunde inte lägga till AI"}, status_code=400)
+    await manager.broadcast_state(room)
+    return {"room": room.to_lobby_dict(), "player_id": p.id}
+
+
 # ── WebSocket ──
 
 @app.websocket("/ws/{room_id}/{player_id}")

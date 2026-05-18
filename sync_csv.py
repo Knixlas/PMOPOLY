@@ -48,6 +48,8 @@ DIRECT = [
     ("4. Förvaltning/Nya Förvaltning/F2_kvartal.csv",        "4_forvaltning_v2/F2_kvartal.csv"),
     ("4. Förvaltning/Nya Förvaltning/F2_omvärldskort.csv",   "4_forvaltning_v2/F2_omvärldskort.csv"),
     ("4. Förvaltning/Nya Förvaltning/F2_händelsekort.csv",   "4_forvaltning_v2/F2_händelsekort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_FCkort.csv",         "4_forvaltning_v2/F2_FCkort.csv"),
+    ("4. Förvaltning/Nya Förvaltning/F2_FSkort.csv",         "4_forvaltning_v2/F2_FSkort.csv"),
 ]
 
 # (src1, src2, dst) — slå ihop två CSV-filer (en header från första)

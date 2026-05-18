@@ -170,6 +170,29 @@ function updateWaitingRoom(gameState) {
             sendMessage('start_game_preset', { preset: 'skede_3' });
             startBtn.disabled = true;
         };
+
+        // AI-motspelare för solo-läge
+        let aiWrap = document.getElementById('ai-button-wrap');
+        if (!aiWrap) {
+            aiWrap = document.createElement('div');
+            aiWrap.id = 'ai-button-wrap';
+            aiWrap.style.marginTop = '8px';
+            aiWrap.style.textAlign = 'center';
+            aiWrap.innerHTML = `<button id="btn-add-ai" class="btn-secondary" style="font-size:0.85em;padding:6px 14px;">🤖 Lägg till AI-motspelare</button>`;
+            startBtn.parentElement.appendChild(aiWrap);
+        }
+        document.getElementById('btn-add-ai').onclick = async () => {
+            const roomId = state.roomId || (state.gameState && state.gameState.room_id);
+            if (!roomId) return;
+            try {
+                await fetch(`/api/rooms/${roomId}/add_ai`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ name: 'AI-motspelare' })
+                });
+            } catch (err) {
+                console.error('add_ai failed', err);
+            }
+        };
     } else {
         startBtn.style.display = 'none';
         waitMsg.style.display = 'block';

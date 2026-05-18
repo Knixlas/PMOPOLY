@@ -389,13 +389,19 @@ const EK_TYP_FARG = {
 };
 
 export function renderPhase4Board(boardElement, gs) {
-    const me = gs.players.find(p => p.id === gs.current_player_id) || gs.players[0];
+    // Visa alltid den lokala spelarens fastigheter (inte aktiv spelares).
+    // f4_live_scores är publika — alla ser allas siffror.
+    const myId = (typeof window !== 'undefined' && window._state && window._state.playerId) || null;
+    const me = (myId && gs.players.find(p => p.id === myId))
+            || gs.players.find(p => p.id === gs.current_player_id)
+            || gs.players[0];
     if (!me) return;
 
     let html = '<div class="f4-stockboard" style="padding:14px;font-family:system-ui,sans-serif;height:100%;overflow-y:auto;">';
     html += renderYieldBanner(gs);
     html += renderScoreboard(gs);
     html += renderYieldChart(gs);
+    html += renderPersonkortHand(me);
     html += renderFastighetsPaneler(me);
     html += '</div>';
     // Säkerställ att board-containern kan scrolla — inga overflow-hidden eller
@@ -530,6 +536,8 @@ function renderFastighetsPaneler(me) {
         return '<div class="muted" style="text-align:center;padding:20px">Inga fastigheter att förvalta.</div>';
     }
 
+    const handelseMap = me.f4_handelse_per_prop || {};
+
     const cards = fastigheter.map(f => {
         const ek = ekMap[f.namn] || f.energiklass || 'C';
         const ekMod = EK_DN_MOD[ek] || 0;
@@ -542,13 +550,28 @@ function renderFastighetsPaneler(me) {
         const typFarg = EK_TYP_FARG[f.typ] || '#444';
         const border = isMarginCall ? '3px solid #c00' : '1px solid #ccc';
 
-        // Platshållare för kortrader (DD, konsekvens, garanti, händelsekort).
+        // Räkna kort per kategori per fastighet
+        const handelser = handelseMap[f.namn] || [];
+        const plusCount = handelser.filter(h => h.effekt === 'pluskort').length;
+        const minusCount = handelser.filter(h => h.effekt === 'minuskort').length;
+        const varnCount = handelser.filter(h => h.effekt === 'varning').length;
+        const energiVarnCount = handelser.filter(h => h.effekt === 'energivarning').length;
+
+        const cardRow = (label, count, threshold, color) => {
+            const filled = count > 0;
+            const triggered = count >= threshold;
+            const bg = triggered ? color + '33' : filled ? color + '22' : '#f5f5f5';
+            const fg = filled ? color : '#aaa';
+            const border = triggered ? `2px solid ${color}` : `1px ${filled ? 'solid' : 'dashed'} ${filled ? color + '88' : '#ddd'}`;
+            return `<div style="background:${bg};padding:3px 5px;border-radius:3px;text-align:center;color:${fg};border:${border};font-weight:${filled?'600':'400'}">${label} ${count}/${threshold}</div>`;
+        };
+
         const cardRows = `
             <div class="prop-cardrows" style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:0.7em;">
-                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">DD</div>
-                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Konsekvens</div>
-                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Garanti</div>
-                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Händelse</div>
+                ${cardRow('+ Plus', plusCount, 3, '#1F5E2B')}
+                ${cardRow('− Minus', minusCount, 3, '#7A2020')}
+                ${cardRow('⚠ Varning', varnCount, 3, '#7A5A1F')}
+                ${cardRow('⚡ Energi', energiVarnCount, 3, '#7A6E1F')}
             </div>
         `;
 
@@ -594,4 +617,29 @@ function renderFastighetsPaneler(me) {
 
 function ekColor(ek) {
     return { A: '#0a7', B: '#5a7', C: '#888', D: '#c87', E: '#c44' }[ek] || '#888';
+}
+
+// Personkort på hand (FC + FS)
+function renderPersonkortHand(me) {
+    const hand = me.f4_personkort_hand || [];
+    if (hand.length === 0) {
+        return ''; // visa inget om handen är tom
+    }
+    const cards = hand.map(k => {
+        const rollColor = k.roll === 'FC' ? '#7A2020' : '#1F4D7A';
+        return `
+            <div class="f4-personkort" style="background:${rollColor};color:#fff;padding:8px 10px;border-radius:6px;min-width:160px;flex:0 0 auto;">
+                <div style="font-size:0.7em;opacity:0.7;text-transform:uppercase;letter-spacing:0.1em">${k.roll}-kort</div>
+                <div style="font-weight:700;margin-top:2px">${k.rubrik}</div>
+                <div style="font-size:0.78em;opacity:0.85;margin-top:3px">${k.beskrivning || ''}</div>
+            </div>`;
+    }).join('');
+    return `
+        <div class="f4-hand" style="margin-bottom:12px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:0.78em;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">
+                Personkort på hand · ${hand.length}/6
+            </div>
+            <div style="display:flex;gap:8px;overflow-x:auto">${cards}</div>
+        </div>
+    `;
 }
