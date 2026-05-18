@@ -142,6 +142,34 @@ function updateWaitingRoom(gameState) {
             sendMessage('start_game');
             startBtn.disabled = true;
         };
+
+        // Provspels-genvägar: hoppa direkt till Skede 2 eller Skede 3 med standardportfölj.
+        let presetWrap = document.getElementById('preset-buttons');
+        if (!presetWrap) {
+            presetWrap = document.createElement('div');
+            presetWrap.id = 'preset-buttons';
+            presetWrap.style.marginTop = '12px';
+            presetWrap.style.display = 'flex';
+            presetWrap.style.gap = '8px';
+            presetWrap.style.justifyContent = 'center';
+            presetWrap.innerHTML = `
+                <button id="btn-preset-s2" class="btn-secondary" style="font-size:0.85em;padding:8px 12px;">
+                    ⏭ Starta i Skede 2 (provspel)
+                </button>
+                <button id="btn-preset-s3" class="btn-secondary" style="font-size:0.85em;padding:8px 12px;">
+                    ⏭ Starta i Skede 3 (provspel)
+                </button>
+            `;
+            startBtn.parentElement.appendChild(presetWrap);
+        }
+        document.getElementById('btn-preset-s2').onclick = () => {
+            sendMessage('start_game_preset', { preset: 'skede_2' });
+            startBtn.disabled = true;
+        };
+        document.getElementById('btn-preset-s3').onclick = () => {
+            sendMessage('start_game_preset', { preset: 'skede_3' });
+            startBtn.disabled = true;
+        };
     } else {
         startBtn.style.display = 'none';
         waitMsg.style.display = 'block';

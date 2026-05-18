@@ -1528,6 +1528,137 @@ def _skip_puzzle_to_phase2(room: GameRoom) -> dict:
     return {"type": "state_update", "events": events}
 
 
+# ═══════════════════════════════════════════
+#  PRESETS – hoppa direkt till en senare fas med en standardportfölj.
+#  Används under provspel för att slippa spela igenom tidigare faser.
+# ═══════════════════════════════════════════
+
+# Portfölj enligt skärmdump 2026-05-18: 7 projekt, totalt 7750 BTA, 371 anskaffning.
+PRESET_PROJEKT_NAMN = [
+    "BRF Solrosen",
+    "Lokalen Löparen",
+    "Förskolan Skattkistan",
+    "Lokalen Rokaden",
+    "Kontoret Kometbanan",
+    "BRF Eldningen",
+    "Hyresrätt Hamnskiftet",
+]
+
+
+def _find_project_by_namn(room: GameRoom, namn: str):
+    """Plocka första matchande projekt ur room.projekt_stacks och returnera det."""
+    for typ, stack in room.projekt_stacks.items():
+        for i, proj in enumerate(stack):
+            if proj.namn == namn:
+                return stack.pop(i)
+    return None
+
+
+def _setup_preset_skede2(room: GameRoom) -> dict:
+    """Hoppa direkt till Skede 2.1 (Planering) med portföljen enligt skärmdump
+    'inför skede 2': 7 projekt, PC Diplomaten anställd, riskbuffertar 3,
+    ABT 323 Mkr, Q-krav 15, H-krav 17."""
+    events = []
+
+    pc_diplomaten = next((pc for pc in room.game_data.pc_staff
+                          if "Diplomaten" in pc.get("namn", "")), None)
+
+    for player in room.players:
+        for namn in PRESET_PROJEKT_NAMN:
+            proj = _find_project_by_namn(room, namn)
+            if proj:
+                player.projects.append(proj)
+
+        if pc_diplomaten:
+            player.projektchef = dict(pc_diplomaten)
+        elif room.game_data.pc_staff:
+            player.projektchef = dict(room.game_data.pc_staff[0])
+
+        player.has_mark_tomt = True
+        player.q_krav = 15
+        player.h_krav = 17
+        player.riskbuffertar = 3
+        player.eget_kapital = 0
+        player.abt_budget = 323
+        player.abt_start = 323
+        player.placed_project_ids = [p.id for p in player.projects]
+        player.puzzle_confirmed = True
+
+        events.append({
+            "type": "phase_change",
+            "text": (f"{player.name} startar i Skede 2 med {len(player.projects)} projekt "
+                     f"(ABT 323 Mkr, Q-krav 15, H-krav 17, 3 riskbuffertar)"),
+        })
+
+    room.phase = GamePhase.PHASE2_AC_HIRE
+    room.turn_index = 0
+    room.temp = {"ac_hired_ids": set()}
+    _setup_ac_hire(room)
+    events.append({
+        "type": "phase_change",
+        "phase": "phase2_ac_hire",
+        "text": "Preset 'inför Skede 2' laddad. Välj Arbetschef för att börja planera.",
+    })
+    return {"type": "state_update", "events": events}
+
+
+def _setup_preset_skede3(room: GameRoom) -> dict:
+    """Hoppa direkt till Skede 3 (Förvaltning) med samma portfölj som Skede 2-preset
+    men med Skede 2-3 redan utförda: AC anställd, Q/H/T-mål uppnådda, TB ~35 Mkr.
+    Övergångsekonomin (BRF MV+10, nya lån, kreditiv återbetalt) körs i _setup_forvaltning."""
+    events = []
+
+    pc = next((p for p in room.game_data.pc_staff
+               if "Diplomaten" in p.get("namn", "")),
+              room.game_data.pc_staff[0] if room.game_data.pc_staff else None)
+    ac = next((a for a in room.game_data.ac_staff
+               if "Produktions" in a.get("namn", "")),
+              room.game_data.ac_staff[0] if room.game_data.ac_staff else None)
+
+    for player in room.players:
+        for namn in PRESET_PROJEKT_NAMN:
+            proj = _find_project_by_namn(room, namn)
+            if proj:
+                player.projects.append(proj)
+
+        if pc:
+            player.projektchef = dict(pc)
+        if ac:
+            player.arbetschef = dict(ac)
+
+        player.has_mark_tomt = True
+        player.q_krav = 15
+        player.h_krav = 17
+        player.riskbuffertar = 1
+        player.snap_exec_q = 15
+        player.snap_exec_h = 17
+        player.snap_exec_t = 12
+        player.abt_start = 371
+        player.abt_remaining_before_transfer = 35
+        player.abt_budget = 0
+        player.eget_kapital = 35
+        player.abt_loans_net = 0
+        player.abt_borrowing_cost = 0
+        player.placed_project_ids = [p.id for p in player.projects]
+        player.puzzle_confirmed = True
+
+        events.append({
+            "type": "phase_change",
+            "text": (f"{player.name} startar i Skede 3 med {len(player.projects)} projekt, "
+                     f"TB 35 Mkr, mål uppnådda."),
+        })
+
+    room.phase = GamePhase.PHASE4_FORVALTNING
+    room.turn_index = 0
+    _setup_forvaltning(room)
+    events.append({
+        "type": "phase_change",
+        "phase": "phase4_forvaltning",
+        "text": "Preset 'inför Skede 3' laddad. Förvaltning börjar.",
+    })
+    return {"type": "state_update", "events": events}
+
+
 def _setup_puzzle_phase(room: GameRoom):
     """Initialize puzzle placement for all players simultaneously."""
     room.phase = GamePhase.PUZZLE_PLACEMENT

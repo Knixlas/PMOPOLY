@@ -137,6 +137,22 @@ async def handle_ws_message(ws: WebSocket, room: GameRoom, player_id: str, messa
         await manager.broadcast_state(room)
         return
 
+    if msg_type == "start_game_preset":
+        # Provspels-genväg: hoppa direkt till Skede 2 eller Skede 3 med standardportfölj.
+        if player_id != room.host_id:
+            await ws.send_json({"type": "error", "message": "Bara värden kan starta"})
+            return
+        preset_name = data.get("preset", "")
+        result = room.start_game_preset(preset_name)
+        if result.get("type") == "error":
+            await ws.send_json(result)
+            return
+        events = result.get("events", [])
+        if events:
+            await manager.broadcast(room.room_id, {"type": "events", "events": events})
+        await manager.broadcast_state(room)
+        return
+
     elif msg_type == "action":
         result = process_action(room, player_id, data)
 

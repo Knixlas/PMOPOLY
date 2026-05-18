@@ -356,8 +356,22 @@ def load_organisations() -> Dict[str, List[Organisation]]:
         )
         orgs.setdefault(namn, []).append(o)
 
-    for key in orgs:
+    for key in list(orgs.keys()):
         orgs[key].sort(key=lambda x: x.niva)
+
+    # Case-insensitive alias för att överbygga PLANNING_ORDER ("Stödfunktioner",
+    # "Operativt team", "Marknadsteam", "Digitalisering") vs CSV-data
+    # ("STÖDFUNKTIONER", "OPERATIVT TEAM", ...). Lägg in värdena under fler
+    # varianter så att slot_name-lookup matchar oavsett skiftläge.
+    aliases = {
+        "STÖDFUNKTIONER": "Stödfunktioner",
+        "OPERATIVT TEAM": "Operativt team",
+        "MARKNADSTEAM": "Marknadsteam",
+        "DIGITALISERING": "Digitalisering",
+    }
+    for csv_key, planning_key in aliases.items():
+        if csv_key in orgs and planning_key not in orgs:
+            orgs[planning_key] = orgs[csv_key]
 
     return orgs
 

@@ -120,6 +120,35 @@ class GameRoom:
         from engine import _setup_pc_hire
         _setup_pc_hire(self)
 
+    def start_game_preset(self, preset_name: str) -> dict:
+        """Provspels-genväg: hoppa direkt till Skede 2 eller Skede 3 med en
+        fördefinierad portfölj. Setupar projekt-stackar och decks som vanligt
+        (eftersom följande faser drar kort därifrån) men hoppar över Skede 1.
+
+        preset_name: 'skede_2' eller 'skede_3'.
+        """
+        # Initiera projekt-stackar + kort-decks som vid normal start
+        for typ, projects in self.game_data.projects.items():
+            stack = copy.deepcopy(projects)
+            random.shuffle(stack)
+            self.projekt_stacks[typ] = stack
+        self.politik_deck = list(range(len(self.game_data.politik)))
+        random.shuffle(self.politik_deck)
+        self.dialog_deck = list(range(len(self.game_data.dialog)))
+        random.shuffle(self.dialog_deck)
+        self.mark_expansion_deck = copy.deepcopy(self.game_data.mark_expansion_deck)
+        random.shuffle(self.mark_expansion_deck)
+
+        random.shuffle(self.players)
+
+        from engine import _setup_preset_skede2, _setup_preset_skede3
+        if preset_name == "skede_2":
+            return _setup_preset_skede2(self)
+        elif preset_name == "skede_3":
+            return _setup_preset_skede3(self)
+        else:
+            return {"type": "error", "message": f"Okänd preset: {preset_name}"}
+
     def _setup_mark_tomt_action(self):
         """Set up action for current player to pick a project type."""
         player = self.current_player
