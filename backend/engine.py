@@ -3129,8 +3129,6 @@ def _energy_upgrade_modifier(player) -> int:
       - 'Tekniska experten' (FC-6): +3 på alla energiuppgraderingsslag
 
     Senare etapp: 'Energirevisor'-personkort ger auto-success (hanteras separat).
-    Eftersom nuvarande hire-flöde fortfarande använder F_personal.csv-data via
-    Staff-modellen söker vi på namn för framtidskompatibilitet.
     """
     bonus = 0
     for s in player.staff:
@@ -3138,6 +3136,42 @@ def _energy_upgrade_modifier(player) -> int:
         if "Tekniska experten" in namn or namn.lower().startswith("tekniska"):
             bonus += 3
     return bonus
+
+
+def _fc_forhandling_modifier(player) -> int:
+    """Summerar f2_forh_modifier över alla FC i staben. Används som modifier
+    på hyresförhandlingens netto i Q2 (Förvaltning 2.0)."""
+    total = 0
+    for s in player.staff:
+        roll_attr = s.roll if hasattr(s, 'roll') else s.get("roll", "")
+        if roll_attr != "FC":
+            continue
+        total += s.f2_forh_modifier if hasattr(s, 'f2_forh_modifier') else 0
+    return total
+
+
+def _fs_kvalitetsoptimerare_bonus(player) -> int:
+    """+1 DN per kvartal om FS-2 'Per Kvalitetsoptimeraren' i staben.
+    Designdoket: '+1 DN på fastighet med högst Q' — vi adderar 1 till total DN
+    eftersom intäktsfasen summerar ändå."""
+    if not player.fastigheter:
+        return 0
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Kvalitetsoptimer" in namn:
+            return 1
+    return 0
+
+
+def _fc_den_lugna_rantereduktion(player) -> int:
+    """-1 mkr räntedrag/kvartal om FC-5 'Den lugna' i staben.
+    Designdoket: '-1 mkr räntedrag på en valfri fastighet' — för enkelhet
+    drar vi 1 från totalräntan istället för att kräva fastighetsval."""
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Den lugna" in namn or namn.lower().startswith("den lugna"):
+            return 1
+    return 0
 
 
 def _setup_forvaltning(room: GameRoom):
@@ -3383,6 +3417,10 @@ def _f4_start_player_turn(room, events):
         dn_total += _eff_dn(prop, player)
         dn_total += int(round(player.driftnetto_bonus.get(prop.namn, 0)))
 
+    # FS-2 'Per Kvalitetsoptimeraren': +1 DN på fastighet med högst Q (passiv).
+    fs2_bonus = _fs_kvalitetsoptimerare_bonus(player)
+    dn_total += fs2_bonus
+
     # Kvartalscash + residual i 0,25-steg (heltal 0..3 = 0/0,25/0,5/0,75 Mkr).
     quarter_cash = dn_total // 4
     residual_steps = dn_total % 4
@@ -3396,6 +3434,10 @@ def _f4_start_player_turn(room, events):
     # Räntekostnad: summa förtryckta räntekostnader per kvartal från fastighetskorten.
     ranta_total = sum((prop.rantekostnad_kvartal or 0) for prop in player.fastigheter)
 
+    # FC-5 'Den lugna': -1 mkr räntedrag/kvartal (passiv).
+    rantereduktion = _fc_den_lugna_rantereduktion(player)
+    ranta_total = max(0, ranta_total - rantereduktion)
+
     # Personallöner – F2-arketyperna har lon=0 (designdok: 'Inga separata kostnader').
     # Gamla F_personal-staff har fortfarande lön om USE_F2_STAFF=False.
     salary_total = 0 if USE_F2_STAFF else sum(
@@ -3407,12 +3449,18 @@ def _f4_start_player_turn(room, events):
     player.eget_kapital += cash_flow
 
     restkort_note = (f" (auto-konv {auto_converted} Mkr)" if auto_converted else "")
+    extras = []
+    if fs2_bonus:
+        extras.append(f"FS-2 +{fs2_bonus} DN")
+    if rantereduktion:
+        extras.append(f"FC-5 −{rantereduktion} ränta")
+    extra_text = (" [" + ", ".join(extras) + "]") if extras else ""
     events.append({
         "type": "economics",
         "text": (f"{player.name} Q{q}: DN {dn_total} → cash {quarter_cash}"
                  f"{restkort_note}, restkort {player.f4_restkort}/3, "
                  f"ränta −{ranta_total}, lön −{salary_total:.1f} = "
-                 f"{cash_flow:+.1f} Mkr (EK: {player.eget_kapital:.1f})"),
+                 f"{cash_flow:+.1f} Mkr (EK: {player.eget_kapital:.1f}){extra_text}"),
     })
 
     # Q2: rent negotiation
@@ -3427,7 +3475,11 @@ def _f4_start_player_turn(room, events):
 
 
 def _f4_setup_rent_negotiation(room, player, hr_props, events):
-    """Setup rent negotiation for HR properties."""
+    """Setup rent negotiation for HR properties.
+
+    Förvaltning 2.0: F2-FC bidrar med en platt förhandlingsmodifier (+3/+1/0/-1)
+    utöver dice-rollen. Modifiern adderas till netto innan RENT_SCALE-uppslag.
+    """
     # Roll dice
     hgf_roll = roll("D6")
     fa_roll = roll("D6")
@@ -3450,7 +3502,10 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
     fc_name = best_fc.namn if best_fc and hasattr(best_fc, 'namn') else (
         best_fc.get("namn", "") if best_fc else "Ingen FC")
 
-    netto = fc_roll_val + fa_roll - hgf_roll
+    # F2 FC förhandlings-modifier (Förh +3/+1/0/-1 från arketypen).
+    fc_modifier = _fc_forhandling_modifier(player)
+
+    netto = fc_roll_val + fa_roll - hgf_roll + fc_modifier
     netto_clamped = max(min(netto, 17), -4)
     hojning = RENT_SCALE.get(netto_clamped, 0)
     total = hojning * len(hr_props)
@@ -3458,10 +3513,11 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
     if total > 0:
         player.eget_kapital += total
 
+    mod_text = f" + FC-bonus({fc_modifier:+d})" if fc_modifier else ""
     events.append({
         "type": "economics",
-        "text": f"{player.name}: Hyresförhandling FC({fc_roll_val}) + FÄ({fa_roll}) "
-                f"- HGF({hgf_roll}) = {netto} → {total:+.1f} Mkr",
+        "text": (f"{player.name}: Hyresförhandling FC({fc_roll_val}) + FÄ({fa_roll}) "
+                 f"- HGF({hgf_roll}){mod_text} = {netto} → {total:+.1f} Mkr"),
     })
 
     room.sub_state = "f4_rent_result"
@@ -3474,6 +3530,7 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
         "fc_roll": fc_roll_val,
         "fc_name": fc_name,
         "fc_die": best_die or "Ingen",
+        "fc_modifier": fc_modifier,
         "netto": netto,
         "hojning_per": round(hojning, 1),
         "hr_count": len(hr_props),

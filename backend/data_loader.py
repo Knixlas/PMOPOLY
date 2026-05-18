@@ -176,29 +176,37 @@ def load_f2_fs_arketyper() -> List[dict]:
     return out
 
 
+def _parse_f2_modifier(s: str) -> int:
+    """Parsea F2-modifier-sträng ('+3', '-1', '0', '+2') till int. 0 vid fel."""
+    if not s:
+        return 0
+    s = s.strip()
+    try:
+        return int(s.replace("+", "").replace(" ", ""))
+    except ValueError:
+        return 0
+
+
 def build_f2_staff_objects(fc_list: List[dict], fs_list: List[dict]) -> List[Staff]:
     """Bygg Staff-instanser från F2-arketyperna så befintliga hire-/turn-handlers
     kan använda dem oförändrat. Designdokets nyckelregler:
       - Inga lönekostnader (lon = 0.0)
-      - Inga kapacitetstak (kapacitet = 999, så must_hire-villkoret bara kontrollerar
-        att man har en FC + en FS, inte att kapacitet täcker fastighetsantal)
-      - Egenskaperna (förhandling, motstånd, specialeffekt) lagras som strängar i
-        befintliga fält. Hyresförhandlingen i Q2 förlitar sig på Staff.forhandling
-        som dice-sträng — sätt till 'D6' som rimlig baseline för F2-arketyper.
+      - Inga kapacitetstak (kapacitet = 999)
+      - Egenskaperna (förh/motst-modifier som int, specialeffekt som text)
 
     Spelmekanik som tittar på arketyp-specifika egenskaper (t.ex. _energy_upgrade_modifier
     som ger +3 vid 'Tekniska experten') matchar på namn — F2-namnen bevaras.
     """
     out: List[Staff] = []
     for fc in fc_list:
+        forh_mod = _parse_f2_modifier(fc.get("forhandling", ""))
+        motst_mod = _parse_f2_modifier(fc.get("motstand_konsekvens", ""))
         # Lagra förhandlings- och motstånds-värdena i specialisering-textfältet
-        # för synlighet i UI:n (frontend visar namn + specialisering).
+        # för synlighet i UI:n.
         spec = fc.get("specialisering", "")
-        if fc.get("forhandling") or fc.get("motstand_konsekvens"):
-            spec = (f"{spec} · Förh {fc.get('forhandling','0')} / "
-                    f"Motst {fc.get('motstand_konsekvens','0')}")
-            if fc.get("specialeffekt") and fc["specialeffekt"] != "-":
-                spec += f" · {fc['specialeffekt']}"
+        spec = f"{spec} · Förh {forh_mod:+d} / Motst {motst_mod:+d}"
+        if fc.get("specialeffekt") and fc["specialeffekt"] != "-":
+            spec += f" · {fc['specialeffekt']}"
         out.append(Staff(
             roll="FC",
             id=fc["id"],
@@ -207,7 +215,9 @@ def build_f2_staff_objects(fc_list: List[dict], fs_list: List[dict]) -> List[Sta
             kapacitet=999,
             handelsemotstand=fc.get("motstand_konsekvens", ""),
             lon=0.0,
-            forhandling="D6",
+            forhandling="D6",  # baseline dice för bakåtkompatibel hyresförhandling
+            f2_forh_modifier=forh_mod,
+            f2_motstand_modifier=motst_mod,
         ))
     for fs in fs_list:
         spec = fs.get("specialisering", "")
@@ -222,6 +232,8 @@ def build_f2_staff_objects(fc_list: List[dict], fs_list: List[dict]) -> List[Sta
             handelsemotstand="",
             lon=0.0,
             forhandling="D6",
+            f2_forh_modifier=0,
+            f2_motstand_modifier=0,
         ))
     return out
 

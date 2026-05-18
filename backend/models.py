@@ -240,12 +240,18 @@ class Staff:
     handelsemotstand: str
     lon: float
     forhandling: str
+    # Förvaltning 2.0 – modifier-värden parseade ur F2-arketyperna.
+    # Används av hyresförhandling och (framtida) konsekvenskortsystem.
+    f2_forh_modifier: int = 0
+    f2_motstand_modifier: int = 0
 
     def to_dict(self) -> dict:
         return {
             "roll": self.roll, "id": self.id, "namn": self.namn,
             "specialisering": self.specialisering, "kapacitet": self.kapacitet,
             "lon": self.lon, "forhandling": self.forhandling,
+            "f2_forh_modifier": self.f2_forh_modifier,
+            "f2_motstand_modifier": self.f2_motstand_modifier,
         }
 
 
