@@ -187,6 +187,29 @@ def _parse_f2_modifier(s: str) -> int:
         return 0
 
 
+def load_f2_dd() -> List[dict]:
+    """Läs F2_DD.csv (10 DD-kort). Effekt_Mkr tolkas som DN-modifier i Mkr
+    (positiv = dolt + DN, negativ = dolt − DN). Typ ('Kostnad'/'Intäkt') ger
+    färg i UI:n."""
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_DD.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "id": nid,
+            "typ": safe_str(r.get("Typ")),  # 'Kostnad' eller 'Intäkt'
+            "rubrik": safe_str(r.get("Rubrik")),
+            "effekt_mkr": safe_float(r.get("Effekt_Mkr")),
+            "beskrivning": safe_str(r.get("Beskrivning")),
+        })
+    return out
+
+
 def load_f2_handelsekort() -> List[dict]:
     """Läs F2_händelsekort.csv (28 typkort + 3 stoppkort).
 
@@ -1148,6 +1171,7 @@ class GameData:
         self.f2_handelsekort = load_f2_handelsekort()
         self.f2_fc_personkort = load_f2_personkort("FC")
         self.f2_fs_personkort = load_f2_personkort("FS")
+        self.f2_dd_cards = load_f2_dd()
         self.politik, self.dialog = load_politik_dialog()
         self.special_cards = load_special_cards()
         self.suppliers = load_suppliers()

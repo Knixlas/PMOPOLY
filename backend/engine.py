@@ -3300,6 +3300,29 @@ def _dra_handelsekort_per_fastighet(room, player, events: list):
                                    "text": f"⚠ {player.name}: {prop.namn} ackumulerade 3 energivarningar → EK {ek}→{ny_ek}."})
 
 
+def _dra_dd_kort_for_prop(room, player, prop, events: list):
+    """Dra ett DD-kort och lägg DOLT på fastigheten. DN-effekten räknas i
+    driftnetto_bonus (matchas av _eff_dn/intäktsfasen som dolt DN)."""
+    deck = room.game_data.f2_dd_cards or []
+    if not deck:
+        return
+    dd = dict(random.choice(deck))
+    player.f4_dd_per_prop.setdefault(prop.namn, []).append(dd)
+    # Lägg DN-effekten i driftnetto_bonus (kumulativt)
+    existing = player.driftnetto_bonus.get(prop.namn, 0.0)
+    player.driftnetto_bonus[prop.namn] = existing + (dd.get("effekt_mkr") or 0.0)
+    events.append({
+        "type": "event",
+        "text": f"{player.name}: drog ett DD-kort dolt på {prop.namn}.",
+    })
+
+
+def _dra_dd_per_fastighet(room, player, events: list):
+    """Vid Q0 (Skede 3-start) dras ett DD-kort dolt per fastighet (designdok)."""
+    for prop in player.fastigheter:
+        _dra_dd_kort_for_prop(room, player, prop, events)
+
+
 def _dra_personkort(room, player, events: list, fc_n: int = 1, fs_n: int = 1):
     """Dra fc_n FC-personkort och fs_n FS-personkort till spelarens hand.
     Cap 6 i hand totalt (designdok). Vid full hand: skippa nya kort."""
@@ -3451,8 +3474,10 @@ def _setup_forvaltning(room: GameRoom):
 
     room.f4_hired_ids = set()
 
-    # Förvaltning 2.0 §Kvartal 0: dra händelsekort per fastighet + 2 FC + 2 FS-personkort.
+    # Förvaltning 2.0 §Kvartal 0: dra händelsekort per fastighet + DD per fastighet
+    # + 2 FC + 2 FS-personkort.
     for player in room.players:
+        _dra_dd_per_fastighet(room, player, events)
         _dra_handelsekort_per_fastighet(room, player, events)
         _dra_personkort(room, player, events, fc_n=2, fs_n=2)
 
@@ -4115,7 +4140,12 @@ def _f4_setup_buy(room, player):
 
 
 def _f4_do_buy(room, player, prop_idx, events):
-    """Execute a property purchase + DD card."""
+    """Execute a property purchase + DD card.
+
+    Förvaltning 2.0: DD-kortet läggs DOLT på fastigheten (precis som vid Q0),
+    inte applicerat direkt på EK. Effekten räknas som dolt DN via
+    driftnetto_bonus i intäktsfasen.
+    """
     new_avail = room.temp.get("f4_new_avail", [])
     prop = new_avail.pop(prop_idx)
     y = _prop_yield(prop, room)
@@ -4132,18 +4162,9 @@ def _f4_do_buy(room, player, prop_idx, events):
         "text": f"{player.name} köpte {prop.namn} för {cost:.1f} Mkr",
     })
 
-    # DD card
-    if room.f4_dd_deck:
-        dd = room.f4_dd_deck.pop(0)
-        if dd.effekt_mkr != 0:
-            player.eget_kapital += dd.effekt_mkr
-        events.append({
-            "type": "economics",
-            "text": f"DD: {dd.rubrik} ({dd.effekt_mkr:+.1f} Mkr)",
-        })
-        room.temp["f4_last_dd"] = dd.to_dict()
-    else:
-        room.temp["f4_last_dd"] = None
+    # Dra DD dolt på den nyköpta fastigheten (samma logik som Q0).
+    _dra_dd_kort_for_prop(room, player, prop, events)
+    room.temp["f4_last_dd"] = None
 
 
 def _f4_after_market(room, player, events):

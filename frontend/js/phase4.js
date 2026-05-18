@@ -537,6 +537,7 @@ function renderFastighetsPaneler(me) {
     }
 
     const handelseMap = me.f4_handelse_per_prop || {};
+    const ddMap = me.f4_dd_per_prop || {};
 
     const cards = fastigheter.map(f => {
         const ek = ekMap[f.namn] || f.energiklass || 'C';
@@ -552,10 +553,12 @@ function renderFastighetsPaneler(me) {
 
         // Räkna kort per kategori per fastighet
         const handelser = handelseMap[f.namn] || [];
+        const dds = ddMap[f.namn] || [];
         const plusCount = handelser.filter(h => h.effekt === 'pluskort').length;
         const minusCount = handelser.filter(h => h.effekt === 'minuskort').length;
         const varnCount = handelser.filter(h => h.effekt === 'varning').length;
         const energiVarnCount = handelser.filter(h => h.effekt === 'energivarning').length;
+        const ddCount = dds.length;
 
         const cardRow = (label, count, threshold, color) => {
             const filled = count > 0;
@@ -566,8 +569,17 @@ function renderFastighetsPaneler(me) {
             return `<div style="background:${bg};padding:3px 5px;border-radius:3px;text-align:center;color:${fg};border:${border};font-weight:${filled?'600':'400'}">${label} ${count}/${threshold}</div>`;
         };
 
+        // DD-rad visar bara antal (dolt innehåll, inte effekt)
+        const ddRow = ddCount > 0
+            ? `<div style="margin-top:4px;background:#3a2f4a;color:#fff;padding:4px 8px;border-radius:3px;font-size:0.75em;display:flex;justify-content:space-between;align-items:center;">
+                 <span>🔒 DD-kort (dolt)</span>
+                 <span style="background:rgba(255,255,255,0.2);padding:1px 7px;border-radius:8px;font-weight:600">${ddCount}</span>
+               </div>`
+            : '';
+
         const cardRows = `
-            <div class="prop-cardrows" style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:0.7em;">
+            ${ddRow}
+            <div class="prop-cardrows" style="margin-top:4px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:0.7em;">
                 ${cardRow('+ Plus', plusCount, 3, '#1F5E2B')}
                 ${cardRow('− Minus', minusCount, 3, '#7A2020')}
                 ${cardRow('⚠ Varning', varnCount, 3, '#7A5A1F')}

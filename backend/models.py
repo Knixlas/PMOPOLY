@@ -400,6 +400,9 @@ class Player:
     f4_energi_garanti: Dict[str, int] = field(default_factory=dict)
     # F2-händelsekort: dolda kort placerade på varje fastighet (namn → lista av kort).
     f4_handelse_per_prop: Dict[str, list] = field(default_factory=dict)
+    # F2-DD-kort: dolda DD-kort placerade på varje fastighet (namn → lista av kort).
+    # DN-effekten räknas in i driftnetto_bonus så intäktsfasen får dolt DN automatiskt.
+    f4_dd_per_prop: Dict[str, list] = field(default_factory=dict)
     # FC + FS personkort på hand (cap 6 totalt, max 3 av varje per designdok).
     f4_personkort_hand: list = field(default_factory=list)
     # Om spelaren är en passiv AI (skippar alla aktiva val).
@@ -584,6 +587,7 @@ class Player:
             "f4_extra_anskaffning": round(self.f4_extra_anskaffning, 1),
             "f4_energi_garanti": dict(self.f4_energi_garanti),
             "f4_handelse_per_prop": {k: list(v) for k, v in self.f4_handelse_per_prop.items()},
+            "f4_dd_per_prop": {k: list(v) for k, v in self.f4_dd_per_prop.items()},
             "f4_personkort_hand": list(self.f4_personkort_hand),
             "is_ai": self.is_ai,
             "puzzle_confirmed": self.puzzle_confirmed,
