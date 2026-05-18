@@ -14,7 +14,7 @@ from config import (
     YIELD_START_BOSTADER, YIELD_START_KOMMERSIELLT, LOAN_RATIO,
     BOSTADER_TYPES, KOMMERSIELLT_TYPES, PROJECT_TYPE_TO_EVENT,
     EK_FV_MODIFIER, QUARTER_NEW_PROPS, RENT_SCALE,
-    ENERGY_UPGRADE_COST_PER_STEP, DICE_MAP,
+    ENERGY_UPGRADE_COST_PER_STEP, ENERGY_UPGRADE_D20_THRESHOLD, DICE_MAP,
     SKIP_PUZZLE_PLACEMENT,
     EK_DN_MODIFIER, MV_MULTIPLIERS, EFFECTIVE_DN_ABS_MAX, YIELD_QUEUE_SIZE,
 )
@@ -2983,6 +2983,24 @@ def _yield_queue(room, track: str) -> list:
     return list(deck[:YIELD_QUEUE_SIZE])
 
 
+def _energy_upgrade_modifier(player) -> int:
+    """Returnera total bonus till D20-slag vid energiuppgradering.
+
+    F2-arketyper med specialeffekt på energiuppgradering:
+      - 'Tekniska experten' (FC-6): +3 på alla energiuppgraderingsslag
+
+    Senare etapp: 'Energirevisor'-personkort ger auto-success (hanteras separat).
+    Eftersom nuvarande hire-flöde fortfarande använder F_personal.csv-data via
+    Staff-modellen söker vi på namn för framtidskompatibilitet.
+    """
+    bonus = 0
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Tekniska experten" in namn or namn.lower().startswith("tekniska"):
+            bonus += 3
+    return bonus
+
+
 def _setup_forvaltning(room: GameRoom):
     """Initialize Phase 4: remove BRF, assign properties, setup decks."""
     events = []
@@ -3648,6 +3666,8 @@ def _f4_do_buy(room, player, prop_idx, events):
     player.eget_kapital -= cost
     player.fastigheter.append(prop)
     player.projekt_energiklass[prop.namn] = prop.energiklass
+    # Förvaltning 2.0: Skede 1-poängen räknar all anskaffning, inklusive Skede 3-köp.
+    player.f4_extra_anskaffning += prop.anskaffning
 
     events.append({
         "type": "economics",
@@ -3701,46 +3721,79 @@ def _f4_finish_player_turn(room, events):
 
 
 def _f4_final_valuation(room, events):
-    """Calculate final scores and end game."""
+    """Räkna slutpoäng enligt Förvaltning 2.0 (designdoc §Slutformeln).
+
+    Skede 1 (Utveckling) = total anskaffning / 100  (typvärde 10–25)
+    Skede 2 (Byggande)   = TG (saldo-%)             (typvärde ~20)
+    Skede 3 (Förvaltning) = (Total verklig DN + slutkassa/100) / 2   (typvärde 15–25)
+    Råpoäng = S1 + S2 + S3
+    Slutpoäng = Råpoäng × f(n)  där f(n) är Q/H/T-baserad straffaktor.
+    """
+    from economics import calc_tg, deviation_factor, calc_deviation_n
+
     results = []
     for player in room.players:
-        total_fv = 0
-        for prop in player.fastigheter:
-            y = _prop_yield(prop, room)
-            fv = _calc_fastighetsvarde(prop, y, _get_prop_ek(prop, player))
-            total_fv += fv * (1 - LOAN_RATIO)
+        # Total anskaffning: ursprungsportfölj (placerade projekt) + nya köp i Skede 3.
+        ansk_orig = sum(p.anskaffning for p in player.projects
+                        if p.id in player.placed_project_ids)
+        ansk_total = ansk_orig + player.f4_extra_anskaffning
 
-        real_ek = _calc_real_ek(player)
-        tb = _calc_tb(player)
-        score = total_fv + real_ek + tb
+        # Skede 1
+        skede1 = ansk_total / 100.0
 
-        player.f4_fv_30 = total_fv
-        player.f4_real_ek = real_ek
-        player.f4_tb = tb
+        # Skede 2 (TG från Skede 2-3-budget)
+        skede2 = calc_tg(player)
+
+        # Skede 3: total effektiv DN över förvaltade fastigheter + slutkassa/100, /2.
+        # Slutkassa = EK + säljvärden (normal MV) − utestående lån (spelexempel:
+        # Anna kassa 14 + säljvärden 685 − lån 320 = 379).
+        total_dn = sum(_eff_dn(prop, player) for prop in player.fastigheter)
+        saljvarde = sum(_mv_lookup(_eff_dn(prop, player),
+                                   _prop_yield(prop, room),
+                                   "normal")
+                        for prop in player.fastigheter)
+        utestaende_lan = sum((prop.lanebelopp or 0) for prop in player.fastigheter)
+        slutkassa = _calc_real_ek(player) + saljvarde - utestaende_lan
+        skede3 = (total_dn + slutkassa / 100.0) / 2.0
+
+        rapong = skede1 + skede2 + skede3
+
+        # Straffaktor från Q/H/T-avvikelse vid Skede 2-3-snapshot.
+        dev = calc_deviation_n(player)
+        f_n = deviation_factor(dev["n_total"])
+        score = rapong * f_n
+
+        # Behåll tidigare fält för kompatibilitet med rapporter.
+        player.f4_real_ek = _calc_real_ek(player)
+        player.f4_tb = _calc_tb(player)
+        player.f4_fv_30 = 0  # Inte längre del av formeln
         player.f4_score = score
-
-        # BTA-normalized score
-        total_bta = sum(p.bta for p in player.fastigheter)
-        score_per_bta = (score / (total_bta / 1000)) if total_bta > 0 else 0
-        player.f4_score_per_bta = score_per_bta
+        player.f4_score_per_bta = 0  # BTA-normaliseringen är borttagen
 
         results.append({
             "name": player.name,
             "score": round(score, 1),
-            "score_per_bta": round(score_per_bta, 1),
-            "fv_30": round(total_fv, 1),
-            "real_ek": round(real_ek, 1),
-            "tb": round(tb, 1),
+            "rapong": round(rapong, 1),
+            "skede1": round(skede1, 1),
+            "skede2": round(skede2, 1),
+            "skede3": round(skede3, 1),
+            "ansk_total": round(ansk_total, 0),
+            "total_dn": total_dn,
+            "saljvarde": saljvarde,
+            "utestaende_lan": utestaende_lan,
+            "slutkassa": round(slutkassa, 1),
+            "f_n": round(f_n, 2),
+            "n_total": dev["n_total"],
             "fastigheter": len(player.fastigheter),
-            "bta": total_bta,
         })
 
-    results.sort(key=lambda x: x["score_per_bta"], reverse=True)
+    results.sort(key=lambda x: x["score"], reverse=True)
     events.append({
         "type": "gf_summary",
-        "text": f"Slutvärdering klar! Vinnare: {results[0]['name']} "
-                f"med {results[0]['score_per_bta']:.1f} Mkr/1000 BTA "
-                f"(totalt {results[0]['score']:.1f} Mkr)",
+        "text": (f"Slutvärdering klar! Vinnare: {results[0]['name']} "
+                 f"med {results[0]['score']:.1f} poäng "
+                 f"(S1 {results[0]['skede1']} + S2 {results[0]['skede2']} "
+                 f"+ S3 {results[0]['skede3']}, f(n)={results[0]['f_n']})"),
         "results": results,
     })
 
@@ -3852,20 +3905,42 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
 
             ek = _get_prop_ek(prop, player)
             ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
-            new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
-            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
+            if ek_idx == 0:
+                return {"type": "error", "message": f"{prop.namn} är redan EK A — kan inte uppgraderas mer."}
 
-            # Spåra projekt-namnet i kvartalets set
+            new_ek = ENERGY_CLASSES[ek_idx - 1]
+            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 5 Mkr/steg per Regelhäfte §8
+
+            # Förvaltning 2.0: D20-slag, FC/FS-modifier (Tekniska experten +3).
+            # Slag + modifier ≥ ENERGY_UPGRADE_D20_THRESHOLD (10) ger success.
+            # Vid fail: kostnaden spenderas ändå, ingen uppgradering.
+            d20 = roll("D20")
+            modifier = _energy_upgrade_modifier(player)
+            total = d20 + modifier
+            success = total >= ENERGY_UPGRADE_D20_THRESHOLD
+
+            # Spåra projekt-namnet i kvartalets set även vid fail (försök räknas som "kvartalets uppgradering").
             if prop_namn not in already:
                 already.append(prop_namn)
                 player.f4_upgrades_per_quarter[q_key] = already
 
             player.eget_kapital -= cost
-            player.projekt_energiklass[prop.namn] = new_ek
-            events.append({
-                "type": "economics",
-                "text": f"{player.name}: {prop.namn} EK {ek}→{new_ek} (-{cost:.1f} Mkr)",
-            })
+            mod_text = f"+{modifier}" if modifier > 0 else ""
+            if success:
+                player.projekt_energiklass[prop.namn] = new_ek
+                events.append({
+                    "type": "economics",
+                    "text": (f"{player.name}: {prop.namn} D20 {d20}{mod_text}={total} "
+                             f"≥ {ENERGY_UPGRADE_D20_THRESHOLD} → uppgradering EK {ek}→{new_ek} "
+                             f"(−{cost:.1f} Mkr)"),
+                })
+            else:
+                events.append({
+                    "type": "economics",
+                    "text": (f"{player.name}: {prop.namn} D20 {d20}{mod_text}={total} "
+                             f"< {ENERGY_UPGRADE_D20_THRESHOLD} → MISSLYCKAD uppgradering, "
+                             f"kostnaden {cost:.1f} Mkr förlorad"),
+                })
             # Show upgrade options again
             _f4_setup_energy_upgrade(room, player)
         elif act == "f4_energy_upgrade" and not val:

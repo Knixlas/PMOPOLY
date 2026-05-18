@@ -385,6 +385,9 @@ class Player:
     # Förvaltning 2.0 — restkort (1 per 0,25 Mkr residual vid kvartalsavrundning,
     # autokonverteras till 1 Mkr cash när 4 ackumulerats). Persisterar mellan kvartal.
     f4_restkort: int = 0
+    # Förvaltning 2.0 — total anskaffning från fastigheter förvärvade DURING Skede 3
+    # (utöver ursprungsportföljen i player.projects). Räknas in i Skede 1-poäng.
+    f4_extra_anskaffning: float = 0.0
 
     @property
     def total_bta(self) -> int:
@@ -562,6 +565,7 @@ class Player:
             "f4_tb": round(self.f4_tb, 1),
             "f4_margin_call_props": sorted(self.f4_margin_call_props),
             "f4_restkort": self.f4_restkort,
+            "f4_extra_anskaffning": round(self.f4_extra_anskaffning, 1),
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
             "projektchef": self.projektchef,

@@ -123,57 +123,50 @@ def calc_deviation_n(player) -> dict:
     return {"n_q": n_q, "n_h": n_h, "n_t": n_t, "n_total": n_q + n_h + n_t}
 
 
-def calc_final_score(player, total_fv_30: float) -> dict:
-    """Beräkna slutpoäng per regelboken §9.1 + §9.2.
+def calc_final_score(player, total_dn: int, extra_anskaffning: float = 0.0) -> dict:
+    """Beräkna slutpoäng enligt Förvaltning 2.0 designdoc (§Slutformeln).
 
-    Råpoäng = (FV × 30% × Energibonus + EK + TB) ÷ (BTA / 1000)
-    Slutpoäng = Råpoäng × f(n)
+    Skede 1 (Utveckling) = total anskaffning / 100        (typvärde 10–25)
+    Skede 2 (Byggande)   = TG (saldo-%)                   (typvärde ~20)
+    Skede 3 (Förvaltning) = (Total DN + slutkassa/100) / 2 (typvärde 15–25)
+    Råpoäng = S1 + S2 + S3
+    Slutpoäng = Råpoäng × f(n)  där f(n) är Q/H/T-baserad straffaktor.
 
-    FV med energibonus per fastighet appliceras innan summan skickas hit
-    (via _calc_fastighetsvarde i engine.py som multiplicerar med EK_FV_MODIFIER).
-    EK-faktor (0.10 / 2.00) bibehållen som straff för negativ EK.
-    TB sätts till 0 om ABT-budget var 0 eller negativ.
+    Argument:
+        total_dn: summa effektiv DN över alla förvaltade fastigheter (callerns ansvar
+                  att räkna ut via _eff_dn — economics.py har ingen visibilitet i
+                  energiklass-state).
+        extra_anskaffning: Mkr för fastigheter förvärvade DURING Skede 3 utöver
+                           player.projects (t.ex. via marknadsbudgivning).
     """
-    real_ek = calc_real_ek(player)
-    tg = calc_tg(player)  # behållen för rapport / tooltip
+    # Total anskaffning = ursprungsportfölj + Skede 3-köp
+    placed_ids = set(getattr(player, 'placed_project_ids', []) or [])
+    ansk_orig = sum(p.anskaffning for p in player.projects if p.id in placed_ids) if placed_ids else sum(p.anskaffning for p in player.projects)
+    ansk_total = ansk_orig + extra_anskaffning
 
-    # FV = total fastighetsvärde (energibonus redan applicerad per fastighet)
-    fv = total_fv_30 / 0.3 if total_fv_30 > 0 else 0  # total_fv_30 är 30 %-andelen; konvertera tillbaka
-    ek = real_ek
-    owned_bta = player.total_bta
+    skede1 = ansk_total / 100.0
+    skede2 = calc_tg(player)
+    slutkassa = player.eget_kapital
+    skede3 = (total_dn + slutkassa / 100.0) / 2.0
 
-    # TB i Mkr per §9.1
-    if player.abt_start <= 0:
-        tb = 0.0
-    else:
-        abt_remaining = getattr(player, 'abt_remaining_before_transfer', player.abt_budget)
-        tb = abt_remaining - player.abt_loans_net - player.abt_borrowing_cost
-
-    ek_factor = 0.10 if ek >= 0 else 2.00
-
-    if owned_bta > 0:
-        rapong = (0.30 * fv + ek_factor * ek + tb) / owned_bta * 1000
-    else:
-        rapong = tb
-
-    # f(n) — måluppfyllelse-faktor
+    rapong = skede1 + skede2 + skede3
     dev = calc_deviation_n(player)
     f_n = deviation_factor(dev["n_total"])
     score = rapong * f_n
 
     return {
-        "fv": round(fv, 1),
-        "fv_30": round(fv * 0.3, 1),
-        "real_ek": round(real_ek, 1),
-        "tb": round(tb, 1),
-        "tg_pct": round(tg, 1),
+        "skede1": round(skede1, 1),
+        "skede2": round(skede2, 1),
+        "skede3": round(skede3, 1),
         "rapong": round(rapong, 1),
+        "ansk_total": round(ansk_total, 0),
+        "total_dn": total_dn,
+        "slutkassa": round(slutkassa, 1),
+        "real_ek": round(calc_real_ek(player), 1),
         "n_q": dev["n_q"],
         "n_h": dev["n_h"],
         "n_t": dev["n_t"],
         "n_total": dev["n_total"],
         "f_n": round(f_n, 2),
         "score": round(score, 1),
-        "total_bta": owned_bta,
-        "n_projects": len(player.projects),
     }

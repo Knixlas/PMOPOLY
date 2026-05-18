@@ -62,8 +62,10 @@ RENT_SCALE = {
     16: 1.5, 17: 1.6,
 }
 
-# Energy upgrade cost — fast pris per steg (regelboken §8.8)
-ENERGY_UPGRADE_COST_PER_STEP = 3.0  # Mkr per steg, fast pris
+# Energiuppgradering — Förvaltning 2.0 (Regelhäfte §8): 5 mkr/steg, D20 ≥ 10 för success.
+# Vid fail spenderas kostnaden ändå. FC/FS-modifier appliceras på slaget.
+ENERGY_UPGRADE_COST_PER_STEP = 5.0  # Mkr per steg, fast pris
+ENERGY_UPGRADE_D20_THRESHOLD = 10   # D20-tröskel för success
 
 # Pusselspel inaktiverat under provspel — alla projekt anses placerade automatiskt.
 # Sätt till False för att återaktivera pusselplaceringen mellan Skede 1 och 2.
