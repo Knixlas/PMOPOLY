@@ -58,6 +58,9 @@ class GameRoom:
         self.f4_energy_discount: float = 1.0
         self.f4_hired_ids: set = set()  # Global hired staff IDs
         self.f4_final_results: list = []  # Sätts av _f4_final_valuation vid spelslut
+        # Historik per kvartal för grafer i Skede 3-UI. Lista av snapshots:
+        # {quarter, yield_b, yield_k, players: [{id, ek, dn_total, score}]}
+        self.f4_history: list = []
 
         # Add host
         host_id = str(uuid.uuid4())[:8]
@@ -195,6 +198,7 @@ class GameRoom:
             "f4_yield_queue_kommersiellt": list(self.f4_yield_cards.get("kommersiellt", []))[:YIELD_QUEUE_SIZE],
             "f4_final_results": self.f4_final_results,
             "f4_live_scores": live_scores,
+            "f4_history": self.f4_history,
         }
 
     def to_lobby_dict(self) -> dict:

@@ -456,6 +456,34 @@ function renderAssetsPanel(gs) {
     const me = gs.players.find(p => p.id === state.playerId);
     if (!me) return;
 
+    // Skede 3-vy: visa BARA FC/FS + lån — inga Skede 1/2-rester
+    // (projekt, mark, PC, AC, suppliers, orgs).
+    if (gs.phase === 'phase4_forvaltning') {
+        let html = '';
+        const staff = me.staff || [];
+        staff.forEach(s => {
+            html += `<div class="asset-card clickable" style="background:#2c3e50" data-detail="staff" data-idx="${s.namn}">
+                <div class="ac-name">${truncName(s.namn, 14)}</div>
+                <div class="ac-type">${s.roll}</div>
+                <div class="ac-stats">${(s.specialisering || '').substring(0,18)}</div>
+            </div>`;
+        });
+        const loanNet = me.abt_loans_net || 0;
+        if (loanNet > 0) {
+            const nLoans = Math.ceil(loanNet / 95);
+            html += `<div class="asset-card clickable" style="background:#7f1d1d" data-detail="loan">
+                <div class="ac-name">Moderbolagslån</div>
+                <div class="ac-type">${nLoans}×100</div>
+                <div class="ac-stats">${loanNet} Mkr</div>
+            </div>`;
+        }
+        panel.innerHTML = html || '<div style="padding:6px;color:#888;font-size:0.85em">Inga anställda än.</div>';
+        panel.querySelectorAll('.asset-card.clickable').forEach(card => {
+            card.addEventListener('click', () => showAssetDetail(card, me));
+        });
+        return;
+    }
+
     let html = '';
     const TYPE_COLORS = {
         'BRF': '#1A4D24', 'Hyresrätt': '#4D1A1A', 'FÖRSKOLOR': '#0F3D5C',

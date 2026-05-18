@@ -380,49 +380,191 @@ function renderContinue(panel, pending, statusHtml, gs) {
     });
 }
 
-// ── Mittenruta: fastigheter + deras kort (istället för spelplan) ──────────
-// Exporteras och kallas från game.js när phase är phase4_forvaltning.
+// ── Mittenruta: börsliknande Skede 3-vy ──────────────────────────────────
+// Yield-banner + live-poängtavla + yield-graf + fastigheter med kortrader.
+
+const EK_TYP_FARG = {
+    'BRF': '#7a3835', 'HYRESRÄTT': '#a23a45', 'FÖRSKOLA': '#3f4a1f',
+    'LOKAL': '#7a5a1f', 'KONTOR': '#1f4d7a',
+};
 
 export function renderPhase4Board(boardElement, gs) {
     const me = gs.players.find(p => p.id === gs.current_player_id) || gs.players[0];
     if (!me) return;
+
+    let html = '<div class="f4-stockboard" style="padding:14px;max-width:100%;font-family:system-ui,sans-serif;">';
+    html += renderYieldBanner(gs);
+    html += renderScoreboard(gs);
+    html += renderYieldChart(gs);
+    html += renderFastighetsPaneler(me);
+    html += '</div>';
+    boardElement.innerHTML = html;
+}
+
+// Stora yield-siffror överst, med 3 framtida rörelser
+function renderYieldBanner(gs) {
+    const qb = gs.f4_yield_queue_bostader || [];
+    const qk = gs.f4_yield_queue_kommersiellt || [];
+    const fmt = v => `<span class="yield-cell ${v < 0 ? 'down' : v > 0 ? 'up' : ''}">${v > 0 ? '+' : ''}${v.toFixed(1)}</span>`;
+    const cells = arr => arr.length ? arr.map(fmt).join(' ') : '<span class="muted">–</span>';
+    return `
+        <div class="f4-yield-banner" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;">
+            <div style="background:#1e3a5f;color:#fff;padding:12px 14px;border-radius:6px;">
+                <div style="font-size:0.75em;letter-spacing:0.15em;opacity:0.7;text-transform:uppercase">Bostäder</div>
+                <div style="font-size:1.8em;font-weight:700;line-height:1.1">${gs.f4_yield_b}%</div>
+                <div style="font-size:0.78em;opacity:0.85;margin-top:4px">Kommande: ${cells(qb)}</div>
+            </div>
+            <div style="background:#5a3e1a;color:#fff;padding:12px 14px;border-radius:6px;">
+                <div style="font-size:0.75em;letter-spacing:0.15em;opacity:0.7;text-transform:uppercase">Kommersiellt</div>
+                <div style="font-size:1.8em;font-weight:700;line-height:1.1">${gs.f4_yield_k}%</div>
+                <div style="font-size:0.78em;opacity:0.85;margin-top:4px">Kommande: ${cells(qk)}</div>
+            </div>
+        </div>
+    `;
+}
+
+// Live slutpoäng som "börstavla" — alla spelare
+function renderScoreboard(gs) {
+    const scores = gs.f4_live_scores || {};
+    const players = gs.players || [];
+    if (players.length === 0) return '';
+
+    const rows = players.map(p => {
+        const s = scores[p.id] || { skede1: 0, skede2: 0, skede3: 0, score: 0, f_n: 1, total_dn: 0 };
+        return `
+            <tr>
+                <td style="padding:5px 8px;font-weight:600;color:${p.color}">${p.name}</td>
+                <td style="text-align:right;padding:5px 8px">${s.skede1}</td>
+                <td style="text-align:right;padding:5px 8px">${s.skede2}</td>
+                <td style="text-align:right;padding:5px 8px">${s.skede3}</td>
+                <td style="text-align:right;padding:5px 8px;color:#666">${s.f_n}×</td>
+                <td style="text-align:right;padding:5px 8px;font-weight:700;font-size:1.1em">${s.score}</td>
+                <td style="text-align:right;padding:5px 8px;color:#666;font-size:0.85em">EK ${p.eget_kapital}</td>
+                <td style="text-align:right;padding:5px 8px;color:#666;font-size:0.85em">DN ${s.total_dn}</td>
+            </tr>`;
+    }).join('');
+
+    return `
+        <div class="f4-scoreboard" style="margin-bottom:12px;background:#fafafa;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+            <div style="background:#222;color:#fff;padding:6px 10px;font-size:0.85em;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">
+                Slutresultat just nu · Q${gs.f4_quarter || 1}/4
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
+                <thead style="background:#f0f0f0;font-size:0.8em;color:#666;">
+                    <tr>
+                        <th style="text-align:left;padding:4px 8px">Spelare</th>
+                        <th style="text-align:right;padding:4px 8px">S1</th>
+                        <th style="text-align:right;padding:4px 8px">S2</th>
+                        <th style="text-align:right;padding:4px 8px">S3</th>
+                        <th style="text-align:right;padding:4px 8px">f(n)</th>
+                        <th style="text-align:right;padding:4px 8px">Poäng</th>
+                        <th style="text-align:right;padding:4px 8px">EK</th>
+                        <th style="text-align:right;padding:4px 8px">DN</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+// Enkel yield-utveckling som SVG-linje
+function renderYieldChart(gs) {
+    const history = gs.f4_history || [];
+    if (history.length < 2) {
+        return ''; // Visa bara när vi har minst 2 datapunkter
+    }
+    const w = 560, h = 110, padX = 30, padY = 14;
+    const innerW = w - padX*2, innerH = h - padY*2;
+    const xs = history.map((_, i) => padX + (i / (history.length - 1)) * innerW);
+    const yMin = 2, yMax = 7;
+    const yScale = v => padY + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+    const pathFor = (key, color) => {
+        const d = history.map((h, i) => `${i === 0 ? 'M' : 'L'} ${xs[i]} ${yScale(h[key])}`).join(' ');
+        const dots = history.map((h, i) =>
+            `<circle cx="${xs[i]}" cy="${yScale(h[key])}" r="2.5" fill="${color}"/>`
+        ).join('');
+        return `<path d="${d}" stroke="${color}" stroke-width="2" fill="none"/>${dots}`;
+    };
+    const labelX = history.map((h, i) =>
+        `<text x="${xs[i]}" y="${h-2}" font-size="9" fill="#888" text-anchor="middle">Q${h.quarter}</text>`
+    ).join('');
+    const gridY = [3, 4, 5, 6].map(v =>
+        `<line x1="${padX}" y1="${yScale(v)}" x2="${w - padX}" y2="${yScale(v)}" stroke="#eee" stroke-width="1"/>
+         <text x="${padX-4}" y="${yScale(v)+3}" font-size="9" fill="#888" text-anchor="end">${v}%</text>`
+    ).join('');
+    return `
+        <div class="f4-yieldchart" style="margin-bottom:12px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:0.78em;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">
+                Yield-utveckling · <span style="color:#1e3a5f">━ Bostäder</span> · <span style="color:#5a3e1a">━ Kommersiellt</span>
+            </div>
+            <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px">
+                ${gridY}
+                ${pathFor('yield_b', '#1e3a5f')}
+                ${pathFor('yield_k', '#5a3e1a')}
+                ${labelX}
+            </svg>
+        </div>
+    `;
+}
+
+// Fastigheter i centrum — varje fastighet är en panel med rader under för kort
+function renderFastighetsPaneler(me) {
     const fastigheter = me.fastigheter || [];
     const marginCallSet = new Set(me.f4_margin_call_props || []);
     const garantier = me.f4_energi_garanti || {};
-
-    let html = '<div class="f4-board-fastigheter" style="padding:12px;max-width:100%">';
-    html += `<h3 style="margin-top:0">Dina fastigheter (Q${gs.f4_quarter || 1}/4)</h3>`;
+    const ekMap = me.projekt_energiklass || {};
 
     if (fastigheter.length === 0) {
-        html += '<p class="muted">Inga fastigheter att förvalta.</p>';
-    } else {
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">';
-        fastigheter.forEach(f => {
-            const ek = (me.projekt_energiklass || {})[f.namn] || f.energiklass || 'C';
-            const isMarginCall = marginCallSet.has(f.namn);
-            const har_garanti = (garantier[f.namn] || 0) > 0;
-            const border = isMarginCall ? '3px solid #c00' : '1px solid var(--ink-line)';
-            const bg = isMarginCall ? '#fee' : 'var(--card-bg, #fff)';
-            html += `
-                <div class="f4-prop-card" style="border:${border};background:${bg};border-radius:6px;padding:10px;">
-                    <div style="display:flex;justify-content:space-between;align-items:start;">
-                        <strong>${f.namn}</strong>
-                        <span class="badge" style="background:${ekColor(ek)};color:white;padding:2px 8px;border-radius:10px;font-size:0.8em">EK ${ek}</span>
-                    </div>
-                    <div style="font-size:0.85em;color:#666;margin-top:2px">${f.typ}</div>
-                    <div style="margin-top:6px;font-size:0.9em">
-                        <div>Bas-DN: <strong>${f.bas_dn || '–'}</strong></div>
-                        <div>Lån: <strong>${f.lanebelopp || 0} Mkr</strong> (ränta ${f.rantekostnad_kvartal || 0}/kv)</div>
-                    </div>
-                    ${isMarginCall ? '<div style="margin-top:6px;color:#c00;font-weight:bold">⚠ MARGIN CALL — fastigheten kan tvångsförsäljas</div>' : ''}
-                    ${har_garanti ? `<div style="margin-top:6px;color:#0a7">🎯 Garanti: nästa energiuppgradering lyckas automatiskt</div>` : ''}
-                </div>
-            `;
-        });
-        html += '</div>';
+        return '<div class="muted" style="text-align:center;padding:20px">Inga fastigheter att förvalta.</div>';
     }
-    html += '</div>';
-    boardElement.innerHTML = html;
+
+    const cards = fastigheter.map(f => {
+        const ek = ekMap[f.namn] || f.energiklass || 'C';
+        const isMarginCall = marginCallSet.has(f.namn);
+        const har_garanti = (garantier[f.namn] || 0) > 0;
+        const typFarg = EK_TYP_FARG[f.typ] || '#444';
+        const border = isMarginCall ? '3px solid #c00' : '1px solid #ccc';
+
+        // Plats för kortrader (DD, konsekvens, garanti, händelsekort, varningskort)
+        // — fylls i när Steg F/G aktiveras. Visar nu bara rubriker som platshållare.
+        const cardRows = `
+            <div class="prop-cardrows" style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:0.7em;">
+                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">DD</div>
+                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Konsekvens</div>
+                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Garanti</div>
+                <div style="background:#f5f5f5;padding:3px 5px;border-radius:3px;text-align:center;color:#aaa;border:1px dashed #ddd">Händelse</div>
+            </div>
+        `;
+
+        return `
+            <div class="f4-prop-card" style="border:${border};border-radius:6px;background:#fff;overflow:hidden;${isMarginCall ? 'box-shadow:0 0 0 1px #c00 inset;' : ''}">
+                <div style="background:${typFarg};color:#fff;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:700">${f.namn}</div>
+                        <div style="font-size:0.72em;opacity:0.85">${f.typ}</div>
+                    </div>
+                    <span class="ek-badge" style="background:${ekColor(ek)};color:#fff;padding:3px 9px;border-radius:11px;font-size:0.8em;font-weight:600">EK ${ek}</span>
+                </div>
+                <div style="padding:8px 10px;">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:0.85em;">
+                        <div><div style="color:#888;font-size:0.78em">Bas-DN</div><div style="font-weight:600">${f.bas_dn || '–'}</div></div>
+                        <div><div style="color:#888;font-size:0.78em">Lån</div><div style="font-weight:600">${f.lanebelopp || 0} Mkr</div></div>
+                        <div><div style="color:#888;font-size:0.78em">Ränta/kv</div><div style="font-weight:600">${f.rantekostnad_kvartal || 0}</div></div>
+                    </div>
+                    ${isMarginCall ? '<div style="margin-top:8px;background:#fee;border:1px solid #c00;color:#c00;padding:5px 8px;border-radius:4px;font-size:0.85em;font-weight:600">⚠ MARGIN CALL — tvångsförsäljning kan inträffa</div>' : ''}
+                    ${har_garanti ? `<div style="margin-top:8px;background:#efe;border:1px solid #0a7;color:#0a7;padding:5px 8px;border-radius:4px;font-size:0.85em">🎯 Energi-garanti (×${garantier[f.namn]}): nästa uppgradering lyckas automatiskt</div>` : ''}
+                    ${cardRows}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="f4-fastigheter" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+            ${cards}
+        </div>
+    `;
 }
 
 function ekColor(ek) {

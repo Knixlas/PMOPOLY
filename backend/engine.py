@@ -3382,11 +3382,28 @@ def _f4_start_quarter(room, events):
         })
 
     # Säkerhetscheck efter yield-rörelsen (designdoc §Margin call). Sätter röd
-    # markör på alla fastigheter där MV < lånebelopp. Själva resolutionen
-    # (exponera dold DN / tvångsförsäljning) hanteras i senare etapp – i Etapp B
-    # exponeras bara varningarna via state och event-loggen.
+    # markör på alla fastigheter där MV < lånebelopp.
     for player in room.players:
         _margin_call_scan(room, player, events)
+
+    # Historik-snapshot per kvartal (yield-bana, EK + slutpoäng per spelare).
+    snapshot = {
+        "quarter": q,
+        "yield_b": round(room.f4_yield_b, 2),
+        "yield_k": round(room.f4_yield_k, 2),
+        "players": [],
+    }
+    for p in room.players:
+        live = calc_live_score(room, p)
+        snapshot["players"].append({
+            "id": p.id,
+            "name": p.name,
+            "color": p.color,
+            "ek": round(p.eget_kapital, 1),
+            "dn_total": live["total_dn"],
+            "score": live["score"],
+        })
+    room.f4_history.append(snapshot)
 
     # World event
     if room.f4_world_events:
