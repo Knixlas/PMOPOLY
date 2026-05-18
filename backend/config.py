@@ -71,6 +71,12 @@ ENERGY_UPGRADE_D20_THRESHOLD = 10   # D20-tröskel för success
 # Sätt till False för att återaktivera pusselplaceringen mellan Skede 1 och 2.
 SKIP_PUZZLE_PLACEMENT = True
 
+# Förvaltning 2.0 – Personal: F2-arketyperna (6 FC + 4 FS) ersätter gamla F_personal.csv-staff.
+# F2-designdoket säger 'Inga separata kostnader eller kapacitetstak' – varje FC/FS har
+# egenskaper på fastighetsnivå istället. Sätt till False för att gå tillbaka till
+# gamla löne-/kapacitets-modellen.
+USE_F2_STAFF = True
+
 # Planning step order: (slot_name, slot_type)
 PLANNING_ORDER = [
     ("Stödfunktioner", "org"),

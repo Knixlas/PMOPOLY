@@ -176,6 +176,56 @@ def load_f2_fs_arketyper() -> List[dict]:
     return out
 
 
+def build_f2_staff_objects(fc_list: List[dict], fs_list: List[dict]) -> List[Staff]:
+    """Bygg Staff-instanser från F2-arketyperna så befintliga hire-/turn-handlers
+    kan använda dem oförändrat. Designdokets nyckelregler:
+      - Inga lönekostnader (lon = 0.0)
+      - Inga kapacitetstak (kapacitet = 999, så must_hire-villkoret bara kontrollerar
+        att man har en FC + en FS, inte att kapacitet täcker fastighetsantal)
+      - Egenskaperna (förhandling, motstånd, specialeffekt) lagras som strängar i
+        befintliga fält. Hyresförhandlingen i Q2 förlitar sig på Staff.forhandling
+        som dice-sträng — sätt till 'D6' som rimlig baseline för F2-arketyper.
+
+    Spelmekanik som tittar på arketyp-specifika egenskaper (t.ex. _energy_upgrade_modifier
+    som ger +3 vid 'Tekniska experten') matchar på namn — F2-namnen bevaras.
+    """
+    out: List[Staff] = []
+    for fc in fc_list:
+        # Lagra förhandlings- och motstånds-värdena i specialisering-textfältet
+        # för synlighet i UI:n (frontend visar namn + specialisering).
+        spec = fc.get("specialisering", "")
+        if fc.get("forhandling") or fc.get("motstand_konsekvens"):
+            spec = (f"{spec} · Förh {fc.get('forhandling','0')} / "
+                    f"Motst {fc.get('motstand_konsekvens','0')}")
+            if fc.get("specialeffekt") and fc["specialeffekt"] != "-":
+                spec += f" · {fc['specialeffekt']}"
+        out.append(Staff(
+            roll="FC",
+            id=fc["id"],
+            namn=fc["namn"],
+            specialisering=spec,
+            kapacitet=999,
+            handelsemotstand=fc.get("motstand_konsekvens", ""),
+            lon=0.0,
+            forhandling="D6",
+        ))
+    for fs in fs_list:
+        spec = fs.get("specialisering", "")
+        if fs.get("effekt_beskrivning"):
+            spec += f" · {fs['effekt_beskrivning']}"
+        out.append(Staff(
+            roll="FS",
+            id=fs["id"],
+            namn=fs["namn"],
+            specialisering=spec,
+            kapacitet=999,
+            handelsemotstand="",
+            lon=0.0,
+            forhandling="D6",
+        ))
+    return out
+
+
 # ── Förvaltning 2.0: berika projekt med Bas_DN / Lanebelopp / Rantekostnad ──
 
 def enrich_projects_from_f2(stacks: Dict[str, List[Project]]) -> int:
@@ -939,9 +989,10 @@ class GameData:
         self.projects = load_projects()
         # Förvaltning 2.0 – fyll i förtryckta lånevärden + Bas_DN på projekten.
         self.f2_enriched_count = enrich_projects_from_f2(self.projects)
-        # Förvaltning 2.0 – FC/FS-arketyper (laddas men kopplas inte in i hire-flödet än).
+        # Förvaltning 2.0 – FC/FS-arketyper. Råform och Staff-instanser.
         self.f2_fc_arketyper = load_f2_fc_arketyper()
         self.f2_fs_arketyper = load_f2_fs_arketyper()
+        self.f2_staff_objects = build_f2_staff_objects(self.f2_fc_arketyper, self.f2_fs_arketyper)
         self.politik, self.dialog = load_politik_dialog()
         self.special_cards = load_special_cards()
         self.suppliers = load_suppliers()

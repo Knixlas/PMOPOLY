@@ -15,9 +15,17 @@ from config import (
     BOSTADER_TYPES, KOMMERSIELLT_TYPES, PROJECT_TYPE_TO_EVENT,
     EK_FV_MODIFIER, QUARTER_NEW_PROPS, RENT_SCALE,
     ENERGY_UPGRADE_COST_PER_STEP, ENERGY_UPGRADE_D20_THRESHOLD, DICE_MAP,
-    SKIP_PUZZLE_PLACEMENT,
+    SKIP_PUZZLE_PLACEMENT, USE_F2_STAFF,
     EK_DN_MODIFIER, MV_MULTIPLIERS, EFFECTIVE_DN_ABS_MAX, YIELD_QUEUE_SIZE,
 )
+
+
+def _staff_pool(game_data):
+    """Returnera personalpool för Skede 3-anställning. Använder F2-arketyperna
+    (lon=0, kapacitet=stor) om USE_F2_STAFF är satt, annars gamla F_personal."""
+    if USE_F2_STAFF and getattr(game_data, 'f2_staff_objects', None):
+        return game_data.f2_staff_objects
+    return game_data.staff
 
 
 def process_action(room: GameRoom, player_id: str, action: dict) -> dict:
@@ -3234,9 +3242,11 @@ def _f4_setup_hire(room, player):
     has_fc = any((s.roll if hasattr(s, 'roll') else s.get("roll", "")) == "FC"
                  for s in player.staff)
 
-    available = [s for s in room.game_data.staff if s.id not in room.f4_hired_ids]
+    available = [s for s in _staff_pool(room.game_data) if s.id not in room.f4_hired_ids]
 
     # Must hire if: no FC or capacity < required
+    # F2: kapacitet=999 så capacity-villkoret blir alltid uppfyllt så fort man
+    # har minst en FC – designdoket säger 'inga kapacitetstak'.
     must_hire = not has_fc or current_cap < required
     room.sub_state = "f4_hire_staff"
     room.pending_action = {
@@ -3386,10 +3396,12 @@ def _f4_start_player_turn(room, events):
     # Räntekostnad: summa förtryckta räntekostnader per kvartal från fastighetskorten.
     ranta_total = sum((prop.rantekostnad_kvartal or 0) for prop in player.fastigheter)
 
-    # Personallöner – F2-designen säger noll, men nuvarande staff-data har lön kvar.
-    # Behåller dem som ett litet drag tills FC/FS-arketyperna är inkopplade i hire-flödet.
-    salary_total = sum(s.lon if hasattr(s, 'lon') else s.get("lon", 0)
-                       for s in player.staff)
+    # Personallöner – F2-arketyperna har lon=0 (designdok: 'Inga separata kostnader').
+    # Gamla F_personal-staff har fortfarande lön om USE_F2_STAFF=False.
+    salary_total = 0 if USE_F2_STAFF else sum(
+        s.lon if hasattr(s, 'lon') else s.get("lon", 0)
+        for s in player.staff
+    )
 
     cash_flow = quarter_cash - ranta_total - salary_total
     player.eget_kapital += cash_flow
@@ -3947,7 +3959,7 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
             # Hire a staff member
             staff_id = val
             staff_obj = None
-            for s in room.game_data.staff:
+            for s in _staff_pool(room.game_data):
                 if s.id == staff_id:
                     staff_obj = s
                     break
