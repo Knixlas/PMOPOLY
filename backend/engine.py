@@ -17,6 +17,7 @@ from config import (
     ENERGY_UPGRADE_COST_PER_STEP, ENERGY_UPGRADE_D20_THRESHOLD, DICE_MAP,
     SKIP_PUZZLE_PLACEMENT, USE_F2_STAFF,
     EK_DN_MODIFIER, MV_MULTIPLIERS, EFFECTIVE_DN_ABS_MAX, YIELD_QUEUE_SIZE,
+    SKEDE3_KASSA_FAKTOR, SKEDE3_DIVISOR,
 )
 
 
@@ -3921,11 +3922,13 @@ def _f4_finish_player_turn(room, events):
 
 
 def _f4_final_valuation(room, events):
-    """Räkna slutpoäng enligt Förvaltning 2.0 (designdoc §Slutformeln).
+    """Räkna slutpoäng enligt Förvaltning 2.0 (kalibrerad så 'superbra' = 25 per skede).
 
-    Skede 1 (Utveckling) = total anskaffning / 100  (typvärde 10–25)
-    Skede 2 (Byggande)   = TG (saldo-%)             (typvärde ~20)
-    Skede 3 (Förvaltning) = (Total verklig DN + slutkassa/100) / 2   (typvärde 15–25)
+    Skede 1 (Utveckling)  = anskaffning / 100              → 25 vid 2500 Mkr förvärv
+    Skede 2 (Byggande)    = TG (procent)                    → 25 vid TG 25 %
+    Skede 3 (Förvaltning) = (FV_obelånat + kassa × SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
+                            där FV_obelånat = säljvärde (normal MV) − utestående lån,
+                            kassa = real EK (efter moderbolagslån).
     Råpoäng = S1 + S2 + S3
     Slutpoäng = Råpoäng × f(n)  där f(n) är Q/H/T-baserad straffaktor.
     """
@@ -3937,24 +3940,21 @@ def _f4_final_valuation(room, events):
         ansk_orig = sum(p.anskaffning for p in player.projects
                         if p.id in player.placed_project_ids)
         ansk_total = ansk_orig + player.f4_extra_anskaffning
-
-        # Skede 1
         skede1 = ansk_total / 100.0
 
-        # Skede 2 (TG från Skede 2-3-budget)
+        # Skede 2 — TG (saldo-%)
         skede2 = calc_tg(player)
 
-        # Skede 3: total effektiv DN över förvaltade fastigheter + slutkassa/100, /2.
-        # Slutkassa = EK + säljvärden (normal MV) − utestående lån (spelexempel:
-        # Anna kassa 14 + säljvärden 685 − lån 320 = 379).
+        # Skede 3 — fastighetsvärde obelånat + kassa-vikt
         total_dn = sum(_eff_dn(prop, player) for prop in player.fastigheter)
         saljvarde = sum(_mv_lookup(_eff_dn(prop, player),
                                    _prop_yield(prop, room),
                                    "normal")
                         for prop in player.fastigheter)
         utestaende_lan = sum((prop.lanebelopp or 0) for prop in player.fastigheter)
-        slutkassa = _calc_real_ek(player) + saljvarde - utestaende_lan
-        skede3 = (total_dn + slutkassa / 100.0) / 2.0
+        fv_obelan = saljvarde - utestaende_lan
+        kassa = _calc_real_ek(player)
+        skede3 = (fv_obelan + kassa * SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
 
         rapong = skede1 + skede2 + skede3
 
@@ -3964,11 +3964,11 @@ def _f4_final_valuation(room, events):
         score = rapong * f_n
 
         # Behåll tidigare fält för kompatibilitet med rapporter.
-        player.f4_real_ek = _calc_real_ek(player)
+        player.f4_real_ek = kassa
         player.f4_tb = _calc_tb(player)
-        player.f4_fv_30 = 0  # Inte längre del av formeln
+        player.f4_fv_30 = fv_obelan  # Nu: FV obelånat (säljvärde − lån)
         player.f4_score = score
-        player.f4_score_per_bta = 0  # BTA-normaliseringen är borttagen
+        player.f4_score_per_bta = 0  # BTA-normaliseringen är borttagen i nya formeln
 
         results.append({
             "name": player.name,
@@ -3981,13 +3981,15 @@ def _f4_final_valuation(room, events):
             "total_dn": total_dn,
             "saljvarde": saljvarde,
             "utestaende_lan": utestaende_lan,
-            "slutkassa": round(slutkassa, 1),
+            "fv_obelan": round(fv_obelan, 1),
+            "kassa": round(kassa, 1),
             "f_n": round(f_n, 2),
             "n_total": dev["n_total"],
             "fastigheter": len(player.fastigheter),
         })
 
     results.sort(key=lambda x: x["score"], reverse=True)
+    room.f4_final_results = results
     events.append({
         "type": "gf_summary",
         "text": (f"Slutvärdering klar! Vinnare: {results[0]['name']} "

@@ -57,6 +57,7 @@ class GameRoom:
         self.f4_no_trading: bool = False
         self.f4_energy_discount: float = 1.0
         self.f4_hired_ids: set = set()  # Global hired staff IDs
+        self.f4_final_results: list = []  # Sätts av _f4_final_valuation vid spelslut
 
         # Add host
         host_id = str(uuid.uuid4())[:8]
@@ -183,6 +184,7 @@ class GameRoom:
             "f4_yield_k": round(self.f4_yield_k, 2),
             "f4_yield_queue_bostader": list(self.f4_yield_cards.get("bostader", []))[:YIELD_QUEUE_SIZE],
             "f4_yield_queue_kommersiellt": list(self.f4_yield_cards.get("kommersiellt", []))[:YIELD_QUEUE_SIZE],
+            "f4_final_results": self.f4_final_results,
         }
 
     def to_lobby_dict(self) -> dict:

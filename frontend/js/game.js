@@ -389,46 +389,57 @@ function renderFinished(panel, gs) {
     let html = '<h3>🏆 Spelet är slut!</h3>';
     html += '<div class="f4-results">';
 
-    const sorted = [...gs.players].sort((a, b) =>
-        (b.f4_score_per_bta || 0) - (a.f4_score_per_bta || 0));
+    const results = gs.f4_final_results || [];
 
-    // Header
+    // Header — förklara formeln
     html += `<div class="f4-result-header">
-        <span>Poäng per 1000 BTA = (FV×30% + EK + TB) / (BTA/1000)</span>
+        <span>Slutpoäng = (Skede 1 + Skede 2 + Skede 3) × f(n) — "superbra" ≈ 25 per skede</span>
+    </div>
+    <div class="f4-result-formula" style="font-size:0.8em;color:#888;margin:4px 0 12px 0;text-align:center;">
+        S1 = anskaffning / 100 &nbsp; · &nbsp; S2 = TG % &nbsp; · &nbsp; S3 = (FV obelånat + kassa) / 30
     </div>`;
 
-    sorted.forEach((p, i) => {
-        const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
-        const hasScores = p.f4_score !== undefined && p.f4_score !== 0;
-        html += `
-            <div class="f4-result-row ${i === 0 ? 'winner' : ''}">
-                <div class="f4-result-place">${medal}</div>
+    if (results.length === 0) {
+        // Fallback: visa rå EK om resultat saknas (t.ex. innan slutvärdering körts)
+        gs.players.forEach((p, i) => {
+            html += `<div class="f4-result-row">
+                <div class="f4-result-place">${i+1}.</div>
                 <div class="f4-result-info">
                     <div class="f4-result-name">${p.name}</div>
-                    ${hasScores ? `
-                    <div class="f4-result-details">
-                        FV×30%: ${p.f4_fv_30} |
-                        EK: ${p.f4_real_ek} |
-                        TB: ${p.f4_tb}
-                    </div>
-                    <div class="f4-result-props">
-                        Fastigheter: ${(p.fastigheter || []).length} |
-                        BTA: ${p.total_bta || 0} kvm
-                    </div>
-                    ` : `
-                    <div class="f4-result-details">
-                        ABT: ${p.abt_budget} Mkr | EK: ${p.eget_kapital} Mkr
-                    </div>
-                    `}
+                    <div class="f4-result-details">EK: ${p.eget_kapital} Mkr</div>
                 </div>
-                <div class="f4-result-score">
-                    ${hasScores
-                        ? `${p.f4_score_per_bta} Mkr/kBTA<br><span class="f4-score-raw">(${p.f4_score} Mkr)</span>`
-                        : `${(p.abt_budget + p.eget_kapital).toFixed(1)} Mkr`}
+                <div class="f4-result-score">${(p.eget_kapital||0).toFixed(1)} Mkr</div>
+            </div>`;
+        });
+    } else {
+        results.forEach((r, i) => {
+            const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
+            html += `
+                <div class="f4-result-row ${i === 0 ? 'winner' : ''}">
+                    <div class="f4-result-place">${medal}</div>
+                    <div class="f4-result-info">
+                        <div class="f4-result-name">${r.name}</div>
+                        <div class="f4-result-details">
+                            S1 <strong>${r.skede1}</strong>
+                            (ansk ${r.ansk_total}) ·
+                            S2 <strong>${r.skede2}</strong>
+                            (TG%) ·
+                            S3 <strong>${r.skede3}</strong>
+                            (FV obel. ${r.fv_obelan} + kassa ${r.kassa})
+                        </div>
+                        <div class="f4-result-props">
+                            Råpoäng ${r.rapong} · f(n) ${r.f_n} (n=${r.n_total})
+                            · ${r.fastigheter} fastigheter · DN ${r.total_dn}
+                        </div>
+                    </div>
+                    <div class="f4-result-score">
+                        <strong>${r.score}</strong>
+                        <span class="f4-score-raw">poäng</span>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    }
 
     html += '</div>';
     panel.innerHTML = html;

@@ -77,6 +77,21 @@ SKIP_PUZZLE_PLACEMENT = True
 # gamla löne-/kapacitets-modellen.
 USE_F2_STAFF = True
 
+# Slutformel – tre delpoäng som var och en landar runt 20–25 vid "riktigt bra" spel,
+# 25 vid "superbra". Kalibrera dessa baserat på provspel.
+#
+#   Skede 1 (Utveckling)  = total anskaffning / 100   → 25 vid 2500 Mkr förvärv
+#   Skede 2 (Byggande)    = TG (procent)              → 25 vid TG 25 %
+#   Skede 3 (Förvaltning) = (FV_obelånat + kassa × faktor) / divisor
+#                           där FV_obelånat = säljvärde (normal MV) − utestående lån,
+#                           kassa = EK efter moderbolagslån,
+#                           faktor justerar kassans vikt mot fastighetsvärdet,
+#                           divisor kalibrerar så superbra ger 25.
+#
+# Justera dessa när du har testspels-data.
+SKEDE3_KASSA_FAKTOR = 1.0
+SKEDE3_DIVISOR = 30
+
 # Planning step order: (slot_name, slot_type)
 PLANNING_ORDER = [
     ("Stödfunktioner", "org"),

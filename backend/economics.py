@@ -123,31 +123,32 @@ def calc_deviation_n(player) -> dict:
     return {"n_q": n_q, "n_h": n_h, "n_t": n_t, "n_total": n_q + n_h + n_t}
 
 
-def calc_final_score(player, total_dn: int, extra_anskaffning: float = 0.0) -> dict:
-    """Beräkna slutpoäng enligt Förvaltning 2.0 designdoc (§Slutformeln).
+def calc_final_score(player, fv_obelan: float, extra_anskaffning: float = 0.0) -> dict:
+    """Beräkna slutpoäng enligt Förvaltning 2.0 (kalibrerad mot 'superbra' = 25 per skede).
 
-    Skede 1 (Utveckling) = total anskaffning / 100        (typvärde 10–25)
-    Skede 2 (Byggande)   = TG (saldo-%)                   (typvärde ~20)
-    Skede 3 (Förvaltning) = (Total DN + slutkassa/100) / 2 (typvärde 15–25)
+    Skede 1 (Utveckling)  = anskaffning / 100               → 25 vid 2500 Mkr förvärv
+    Skede 2 (Byggande)    = TG (procent)                    → 25 vid TG 25 %
+    Skede 3 (Förvaltning) = (FV_obelånat + kassa × FAKTOR) / DIVISOR
+                            FAKTOR och DIVISOR i config.SKEDE3_*.
     Råpoäng = S1 + S2 + S3
-    Slutpoäng = Råpoäng × f(n)  där f(n) är Q/H/T-baserad straffaktor.
+    Slutpoäng = Råpoäng × f(n).
 
     Argument:
-        total_dn: summa effektiv DN över alla förvaltade fastigheter (callerns ansvar
-                  att räkna ut via _eff_dn — economics.py har ingen visibilitet i
-                  energiklass-state).
+        fv_obelan: säljvärde (normal MV) − utestående lån, callerns ansvar
+                   eftersom economics.py inte har visibilitet i yield/eff_dn.
         extra_anskaffning: Mkr för fastigheter förvärvade DURING Skede 3 utöver
-                           player.projects (t.ex. via marknadsbudgivning).
+                           player.projects.
     """
-    # Total anskaffning = ursprungsportfölj + Skede 3-köp
+    from config import SKEDE3_KASSA_FAKTOR, SKEDE3_DIVISOR
+
     placed_ids = set(getattr(player, 'placed_project_ids', []) or [])
     ansk_orig = sum(p.anskaffning for p in player.projects if p.id in placed_ids) if placed_ids else sum(p.anskaffning for p in player.projects)
     ansk_total = ansk_orig + extra_anskaffning
 
     skede1 = ansk_total / 100.0
     skede2 = calc_tg(player)
-    slutkassa = player.eget_kapital
-    skede3 = (total_dn + slutkassa / 100.0) / 2.0
+    kassa = calc_real_ek(player)
+    skede3 = (fv_obelan + kassa * SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
 
     rapong = skede1 + skede2 + skede3
     dev = calc_deviation_n(player)
@@ -160,9 +161,9 @@ def calc_final_score(player, total_dn: int, extra_anskaffning: float = 0.0) -> d
         "skede3": round(skede3, 1),
         "rapong": round(rapong, 1),
         "ansk_total": round(ansk_total, 0),
-        "total_dn": total_dn,
-        "slutkassa": round(slutkassa, 1),
-        "real_ek": round(calc_real_ek(player), 1),
+        "fv_obelan": round(fv_obelan, 1),
+        "kassa": round(kassa, 1),
+        "real_ek": round(kassa, 1),
         "n_q": dev["n_q"],
         "n_h": dev["n_h"],
         "n_t": dev["n_t"],
