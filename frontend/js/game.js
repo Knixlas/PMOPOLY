@@ -2,7 +2,8 @@
  * PMOPOLY - Game view controller
  */
 import { state, sendAction, addEventLog } from './app.js';
-import { renderBoard, renderPlanGFBoard, renderPhase4Board, renderPlayerBar, showDice, showCard, updateCardResult, closeCardModal, showInstruction, cycleInstructionLevel, getInstructionLevel, getInstructionLabel } from './components.js';
+import { renderBoard, renderPlanGFBoard, renderPhase4Board as renderPhase4BoardSVG, renderPlayerBar, showDice, showCard, updateCardResult, closeCardModal, showInstruction, cycleInstructionLevel, getInstructionLevel, getInstructionLabel } from './components.js';
+import { renderPhase4Board as renderPhase4BoardHTML } from './phase4.js';
 import { renderPhase1Action } from './phase1.js';
 import { renderPhase2Action } from './phase2.js';
 import { renderPhase3Action } from './phase3.js';
@@ -74,8 +75,11 @@ export function handleGameState(gs) {
         renderPlanGFBoard(gs);
         if (boardEl) boardEl.style.display = '';
     } else if (gs.phase === 'phase4_forvaltning') {
-        renderPhase4Board(gs);
-        if (boardEl) boardEl.style.display = '';
+        // Skede 3: mittenrutan visar fastigheter + kopplade kort istället för SVG-spelplan
+        if (boardEl) {
+            boardEl.style.display = '';
+            renderPhase4BoardHTML(boardEl, gs);
+        }
     } else {
         if (boardEl) boardEl.style.display = 'none';
     }
@@ -747,15 +751,27 @@ function showAssetDetail(card, player) {
     } else if (type === 'staff') {
         const s = player.staff?.find(st => st.namn === idx);
         if (!s) return;
-        html = `
-            <h3>${s.namn}</h3>
-            <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
-            <div class="detail-grid">
-                <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
-                <div class="detail-row"><span>Lön</span><span>${s.lon} Mkr/kv</span></div>
-                <div class="detail-row"><span>Förhandling</span><span>D${s.forhandling || '—'}</span></div>
-            </div>
-        `;
+        // F2-arketyper: visa egenskaper, INTE lön/kapacitet (designdok: inga sådana).
+        const isF2 = (s.lon || 0) === 0 || (s.kapacitet || 0) >= 99;
+        if (isF2) {
+            html = `
+                <h3>${s.namn}</h3>
+                <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+                <div class="detail-grid">
+                    ${s.f2_forh_modifier !== undefined ? `<div class="detail-row"><span>Förhandling</span><span>${s.f2_forh_modifier >= 0 ? '+' : ''}${s.f2_forh_modifier}</span></div>` : ''}
+                    ${s.f2_motstand_modifier !== undefined ? `<div class="detail-row"><span>Motstånd konsekvens</span><span>${s.f2_motstand_modifier >= 0 ? '+' : ''}${s.f2_motstand_modifier}</span></div>` : ''}
+                </div>
+            `;
+        } else {
+            html = `
+                <h3>${s.namn}</h3>
+                <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+                <div class="detail-grid">
+                    <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
+                    <div class="detail-row"><span>Förhandling</span><span>D${s.forhandling || '—'}</span></div>
+                </div>
+            `;
+        }
     }
 
     if (!html) return;

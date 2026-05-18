@@ -92,6 +92,11 @@ USE_F2_STAFF = True
 SKEDE3_KASSA_FAKTOR = 1.0
 SKEDE3_DIVISOR = 30
 
+# Förvaltning 2.0 – händelsekort per fastighet är inaktiverade tills nya
+# F2_händelsekort-systemet aktiveras (Steg G). Gamla mgmt_events ger
+# konstigt utfall i nuvarande Skede 3, så vi hoppar över dem helt.
+SKIP_MGMT_EVENTS = True
+
 # Planning step order: (slot_name, slot_type)
 PLANNING_ORDER = [
     ("Stödfunktioner", "org"),

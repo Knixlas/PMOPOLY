@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\PMOPOLY\" 2>&1)",
+      "Bash(find \"C:\\\\Users\\\\niklas.sviden\\\\OneDrive - Familjeb\" -iname \"*nya*förvaltning*\" -type d 2>&1 | head -10)",
+      "Bash(awk -F: '$2 > 1850')",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, 'backend'\\); import engine; print\\('OK - engine loads'\\)\")",
+      "Bash(python sync_csv.py)",
+      "Bash(python -c ' *)",
+      "Bash(python -X utf8 -c ' *)"
+    ]
+  }
+}

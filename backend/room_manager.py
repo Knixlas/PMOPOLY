@@ -168,6 +168,15 @@ class GameRoom:
 
     def to_dict(self) -> dict:
         from config import YIELD_QUEUE_SIZE
+        # Live-slutresultat (visas under Skede 3 i sidopanelen).
+        live_scores = {}
+        if self.phase == GamePhase.PHASE4_FORVALTNING:
+            try:
+                from engine import calc_live_score
+                for p in self.players:
+                    live_scores[p.id] = calc_live_score(self, p)
+            except Exception:
+                pass
         return {
             "room_id": self.room_id,
             "name": self.name,
@@ -185,6 +194,7 @@ class GameRoom:
             "f4_yield_queue_bostader": list(self.f4_yield_cards.get("bostader", []))[:YIELD_QUEUE_SIZE],
             "f4_yield_queue_kommersiellt": list(self.f4_yield_cards.get("kommersiellt", []))[:YIELD_QUEUE_SIZE],
             "f4_final_results": self.f4_final_results,
+            "f4_live_scores": live_scores,
         }
 
     def to_lobby_dict(self) -> dict:

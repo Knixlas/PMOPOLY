@@ -394,6 +394,10 @@ class Player:
     # Förvaltning 2.0 — total anskaffning från fastigheter förvärvade DURING Skede 3
     # (utöver ursprungsportföljen i player.projects). Räknas in i Skede 1-poäng.
     f4_extra_anskaffning: float = 0.0
+    # Förvaltning 2.0 — antal "garanterad nästa gång"-tokens per fastighet (namn).
+    # Sparas vid misslyckad energiuppgradering: nästa försök på SAMMA fastighet
+    # blir auto-success utan D20-slag (token konsumeras).
+    f4_energi_garanti: Dict[str, int] = field(default_factory=dict)
 
     @property
     def total_bta(self) -> int:
@@ -572,6 +576,7 @@ class Player:
             "f4_margin_call_props": sorted(self.f4_margin_call_props),
             "f4_restkort": self.f4_restkort,
             "f4_extra_anskaffning": round(self.f4_extra_anskaffning, 1),
+            "f4_energi_garanti": dict(self.f4_energi_garanti),
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
             "projektchef": self.projektchef,

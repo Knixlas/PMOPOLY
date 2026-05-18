@@ -850,12 +850,23 @@ export function previewOrg(opt) {
 }
 
 export function previewStaff(s) {
+    // F2-arketyper (lon=0, kapacitet=999) visar egenskaper, inte lön/kapacitet.
+    const isF2 = (s.lon || 0) === 0 || (s.kapacitet || 0) >= 99;
+    if (isF2) {
+        return `
+            <h3>${s.namn}</h3>
+            <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+            <div class="detail-grid">
+                ${s.f2_forh_modifier !== undefined ? `<div class="detail-row"><span>Förhandling</span><span>${s.f2_forh_modifier >= 0 ? '+' : ''}${s.f2_forh_modifier}</span></div>` : ''}
+                ${s.f2_motstand_modifier !== undefined ? `<div class="detail-row"><span>Motstånd konsekvens</span><span>${s.f2_motstand_modifier >= 0 ? '+' : ''}${s.f2_motstand_modifier}</span></div>` : ''}
+            </div>
+        `;
+    }
     return `
         <h3>${s.namn}</h3>
         <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
         <div class="detail-grid">
             <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
-            <div class="detail-row"><span>Lön</span><span>${s.lon} Mkr/kvartal</span></div>
             <div class="detail-row"><span>Förhandling</span><span>${s.forhandling ? 'D' + s.forhandling : '—'}</span></div>
         </div>
     `;
