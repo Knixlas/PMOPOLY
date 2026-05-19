@@ -3219,12 +3219,16 @@ def ai_default_action(room, player) -> Optional[dict]:
         # Ingen kvar att anställa – skicka None (klar)
         return {"action": "f4_hire", "value": None}
     if action == "f4_energy_upgrade":
-        # Konservativ AI: uppgradera fastighet med lägst EK om EK > 6 mkr,
-        # börja med lägsta klassen (E/D/C/B). Annars skip.
+        # Konservativ AI:
+        # - Uppgradera bara om EK > 30 mkr (spara kassa)
+        # - Bara en NY fastighet per kvartal (inte trampa upp samma fastighet
+        #   till EK A på en runda — för dyrt och oklart strategiskt)
+        # - Välj fastighet med lägst EK-klass (E/D/C/B)
         upgradeable = pending.get("upgradeable", [])
         ek_left = pending.get("eget_kapital", 0)
-        if ek_left >= 6 and upgradeable:
-            # Sortera så fastighet med lägst EK kommer först (E < D < C < B)
+        already_started = {u["namn"] for u in upgradeable
+                            if u.get("already_started_this_q")}
+        if ek_left >= 30 and upgradeable and not already_started:
             order = {"E": 0, "D": 1, "C": 2, "B": 3}
             sortable = sorted(upgradeable, key=lambda u: order.get(u.get("ek"), 9))
             for u in sortable:
@@ -3464,24 +3468,49 @@ def _play_personkort(room, player, kort_id: str, events: list) -> dict:
                        "text": f"{player.name} spelade '{kort['rubrik']}' → +3 Mkr till EK."})
         return {"ok": True}
 
-    if effekt == "ranta_minus1":
-        player.f4_ranta_reduction_next += 1
+    if effekt == "dn_plus1_perm":
+        # +1 bas-DN permanent på fastighet med lägst bas-DN (för enkelhet)
+        if not player.fastigheter:
+            return {"ok": False, "msg": "Inga fastigheter"}
+        target = min(player.fastigheter, key=lambda p: p.bas_dn or 0)
+        target.bas_dn = (target.bas_dn or 0) + 1
         consume()
         events.append({"type": "event",
-                       "text": f"{player.name} spelade '{kort['rubrik']}' → −1 Mkr ränta nästa intäktsfas."})
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +1 bas-DN permanent på {target.namn} (nu {target.bas_dn})."})
+        return {"ok": True}
+
+    if effekt == "lan_minus10":
+        # Sänk lån permanent med 10 Mkr på fastighet med högst belåningsgrad
+        if not player.fastigheter:
+            return {"ok": False, "msg": "Inga fastigheter"}
+        # Välj fastighet med högst lan/MV-kvot — utan MV använder vi lan absolut
+        target = max(player.fastigheter, key=lambda p: (p.lanebelopp or 0))
+        if not target.lanebelopp:
+            return {"ok": False, "msg": "Ingen belånad fastighet"}
+        old_lan = target.lanebelopp
+        target.lanebelopp = max(0, target.lanebelopp - 10)
+        # Sänk räntekostnad proportionellt (10 Mkr × 4 % / 4 = 0.1 Mkr/kv → 0)
+        if (target.rantekostnad_kvartal or 0) > 0 and old_lan >= 100:
+            target.rantekostnad_kvartal -= 1
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → {target.namn} lån {old_lan}→{target.lanebelopp} Mkr permanent."})
         return {"ok": True}
 
     if effekt in ("forh_plus2", "forh_plus2_efter"):
+        # Spelas direkt i samband med hyresförhandling → +2 på slaget.
+        # Effekten 'spara' tills nästa förhandling som event-sekvens, men UI-mässigt
+        # förväntas spelaren spela kortet vid rätt moment.
         player.f4_forh_bonus_next += 2
         consume()
         events.append({"type": "event",
-                       "text": f"{player.name} spelade '{kort['rubrik']}' → +2 på nästa hyresförhandling."})
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +2 på hyresförhandling."})
         return {"ok": True}
     if effekt == "forh_plus3":
         player.f4_forh_bonus_next += 3
         consume()
         events.append({"type": "event",
-                       "text": f"{player.name} spelade '{kort['rubrik']}' → +3 på nästa hyresförhandling."})
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +3 på hyresförhandling."})
         return {"ok": True}
 
     if effekt == "blockera_kons":

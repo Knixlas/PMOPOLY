@@ -62,8 +62,7 @@ class ConnectionManager:
         Loopar tills nästa pending_action är en mänsklig spelare (eller ingen).
         Avbryter vid fel-result eller om pending_action inte ändras (skydd mot
         oändliga loops om AI:s val inte accepteras)."""
-        last_sub = None
-        last_pid = None
+        last_sub = None  # senaste current_marker-tupeln (inkluderar EK + list-längder)
         stuck_count = 0
         for _ in range(30):  # säkerhets-cap
             pending = room.pending_action
@@ -88,11 +87,16 @@ class ConnectionManager:
                     }],
                 })
                 return
-            # Stuck-detektion: om sub_state + pid inte ändras → bryt loopen
-            current_marker = (room.sub_state, pid, pending.get("action"))
-            if current_marker == (last_sub, last_pid, pending.get("action")):
+            # Stuck-detektion: inkludera EK + längd på listor så att iterativa
+            # actions (t.ex. flera energi-uppgraderingar i samma kvartal) inte
+            # räknas som stuck. Vi bryter bara när INTET förändras mellan varv.
+            upgr_len = len(pending.get("upgradeable", []) or [])
+            avail_len = len(pending.get("available", []) or [])
+            current_marker = (room.sub_state, pid, pending.get("action"),
+                              round(player.eget_kapital, 1), upgr_len, avail_len)
+            if current_marker == last_sub:
                 stuck_count += 1
-                if stuck_count >= 2:
+                if stuck_count >= 3:
                     await self.broadcast(room.room_id, {
                         "type": "events",
                         "events": [{
@@ -103,7 +107,7 @@ class ConnectionManager:
                     return
             else:
                 stuck_count = 0
-                last_sub, last_pid = room.sub_state, pid
+                last_sub = current_marker
             await asyncio.sleep(0.3)  # synligt för spelaren att AI agerar
             result = process_action(room, pid, action)
             if isinstance(result, dict) and result.get("type") == "error":

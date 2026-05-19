@@ -635,11 +635,13 @@ function ekColor(ek) {
     return { A: '#0a7', B: '#5a7', C: '#888', D: '#c87', E: '#c44' }[ek] || '#888';
 }
 
-// Effekter som backend kan applicera direkt utan målval — andra grayas ut.
+// Effekter som backend kan applicera direkt — andra grayas ut.
+// (Användarens designprincip: effekter är direkta och permanenta, inga 'denna runda'.)
 const SPELBARA_EFFEKTER = new Set([
-    'auto_energi', 'cash_plus5', 'cash_plus3', 'ranta_minus1',
+    'auto_energi', 'cash_plus5', 'cash_plus3',
+    'dn_plus1_perm', 'lan_minus10',
     'forh_plus2', 'forh_plus3', 'forh_plus2_efter',
-    'blockera_kons', 'annullera_minus', 'rensa_minus_3', 'halverad_uppgr',
+    'blockera_kons', 'annullera_minus', 'rensa_minus_3',
 ]);
 
 // Personkort på hand (FC + FS + reaktiva från händelsekortleken)
