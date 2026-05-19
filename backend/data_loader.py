@@ -218,7 +218,7 @@ def load_f2_handelsekort() -> List[dict]:
     fungerar oavsett:
       är_varningskort=ja  → 'varning'
       är_energi_varning=ja → 'energivarning'
-      är_förkjöpsrätt=ja  → 'förköpsrätt'
+      är_förköpsrätt=ja  → 'förköpsrätt'  (OneDrive-stavningen 'förkjöp' stöds också)
       är_stoppkort=ja     → 'stoppkort'
       annars (fill_color grön) → 'pluskort'
       annars (fill_color röd)  → 'minuskort'
@@ -237,7 +237,8 @@ def load_f2_handelsekort() -> List[dict]:
         if not effekt:
             if safe_str(r.get("Är_stoppkort", r.get("är_stoppkort"))).lower() == "ja":
                 effekt = "stoppkort"
-            elif safe_str(r.get("Är_förkjöpsrätt", r.get("är_förkjöpsrätt"))).lower() == "ja":
+            elif (safe_str(r.get("Är_förköpsrätt", r.get("är_förköpsrätt"))).lower() == "ja"
+                  or safe_str(r.get("Är_förkjöpsrätt", r.get("är_förkjöpsrätt"))).lower() == "ja"):
                 effekt = "förköpsrätt"
             elif safe_str(r.get("Är_energi_varning", r.get("är_energi_varning"))).lower() == "ja":
                 effekt = "energivarning"

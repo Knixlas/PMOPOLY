@@ -3270,21 +3270,30 @@ def _dra_handelsekort_per_fastighet(room, player, events: list):
 
         # Plus/minus + varning/energivarning placeras (dolt) på fastigheten
         stack.append({"id": kort["id"], "rubrik": kort["rubrik"],
-                      "effekt": effekt, "beskrivning": kort["beskrivning"]})
+                      "effekt": effekt, "beskrivning": kort["beskrivning"],
+                      "kalla": "händelsekort"})
 
-        # Tröskel: 3 plus eller 3 minus → kassera och ±1 bas-DN
-        plus_count = sum(1 for k in stack if k["effekt"] == "pluskort")
-        minus_count = sum(1 for k in stack if k["effekt"] == "minuskort")
+        # Tröskel: 3 plus eller 3 minus → kassera och ±1 bas-DN.
+        # Räkna BÅDE händelsekort OCH DD-kort på fastigheten — de delar stack
+        # konceptuellt (designval: DD-kort är också plus/minus-kort).
+        dd_stack = player.f4_dd_per_prop.get(prop.namn, [])
+        plus_count = (sum(1 for k in stack if k["effekt"] == "pluskort")
+                      + sum(1 for k in dd_stack if k.get("effekt") == "pluskort"))
+        minus_count = (sum(1 for k in stack if k["effekt"] == "minuskort")
+                       + sum(1 for k in dd_stack if k.get("effekt") == "minuskort"))
         if plus_count >= 3:
+            # Kassera alla pluskort från BÅDE händelse- och DD-stacken
             player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "pluskort"]
+            player.f4_dd_per_prop[prop.namn] = [k for k in dd_stack if k.get("effekt") != "pluskort"]
             prop.bas_dn = (prop.bas_dn or 0) + 1
             events.append({"type": "event",
-                           "text": f"⬆ {player.name}: {prop.namn} ackumulerade 3 pluskort → +1 bas-DN permanent."})
+                           "text": f"⬆ {player.name}: {prop.namn} ackumulerade 3 pluskort (inkl. DD) → +1 bas-DN permanent."})
         elif minus_count >= 3:
             player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "minuskort"]
+            player.f4_dd_per_prop[prop.namn] = [k for k in dd_stack if k.get("effekt") != "minuskort"]
             prop.bas_dn = max(0, (prop.bas_dn or 0) - 1)
             events.append({"type": "event",
-                           "text": f"⬇ {player.name}: {prop.namn} ackumulerade 3 minuskort → −1 bas-DN permanent."})
+                           "text": f"⬇ {player.name}: {prop.namn} ackumulerade 3 minuskort (inkl. DD) → −1 bas-DN permanent."})
 
         # Energivarning-tröskel: 3 → -1 EK-steg (designdok)
         energi_count = sum(1 for k in stack if k["effekt"] == "energivarning")
@@ -3301,16 +3310,22 @@ def _dra_handelsekort_per_fastighet(room, player, events: list):
 
 
 def _dra_dd_kort_for_prop(room, player, prop, events: list):
-    """Dra ett DD-kort och lägg DOLT på fastigheten. DN-effekten räknas i
-    driftnetto_bonus (matchas av _eff_dn/intäktsfasen som dolt DN)."""
+    """Dra ett DD-kort och lägg DOLT på fastigheten.
+
+    Förvaltning 2.0 (uppdaterad design): DD-kort är samma typ av plus/minus-
+    kort som händelsekort. Typ='Intäkt' → pluskort, Typ='Kostnad' → minuskort.
+    De räknas in i samma 3-tröskel på fastigheten — vid 3 i netto avslöjas
+    alla och bas-DN justeras ±1.
+    Effekt_Mkr-kolumnen i CSV används inte längre direkt (kan vara kvar som
+    designkommentar)."""
     deck = room.game_data.f2_dd_cards or []
     if not deck:
         return
     dd = dict(random.choice(deck))
+    # Tagga DD med en plus/minus-effekt som matchar händelsekort-mekaniken.
+    typ = (dd.get("typ") or "").lower()
+    dd["effekt"] = "pluskort" if typ == "intäkt" else "minuskort"
     player.f4_dd_per_prop.setdefault(prop.namn, []).append(dd)
-    # Lägg DN-effekten i driftnetto_bonus (kumulativt)
-    existing = player.driftnetto_bonus.get(prop.namn, 0.0)
-    player.driftnetto_bonus[prop.namn] = existing + (dd.get("effekt_mkr") or 0.0)
     events.append({
         "type": "event",
         "text": f"{player.name}: drog ett DD-kort dolt på {prop.namn}.",

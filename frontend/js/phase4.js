@@ -551,11 +551,14 @@ function renderFastighetsPaneler(me) {
         const typFarg = EK_TYP_FARG[f.typ] || '#444';
         const border = isMarginCall ? '3px solid #c00' : '1px solid #ccc';
 
-        // Räkna kort per kategori per fastighet
+        // Räkna kort per kategori per fastighet.
+        // DD-kort räknas i samma plus/minus-stack som händelsekort.
         const handelser = handelseMap[f.namn] || [];
         const dds = ddMap[f.namn] || [];
-        const plusCount = handelser.filter(h => h.effekt === 'pluskort').length;
-        const minusCount = handelser.filter(h => h.effekt === 'minuskort').length;
+        const plusCount = handelser.filter(h => h.effekt === 'pluskort').length
+                        + dds.filter(d => d.effekt === 'pluskort').length;
+        const minusCount = handelser.filter(h => h.effekt === 'minuskort').length
+                         + dds.filter(d => d.effekt === 'minuskort').length;
         const varnCount = handelser.filter(h => h.effekt === 'varning').length;
         const energiVarnCount = handelser.filter(h => h.effekt === 'energivarning').length;
         const ddCount = dds.length;
