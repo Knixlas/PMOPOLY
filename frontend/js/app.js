@@ -75,6 +75,8 @@ export function sendAction(action) {
         state.ws.send(JSON.stringify({ type: 'action', ...action }));
     }
 }
+// Expose for phase4.js personkort-knappar (reaktiva — kan spelas när som helst).
+if (typeof window !== 'undefined') window._sendAction = sendAction;
 
 export function sendMessage(type, data = {}) {
     if (state.ws && state.ws.readyState === WebSocket.OPEN) {

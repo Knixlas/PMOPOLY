@@ -403,6 +403,11 @@ class Player:
     # F2-DD-kort: dolda DD-kort placerade på varje fastighet (namn → lista av kort).
     # DN-effekten räknas in i driftnetto_bonus så intäktsfasen får dolt DN automatiskt.
     f4_dd_per_prop: Dict[str, list] = field(default_factory=dict)
+    # Aktiva modifiers från spelade personkort. Konsumeras vid relevant moment.
+    f4_forh_bonus_next: int = 0          # +N på nästa hyresförhandling
+    f4_ranta_reduction_next: int = 0     # −N mkr ränta nästa intäktsfas
+    f4_blockera_konsekvens: int = 0      # Blockera N kommande konsekvenskort
+    f4_annullera_minus: int = 0          # Annullera N kommande minuskort vid dragning
     # FC + FS personkort på hand (cap 6 totalt, max 3 av varje per designdok).
     f4_personkort_hand: list = field(default_factory=list)
     # Om spelaren är en passiv AI (skippar alla aktiva val).
@@ -588,6 +593,10 @@ class Player:
             "f4_energi_garanti": dict(self.f4_energi_garanti),
             "f4_handelse_per_prop": {k: list(v) for k, v in self.f4_handelse_per_prop.items()},
             "f4_dd_per_prop": {k: list(v) for k, v in self.f4_dd_per_prop.items()},
+            "f4_forh_bonus_next": self.f4_forh_bonus_next,
+            "f4_ranta_reduction_next": self.f4_ranta_reduction_next,
+            "f4_blockera_konsekvens": self.f4_blockera_konsekvens,
+            "f4_annullera_minus": self.f4_annullera_minus,
             "f4_personkort_hand": list(self.f4_personkort_hand),
             "is_ai": self.is_ai,
             "puzzle_confirmed": self.puzzle_confirmed,

@@ -412,6 +412,7 @@ export function renderPhase4Board(boardElement, gs) {
     boardElement.style.justifyContent = 'flex-start';
     boardElement.style.padding = '0';
     boardElement.innerHTML = html;
+    bindPersonkortKlick();
 }
 
 // Stora yield-siffror överst, med 3 framtida rörelser
@@ -634,19 +635,34 @@ function ekColor(ek) {
     return { A: '#0a7', B: '#5a7', C: '#888', D: '#c87', E: '#c44' }[ek] || '#888';
 }
 
-// Personkort på hand (FC + FS)
+// Effekter som backend kan applicera direkt utan målval — andra grayas ut.
+const SPELBARA_EFFEKTER = new Set([
+    'auto_energi', 'cash_plus5', 'cash_plus3', 'ranta_minus1',
+    'forh_plus2', 'forh_plus3', 'forh_plus2_efter',
+    'blockera_kons', 'annullera_minus', 'rensa_minus_3', 'halverad_uppgr',
+]);
+
+// Personkort på hand (FC + FS + reaktiva från händelsekortleken)
 function renderPersonkortHand(me) {
     const hand = me.f4_personkort_hand || [];
     if (hand.length === 0) {
         return ''; // visa inget om handen är tom
     }
+    const rollColors = { FC: '#7A2020', FS: '#1F4D7A', REAKT: '#4D1F7A' };
+    const rollLabels = { FC: 'FC-kort', FS: 'FS-kort', REAKT: 'Reaktivt' };
     const cards = hand.map(k => {
-        const rollColor = k.roll === 'FC' ? '#7A2020' : '#1F4D7A';
+        const rollColor = rollColors[k.roll] || '#444';
+        const label = rollLabels[k.roll] || k.roll;
+        const spelbar = SPELBARA_EFFEKTER.has(k.effekt) || k.effekt === 'stoppkort' || k.effekt === 'förköpsrätt';
+        const btn = spelbar
+            ? `<button class="f4-play-card" data-id="${k.id}" style="margin-top:6px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);padding:3px 10px;border-radius:3px;cursor:pointer;font-size:0.8em;">Spela</button>`
+            : `<div style="margin-top:6px;font-size:0.72em;opacity:0.7;font-style:italic">(effekt aktiveras senare)</div>`;
         return `
-            <div class="f4-personkort" style="background:${rollColor};color:#fff;padding:8px 10px;border-radius:6px;min-width:160px;flex:0 0 auto;">
-                <div style="font-size:0.7em;opacity:0.7;text-transform:uppercase;letter-spacing:0.1em">${k.roll}-kort</div>
+            <div class="f4-personkort" style="background:${rollColor};color:#fff;padding:8px 10px;border-radius:6px;min-width:170px;flex:0 0 auto;">
+                <div style="font-size:0.7em;opacity:0.7;text-transform:uppercase;letter-spacing:0.1em">${label}</div>
                 <div style="font-weight:700;margin-top:2px">${k.rubrik}</div>
                 <div style="font-size:0.78em;opacity:0.85;margin-top:3px">${k.beskrivning || ''}</div>
+                ${btn}
             </div>`;
     }).join('');
     return `
@@ -654,7 +670,19 @@ function renderPersonkortHand(me) {
             <div style="font-size:0.78em;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">
                 Personkort på hand · ${hand.length}/6
             </div>
-            <div style="display:flex;gap:8px;overflow-x:auto">${cards}</div>
+            <div style="display:flex;gap:8px;overflow-x:auto" id="f4-hand-cards">${cards}</div>
         </div>
     `;
+}
+
+// Bind klick på "Spela"-knapparna efter board-rendering.
+function bindPersonkortKlick() {
+    document.querySelectorAll('.f4-play-card').forEach(btn => {
+        btn.onclick = () => {
+            const id = btn.dataset.id;
+            if (window._sendAction) {
+                window._sendAction({ action: 'play_personkort', value: id });
+            }
+        };
+    });
 }
