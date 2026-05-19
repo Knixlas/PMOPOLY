@@ -440,6 +440,7 @@ def enrich_projects_from_f2(stacks: Dict[str, List[Project]]) -> int:
         if namn:
             by_name[namn] = r
 
+    import math
     enriched = 0
     for stack in stacks.values():
         for p in stack:
@@ -455,6 +456,21 @@ def enrich_projects_from_f2(stacks: Dict[str, List[Project]]) -> int:
                 p.lanebelopp = safe_int(ln)
             if rk:
                 p.rantekostnad_kvartal = safe_int(rk)
+
+            # Normalisera bas_dn så MV @ baseline-yield ≥ lånebeloppet.
+            # CSV:n har vissa fastigheter med bas_dn räknat på anskaffning
+            # istället för marknadsvärde — det ger MV < lån redan vid Q1
+            # och tvingar omedelbar tvångsförsäljning. Vi höjer bas_dn till
+            # max(ursprunglig_bas_dn, MV*yield_baseline, lan*yield_baseline)
+            # för konsistens med 70%-belåningsregeln.
+            if p.lanebelopp and p.marknadsvarde:
+                typ = (p.typ or "").upper()
+                yield_baseline = 0.04 if typ in ("HYRESRÄTT", "BRF") else 0.05
+                from_mv = round(p.marknadsvarde * yield_baseline)
+                from_lan = math.ceil(p.lanebelopp * yield_baseline)
+                ny_bas = max(p.bas_dn or 0, from_mv, from_lan)
+                if ny_bas > (p.bas_dn or 0):
+                    p.bas_dn = ny_bas
             enriched += 1
     return enriched
 
