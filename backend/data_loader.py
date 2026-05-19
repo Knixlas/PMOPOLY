@@ -55,6 +55,26 @@ def safe_str(val, default="") -> str:
     return str(val).strip()
 
 
+def _fix_stavning(s: str) -> str:
+    """Normalisera kortrubriker/beskrivningar utan att röra OneDrive-källan.
+    Just nu: byt norska 'förkjöp' till svenska 'förköp'."""
+    if not s:
+        return s
+    return (s.replace("förkjöp", "förköp")
+             .replace("Förkjöp", "Förköp")
+             .replace("FÖRKJÖP", "FÖRKÖP"))
+
+
+def _round_half_up(x: float) -> int:
+    """Avrunda till närmaste heltal, halvor upp i magnitud (0,5→1, -0,5→-1, 1,5→2)."""
+    import math
+    if x is None:
+        return 0
+    if x >= 0:
+        return int(math.floor(x + 0.5))
+    return -int(math.floor(-x + 0.5))
+
+
 # ── Projects ──
 
 def load_projects() -> Dict[str, List[Project]]:
@@ -256,9 +276,9 @@ def load_f2_handelsekort() -> List[dict]:
             "id": nid,
             "typ": safe_str(r.get("Typ")).upper(),
             "handelsetyp": safe_str(r.get("Händelsetyp")),
-            "rubrik": safe_str(r.get("Rubrik")),
+            "rubrik": _fix_stavning(safe_str(r.get("Rubrik"))),
             "effekt": effekt,
-            "beskrivning": safe_str(r.get("Beskrivning")),
+            "beskrivning": _fix_stavning(safe_str(r.get("Beskrivning"))),
             "ar_dolt": safe_str(r.get("Är_dolt", r.get("är_dolt"))).lower() == "ja",
         })
     return out
@@ -962,13 +982,16 @@ def load_world_events() -> List[WorldEvent]:
     rows = read_csv(fp)
     events = []
     for row in rows:
+        # Avrunda halvmiljoner till hela tal (designprincip: 'bara hela miljoner').
+        raw_mkr = safe_float(row.get("Effekt_Mkr"))
+        effekt_mkr = float(_round_half_up(raw_mkr))
         events.append(WorldEvent(
             id=safe_str(row.get("ID")),
-            rubrik=safe_str(row.get("Rubrik")),
+            rubrik=_fix_stavning(safe_str(row.get("Rubrik"))),
             effekt_typ=safe_str(row.get("Effekt_typ")),
-            effekt_mkr=safe_float(row.get("Effekt_Mkr")),
+            effekt_mkr=effekt_mkr,
             poverkar=safe_str(row.get("Påverkar", row.get("P\x86verkar"))),
-            beskrivning=safe_str(row.get("Beskrivning")),
+            beskrivning=_fix_stavning(safe_str(row.get("Beskrivning"))),
         ))
     return events
 
