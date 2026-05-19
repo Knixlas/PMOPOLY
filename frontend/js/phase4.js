@@ -5,7 +5,7 @@
  *  - FC/FS-arketyper utan lön/kostnad
  *  - Yield-kö (3 framåt) synlig
  *  - Live slutresultat i status-rutan
- *  - Margin call visas tydligt på fastigheter
+ *  - Risk för tvångsförsäljning visas tydligt på fastigheter
  *  - Mittenrutan visar fastighet med dess kort istället för spelplanen
  */
 import { sendAction } from './app.js';
@@ -66,7 +66,7 @@ function renderF4Status(player, gs) {
     return `
         <div class="gf-status">
             <div class="gf-stats">
-                <span class="pstat">Fast: ${fastigheter.length}${marginCalls > 0 ? ` <span style="color:#c00">⚠ ${marginCalls} margin call</span>` : ''}</span>
+                <span class="pstat">Fast: ${fastigheter.length}${marginCalls > 0 ? ` <span style="color:#c00">⚠ ${marginCalls} risk för tvångsförsäljning</span>` : ''}</span>
                 <span class="pstat">EK: ${player.eget_kapital} Mkr</span>
                 <span class="pstat">Restkort: ${player.f4_restkort || 0}/3</span>
                 <span class="pstat">${fc_text}</span>
@@ -254,7 +254,7 @@ function renderMarketSell(panel, pending, statusHtml) {
     if (pending.forced) {
         html += `<div style="background:#fee;border:2px solid #c00;padding:10px;margin:8px 0;border-radius:4px">
             <strong style="color:#c00">⚠ TVÅNGSFÖRSÄLJNING</strong> — du måste sälja minst en fastighet
-            (margin call: MV under lånebelopp).
+            (MV under lånebelopp).
         </div>`;
     }
 

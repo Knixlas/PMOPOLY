@@ -3067,7 +3067,7 @@ def _prop_yield(prop, room) -> float:
     return room.f4_yield_k
 
 
-# ── Förvaltning 2.0: effektiv DN, MV-tabell, margin call ──────────────────
+# ── Förvaltning 2.0: effektiv DN, MV-tabell, risk för tvångsförsäljning ──
 
 def _eff_dn(prop, player) -> int:
     """Effektiv DN = bas-DN + energiklass-modifier (designdoc §Fastigheter, DN).
@@ -4175,16 +4175,15 @@ def _f4_setup_energy_upgrade(room, player):
 def _f4_setup_market(room, player, events):
     """Setup market phase: sell then buy.
 
-    Förvaltning 2.0: Margin call-fastigheter (de som riskerar tvångsförsäljning
-    nästa kvartal) auto-säljs här innan vanlig sell/buy. Spelaren får tvångs-MV
-    (0.7 × normal) — designdok §Margin call.
+    Förvaltning 2.0: Fastigheter med risk för tvångsförsäljning (MV < lån)
+    auto-säljs här innan vanlig sell/buy. Spelaren får tvångs-MV (0.7 × normal).
     """
     q = room.f4_quarter
     if q > 3 or room.f4_no_trading:
         _f4_finish_player_turn(room, events)
         return
 
-    # Auto-tvångsförsäljning av margin call-fastigheter (designdok §Margin call)
+    # Auto-tvångsförsäljning av fastigheter där MV < lån (risk-flagga satt)
     margin_call_names = set(player.f4_margin_call_props or set())
     if margin_call_names:
         sold = []
@@ -4204,7 +4203,7 @@ def _f4_setup_market(room, player, events):
             # Avslöja dolda kort vid tvångsauktion (designdok)
             _avsloja_dolda_kort(player, prop.namn, events, anledning="tvångsförsäljs")
             sold.append(f"{prop.namn} (MV {mv_tvang} − lån {lan} = {net:+d} Mkr)")
-        # Rensa margin call-markörer
+        # Rensa risk-markörer
         player.f4_margin_call_props = set()
         events.append({
             "type": "event",

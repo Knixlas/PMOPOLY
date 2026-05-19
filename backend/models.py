@@ -386,7 +386,8 @@ class Player:
     f4_fv_30: float = 0.0
     f4_real_ek: float = 0.0
     f4_tb: float = 0.0
-    # Förvaltning 2.0 — set av fastighetsnamn med röd margin call-markör.
+    # Förvaltning 2.0 — set av fastighetsnamn med röd risk-flagga ("risk för
+    # tvångsförsäljning nästa kvartal"). Internt variabelnamn bevarat.
     f4_margin_call_props: set = field(default_factory=set)
     # Förvaltning 2.0 — restkort (1 per 0,25 Mkr residual vid kvartalsavrundning,
     # autokonverteras till 1 Mkr cash när 4 ackumulerats). Persisterar mellan kvartal.
