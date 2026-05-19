@@ -3232,8 +3232,14 @@ def ai_default_action(room, player) -> Optional[dict]:
                     return {"action": "f4_energy_upgrade", "value": u["namn"]}
         return {"action": "f4_energy_upgrade", "value": None}
 
-    if action in ("f4_market", "f4_market_sell", "f4_market_buy"):
-        return {"action": action, "value": None}  # skip / klar
+    if action == "f4_market":
+        # Marknadsfasen: AI:n hoppar över bud/sälj. OBS: backend förväntar
+        # value="skip" här, inte None (None matchar ingen gren och låser).
+        return {"action": "f4_market", "value": "skip"}
+
+    if action in ("f4_market_sell", "f4_market_buy"):
+        # I sell/buy-sub-state är None = avbryt
+        return {"action": action, "value": None}
     if action == "continue":
         return {"action": "continue"}
     return None

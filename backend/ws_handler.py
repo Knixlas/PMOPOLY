@@ -59,7 +59,12 @@ class ConnectionManager:
 
     async def _maybe_step_ai(self, room: GameRoom):
         """Om pending_action är AI:ns tur: kör AI:s default och rebroadcast.
-        Loopar tills nästa pending_action är en mänsklig spelare (eller ingen)."""
+        Loopar tills nästa pending_action är en mänsklig spelare (eller ingen).
+        Avbryter vid fel-result eller om pending_action inte ändras (skydd mot
+        oändliga loops om AI:s val inte accepteras)."""
+        last_sub = None
+        last_pid = None
+        stuck_count = 0
         for _ in range(30):  # säkerhets-cap
             pending = room.pending_action
             if not pending:
@@ -72,9 +77,44 @@ class ConnectionManager:
                 return
             action = ai_default_action(room, player)
             if not action:
+                # AI saknar handlingsregel för denna sub_state — logga och avbryt
+                await self.broadcast(room.room_id, {
+                    "type": "events",
+                    "events": [{
+                        "type": "event",
+                        "text": f"⚠ AI ({player.name}) saknar regel för "
+                                f"sub_state={room.sub_state!r} / "
+                                f"action={pending.get('action')!r} — väntar.",
+                    }],
+                })
                 return
+            # Stuck-detektion: om sub_state + pid inte ändras → bryt loopen
+            current_marker = (room.sub_state, pid, pending.get("action"))
+            if current_marker == (last_sub, last_pid, pending.get("action")):
+                stuck_count += 1
+                if stuck_count >= 2:
+                    await self.broadcast(room.room_id, {
+                        "type": "events",
+                        "events": [{
+                            "type": "event",
+                            "text": f"⚠ AI fastnade på {current_marker} — avbryter.",
+                        }],
+                    })
+                    return
+            else:
+                stuck_count = 0
+                last_sub, last_pid = room.sub_state, pid
             await asyncio.sleep(0.3)  # synligt för spelaren att AI agerar
             result = process_action(room, pid, action)
+            if isinstance(result, dict) and result.get("type") == "error":
+                await self.broadcast(room.room_id, {
+                    "type": "events",
+                    "events": [{
+                        "type": "event",
+                        "text": f"⚠ AI-fel: {result.get('message','?')} — avbryter.",
+                    }],
+                })
+                return
             events = result.get("events", []) if isinstance(result, dict) else []
             if events:
                 await self.broadcast(room.room_id, {"type": "events", "events": events})
