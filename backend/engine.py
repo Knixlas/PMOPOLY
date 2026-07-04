@@ -3257,8 +3257,8 @@ from typing import Optional  # noqa: E402
 _F2_TYP_TILL_DECK = {
     "HYRESRÄTT": "HYRESRÄTT",
     "KONTOR": "KONTOR",
-    "LOKAL": "HANDEL",      # LOKAL/HANDEL delar lek
-    "FÖRSKOLA": "HYRESRÄTT", # förskola räknas som bostäder/HR i händelsekortleken
+    "LOKAL": "LOKAL",
+    "FÖRSKOLA": "FÖRSKOLA",
 }
 
 
