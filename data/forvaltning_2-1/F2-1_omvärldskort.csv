@@ -1,23 +1,23 @@
 ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning
-OM-01;yield_rorelse;+0,5;bostäder;;
-OM-02;yield_rorelse;+0,5;bostäder;;
-OM-03;yield_rorelse;+0,5;bostäder;;
-OM-04;yield_rorelse;-0,5;bostäder;;
-OM-05;yield_rorelse;-0,5;bostäder;;
-OM-06;yield_rorelse;-0,5;bostäder;;
-OM-07;yield_rorelse;+0,5;kommersiellt;;
-OM-08;yield_rorelse;+0,5;kommersiellt;;
-OM-09;yield_rorelse;+0,5;kommersiellt;;
-OM-10;yield_rorelse;-0,5;kommersiellt;;
-OM-11;yield_rorelse;-0,5;kommersiellt;;
-OM-12;yield_rorelse;-0,5;kommersiellt;;
-OM-13;yield_stor;-1,0;bostäder;;
-OM-14;yield_stor;+1,0;kommersiellt;;
-OM-15;yield_stor;+1,0;bostäder;;
-OM-16;bords_dn;;en_typ;;
-OM-17;bords_dn;;en_typ;;
-OM-18;bords_dn;;en_typ;;
-OM-19;resurs;;alla;;
-OM-20;resurs;;alla;;
-OM-21;resurs;;alla;;
-OM-22;resurs;;alla;;
+OM-01;yield_rorelse;+0,5;bostäder;Riksbanken höjer styrräntan;Styrräntan höjs oväntat mer än marknaden räknat med. Yield bostäder stiger 0,5 procentenheter.
+OM-02;yield_rorelse;+0,5;bostäder;Investerare drar sig från bostäder;Institutionellt kapital söker sig till andra tillgångsslag. Yield bostäder stiger 0,5 procentenheter.
+OM-03;yield_rorelse;+0,5;bostäder;Amorteringskraven skärps;Nya krav på hushållens amortering kyler ner bostadsmarknaden. Yield bostäder stiger 0,5 procentenheter.
+OM-04;yield_rorelse;-0,5;bostäder;Riksbanken sänker räntan;Sänkt styrränta lättar trycket på fastighetsägarna. Yield bostäder sjunker 0,5 procentenheter.
+OM-05;yield_rorelse;-0,5;bostäder;Bostadsbristen förvärras;Nyproduktionen halkar efter befolkningstillväxten. Yield bostäder sjunker 0,5 procentenheter.
+OM-06;yield_rorelse;-0,5;bostäder;Kapital flödar till hyresrätter;Pensionsfonder ökar sina placeringar i svenska bostäder. Yield bostäder sjunker 0,5 procentenheter.
+OM-07;yield_rorelse;+0,5;kommersiellt;Distansarbetet biter sig fast;Fler företag säger upp kontorsyta de inte längre behöver. Yield kommersiellt stiger 0,5 procentenheter.
+OM-08;yield_rorelse;+0,5;kommersiellt;Lågkonjunktur i handeln;Butiker och restauranger drar ner på nyetableringar. Yield kommersiellt stiger 0,5 procentenheter.
+OM-09;yield_rorelse;+0,5;kommersiellt;Vakanserna stiger i city;Kontorsytor i centrala lägen står tomma allt längre. Yield kommersiellt stiger 0,5 procentenheter.
+OM-10;yield_rorelse;-0,5;kommersiellt;Stark efterfrågan på kontor;Nyetableringar fyller lediga kontorsytor snabbare än väntat. Yield kommersiellt sjunker 0,5 procentenheter.
+OM-11;yield_rorelse;-0,5;kommersiellt;E-handeln driver logistik;Efterfrågan på lager och logistikytor ökar kraftigt. Yield kommersiellt sjunker 0,5 procentenheter.
+OM-12;yield_rorelse;-0,5;kommersiellt;Kapital söker sig till kommersiellt;Utländska investerare ökar sina bud på svenska kontorsfastigheter. Yield kommersiellt sjunker 0,5 procentenheter.
+OM-13;yield_stor;-1,0;bostäder;Bostadsbrist slår rekord;Byggtakten har inte hängt med på flera år och trycket på hyresmarknaden är akut. Yield bostäder sjunker 1,0 procentenhet.
+OM-14;yield_stor;+1,0;kommersiellt;Finansoro sprider sig;Kreditmarknaden stramas åt och investerare drar sig från kommersiella fastigheter. Yield kommersiellt stiger 1,0 procentenhet.
+OM-15;yield_stor;+1,0;bostäder;Räntechock på bostadsmarknaden;En snabb och kraftig räntehöjning skakar om hela bostadssektorn. Yield bostäder stiger 1,0 procentenhet.
+OM-16;bords_dn;;en_typ;Skärpta myndighetskrav;Nya krav från tillsynsmyndigheten träffar en fastighetstyp i varje spelares portfölj. Välj typ, alla spelare får -1 DN på fastigheter av den typen.
+OM-17;bords_dn;;en_typ;Branschen får medvind;En fastighetstyp gynnas av ett gynnsamt marknadsläge. Välj typ, alla spelare får +1 DN på fastigheter av den typen.
+OM-18;bords_dn;;en_typ;Driftskostnaderna rusar för en typ;Stigande priser på energi och underhåll slår särskilt hårt mot en fastighetstyp. Välj typ, alla spelare får -1 DN på fastigheter av den typen.
+OM-19;resurs;;alla;Fastighetsmässan öppnar dörrar;Alla deltar och knyter kontakter. Varje spelare tar en riskbuffert.
+OM-20;resurs;;alla;Branschtidningen tipsar om läget;Nya siffror om marknaden sprids bland alla aktörer. Varje spelare drar ett personkort.
+OM-21;resurs;;alla;Försäkringsbolagen sänker premierna;Konkurrensen mellan försäkringsbolagen pressar priserna. Varje spelare tar en riskbuffert.
+OM-22;resurs;;alla;Kommunen bjuder in till dialogmöte;Fastighetsägarna får förhandsinfo om kommande planer. Varje spelare drar ett personkort.
