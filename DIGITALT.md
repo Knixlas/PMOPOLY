@@ -113,8 +113,13 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    går ruta för ruta, en ring kring kvarteret som är på tur och projektbankens storlek.
    Markexpansionerna är egna bitar som får flyttas fram till 4.3 (kant i kant med marken), och
    pusslet fungerar på mobilen (handen ovanför tomten, beskuren tomt, tryck för att lägga).
-   *Kvar:* brädorna för Skede 2 och Förvaltningen, korten som grafik, tärningar på skärmen,
-   QR-skanning.
+   *Bordet (helt digitalt spel):* tärningarna rullar och de dragna korten vänds upp i en rad
+   "På bordet" (motorn rapporterar varje slag och drag, `Parti.visningar`; högarna i digitalt spel
+   säger till när ett kort dras). Vid brädet (läge 2) visas varken bordet eller pusslet:
+   markexpansionen läggs på den riktiga tomten och 4.3 frågar bara vilka projekt som fick plats
+   (BYA räknas då som allt som ryms på marken).
+   *Kvar:* brädorna för Skede 2 och Förvaltningen, kortens riktiga layout, ljud. QR-skanning väntar
+   till nästa kortomtryck.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**
 7. **Balans** — se `BALANS.md` (nattens mätningar och förslag).

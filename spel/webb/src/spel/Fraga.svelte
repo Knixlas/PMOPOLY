@@ -16,7 +16,7 @@
   let sok = $state('');
   $effect.pre(() => {
     void fraga.nr;
-    valda = [];
+    valda = [...(vy.valda ?? [])];
     sok = '';
     tal = vy.typ === 'tal' ? (vy.min ?? 0) : 0;
   });
@@ -68,6 +68,7 @@
 
 <section class="fraga" aria-live="polite">
   <h2>{vy.rubrik}</h2>
+  {#if vy.hjalp}<p class="hjalp">{vy.hjalp}</p>{/if}
 
   {#if vy.typ === 'janej'}
     <div class="knappar">
@@ -135,6 +136,7 @@
 <style>
   .fraga { background: var(--panel); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
   h2 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+  .hjalp { margin: -4px 0 0; color: var(--dampad); font-size: 14.5px; }
   .knappar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   button { font: inherit; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }

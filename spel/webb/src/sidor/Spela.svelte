@@ -2,6 +2,7 @@
   // En enhet i ett parti: välj vilket kvarter ni är, svara på era frågor, följ läget.
   import { onDestroy } from 'svelte';
   import { Anslutning, hamtaLage, type Lage as LageT } from '../spel/anslutning.svelte';
+  import Bordet from '../spel/Bordet.svelte';
   import Brade from '../spel/Brade.svelte';
   import Fraga from '../spel/Fraga.svelte';
   import Lage from '../spel/Lage.svelte';
@@ -101,6 +102,9 @@
     </p>
   {:else}
     <p class="panel">Ansluter till partiet …</p>
+  {/if}
+  {#if lage?.slump === 'digital'}
+    <Bordet visningar={lage.bordet ?? []} />
   {/if}
   </div>
   {#if visaBrade && lage?.bild}

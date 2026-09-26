@@ -89,6 +89,19 @@ def kortnamn(kort):
     return str(getattr(kort, "namn", kort))
 
 
+class VisadHog(list):
+    """En blandad hög i digitalt spel: när ett kort dras (pop) får gränssnittet veta det."""
+
+    def __init__(self, kort, namn, visa):
+        super().__init__(kort)
+        self.namn, self._visa = namn, visa
+
+    def pop(self, i=-1):
+        kort = super().pop(i)
+        self._visa(self.namn, kort)
+        return kort
+
+
 class InmatadHog(list):
     """En blandad hög i fysiskt spel: motorn vet vilka kort som finns kvar men inte ordningen.
     Det översta kortet (hog[-1]) och pop() frågar vilket kort det är; svaret gäller tills kortet dras."""

@@ -155,8 +155,17 @@ MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kultur
 MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0]}
 
 
-def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag):
-    """Vy för en fråga till en människa. `forslag` är bottens svar (objekt), kodat blir det standardvalet."""
+def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
+    """Vy för en fråga till en människa. `forslag` är bottens svar (objekt), kodat blir det standardvalet.
+    `analog`: spel vid brädet — pusslet läggs på riktigt, så 4.3 frågar bara vilka projekt som fick plats."""
+    if analog and metod == "placering":
+        projekt = args[0]
+        return {"typ": "flerval", "rubrik": "4.3 Placering: vilka projekt fick plats på tomten?",
+                "kvarter": getattr(subjekt, "namn", None),
+                "forslag_text": ", ".join(forslag) or "Inga",
+                "alternativ": [{"text": p["Namn"], "detalj": detalj(p, motor), "kod": p["Namn"], **bild(p)} for p in projekt],
+                "valda": list(range(len(projekt))),
+                "hjalp": "Det som inte fick plats går till projektbanken och tar med sig sina krav."}
     typ, rubrik, pool, inget = BESLUT.get(metod, ("forslag", lambda m, s, a: metod.replace("_", " ").capitalize(), None, False))
     vy = {"typ": typ, "rubrik": rubrik(motor, subjekt, args), "kvarter": getattr(subjekt, "namn", None),
           "forslag_text": etikett(forslag, motor) if not isinstance(forslag, list)

@@ -461,6 +461,12 @@ class PUMotor:
         # 4.3 placering: kvarteret lägger pusslet; det som inte ligger enligt reglerna placeras inte
         svar = kv.strategi.placering(self, kv, list(kv.godkanda))
         namn = {p["Namn"]: p for p in kv.godkanda}
+        if all(isinstance(x, str) for x in svar):            # vid brädet: bara vilka som fick plats
+            svar = [[n, [], 1] for n in svar if n in namn]
+            kv.layout = {n: (frozenset(), 1) for n, _, _ in svar}
+            self.avsluta_placering(kv)
+            return
+
         # markexpansionerna får flyttas i samma drag (lager 0 med markexpansionens id)
         mark = [[n, celler] for n, celler, lager in svar if n in kv.markbitar and int(lager) == 0]
         if mark:
@@ -472,6 +478,9 @@ class PUMotor:
                 b.lager = -1                                 # granskningen underkänner den
         fel = granska([Bit("mark", "MARK", kv.mark - GRUNDMARK, 0)] + bitar).fel
         kv.layout = {b.id: (b.celler, b.lager) for b in bitar if b.id not in fel}
+        self.avsluta_placering(kv)
+
+    def avsluta_placering(self, kv):
         kv.placerade = [p for p in kv.godkanda if p["Namn"] in kv.layout]
         kv.oplacerade = [p for p in kv.godkanda if p["Namn"] not in kv.layout]
         for p in kv.oplacerade:                              # beslut: oplacerade tar med sig kraven, går till banken
@@ -509,6 +518,9 @@ class PUMotor:
     def resultat(self, kv):
         bta = sum(tal(p["BTA (kvm)"]) for p in kv.placerade)
         bya = sum(len(c) for c, lager in kv.layout.values() if lager == 1) * CELL_KVM   # BYA = fotavtrycket
+        if kv.placerade and not any(c for c, _ in kv.layout.values()):
+            # vid brädet är lagren okända: allt som ryms på marken räknas som fotavtryck
+            bya = min(sum(kv.celler(p) for p in kv.placerade), kv.markceller) * CELL_KVM
         return {
             "kvarter": kv.namn, "strategi": kv.strategi.namn, "pc": kv.pc["Namn"],
             "projekt": len(kv.placerade), "oplacerade": len(kv.oplacerade),

@@ -17,7 +17,14 @@ export interface Vy {
   form?: [number, number][];
   platser?: [number, number][][];
   id?: string;                          // den nya markexpansionens id
+  valda?: number[];                     // förvalda alternativ (flerval)
+  hjalp?: string;
   markbitar?: { id: string; form: [number, number][]; celler: [number, number][] }[];
+}
+export interface Visning {
+  nr: number; typ: 'tarning' | 'kort'; kvarter: string | null; skede: string | null;
+  sidor?: number; varde?: number; lek?: string;
+  kort?: { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string };
 }
 export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
 export interface Lage {
@@ -28,6 +35,7 @@ export interface Lage {
   fraga: Fraga | null;
   svar: { nr: number; kvarter: string; rubrik: string; svar: string }[];
   drag: string[];                       // senaste tärningsslag och dragna kort
+  bordet?: Visning[];                   // samma, med kortens innehåll (för bordet på skärmen)
   klart: boolean;
   resultat: Record<string, unknown>[] | null;
   fel: string | null;

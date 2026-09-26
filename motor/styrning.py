@@ -156,7 +156,12 @@ class StyrdSlump:
         if getattr(self.bas, "inmatad", False):    # fysiskt spel: ordningen är okänd, dragen frågas
             from .slump import InmatadHog
             return InmatadHog(self, namn or "hög", lista)
-        return self._parti.slump(self, "blanda_lista", (lista, namn))
+        hog = self._parti.slump(self, "blanda_lista", (lista, namn))
+        visa = getattr(self._parti, "visa_kort", None)
+        if visa and namn and hog and all(isinstance(k, dict) for k in hog):   # kortlekar, inte t.ex. spelordning
+            from .slump import VisadHog
+            return VisadHog(hog, namn, visa)
+        return hog
 
     def dra_fran(self, lista, namn):
         from .slump import ta_bort

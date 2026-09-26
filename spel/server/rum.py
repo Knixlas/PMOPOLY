@@ -156,6 +156,7 @@ class Rum:
                                              "vy": f.vy, "min": self.far_svara(kvarter) if kvarter else False},
             "svar": self.svar[-30:],
             "drag": [e["visa"] for e in self.parti.logg[-400:] if e.get("visa")][-15:],
+            "bordet": self.parti.visningar[-12:],
             "klart": self.klart,
             "resultat": self.parti.resultat if self.klart else None,
             "fel": self.fel,

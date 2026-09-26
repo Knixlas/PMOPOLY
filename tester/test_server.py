@@ -92,6 +92,33 @@ class TestServer(unittest.TestCase):
             self.assertEqual(r.status_code, 200, r.text)
         self.assertGreater(slump, 20)
 
+    def test_vid_bradet_inget_pussel(self):
+        """Analogt: markexpansionen frågas inte om, och 4.3 frågar bara vilka projekt som fick plats."""
+        id_ = skapa(kvarter=[{"namn": "Norr"}], slump="inmatad", fro=4)
+        R = random.Random(3)
+        typer = set()
+        for _ in range(5000):
+            f = KLIENT.get(f"/api/rum/{id_}").json()["fraga"]
+            vy = f["vy"]
+            typer.add(vy["typ"])
+            if f["kanal"] == "beslut" and vy["rubrik"].startswith("4.3"):
+                break
+            if f["kanal"] == "slump":
+                kvarter, svar = "bordet", svar_for(vy, R)
+            else:
+                kvarter = f["kvarter"]
+                svar = {"svar": True} if vy["typ"] == "janej" and "markexpansion" in vy["rubrik"] else {"forslag": True}
+            KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": kvarter, "nr": f["nr"], "svar": svar})
+        else:
+            self.fail("kom aldrig till 4.3")
+        self.assertNotIn("markexpansion", typer)
+        self.assertNotIn("pussel", typer)
+        self.assertEqual(vy["typ"], "flerval")
+        self.assertEqual(vy["valda"], list(range(len(vy["alternativ"]))))
+        r = KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": "Norr", "nr": f["nr"], "svar": {"flera": [0]}})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertIsNone(r.json()["fel"])
+
     def test_aterskapas_efter_omstart(self):
         id_ = skapa()
         for _ in range(60):

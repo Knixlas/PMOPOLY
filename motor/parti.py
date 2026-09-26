@@ -20,6 +20,10 @@ from .skede2_strategi import S2_STRATEGIER
 from .slump import DigitalSlump, InmatadSlump
 from .strategi import STRATEGIER
 from .fragor import beskriv_beslut, beskriv_slump
+
+# Vid brädet (analogt) frågas inte om det som bara finns på riktigt: markexpansionen läggs på den
+# fysiska tomten, så appen lägger sin egen kopia där botten vill. 4.3 blir "vilka fick plats?".
+ANALOGT_AV_BOTTEN = {"placera_markexpansion"}
 from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
 
 REGELVERSION = "2026-09-26"      # höjs när reglerna i motorn ändras; loggen bär versionen
@@ -44,6 +48,10 @@ class Parti:
         if slump not in ("digital", "inmatad"):
             raise ValueError("slump är 'digital' eller 'inmatad'")
         self.slumpsatt = slump
+        self.analog = slump != "digital"                 # spel vid brädet: pusslet läggs på riktigt, inte i appen
+        self.visningar = []                              # tärningsslag och dragna kort, för bordet på skärmen
+        self._visnr = 0
+        self._sammanhang = (None, None)                  # (kvarter, skede) för senaste beslutet
         if not 1 <= len(kvarter) <= 4:
             raise ValueError("ett parti har 1–4 kvarter")
         self.kvarter = [{"styrning": "bott", **k, "bottar": {**STANDARDBOTT, **k.get("bottar", {})}} for k in kvarter]
@@ -146,6 +154,7 @@ class Parti:
     def beslut(self, styrd, metod, motor, subjekt, args, kw):
         rotter = [*args, *kw.values(), subjekt, motor]
         kvarter, skede = styrd._kvarter, styrd._skede
+        self._sammanhang = (kvarter, skede)
         self.aktuell_motor = motor                     # för spellägesbilden (motor/lage.py)
         if self._uppspelning:
             # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
@@ -158,9 +167,11 @@ class Parti:
         forslag = svar = None
         if styrd._bott is not None:
             svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)
+            if self.analog and metod == "placering":      # vid brädet: bara vilka projekt som fick plats
+                svar = [n for n, _, _ in svar]
             forslag = koda(svar, rotter)
-        if styrd._manniska:
-            vy = beskriv_beslut(metod, motor, subjekt, args, rotter, svar)
+        if styrd._manniska and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+            vy = beskriv_beslut(metod, motor, subjekt, args, rotter, svar, analog=self.analog)
             kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
             svar = avkoda(kod, rotter)
             av = "människa"
@@ -184,11 +195,50 @@ class Parti:
             post = {"kanal": "slump", "metod": metod, "varde": ss.koda(metod, args, varde)}
             if metod == "dra":
                 post["lek"] = args[0]
+            self._visning(metod, args, varde)
             visa = _visa(metod, args, varde)
             if visa:
                 post["visa"] = visa                    # läsbart för händelseflödet (påverkar inte uppspelning)
         self.logg.append(post)
         return varde
+
+
+    # ------------------------------------------------------------------ bordet på skärmen
+    def _ny_visning(self, **v):
+        self._visnr += 1
+        kvarter, skede = self._sammanhang
+        self.visningar.append({"nr": self._visnr, "kvarter": kvarter, "skede": skede, **v})
+        del self.visningar[:-60]
+
+    def _visning(self, metod, args, varde):
+        if metod == "d20":
+            self._ny_visning(typ="tarning", sidor=20, varde=varde)
+        elif metod == "tarning":
+            self._ny_visning(typ="tarning", sidor=args[0], varde=varde)
+        elif metod in ("dra", "dra_kort") and isinstance(varde, dict):
+            self.visa_kort(args[0], varde)
+
+    def visa_kort(self, lek, kort):
+        self._ny_visning(typ="kort", lek=lek, kort=kortvy(kort))
+
+
+def kortvy(kort):
+    """Det spelarna ser på ett draget kort: id, rubrik, text och (för projekt) bilden."""
+    from .slump import kortnamn
+    rubrik = next((kort[k] for k in ("Rubrik", "Namn", "Företag", "Rubrik (byggsteg)", "Korttyp") if kort.get(k)), "")
+    text = next((kort[k] for k in ("Text", "Beskrivning", "Effekt") if kort.get(k)), "")
+    rader = [[k.replace("Utfall ", ""), str(v)] for k, v in kort.items()
+             if isinstance(k, str) and k.startswith(("Utfall", "Konsekvens ")) and v not in (None, "", "-")]
+    vy = {"id": kortnamn(kort), "rubrik": str(rubrik), "text": str(text or ""), "rader": rader[:5],
+          "typ": str(kort.get("Typ") or kort.get("Korttyp") or kort.get("Kategori") or "")}
+    if "Anskaffning (Mkr)" in kort:                       # projektkort: bilden och siffrorna
+        vy["rubrik"] = kort["Namn"]
+        vy["bild"] = f"bilder/{kort['Kort-id']}.jpg"
+        vy["rader"] = [["BTA", f"{kort['BTA (kvm)']} kvm"], ["Anskaffning", f"{kort['Anskaffning (Mkr)']} Mkr"],
+                       ["Utveckling", f"{kort['Utvecklingskostnad (Mkr)']} Mkr"]]
+    if kort.get("Korttyp") == "MARKEXPANSION":
+        vy["rubrik"], vy["text"] = "Markexpansion", f"{kort.get('BYA (kvm)')} kvm BYA"
+    return vy
 
 
 def _visa(metod, args, varde):
