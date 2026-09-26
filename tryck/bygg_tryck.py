@@ -2,6 +2,7 @@
 
     python tryck/bygg_tryck.py prov          # provark (A4) för granskning -> tryck/ut/provark.pdf + .png
     python tryck/bygg_tryck.py tryck [lek]   # tryckeri-PDF:er -> tryck/ut/<lek>_tryckeri.pdf
+    python tryck/bygg_tryck.py kontroll      # hittar kortsidor där text krockar med foten
 
 Tryckfilerna följer de gamla: ett motiv per sida, 3 mm utfall, skärmärken, bildsida och textsida
 växelvis (sida 1 = kort 1 fram, sida 2 = kort 1 bak …), varje kort × "Antal exemplar".
@@ -132,3 +133,38 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["prov"]:
         asyncio.run(skriv(provark(), UT / "provark.pdf", UT / "provark.png"))
         print("Skrev", UT / "provark.pdf")
+
+
+async def kontrollera():
+    """Hitta kort där innehållet krockar med foten eller går utanför kortet."""
+    from playwright.async_api import async_playwright
+    fel = []
+    async with async_playwright() as p:
+        b = await p.chromium.launch(executable_path=CHROME)
+        s = await b.new_page()
+        for lek in LEKAR:
+            html_, _, _ = tryckark(lek)
+            tmp = UT / f"_kontroll_{lek}.html"
+            tmp.write_text(html_, encoding="utf-8")
+            await s.goto(tmp.as_uri())
+            await s.wait_for_timeout(300)
+            res = await s.evaluate("""() => [...document.querySelectorAll('.kort')].map((k, i) => {
+                const kr = k.getBoundingClientRect();
+                const fot = k.querySelector('.fot'); const lista = k.querySelector('.list');
+                const grans = fot ? fot.getBoundingClientRect().top : (lista ? lista.getBoundingClientRect().top : kr.bottom);
+                const barn = [...k.querySelectorAll('.regel, .egenskap, .stamning, .p-tal, .p-regel, .p-besk, .f-under')];
+                const over = barn.filter(e => e.getBoundingClientRect().bottom > grans - 1).map(e => e.className);
+                return {i, over, text: (k.querySelector('.t-rubrik, .p-namn, .f-rubrik') || {}).textContent};
+            }).filter(r => r.over.length)""")
+            for r in res:
+                fel.append((lek, r["i"], (r["text"] or "").strip(), r["over"]))
+            tmp.unlink()
+        await b.close()
+    return fel
+
+
+if __name__ == "__main__" and sys.argv[1:2] == ["kontroll"]:
+    fel = asyncio.run(kontrollera())
+    for f in fel:
+        print("KROCK", f)
+    print(f"{len(fel)} kortsidor med krock")
