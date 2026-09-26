@@ -39,6 +39,11 @@ En Excel per korttyp (`kortdata/`) är **den enda källan** för allt kortinneh�
    Värdena ses också över: små justeringar (några Mkr) så att **driftnetto och marknadsvärde matchar**
    (jfr yield). Görs i `kortdata/PU_projekt.xlsx`; de nya korten trycks ur den.
 
+### Regelboken följer trycket
+
+Där regelbok, CSV eller kod säger emot det tryckta materialet gäller **trycket** — även för
+tärningsintervall, klassgränser och etiketter. Regelboken skrivs om efter korten, inte tvärtom.
+
 ### Slutmål: exakt rätt filer — varken mer eller mindre
 
 När omstarten är klar innehåller repot **exakt** de filer som behövs för att

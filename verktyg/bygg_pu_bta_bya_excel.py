@@ -155,9 +155,10 @@ def main():
         if korrigerade:
             kalla.append(("Korrigering", "Klass A:s undre gräns i CSV (500) stämmer inte med trycket (0). CSV:n "
                                          "ändrades efter att tryckfilen skapades; trycket är facit. "
-                                         "Se KORRIGERINGAR i skriptet."))
+                                         "Se KORRIGERINGAR i skriptet. Bekräftat av användaren: gränsen följer korten."))
         if typ == "BTA":
-            kalla.append(("Anmärkning", "Tabellrubriken är tryckt 'bruttototalarea' (vanligen 'bruttoarea')."))
+            kalla.append(("Anmärkning", "Tabellrubriken 'bruttototalarea' är avsiktlig (bekräftat av användaren)."))
+            kalla.append(("Klasstabell bekräftad", "Mot fysiskt kort: A 500-5000, B 5001-7000, C 7001-9000, D >9000 kvm."))
         kalla.append(("Byggd med", "verktyg/bygg_pu_bta_bya_excel.py"))
 
         ut = bygg_arbetsbok(
