@@ -33,6 +33,7 @@ class Parametrar:
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
     fientlig: float = 1.2                          # tvångsbud
+    losen_andel: float = 0.1                       # lösen: ägaren behåller fastigheten mot 10 % av MV till budgivaren
     handgrans: int = 6
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
     ranta_sats: float = 0.03                       # ANTAGANDE: fast ränta i grundspelet; räntemarknad = expansion
@@ -49,7 +50,8 @@ class Motor:
         self.stat = {k: 0 for k in ("bank_tar", "sanering_tagen", "sanering_raddad", "sanering_forlorad", "fynd_salt",
                                     "kop", "tvangsbud", "tvangsbud_stoppat", "salj", "konkurs", "uppgradering",
                                     "uppgradering_forsok", "eliminerat", "senior", "tvangskop", "budstrid",
-                                    "overtagande", "affarskort")}
+                                    "overtagande", "affarskort", "stopp_motbud", "stopp_kort", "stopp_rb",
+                                    "stopp_losen", "motbud_kop")}
         self.stat["dn_drift"] = {t: 0 for t in TYPER}
         self.spel.statistik = self.stat
 
@@ -407,6 +409,7 @@ class Motor:
                 vinnare.kassa -= pris
                 (self.spel.projektbank if kalla == "projekt" else self.spel.bankfynd).remove(f)
                 vinnare.fastigheter.append(f)
+                f.kopt_kvartal = self.spel.kvartal
                 self.dra_dd(f, vinnare)
                 self.stat["kop"] += 1
                 if kalla == "fynd":
@@ -416,13 +419,25 @@ class Motor:
             if not kopt:
                 return
 
-    def kan_stoppa(self, sp):
-        kostnad = 1 if (self.ar_fc(sp, "Den lugna") and sp.fc_senior) else 2
-        if any(k["Effekt"] == "stopp" for k in sp.hand):
-            return "kort"
-        if sp.riskbuffert >= kostnad:
-            return "rb"
-        return None
+    def stoppsatt(self, sp, f):
+        """Sätt som ägaren har att stoppa ett tvångsbud, i den ordning de brukar väljas."""
+        satt = []
+        if self.har_kort(sp, "motbud"):
+            satt.append("motbud")
+        if self.har_kort(sp, "stopp"):
+            satt.append("kort")
+        if sp.riskbuffert >= (1 if (self.ar_fc(sp, "Den lugna") and sp.fc_senior) else 2):
+            satt.append("rb")
+        if sp.kassa >= self.losen(f):
+            satt.append("losen")
+        return satt
+
+    def losen(self, f):
+        """Lösen: ägaren behåller fastigheten mot att budgivaren får andel × MV."""
+        return avrunda(self.mv(f) * self.p.losen_andel, 5) or 5
+
+    def kan_tvangsbudas(self, f):
+        return f.kopt_kvartal != self.spel.kvartal          # nyköpt är skyddad i samma marknad
 
     def har_kort(self, sp, effekt):
         return next((k for k in sp.hand if k["Effekt"] == effekt), None)
@@ -448,17 +463,35 @@ class Motor:
                 budgivare.hand.remove(self.har_kort(budgivare, "budstrid"))
                 self.stat["budstrid"] += 1
             overtag = self.har_kort(budgivare, "overtagande")
-            satt = self.kan_stoppa(offer)
+            satt = self.stoppsatt(offer, f)
             if satt and overtag:
                 budgivare.hand.remove(overtag)          # budet kan inte stoppas
                 self.stat["overtagande"] += 1
-                satt = None
-            if satt and offer.strategi.stoppa(self, offer, f):
-                if satt == "kort":
-                    offer.hand.remove(next(k for k in offer.hand if k["Effekt"] == "stopp"))
-                else:
-                    offer.riskbuffert -= 1 if (self.ar_fc(offer, "Den lugna") and offer.fc_senior) else 2
+                satt = []
+            val_ = offer.strategi.stoppa(self, offer, f, satt) if satt else None
+            if val_:
                 self.stat["tvangsbud_stoppat"] += 1
+                self.stat["stopp_" + val_] += 1
+                if val_ == "kort":
+                    offer.hand.remove(self.har_kort(offer, "stopp"))
+                elif val_ == "rb":
+                    offer.riskbuffert -= 1 if (self.ar_fc(offer, "Den lugna") and offer.fc_senior) else 2
+                elif val_ == "losen":
+                    belopp = self.losen(f)
+                    offer.kassa -= belopp
+                    budgivare.kassa += belopp
+                elif val_ == "motbud":
+                    offer.hand.remove(self.har_kort(offer, "motbud"))
+                    mal = offer.strategi.motbudsmal(self, offer, budgivare)
+                    if mal:                              # köp en av budgivarens fastigheter till MV
+                        offer.kassa -= self.mv(mal) - mal.lan
+                        budgivare.kassa += self.mv(mal) - mal.lan
+                        budgivare.fastigheter.remove(mal)
+                        self.visa_plus(mal)
+                        offer.fastigheter.append(mal)
+                        mal.kopt_kvartal = self.spel.kvartal
+                        self.dra_dd(mal, offer)
+                        self.stat["motbud_kop"] += 1
                 continue
             ersattning = self.mv(f, max(faktor, 1.3) if (self.ar_fs(offer, "Mäklaren") and offer.fs_senior) else faktor)
             offer.kassa += ersattning - f.lan
@@ -466,6 +499,7 @@ class Motor:
             offer.fastigheter.remove(f)
             self.visa_plus(f)
             budgivare.fastigheter.append(f)
+            f.kopt_kvartal = self.spel.kvartal
             self.stat["tvangskop"] += 1
             self.dra_dd(f, budgivare)
             gratis = self.har_kort(budgivare, "gratis_uppgradering")
@@ -538,7 +572,7 @@ class Motor:
             for sp in self.spel.spelare:
                 if ek[sp.namn] == min(ek.values()):
                     self.dra_personkort(sp, int(v))
-        elif e == "kopares_marknad":
+        elif e in ("kopares_marknad", "saljares_marknad"):
             self.spel.tvang_faktor = v
 
     # ------------------------------------------------------------------ 3. driftnetto

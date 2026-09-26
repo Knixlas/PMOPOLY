@@ -36,6 +36,7 @@ class Fastighet:
     villkor: list = field(default_factory=list)     # villkorskort på fastigheten (text)
     uppgraderingsstopp: bool = False
     varningsstraff_tagit: bool = False
+    kopt_kvartal: int = -1   # nyköpt fastighet kan inte tvångsköpas i samma marknad
 
     def eff_noi(self, extra=0):
         """Driftnetto före ränta — det marknaden värderar."""

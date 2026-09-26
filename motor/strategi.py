@@ -58,22 +58,35 @@ class Strategi:
         vinst = (m.mv(f) - f.lan) - m.p.kassa_vikt * pris
         if m.har_kort(sp, "gratis_uppgradering") and f.ek != "A":
             vinst += 100 / m.spel.yieldniva[SPAR[f.typ]]          # +1 DN före ränta ÷ yield
-        if m.kan_stoppa(o) and not m.har_kort(sp, "overtagande"):
-            vinst *= 0.3                                          # motspelaren stoppar troligen
+        satt = m.stoppsatt(o, f)
+        if satt and not m.har_kort(sp, "overtagande"):
+            if satt == ["losen"]:
+                vinst = min(vinst, m.p.kassa_vikt * m.losen(f))   # får vi inte fastigheten får vi lösen
+            else:
+                vinst *= 0.3                                      # motspelaren stoppar troligen
         return vinst
 
     def tvangsbud(self, m, sp):
         if self.tvangsbud_marginal is None:
             return None
-        kand = [(v, o, f) for o in m.spel.spelare if o is not sp for f in o.fastigheter
+        kand = [(v, o, f) for o in m.spel.spelare if o is not sp for f in o.fastigheter if m.kan_tvangsbudas(f)
                 if (v := self.tvangsbud_varde(m, sp, o, f)) is not None and v >= self.tvangsbud_marginal]
         if not kand:
             return None
         _, o, f = max(kand, key=lambda x: x[0])
         return o, f
 
-    def stoppa(self, m, sp, f):
-        return True
+    def stoppa(self, m, sp, f, satt):
+        """Välj stoppsätt (eller None = låt budet gå igenom). Lösen bara om kassan tål det."""
+        for val in satt:
+            if val == "losen" and sp.kassa - m.losen(f) < self.kopbuffert:
+                continue
+            return val
+        return None
+
+    def motbudsmal(self, m, sp, budgivare):
+        kand = [f for f in budgivare.fastigheter if sp.kassa - (m.mv(f) - f.lan) >= self.kopbuffert]
+        return max(kand, key=lambda f: m.eff_noi(f), default=None)
 
     def salj(self, m, sp):
         return []

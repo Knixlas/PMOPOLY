@@ -43,6 +43,7 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `direkt_dn_plus_egen` | när som helst | **+1 bas-DN direkt** och permanent på egen fastighet (sällsynt joker) |
 | `stada` | när som helst | ta bort ett minus- eller varningskort från egen fastighet |
 | `stopp` | reaktivt | avvärj ett tvångsbud |
+| `motbud` | reaktivt | avvärj ett tvångsbud **och** köp (valfritt) en av budgivarens fastigheter till 1,0 × MV |
 | `kika` | när som helst | titta på ett dolt kort hos en motståndare |
 | `hyresgastvarvning` | när som helst | kräver egen fastighet av samma typ som motspelarens: **+1 dold plusbricka på din, +1 dold minusbricka på motspelarens** (konkurrens om hyresgäster — lagligt, inte sabotage) |
 | `headhunting` | när som helst | ta ett **slumpvis personkort** från en motspelares hand |
@@ -70,6 +71,7 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `personkort_per_typ` | omvärld | varje spelare drar ett personkort per egen fastighet av typen i `Påverkar` |
 | `personkort_minst` | omvärld | spelaren med lägst eget kapital drar `Värde` personkort (vid lika: alla på platsen) |
 | `kopares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,1) |
+| `saljares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,4) |
 | `personkort_fokus` | kvartal | varje spelare drar ett personkort per egen fastighet av fokustypen |
 | `inget` | kvartal | inget händer |
 | `kvartal_dd` | kvartal | alla med fokustypen drar ett DD-kort dolt på en av sina fastigheter av typen |
@@ -118,20 +120,21 @@ typbred_ek_minus 1, spotlight 2, resurs 1, villkorat 1, inget 1, kvartal_dd 1, k
 typbred_dn_plus 1, typbred_ek_plus 1, spotlight 2, resurs 1, villkorat 1, kvartal_kassa_minus 1 (2 Mkr).
 Alla fyra typlekar har dessutom 1 `personkort_fokus` (Förskola, Lokal, Kontor 13 st; Hyresrätt 11 st).
 
-### Personkort — `F2-1_personkort.csv` (81)
+### Personkort — `F2-1_personkort.csv` (83)
 En förbrukningslek, blandas om. Kolumner: `ID;Effekt;Timing;Värde;Rubrik;Beskrivning`
 forhandling_mod 7, forhandling_auto 3, energi_mod 7, lagg_dn_plus_egen 8, stada 6,
 stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3,
 lagg_energi_plus_egen 5, direkt_dn_plus_egen 1,
-**affärskort:** budstrid 3, overtagande 2, gratis_uppgradering 3, omforhandlat_lan 3, dd_val 2, konvertering 1.
+**affärskort:** budstrid 3, overtagande 2, gratis_uppgradering 3, omforhandlat_lan 3, dd_val 2, konvertering 1,
+motbud 2.
 Affärskorten gör tvångsköp till ett kalkylerat beslut: ett tvångsbud till 1,2 × MV är ungefär ±0 i F-poäng,
 men med budstrid, gratis uppgradering eller omförhandlat lån blir det en affär.
 
-### Omvärldskort — `F2-1_omvärldskort.csv` (35)
+### Omvärldskort — `F2-1_omvärldskort.csv` (36)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
 yield_ersatt 15 (alla ±0,5 pp), yield_byt 4, yield_byt_alla 2, bords_dn 3, resurs 3, personalrotation 1,
 energistod 1, slang_personkort 2, personkort_per_typ 2 (hyresrätt, kontor), personkort_minst 1,
-kopares_marknad 1.
+kopares_marknad 1, saljares_marknad 1.
 
 ### Yieldkort — `F2-1_yieldkort.csv` (24)
 Två lekar, 16 per spår (bostäder, kommersiellt). Innehållet är det **tryckta yieldkortet från
@@ -163,13 +166,13 @@ Alla kort är **dubbelsidiga: junior / senior**.
 |---|---|
 | Händelsekort (4 typleker) | 106 |
 | Kvartalskort (4 typleker) | 50 |
-| Personkort | 81 |
-| Omvärldskort | 35 |
+| Personkort | 83 |
+| Omvärldskort | 36 |
 | Yieldkort (återanvänds från version 1, utan ±1,0) | 24 |
 | DD | 36 |
 | Fastighetskort (uppdaterad baksida: tryckt lån) | 45 |
 | FC + FS-arketyper (dubbelsidiga) | 12 |
-| **Summa** | **~363** |
+| **Summa** | **~366** |
 
 Brickor: utvecklingsbrickor, DN-siffror, energiclips A–E, +/− - och energibrickor, riskbuffert, restkort,
 lån-clips (ex-bank).

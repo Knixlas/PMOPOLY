@@ -34,3 +34,4 @@ OM-32;personkort_per_typ;;HYRESRÄTT;Bostadsdagarna;Hela bostadsbranschen samlas
 OM-33;personkort_per_typ;;KONTOR;Kontorsmässan i Cannes;Internationella investerare och rådgivare på plats. Varje spelare drar ett personkort per eget kontor.
 OM-34;personkort_minst;2;alla;Branschens mentorsprogram;Erfarna kollegor hjälper den som ligger efter. Spelaren med lägst eget kapital drar två personkort (vid lika: alla som delar platsen).
 OM-35;kopares_marknad;1,1;alla;Finansoro — köparnas marknad;Säljarna är nervösa. Alla tvångsbud vid nästa marknad kostar 1,1 × MV i stället för 1,2 × MV.
+OM-36;saljares_marknad;1,4;alla;Kapitalet flödar — säljarnas marknad;Alla vill köpa, ingen vill sälja. Alla tvångsbud vid nästa marknad kostar 1,4 × MV i stället för 1,2 × MV.

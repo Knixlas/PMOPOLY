@@ -80,3 +80,5 @@ PK-78;omforhandlat_lan;nar_som_helst;1;Räntebindning i rätt läge;Sänk ränta
 PK-79;dd_val;vid_kop;;Grundlig besiktning;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
 PK-80;dd_val;vid_kop;;Due diligence-team;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
 PK-81;konvertering;nar_som_helst;5;Kontor blir bostäder;Betala 5 Mkr: en egen lokal eller ett eget kontor byggs om till hyresrätt och följer bostadsspåret i yieldbanan. DN och energiklass behålls.
+PK-82;motbud;reaktivt;;Motbud — vi köper er i stället;Stoppa ett tvångsbud mot dig. Du får dessutom köpa en av budgivarens fastigheter till 1,0 × MV (valfritt).
+PK-83;motbud;reaktivt;;Pac-Man-försvaret;Stoppa ett tvångsbud mot dig. Du får dessutom köpa en av budgivarens fastigheter till 1,0 × MV (valfritt).
