@@ -44,6 +44,27 @@ En Excel per korttyp (`kortdata/`) är **den enda källan** för allt kortinneh�
 Där regelbok, CSV eller kod säger emot det tryckta materialet gäller **trycket** — även för
 tärningsintervall, klassgränser och etiketter. Regelboken skrivs om efter korten, inte tvärtom.
 
+### Beslutade regeländringar
+
+#### R1. Nämnden — ett gemensamt slag med andra chans (2026-09-26)
+
+1. Summera **"Passera nämnden"** på alla projekt man tar med (tryckt på projektkorten som "> N").
+2. Dra av projektchefens **nämndslag** (PU_personal).
+3. Slå D20 — resultatet måste vara **över** summan.
+4. **Miss:** justera Q- eller H-kravet och slå igen, nu med **två** D20 — det räcker att ett av dem är över.
+5. **Miss igen:** ny kravjustering, nytt försök — upprepas tills man lyckas.
+
+Kräver inget omtryck: projektkortens "> N" och personalkortens nämndslag används som de är.
+
+Öppna detaljer:
+- Hur mycket justeras kravet per miss — +1 på Q eller H (spelarens val)?
+- Tredje försöket och senare: fortfarande två D20, eller ett extra per miss?
+- Summan kan bli ≥ 20 (projekten har 1, 3 eller 4; upp till 9 projekt) och då går det inte att slå över med D20.
+  Tak på summan, eller att 20 alltid lyckas?
+- Projektchefer utan nämndslag (tre st) drar av 0.
+
+Chans att lyckas (slå över summan): mål 6 → 70 % / 91 % med två slag; mål 10 → 50 % / 75 %; mål 14 → 30 % / 51 %.
+
 ### Slutmål: exakt rätt filer — varken mer eller mindre
 
 När omstarten är klar innehåller repot **exakt** de filer som behövs för att
