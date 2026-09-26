@@ -73,7 +73,7 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `kopares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,1) |
 | `saljares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,4) |
 | `natverkskort_fokus` | kvartal | varje spelare drar ett nätverkskort per egen fastighet av fokustypen |
-| `inget` | kvartal | inget händer |
+| `inget` | händelse/kvartal | inget händer |
 | `kvartal_dd` | kvartal | alla med fokustypen drar ett DD-kort dolt på en av sina fastigheter av typen |
 | `kvartal_kassa_minus` | kvartal | varje ägare av fokustypen betalar `Värde` Mkr **vid nästa marknad** (plånboken stängd) |
 | `typbred_dn_plus` / `typbred_dn_minus` | kvartal | ±1 DN på **allas** fastigheter av fokustypen |
@@ -85,18 +85,18 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 
 ## 2. Lekar, attribut och frekvens
 
-### Händelsekort — `F2-1_händelsekort.csv` (106)
+### Händelsekort — `F2-1_händelsekort.csv` (105)
 Fyra typleker (Hyresrätt, Förskola, Lokal, Kontor). **Återanvändbar lek:** dra, lös
 (lägg bricka / applicera), lägg tillbaka. Förköp går till handen.
 Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 
 | Effekt | Hyresrätt | Förskola | Lokal | Kontor |
 |---|---|---|---|---|
-| dolt_plus_dn | 6 | 6 | 5 | 4 |
-| dolt_minus_dn | 3 | 3 | 6 | 6 |
-| energi_plus | 2 | 2 | 1 | 1 |
+| dolt_plus_dn | 3 | 6 | 5 | 4 |
+| dolt_minus_dn | 2 | 3 | 6 | 6 |
+| energi_plus | 1 | 2 | 1 | 1 |
 | energi_minus | 1 | 1 | 2 | 2 |
-| direkt_dn_plus | 1 | 1 | 1 | 1 |
+| direkt_dn_plus | – | 1 | 1 | 1 |
 | direkt_dn_minus | – | – | 1 | 2 |
 | underhallsvarning | 3 | 3 | 2 | 2 |
 | villkorskort | 2 | 2 | 2 | 3 |
@@ -104,8 +104,10 @@ Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 | forkop | 2 | 2 | 2 | 2 |
 | utveckling | 1 | 1 | 1 | 1 |
 | riskbuffert | 1 | 1 | 1 | 1 |
-| **Summa** | **25** | **25** | **28** | **28** |
+| inget | 5 | – | – | – |
+| **Summa** | **24** | **25** | **28** | **28** |
 
+**Hyresrätt är förutsägbar och lite trist** (beslut 2026-09-26): få kort flyttar något, fem "inget".
 Karaktär: stabila typer plus-lean utan direkta minus (men enstaka windfall + fler
 underhållsvarningar); volatila typer minus-övervikt med båda direktchockerna, mer
 energiminus och villkor.
@@ -165,7 +167,7 @@ Alla kort är **dubbelsidiga: junior / senior**.
 
 | Lek | Antal |
 |---|---|
-| Händelsekort (4 typleker) | 106 |
+| Händelsekort (4 typleker) | 105 |
 | Kvartalskort (4 typleker) | 50 |
 | Nätverkskort | 83 |
 | Omvärldskort | 36 |

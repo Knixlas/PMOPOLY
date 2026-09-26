@@ -481,6 +481,17 @@ kvarter utan bostäder = ÖVRIGA; CEO/CFO/COO och PC spelas som kompetenskort.
 slutpoäng 31 (5–55). Skede 2: billig strategi vinner 9 % (Mu ~0,5), balanserad 36 %. Skede 1: expansiv
 33 %, försiktig 15 %. Förvaltningsstrategier 23–27 %. **Att titta på:** FC Bostadsveteranen 39 %.
 
+### Balans bostäder (2026-09-26)
+- **Hyresrättsleken görs förutsägbar:** −3 dolt plus, −1 dolt minus, −1 energiplus, −1 direkt +1 DN,
+  +5 "inget" (25 → 24 kort; händelsekort 106 → 105). HR-drift +2,2 → +0,4 DN per parti.
+- **Bostadsveteranen försvagad:** ingen duellbonus; senior = varningar på hyresrätter gratis att röja
+  (i stället för en plusbricka per kvartal). Vinstandel 35–39 % → ~30 % (brusigt).
+- **Kvar:** kvarter med ≥ 40 % hyresrätter vinner ~35 % — övertaget sitter nu i Skede 2 (TG 12,5 mot
+  8,7) och delvis Förvaltningen (F 16 mot 14), inte i händelsekorten. Kvarter utan hyresrätt vinner 11 %
+  (färre projekt, TG ~0). Test med sänkt driftnetto på tre hyresrättskort gav ingen mätbar effekt → återställt.
+- **Poängdelarnas tyngd:** spridning (std) PU 3,7, TG 15,7, F 9,7. TG avgör redan mest; att dela PU och F
+  ytterligare skulle göra TG ännu mer avgörande.
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.

@@ -31,6 +31,10 @@ class Parametrar:
     max_uppgraderingar: tuple = (3, 2, 1, 0)
     uppgradering_kostnad: int = 8                  # kalibrerat (varv 3, startkassa enligt 8.6)
     uppgradering_troskel: int = 10                 # slaget måste vara över detta
+    ta_bort_handelse: dict = field(default_factory=dict)  # kalibrering: {typ: {effekt: antal}} tas ur typleken
+    ta_bort_kvartal: dict = field(default_factory=dict)
+    yield_spann: dict = None                               # kalibrering: ersätter YIELD_SPANN
+    bostadsveteran_duell: bool = False                     # beslut: Bostadsveteranen har ingen duellbonus
     extra_handelse: dict = field(default_factory=lambda: {t: {"direkt_dn_minus": 2} for t in ("LOKAL", "KONTOR")})
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
@@ -91,6 +95,18 @@ class Motor:
     def satt_lan(self, f, lan):
         f.lan = lan
         f.ranta = int(round(self.p.ranta_sats * lan))
+
+    @staticmethod
+    def utan(lek, bort):
+        """Kalibrering: ta bort ett antal kort av givna effekter ur en lek."""
+        bort = dict(bort)
+        ut = []
+        for k in lek:
+            if bort.get(k["Effekt"], 0) > 0:
+                bort[k["Effekt"]] -= 1
+            else:
+                ut.append(k)
+        return ut
 
     def projektutveckling(self):
         """Spela Skede 1 med samma slump; ett resultat per spelare (i spelarordning)."""
@@ -156,7 +172,9 @@ class Motor:
             self.andra_ek(f, 1)
 
     def varning(self, f, sp, kostnad):
-        f.varningar.append(kostnad - (1 if self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT" else 0))
+        if self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT":
+            kostnad = 0 if sp.fc_senior else max(0, kostnad - 1)   # senior: gratis att röja
+        f.varningar.append(kostnad)
         grans = 4 if self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT" else 3
         if len(f.varningar) >= grans and not f.varningsstraff_tagit:
             self.andra_bas(f, -1)
@@ -267,8 +285,10 @@ class Motor:
         for typ in TYPER:
             extra = [{"ID": f"X-{typ}-{e}-{i}", "Typ": typ, "Effekt": e, "Värde": None}
                      for e, n in self.p.extra_handelse.get(typ, {}).items() for i in range(n)]
-            s.blanda("handelse_" + typ, [k for k in d.handelse if k["Typ"] == typ] + extra)
-            s.blanda("kvartal_" + typ, [k for k in d.kvartal if k["Typ"] == typ])
+            s.blanda("handelse_" + typ, self.utan([k for k in d.handelse if k["Typ"] == typ],
+                                                  self.p.ta_bort_handelse.get(typ, {})) + extra)
+            s.blanda("kvartal_" + typ, self.utan([k for k in d.kvartal if k["Typ"] == typ],
+                                                 self.p.ta_bort_kvartal.get(typ, {})))
         s.blanda("natverk", d.natverk)
         s.blanda("omvarld", d.omvarld)
         s.blanda("dd", d.dd)
@@ -337,7 +357,7 @@ class Motor:
         q = self.spel.kvartal
         if q >= 2:
             for spar, bana in self.spel.yieldbana.items():
-                lo, hi = YIELD_SPANN[spar]
+                lo, hi = (self.p.yield_spann or YIELD_SPANN)[spar]
                 self.spel.yieldniva[spar] = min(max(self.spel.yieldniva[spar] + bana[q - 2], lo), hi)
         for _ in range(self.p.pafyllning[q - 1]):
             if self.projektpool:
@@ -480,7 +500,7 @@ class Motor:
             mod = 3 if f.typ == "KONTOR" else 2
         elif namn in ("Den lugna", "Skölden") and not anfall:
             mod = 2
-        elif namn == "Bostadsveteranen" and not anfall and f.typ == "HYRESRÄTT":
+        elif namn == "Bostadsveteranen" and not anfall and f.typ == "HYRESRÄTT" and self.p.bostadsveteran_duell:
             mod = 2
         elif namn == "Nätverkaren":
             mod = 1

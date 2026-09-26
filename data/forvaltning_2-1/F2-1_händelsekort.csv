@@ -2,26 +2,27 @@ ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning
 HR-01;HYRESRÄTT;dolt_plus_dn;nej;;Ny hyresgäst flyttar in;Lägenheten hyrs ut snabbt till högre hyra efter renovering.
 HR-02;HYRESRÄTT;dolt_plus_dn;nej;;Indexuppräkning slår igenom;Hyrorna räknas upp enligt konsumentprisindex utan protester.
 HR-03;HYRESRÄTT;dolt_plus_dn;nej;;Lokal i bottenplan hyrs ut;Tidigare tom lokal blir uthyrd till frisersalong på långt kontrakt.
-HR-04;HYRESRÄTT;dolt_plus_dn;nej;;Skötsamma hyresgäster stannar;Låg omflyttning ger stabila intäkter och färre inflyttningskostnader.
-HR-05;HYRESRÄTT;dolt_plus_dn;nej;;Garageplatser fulltecknade;Alla bilplatser i garaget är uthyrda för första gången på länge.
-HR-06;HYRESRÄTT;dolt_plus_dn;nej;;Tvättstugebokningar ökar;Fler hyresgäster nyttjar tvättstugan och lägenhetsförrådet mot avgift.
-HR-07;HYRESRÄTT;dolt_minus_dn;nej;;Lägenhet står tom;Uppsägning och flyttstädning drar ut på tiden innan ny hyresgäst hittas.
-HR-08;HYRESRÄTT;dolt_minus_dn;nej;;Andrahandsuthyrning upptäcks;Hyresgästen har hyrt ut svart. Hyresintäkten uteblir under utredningen.
-HR-09;HYRESRÄTT;dolt_minus_dn;nej;;Källarförråd vattenskadat;Mindre läcka i grunden skadar hyresgästernas förvaring.
-HR-10;HYRESRÄTT;energi_plus;nej;;Nya termostatventiler monteras;Injustering av värmesystemet ger bättre reglering än beräknat.
-HR-11;HYRESRÄTT;energi_plus;nej;;Tätning av fönster lyckas;Fogar och tätningslister byts i samband med löpande underhåll.
-HR-12;HYRESRÄTT;energi_minus;nej;;Fjärrvärmeväxlare åldras;Växlaren är original från byggåret och tappar verkningsgrad.
-HR-13;HYRESRÄTT;direkt_dn_plus;ja;;Kommunen tecknar blockhyra;Kommunen hyr tio lägenheter för nyanlända på ett tioårigt avtal.
-HR-14;HYRESRÄTT;underhallsvarning;ja;3;Stammar i akut behov av byte;Avloppsstammarna är uttjänta och läcker i flera våningsplan.
-HR-15;HYRESRÄTT;underhallsvarning;ja;3;Taket läcker vid slagregn;Papptäckningen har passerat sin livslängd och släpper in vatten.
-HR-16;HYRESRÄTT;underhallsvarning;ja;2;Hissen klarar inte besiktning;Hissmaskineriet är slitet och måste bytas för att godkännas.
-HR-17;HYRESRÄTT;villkorskort;ja;;Boverket skärper energikrav;Villkor: har fastigheten energiklass D eller sämre blir det −1 DN.
-HR-18;HYRESRÄTT;villkorskort;ja;;Portföljen granskas av försäkringsbolag;Villkor: äger du 3 eller fler hyresrätter — −1 DN på alla.
-HR-19;HYRESRÄTT;engangskassa_plus;ja;4;Retroaktiv hyra betalas ut;Hyresnämnden godkänner efterdebiterad hyra för tidigare år.
-HR-20;HYRESRÄTT;engangskassa_plus;ja;2;Försäkringsersättning för stormskada;Ersättningen täcker mer än den akuta reparationskostnaden.
-HR-21;HYRESRÄTT;engangskassa_minus;ja;3;Akut sanering av mögel;Fukt bakom kakel har spridit sig och kräver omedelbar åtgärd.
-HR-22;HYRESRÄTT;forkop;ja;;Tips om hyresfastighet i grannkvarteret;Behåll på hand. Ger förstaval när en hyresrätt sätts till budgivning.
-HR-23;HYRESRÄTT;forkop;ja;;Mäklarkontakt i bostadsbolaget;Behåll på hand. Kortet ger dig förstaval nästa gång en hyresrätt går till budgivning.
+HR-04;HYRESRÄTT;dolt_minus_dn;nej;;Lägenhet står tom;Uppsägning och flyttstädning drar ut på tiden innan ny hyresgäst hittas.
+HR-05;HYRESRÄTT;dolt_minus_dn;nej;;Andrahandsuthyrning upptäcks;Hyresgästen har hyrt ut svart. Hyresintäkten uteblir under utredningen.
+HR-06;HYRESRÄTT;energi_plus;nej;;Nya termostatventiler monteras;Injustering av värmesystemet ger bättre reglering än beräknat.
+HR-07;HYRESRÄTT;energi_minus;nej;;Fjärrvärmeväxlare åldras;Växlaren är original från byggåret och tappar verkningsgrad.
+HR-08;HYRESRÄTT;underhallsvarning;ja;3;Stammar i akut behov av byte;Avloppsstammarna är uttjänta och läcker i flera våningsplan.
+HR-09;HYRESRÄTT;underhallsvarning;ja;3;Taket läcker vid slagregn;Papptäckningen har passerat sin livslängd och släpper in vatten.
+HR-10;HYRESRÄTT;underhallsvarning;ja;2;Hissen klarar inte besiktning;Hissmaskineriet är slitet och måste bytas för att godkännas.
+HR-11;HYRESRÄTT;villkorskort;ja;;Boverket skärper energikrav;Villkor: har fastigheten energiklass D eller sämre blir det −1 DN.
+HR-12;HYRESRÄTT;villkorskort;ja;;Portföljen granskas av försäkringsbolag;Villkor: äger du 3 eller fler hyresrätter — −1 DN på alla.
+HR-13;HYRESRÄTT;engangskassa_plus;ja;4;Retroaktiv hyra betalas ut;Hyresnämnden godkänner efterdebiterad hyra för tidigare år.
+HR-14;HYRESRÄTT;engangskassa_plus;ja;2;Försäkringsersättning för stormskada;Ersättningen täcker mer än den akuta reparationskostnaden.
+HR-15;HYRESRÄTT;engangskassa_minus;ja;3;Akut sanering av mögel;Fukt bakom kakel har spridit sig och kräver omedelbar åtgärd.
+HR-16;HYRESRÄTT;forkop;ja;;Tips om hyresfastighet i grannkvarteret;Behåll på hand. Ger förstaval när en hyresrätt sätts till budgivning.
+HR-17;HYRESRÄTT;forkop;ja;;Mäklarkontakt i bostadsbolaget;Behåll på hand. Kortet ger dig förstaval nästa gång en hyresrätt går till budgivning.
+HR-18;HYRESRÄTT;utveckling;ja;;Lyckad hyresförhandling;Förhandlingen med hyresgästföreningen går smidigt och ger erfarenhet. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
+HR-19;HYRESRÄTT;riskbuffert;ja;;Skadefritt år belönas;Försäkringsbolaget sänker självrisken efter ett år utan skador. Ta en riskbuffert.
+HR-20;HYRESRÄTT;inget;ja;;Lugnt kvartal i huset;Inga felanmälningar utöver det vanliga. Hyrorna kommer in som de ska.
+HR-21;HYRESRÄTT;inget;ja;;Hyresavierna går ut som vanligt;Alla betalar i tid. Ingenting att rapportera till styrelsen.
+HR-22;HYRESRÄTT;inget;ja;;Ordinarie fastighetsskötsel;Gräsklippning, trappstädning och byte av glödlampor. Precis som planerat.
+HR-23;HYRESRÄTT;inget;ja;;Årets hyresförhandling klar;Hyresgästföreningen och bolaget landar i det väntade. Inga överraskningar.
+HR-24;HYRESRÄTT;inget;ja;;Stabilt boende;Samma hyresgäster som i fjol. Förutsägbart, tryggt och lite trist.
 FO-01;FÖRSKOLA;dolt_plus_dn;nej;;Kommunen förlänger avtalet;Verksamheten förlänger hyresavtalet med ytterligare fem år.
 FO-02;FÖRSKOLA;dolt_plus_dn;nej;;Fler avdelningar öppnas;Förskolan utökar med en avdelning och hyr angränsande yta.
 FO-03;FÖRSKOLA;dolt_plus_dn;nej;;Indexklausul ger högre hyra;Avtalet räknas upp enligt index utan invändning från kommunen.
@@ -97,11 +98,9 @@ KO-23;KONTOR;engangskassa_minus;ja;4;Elcentralen måste uppgraderas akut;Ökad e
 KO-24;KONTOR;engangskassa_minus;ja;2;Sprinklerhuvud löser ut felaktigt;Vattenskadan efter felutlösningen måste åtgärdas omgående.
 KO-25;KONTOR;forkop;ja;;Tips om kontorsfastighet i city;Behåll på hand. Ger förstaval när ett kontor sätts till budgivning.
 KO-26;KONTOR;forkop;ja;;Kontakt hos kommersiell fastighetsmäklare;Behåll på hand. Kortet ger dig förstaval nästa gång ett kontor går till budgivning.
-HR-24;HYRESRÄTT;utveckling;ja;;Lyckad hyresförhandling;Förhandlingen med hyresgästföreningen går smidigt och ger erfarenhet. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
 FO-24;FÖRSKOLA;utveckling;ja;;Kommunen ger förnyat förtroende;Förvaltningen av förskolan lyfts fram som ett gott exempel. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
 LO-27;LOKAL;utveckling;ja;;Hyresgästsamverkan ger resultat;Samarbetet med hyresgästerna i handelsstråket blir en förebild. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
 KO-27;KONTOR;utveckling;ja;;Certifierad förvaltning;Kontorsfastigheten klarar en miljöcertifiering med glans. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
-HR-25;HYRESRÄTT;riskbuffert;ja;;Skadefritt år belönas;Försäkringsbolaget sänker självrisken efter ett år utan skador. Ta en riskbuffert.
 FO-25;FÖRSKOLA;riskbuffert;ja;;Kommunen förlänger avtalet i god tid;Hyresgästen visar att den vill stanna länge. Ta en riskbuffert.
 LO-28;LOKAL;riskbuffert;ja;;Hyresgästen ställer extra säkerhet;Den nya hyresgästen lämnar en bankgaranti utöver det vanliga. Ta en riskbuffert.
 KO-28;KONTOR;riskbuffert;ja;;Långt hyresavtal med stark hyresgäst;Ett börsbolag skriver på för tio år. Ta en riskbuffert.

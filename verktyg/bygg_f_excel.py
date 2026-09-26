@@ -23,7 +23,7 @@ EXTRA_KODER = set()
 
 # (fil, xlsx, antal enligt spec, beskrivning, {kolumn: förklaring})
 LEKAR = [
-    ("F2-1_händelsekort.csv", "F_händelsekort.xlsx", 106, "Händelsekort — fyra typleker, ett kort per fastighet och kvartal",
+    ("F2-1_händelsekort.csv", "F_händelsekort.xlsx", 105, "Händelsekort — fyra typleker, ett kort per fastighet och kvartal",
      {"Typ": "Typlek: HYRESRÄTT, FÖRSKOLA, LOKAL, KONTOR", "Synlig": "ja = läggs öppet, nej = dold bricka"}),
     ("F2-1_kvartalskort.csv", "F_kvartalskort.xlsx", 50, "Kvartalskort — fyra typleker; kvartalets fokustyp avgör leken",
      {"Typ": "Typlek (fokustyp)"}),

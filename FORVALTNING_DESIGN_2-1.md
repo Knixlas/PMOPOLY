@@ -158,8 +158,7 @@ alltså **överbetalt** — därför lägger man bud bara på strategiskt viktig
 - lägga **2 riskbuffertar** (Den lugna som senior: 1).
 
 **Annars duell:** båda slår d20 + FC-justering; **lika vinner ägaren**.
-- FC: Förhandlaren +2 när den budar (+3 på kontor), Den lugna och Skölden +2 när de försvarar,
-  Bostadsveteranen +2 när den försvarar en hyresrätt, Nätverkaren +1 åt båda hållen. Senior: +1 till.
+- FC: Förhandlaren +2 när den budar (+3 på kontor), Den lugna och Skölden +2 när de försvarar,  Nätverkaren +1 åt båda hållen. Senior: +1 till.
 - Den som ligger under får slå om en gång med 1 riskbuffert.
 - Därefter får budgivaren, och sedan ägaren, spela förhandlingskort (+1/+2/+3) för att vända.
 - **Övertagande** (nätverkskort): budet kan inte stoppas och ingen duell — köpet går igenom.
