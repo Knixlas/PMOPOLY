@@ -149,7 +149,7 @@ Dropbox: `Åkepol tryckfiler/` (mappen `Mentorsprogram` hör inte till spelet).
 - Skede 3 trycktes enligt **Förvaltning v1** (`data/4_forvaltning/`), inte v2/2.1. Eftersom Skede 3 görs om spelar det mindre roll,
   men v1-korten är det spelarna faktiskt har.
 - Plandokumenten är **genererade per bolag** ur en mall (pipeline i OneDrive `SPELET 2/0. Ledning/planer/`). Det är mallen som är regelinnehållet.
-- `PL_*_S1–S4` — fyra uppsättningar; innebörden (stadsdel/bord?) ska bekräftas.
+- `PL_*_S1–S4` — fyra identiska uppsättningar, märkta 1–4 för sortering efter spel.
 
 ### Hur korten producerades — och vilken data som trycktes
 
@@ -167,8 +167,9 @@ färgschema.xlsx → uppdatera_färger.py → CSV per korttyp (+ bildsida/textsi
 - Alla övriga kort-CSV:er i `version 1` (PU, PL, GF, F) är daterade 2026-04-26/27, före tryck.
 - **Statisk text finns i InDesign-mallen, inte i CSV:n** — t.ex. moderbolagslånets "MINNESKORT" och
   "BEHÅLL KORTET TILLS LÅNET ÄR ÅTERBETALT". Den måste läsas ur tryckfilen (en gång per korttyp).
-- `S1–S4` på PL-korten är **exemplarnummer** (skriptet skriver "S1"…"S4" i `_exemplar_`-ramar), dvs. fyra uppsättningar
-  som bara skiljer sig i den markeringen.
+- `S1–S4` på PL-korten är **sorteringsmärken**: fyra identiska uppsättningar, märkta 1–4 enbart för att korten ska gå att
+  sortera tillbaka efter spel. Ingen spelmässig betydelse — i Excel blir det ett kort × 4 exemplar, och märkningen hör till
+  produktionen, inte spelet.
 - CSV-format: semikolon, cp1252, kolumnerna `fill_color`, `line_color`, `ordning_bild`, `ordning_text`, `@bild` m.fl. är
   produktionsdata; resten är kortinnehåll.
 
@@ -249,7 +250,7 @@ Allt byggs nytt; bara grafiken återanvänds. Nuvarande kod, data och dokument
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
-   Tryckfilerna finns i Dropbox `Åkepol tryckfiler/` (se §4). `S1–S4` = exemplarnummer (se §4).
+   Tryckfilerna finns i Dropbox `Åkepol tryckfiler/` (se §4). `S1–S4` = sorteringsmärken, korten är identiska (se §4).
 2. ~~**Huvudprodukt**~~ Besvarat: det fysiska spelet. Minimala ändringar i Skede 1–2, Skede 3 görs om, brädor fixas med klistermärken.
 3. **Var** — omstart i det här repot med ny struktur, eller ett nytt repo?
 4. **Källsanning** — regelböckerna blir HTML i repot (beslutat). Flyttar även kortdatan in i repot, eller förblir SPELET 2 källan?
