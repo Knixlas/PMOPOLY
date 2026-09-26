@@ -7,7 +7,7 @@ from .data import tal
 from .modell import SPAR
 
 POSITIVA_HANDKORT = {"lagg_dn_plus_egen", "lagg_energi_plus_egen", "direkt_dn_plus_egen", "stada",
-                     "dra_personkort", "riskbuffert", "utveckling", "headhunting", "hyresgastvarvning",
+                     "dra_natverkskort", "riskbuffert", "utveckling", "headhunting", "hyresgastvarvning",
                      "omforhandlat_lan"}
 
 

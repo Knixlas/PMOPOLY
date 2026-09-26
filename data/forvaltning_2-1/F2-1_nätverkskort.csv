@@ -45,14 +45,14 @@ PK-43;hyresgastvarvning;nar_som_helst;;Flytterbjudande med hyresrabatt;Tre måna
 PK-44;hyresgastvarvning;nar_som_helst;;Snabbare felanmälan vinner;Hyresgästen tröttnar på konkurrentens service och flyttar till er. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
 PK-45;hyresgastvarvning;nar_som_helst;;Bättre läge, samma hyra;Er fastighet erbjuder mer för pengarna och hyresgästen byter. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
 PK-46;hyresgastvarvning;nar_som_helst;;Förnyelse med nya ytor;Ni erbjuder en anpassad yta som konkurrenten inte kan matcha. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-47;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis personkort från en motspelares hand.
-PK-48;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis personkort från en motspelares hand.
-PK-49;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis personkort från en motspelares hand.
-PK-50;dra_personkort;nar_som_helst;;Ny kontakt knuten;Dra ett personkort.
-PK-51;dra_personkort;nar_som_helst;;Rekommendation från kollega;Dra ett personkort.
-PK-52;dra_personkort;nar_som_helst;;Nätverksträff;Dra ett personkort.
-PK-53;dra_personkort;nar_som_helst;;Gammal bekant hör av sig;Dra ett personkort.
-PK-54;dra_personkort;nar_som_helst;;Tips vid kaffeautomaten;Dra ett personkort.
+PK-47;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-48;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-49;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-50;dra_natverkskort;nar_som_helst;;Ny kontakt knuten;Dra ett nätverkskort.
+PK-51;dra_natverkskort;nar_som_helst;;Rekommendation från kollega;Dra ett nätverkskort.
+PK-52;dra_natverkskort;nar_som_helst;;Nätverksträff;Dra ett nätverkskort.
+PK-53;dra_natverkskort;nar_som_helst;;Gammal bekant hör av sig;Dra ett nätverkskort.
+PK-54;dra_natverkskort;nar_som_helst;;Tips vid kaffeautomaten;Dra ett nätverkskort.
 PK-55;riskbuffert;nar_som_helst;;Extra marginal budgeterad;Ta en riskbuffert.
 PK-56;riskbuffert;nar_som_helst;;Buffert i god tid;Ta en riskbuffert.
 PK-57;riskbuffert;nar_som_helst;;Försiktig planering;Ta en riskbuffert.

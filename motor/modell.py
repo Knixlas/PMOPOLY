@@ -54,7 +54,7 @@ class Spelare:
     kassa: float = 0.0
     restkort: int = 0
     riskbuffert: int = 0
-    hand: list = field(default_factory=list)       # personkort + förköpskort (dict)
+    hand: list = field(default_factory=list)       # nätverkskort + förköpskort (dict)
     fastigheter: list = field(default_factory=list)
     fc: dict = None
     fs: dict = None

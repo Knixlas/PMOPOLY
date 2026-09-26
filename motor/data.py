@@ -27,7 +27,7 @@ class Kortdata:
     def __init__(self):
         self.handelse = las_lek("F_händelsekort.xlsx")
         self.kvartal = las_lek("F_kvartalskort.xlsx")
-        self.person = las_lek("F_personkort.xlsx")
+        self.natverk = las_lek("F_nätverkskort.xlsx")
         self.omvarld = las_lek("F_omvärldskort.xlsx")
         self.dd = las_lek("F_DD.xlsx")
         self.yieldkort = las_lek("F_yieldkort.xlsx")

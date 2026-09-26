@@ -27,7 +27,7 @@ LEKAR = [
      {"Typ": "Typlek: HYRESRÄTT, FÖRSKOLA, LOKAL, KONTOR", "Synlig": "ja = läggs öppet, nej = dold bricka"}),
     ("F2-1_kvartalskort.csv", "F_kvartalskort.xlsx", 50, "Kvartalskort — fyra typleker; kvartalets fokustyp avgör leken",
      {"Typ": "Typlek (fokustyp)"}),
-    ("F2-1_personkort.csv", "F_personkort.xlsx", 83, "Personkort — en gemensam lek på hand (max sex)",
+    ("F2-1_nätverkskort.csv", "F_nätverkskort.xlsx", 83, "Nätverkskort — en gemensam lek på hand (max sex)",
      {"Timing": "När kortet får spelas"}),
     ("F2-1_omvärldskort.csv", "F_omvärldskort.xlsx", 36, "Omvärldskort — ett per kvartal, makro",
      {"Påverkar": "Spår eller typ som träffas"}),

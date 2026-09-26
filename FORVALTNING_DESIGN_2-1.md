@@ -88,7 +88,7 @@ Därefter, per spelare:
 
 6. **Välj en FC och en FS.** Båda anställs, inga kostnader. Egenskaperna är passiva
    modifierare *(tas fram separat).*
-7. **Ta tre personkort.** Får spelas när som helst, om inte kortet uttryckligen säger annat.
+7. **Ta tre nätverkskort.** Får spelas när som helst, om inte kortet uttryckligen säger annat.
 8. **Dra tre projekt till projektbanken** (marknadsutbudet).
 9. **Lägg fram yieldbanan:** fyra yieldkort öppet per spår (platserna Q2, Q3, Q4, Slut) — se
    `FORVALTNING_KORTSPEC.md`, Yieldkort.
@@ -102,10 +102,10 @@ Varje kvartal, i ordning:
 1. **Marknad** — spelets enda avräkning (§6).
 2. **Omvärldskort** — dra ett, gör det som står. Kan *ersätta* nästa yieldkort (kortet läggs själv i
    yieldbanan: "gäller nu") eller *byta ut* det mot ett nytt ur yieldleken, dela ut/dra in
-   personkort, ge riskbuffert m.m. (makro, träffar alla).
+   nätverkskort, ge riskbuffert m.m. (makro, träffar alla).
 3. **Driftnetto** — summera all DN (synlig + dold), dela med 4, avrunda nedåt.
    Resten blir **restkort** (§9). Räntan är redan inbakad i DN.
-4. **Personal** — dra två personkort. **Max sex kort på handen** — över sex slänger du valfria kort.
+4. **Personal** — dra två nätverkskort. **Max sex kort på handen** — över sex slänger du valfria kort.
 5. **Händelser per fastighet** — dra ett händelsekort per fastighet (§7).
 6. **Kvartalskort** — dra ett. Som omvärldskort, men rör *aldrig* yield (tempo/resurs).
 7. **Energiuppgraderingar** — frivilligt (§8). Max **3 / 2 / 1** fastigheter i Q1 / Q2 / Q3.
@@ -153,7 +153,7 @@ alltså **överbetalt** — därför lägger man bud bara på strategiskt viktig
 **Budavgift:** den som lägger ett tvångsbud betalar 5 Mkr till banken, oavsett utfall.
 
 **Stoppa ett tvångsbud** (ägaren kan):
-- spela **Stoppkort** eller **Motbud** (personkort; motbudet låter dig dessutom köpa en av budgivarens
+- spela **Stoppkort** eller **Motbud** (nätverkskort; motbudet låter dig dessutom köpa en av budgivarens
   fastigheter till 1,0 × MV), eller
 - lägga **2 riskbuffertar** (Den lugna som senior: 1).
 
@@ -162,10 +162,10 @@ alltså **överbetalt** — därför lägger man bud bara på strategiskt viktig
   Bostadsveteranen +2 när den försvarar en hyresrätt, Nätverkaren +1 åt båda hållen. Senior: +1 till.
 - Den som ligger under får slå om en gång med 1 riskbuffert.
 - Därefter får budgivaren, och sedan ägaren, spela förhandlingskort (+1/+2/+3) för att vända.
-- **Övertagande** (personkort): budet kan inte stoppas och ingen duell — köpet går igenom.
+- **Övertagande** (nätverkskort): budet kan inte stoppas och ingen duell — köpet går igenom.
 
 **Skydd:** en fastighet som köpts eller tvångsköpts i en marknadsfas kan inte tvångsköpas i samma fas.
-**Övertagande** (personkort) gör att budet inte kan stoppas alls. Budstrid, köparnas marknad (1,1 × MV)
+**Övertagande** (nätverkskort) gör att budet inte kan stoppas alls. Budstrid, köparnas marknad (1,1 × MV)
 och säljarnas marknad (1,4 × MV) ändrar priset.
 
 ### f) Saneringsuppdrag (distressed workout)
@@ -212,7 +212,7 @@ moderbolagslånet i grundspelet — moderbolagslån blir en ren expansion.)*
 
 ## 7. Korten
 
-**Bärande uppdelning:** *händelsekort placeras ofrivilligt, personkort placeras
+**Bärande uppdelning:** *händelsekort placeras ofrivilligt, nätverkskort placeras
 frivilligt.* Plus/minus-brickor ackumuleras på fastigheten oavsett källa.
 
 ### Händelsekort (per fastighet — ödet)
@@ -233,7 +233,7 @@ generisk **+/− - eller energibricka** på fastigheten, korten tillbaka i leken
 bär brickor (och den stora DN-siffran), inte själva korten. Då kan leken dras hur många
 gånger som helst i ett spotlight-kvartal.
 
-### Personkort (på hand — agency)
+### Nätverkskort (på hand — agency)
 En gemensam lek. Får spelas när som helst om inte kortet säger annat. Innehåll:
 
 - Placera en **plus/minus- eller energibricka** på en fastighet du *själv* väljer.
@@ -241,8 +241,8 @@ En gemensam lek. Får spelas när som helst om inte kortet säger annat. Innehå
 - **Modifierare på förhandling** (spelas *innan* slaget), eller **auto-vunnen förhandling**.
 - **Stoppkort** mot tvångsbud.
 - **Hyresgästvärvning** (plus på din, minus på motspelarens av samma typ) och **headhunting**
-  (ta ett personkort ur en motspelares hand) — konkurrens, inte sabotage.
-- **Dra / släng personkort**, **riskbuffert** m.m.
+  (ta ett nätverkskort ur en motspelares hand) — konkurrens, inte sabotage.
+- **Dra / släng nätverkskort**, **riskbuffert** m.m.
 
 Ingen handspärr — man får **bunkra kort** för att kunna slå till på ett saneringsuppdrag
 eller en vändning över tid. *(Om hamstring gör spelet segt: inför ett generöst tak eller
@@ -259,7 +259,7 @@ Från genomförandet, kopplade till projekten. Kan justera energiklass/DN.
 ### Omvärlds- och kvartalskort
 Två tydliga körfält:
 - **Omvärldskort = makro:** yieldrörelser och effekter som träffar alla.
-- **Kvartalskort = tempo/resurs:** dra/släng personkort, riskbuffert, extra runda —
+- **Kvartalskort = tempo/resurs:** dra/släng nätverkskort, riskbuffert, extra runda —
   aldrig yield.
 
 Båda kan innehålla t.ex. ”dra ett händelsekort per fastighet av en viss typ” (skapar
@@ -278,7 +278,7 @@ Frivilligt, max 3 / 2 / 1 fastigheter i Q1 / Q2 / Q3. Eskalerande tärning:
 4. **Slår du en 20 är den rundan kostnadsfri.**
 
 Förväntat ~1,6 försök (~5 Mkr) för en nära garanterad uppgradering, med spänning och
-inbyggd ”pity”. **Personkort-modifierare spelas efter slaget; riskbuffert kan slå om.**
+inbyggd ”pity”. **Nätverkskort-modifierare spelas efter slaget; riskbuffert kan slå om.**
 Energiklass kan inte gå förbi A.
 
 ---
@@ -319,7 +319,7 @@ måluppfyllelse.** Divisor/faktor sätts efter provspel.
 
 1. **”Gällande typ i kvartalet”** — kort namnger typen, eller fokustyp per kvartal?
 2. **FC/FS-egenskaper** — ta fram arketyp-set som passar loopen.
-3. **Personkorts- och händelsekortstext** — författas (rätt fördelning plus/minus/varning/
+3. **Nätverkskorts- och händelsekortstext** — författas (rätt fördelning plus/minus/varning/
    energivarning/direkt/förköp per lek).
 4. **Balanssiffror** — tvångspris 0,7 och fientligt 1,2 är tunbara; likaså saneringens
    kanter (behåller man mottaget vid misslyckande — ja i nuläget) och slutformelns faktor.
@@ -332,7 +332,7 @@ måluppfyllelse.** Divisor/faktor sätts efter provspel.
 - Spelplan: MV-tabell (+ lånekolumn), yieldbana, marknadsyta, kvartalsspår.
 - Fastighetskort **med tryckt lån**.
 - DN-kort (stora synliga siffror) + energiclips A–E + **+/− - och energibrickor** + lån-clips (ex-bank).
-- Händelsekort: 4 typleker (återanvändbara). Personkort: en lek (får bunkras).
+- Händelsekort: 4 typleker (återanvändbara). Nätverkskort: en lek (får bunkras).
 - DD-kort, konsekvens-/garantikort, omvärldskort, kvartalskort.
 - Restkort-markörer, riskbuffert-markörer.
 - Tärningar: D20 (uppgradering + förhandling), ev. D10.

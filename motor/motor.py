@@ -239,9 +239,9 @@ class Motor:
         while len(sp.hand) > self.p.handgrans:
             sp.hand.remove(sp.strategi.slang(self, sp))
 
-    def dra_personkort(self, sp, n=1):
+    def dra_natverkskort(self, sp, n=1):
         for _ in range(n):
-            self.ta_emot(sp, self.s.dra("person"))
+            self.ta_emot(sp, self.s.dra("natverk"))
 
     # ------------------------------------------------------------------ uppställning (Kvartal 0)
     def starta(self):
@@ -251,7 +251,7 @@ class Motor:
                      for e, n in self.p.extra_handelse.get(typ, {}).items() for i in range(n)]
             s.blanda("handelse_" + typ, [k for k in d.handelse if k["Typ"] == typ] + extra)
             s.blanda("kvartal_" + typ, [k for k in d.kvartal if k["Typ"] == typ])
-        s.blanda("person", d.person)
+        s.blanda("natverk", d.natverk)
         s.blanda("omvarld", d.omvarld)
         s.blanda("dd", d.dd)
         for spar in ("bostäder", "kommersiellt"):
@@ -288,7 +288,7 @@ class Motor:
         for sp in self.spel.spelare:
             for f in sp.fastigheter:
                 self.dra_handelse(f, sp)
-            self.dra_personkort(sp, 3)
+            self.dra_natverkskort(sp, 3)
             sp.start_ek = sum(self.mv(f) - f.lan for f in sp.fastigheter)
             sp.start_kassa = sp.kassa
 
@@ -583,7 +583,7 @@ class Motor:
                 if "riskbuffert" in (kort.get("Beskrivning") or "").lower():
                     sp.riskbuffert += 1
                 else:
-                    self.dra_personkort(sp)
+                    self.dra_natverkskort(sp)
         elif e == "personalrotation":
             spl = self.spel.spelare
             tagna = [self.s.valj(spl[(i + 1) % len(spl)].hand) if spl[(i + 1) % len(spl)].hand else None
@@ -599,18 +599,18 @@ class Motor:
                 f = sp.strategi.valj_energifastighet(self, sp)
                 if f:
                     self.andra_ek(f, 1)
-        elif e == "slang_personkort":
+        elif e == "slang_natverkskort":
             for sp in self.spel.spelare:
                 if sp.hand:
                     sp.hand.remove(sp.strategi.slang(self, sp))
-        elif e == "personkort_per_typ":
+        elif e == "natverkskort_per_typ":
             for sp in self.spel.spelare:
-                self.dra_personkort(sp, sum(1 for f in sp.fastigheter if f.typ == pav))
-        elif e == "personkort_minst":
+                self.dra_natverkskort(sp, sum(1 for f in sp.fastigheter if f.typ == pav))
+        elif e == "natverkskort_minst":
             ek = {sp.namn: sum(self.mv(f) - f.lan for f in sp.fastigheter) for sp in self.spel.spelare}
             for sp in self.spel.spelare:
                 if ek[sp.namn] == min(ek.values()):
-                    self.dra_personkort(sp, int(v))
+                    self.dra_natverkskort(sp, int(v))
         elif e in ("kopares_marknad", "saljares_marknad"):
             self.spel.tvang_faktor = v
 
@@ -634,7 +634,7 @@ class Motor:
             sp.skold_anvand = False
             if self.ar_fc(sp, "Den lugna"):
                 sp.riskbuffert += 1
-            self.dra_personkort(sp, 3 if self.ar_fc(sp, "Nätverkaren") else 2)
+            self.dra_natverkskort(sp, 3 if self.ar_fc(sp, "Nätverkaren") else 2)
             aktiv = sp.fs_senior or q in ((1, 3) if "Rivaren" in sp.fs["Namn"] else (2, 4))
             if self.ar_fs(sp, "Rivaren") and aktiv:
                 f = min(sp.fastigheter, key=lambda x: x.dn_brickor, default=None)
@@ -664,8 +664,8 @@ class Motor:
                     f.dn_brickor += 1
                 elif f.varningar:
                     f.varningar.pop()
-            elif e == "dra_personkort":
-                self.dra_personkort(sp)
+            elif e == "dra_natverkskort":
+                self.dra_natverkskort(sp)
             elif e == "riskbuffert":
                 sp.riskbuffert += 1
             elif e == "utveckling":
@@ -724,9 +724,9 @@ class Motor:
                 for f in egna:
                     self.dra_handelse(f, sp)
             elif e == "resurs":
-                self.dra_personkort(sp)
-            elif e == "personkort_fokus":
-                self.dra_personkort(sp, len(egna))
+                self.dra_natverkskort(sp)
+            elif e == "natverkskort_fokus":
+                self.dra_natverkskort(sp, len(egna))
             elif e == "villkorat":
                 for f in egna:
                     if f.ek in ("D", "E"):

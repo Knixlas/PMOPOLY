@@ -368,11 +368,11 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
   hänvisningar, Förvaltningen (9) och slutvärderingen (10) markerade som under omarbetning.
   Ändringar märkta "Ändrat i 2.0"; sammanfattning i rutan "Nytt i version 2.0".
 - **Kapitel 9–10 skrivna (2026-09-26)** efter Förvaltning 2.1 och motorn: fastighetskortet, setup,
-  kvartalet, marknaden, tvångsbud med duell, sanering, händelser, personkort, energi, riskbuffert;
+  kvartalet, marknaden, tvångsbud med duell, sanering, händelser, nätverkskort, energi, riskbuffert;
   slutformel (Projektutveckling + TG + Förvaltning) × Mu. Komponentlista, termer och snabbreferens
   uppdaterade. Projektutvecklingens poäng (förslag): ABT-budget ÷ 20 (anskaffning ~300–500 Mkr,
-  BTA ~6 000–9 000 kvm per kvarter enligt Niklas). Öppet: namnkrocken "personkort" (CEO/CFO/COO i Ledningen
-  och handkorten i Förvaltningen).
+  BTA ~6 000–9 000 kvm per kvarter enligt Niklas). Förvaltningens handlek heter **nätverkskort** (beslut:
+  "personkort" = CEO/CFO/COO, "personalkort" = PC/AC/FC/FS).
 - Saknas: regelbokens 12 bilder (hämtas när nätverket för Dropbox är öppet).
 
 ## 5d. Skede 3 (Förvaltning 2.1) — status och implementationsplan

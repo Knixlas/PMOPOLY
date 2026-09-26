@@ -32,7 +32,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 Plus/minus är **dolda och tysta**; varning är **synlig och åtgärdbar**;
 energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 
-### B. Handeffekter (personkort)
+### B. Handeffekter (nätverkskort)
 | Kod | Timing | Verkan |
 |---|---|---|
 | `forhandling_mod` | före slag | +1/+2/+3 på förhandlingsslag (`Värde`) |
@@ -46,9 +46,9 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `motbud` | reaktivt | avvärj ett tvångsbud **och** köp (valfritt) en av budgivarens fastigheter till 1,0 × MV |
 | `kika` | när som helst | titta på ett dolt kort hos en motståndare |
 | `hyresgastvarvning` | när som helst | kräver egen fastighet av samma typ som motspelarens: **+1 dold plusbricka på din, +1 dold minusbricka på motspelarens** (konkurrens om hyresgäster — lagligt, inte sabotage) |
-| `headhunting` | när som helst | ta ett **slumpvis personkort** från en motspelares hand |
+| `headhunting` | när som helst | ta ett **slumpvis nätverkskort** från en motspelares hand |
 | `utveckling` | när som helst | lägg en utvecklingsbricka på din FC eller FS |
-| `dra_personkort` | när som helst | dra ett personkort |
+| `dra_natverkskort` | när som helst | dra ett nätverkskort |
 | `riskbuffert` | när som helst | ta en riskbuffert |
 | `budstrid` | vid bud | ditt tvångsbud kostar `Värde` × MV (1,1) i stället för 1,2 × MV |
 | `overtagande` | vid bud | ditt tvångsbud kan inte stoppas (varken stoppkort eller riskbuffert) |
@@ -63,16 +63,16 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `yield_ersatt` | omvärld | **Gäller nu:** lägg omvärldskortet på nästa plats på `Påverkar`-spåret i yieldbanan; dess `Värde` (± pp) gäller i stället för yieldkortet där |
 | `yield_byt` | omvärld | **Byt ut:** ersätt nästa yieldkort på `Påverkar`-spåret (eller båda) med översta kortet ur yieldleken |
 | `bords_dn` | omvärld | ±1 DN på alla fastigheter av en typ |
-| `resurs` | båda | riskbuffert till alla / dra personkort |
-| `personalrotation` | omvärld | alla drar ett slumpvis personkort från spelaren till vänster |
+| `resurs` | båda | riskbuffert till alla / dra nätverkskort |
+| `personalrotation` | omvärld | alla drar ett slumpvis nätverkskort från spelaren till vänster |
 | `yield_byt_alla` | omvärld | byt ut **alla kvarvarande** yieldkort på `Påverkar`-spåret mot nya ur yieldleken |
 | `energistod` | omvärld | varje spelare höjer energiklassen ett steg på en valfri egen fastighet |
-| `slang_personkort` | omvärld | varje spelare slänger ett valfritt personkort |
-| `personkort_per_typ` | omvärld | varje spelare drar ett personkort per egen fastighet av typen i `Påverkar` |
-| `personkort_minst` | omvärld | spelaren med lägst eget kapital drar `Värde` personkort (vid lika: alla på platsen) |
+| `slang_natverkskort` | omvärld | varje spelare slänger ett valfritt nätverkskort |
+| `natverkskort_per_typ` | omvärld | varje spelare drar ett nätverkskort per egen fastighet av typen i `Påverkar` |
+| `natverkskort_minst` | omvärld | spelaren med lägst eget kapital drar `Värde` nätverkskort (vid lika: alla på platsen) |
 | `kopares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,1) |
 | `saljares_marknad` | omvärld | alla tvångsbud vid nästa marknad kostar `Värde` × MV (1,4) |
-| `personkort_fokus` | kvartal | varje spelare drar ett personkort per egen fastighet av fokustypen |
+| `natverkskort_fokus` | kvartal | varje spelare drar ett nätverkskort per egen fastighet av fokustypen |
 | `inget` | kvartal | inget händer |
 | `kvartal_dd` | kvartal | alla med fokustypen drar ett DD-kort dolt på en av sina fastigheter av typen |
 | `kvartal_kassa_minus` | kvartal | varje ägare av fokustypen betalar `Värde` Mkr **vid nästa marknad** (plånboken stängd) |
@@ -118,12 +118,12 @@ typbred_ek_minus 1, spotlight 2, resurs 1, villkorat 1, inget 1, kvartal_dd 1, k
 (2 Mkr förskola, 5 Mkr lokal/kontor).
 **Hyresrätt (10 st) drabbas aldrig av typbrett minus** — i stället inget 2, kvartal_dd 1; plus
 typbred_dn_plus 1, typbred_ek_plus 1, spotlight 2, resurs 1, villkorat 1, kvartal_kassa_minus 1 (2 Mkr).
-Alla fyra typlekar har dessutom 1 `personkort_fokus` (Förskola, Lokal, Kontor 13 st; Hyresrätt 11 st).
+Alla fyra typlekar har dessutom 1 `natverkskort_fokus` (Förskola, Lokal, Kontor 13 st; Hyresrätt 11 st).
 
-### Personkort — `F2-1_personkort.csv` (83)
+### Nätverkskort — `F2-1_nätverkskort.csv` (83)
 En förbrukningslek, blandas om. Kolumner: `ID;Effekt;Timing;Värde;Rubrik;Beskrivning`
 forhandling_mod 7, forhandling_auto 3, energi_mod 7, lagg_dn_plus_egen 8, stada 6,
-stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3,
+stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_natverkskort 5, riskbuffert 4, utveckling 3,
 lagg_energi_plus_egen 5, direkt_dn_plus_egen 1,
 **affärskort:** budstrid 3, overtagande 2, gratis_uppgradering 3, omforhandlat_lan 3, dd_val 2, konvertering 1,
 motbud 2.
@@ -133,7 +133,7 @@ men med budstrid, gratis uppgradering eller omförhandlat lån blir det en affä
 ### Omvärldskort — `F2-1_omvärldskort.csv` (36)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
 yield_ersatt 15 (alla ±0,5 pp), yield_byt 4, yield_byt_alla 2, bords_dn 3, resurs 3, personalrotation 1,
-energistod 1, slang_personkort 2, personkort_per_typ 2 (hyresrätt, kontor), personkort_minst 1,
+energistod 1, slang_natverkskort 2, natverkskort_per_typ 2 (hyresrätt, kontor), natverkskort_minst 1,
 kopares_marknad 1, saljares_marknad 1.
 
 ### Yieldkort — `F2-1_yieldkort.csv` (24)
@@ -166,7 +166,7 @@ Alla kort är **dubbelsidiga: junior / senior**.
 |---|---|
 | Händelsekort (4 typleker) | 106 |
 | Kvartalskort (4 typleker) | 50 |
-| Personkort | 83 |
+| Nätverkskort | 83 |
 | Omvärldskort | 36 |
 | Yieldkort (återanvänds från version 1, utan ±1,0) | 24 |
 | DD | 36 |
@@ -201,7 +201,7 @@ lån-clips (ex-bank).
   gäller hyresrätt, det kommersiella förskola, lokal och kontor.)
 - **Dubbelsidiga kort.** Alla börjar som **junior**. Med **två utvecklingsbrickor** vänds kortet till
   **senior**: starkare version plus en ny egenskap (se filerna). Brickorna tas bort.
-- **Utvecklingsbrickor** kommer från händelsekort (`utveckling`, 1 per typlek) och personkort
+- **Utvecklingsbrickor** kommer från händelsekort (`utveckling`, 1 per typlek) och nätverkskort
   (`utveckling`, 3 st). Från ett händelsekort går brickan till **FC om fastigheten har FC:s typ**,
   annars till FS — FC växer alltså med den portfölj den passar.
 - **FC-3 Skölden** blockerar händelsekort (inte konsekvenskort, som bara förekommer i Kvartal 0).

@@ -45,7 +45,7 @@ QKO-09;KONTOR;villkorat;;Moderna kontor klarar nedgången;Hyresgästerna flyttar
 QKO-10;KONTOR;inget;;Avvaktande kontorsmarknad;Företagen väntar med beslut. Inget påverkar kontoren detta kvartal.
 QKO-11;KONTOR;kvartal_dd;;Miljöcertifiering omprövas;Certifieringen ska förnyas. Alla med kontor drar ett DD-kort och lägger det dolt på ett av sina kontor.
 QKO-12;KONTOR;kvartal_kassa_minus;5;Nya krav på brandskydd;Myndigheten skärper kraven i kontorshus. Varje ägare av kontor betalar 5 Mkr vid nästa marknad.
-QHR-11;HYRESRÄTT;personkort_fokus;;Hyresgästföreningen bjuder in;Dialogen om hyrorna öppnar dörrar. Varje spelare drar ett personkort per egen fastighet av typen.
-QFO-13;FÖRSKOLA;personkort_fokus;;Kommunen söker samarbetspartner;Förskoleförvaltningen vill teckna långa avtal. Varje spelare drar ett personkort per egen fastighet av typen.
-QLO-13;LOKAL;personkort_fokus;;Handelsdagarna;Butikskedjorna letar nya lägen. Varje spelare drar ett personkort per egen fastighet av typen.
-QKO-13;KONTOR;personkort_fokus;;Företagen flyttar ihop;Hybridarbetet ger nya behov av kontor. Varje spelare drar ett personkort per egen fastighet av typen.
+QHR-11;HYRESRÄTT;natverkskort_fokus;;Hyresgästföreningen bjuder in;Dialogen om hyrorna öppnar dörrar. Varje spelare drar ett nätverkskort per egen fastighet av typen.
+QFO-13;FÖRSKOLA;natverkskort_fokus;;Kommunen söker samarbetspartner;Förskoleförvaltningen vill teckna långa avtal. Varje spelare drar ett nätverkskort per egen fastighet av typen.
+QLO-13;LOKAL;natverkskort_fokus;;Handelsdagarna;Butikskedjorna letar nya lägen. Varje spelare drar ett nätverkskort per egen fastighet av typen.
+QKO-13;KONTOR;natverkskort_fokus;;Företagen flyttar ihop;Hybridarbetet ger nya behov av kontor. Varje spelare drar ett nätverkskort per egen fastighet av typen.

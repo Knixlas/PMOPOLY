@@ -59,7 +59,7 @@ class TestMotor(unittest.TestCase):
         """Varje effekt i lekarna ska motorn känna till (annars tyst ignorerad)."""
         import re
         kanda = set(re.findall(r'"([a-z_]+)"', open("motor/motor.py", encoding="utf-8").read()))
-        for lek in (DATA.handelse, DATA.kvartal, DATA.person, DATA.omvarld, DATA.dd):
+        for lek in (DATA.handelse, DATA.kvartal, DATA.natverk, DATA.omvarld, DATA.dd):
             for k in lek:
                 if k["Effekt"] in ("kika", "stopp", "forkop", "forhandling_mod", "forhandling_auto", "energi_mod"):
                     continue   # används via strategin (handkort)
