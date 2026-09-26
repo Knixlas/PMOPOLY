@@ -64,7 +64,8 @@ på var de säger emot varandra.
 - Genereras automatiskt ur kortdata + mallar, så tryck och online alltid stämmer.
 - **Kortark** med utfall och skärmärken, baksidor, rätt antal exemplar per kort.
 - **Spelplaner** i skala, ev. uppdelade i delar.
-- **Regelbok** som PDF (och .docx vid behov) ur markdown-källan.
+- **Regelböcker i HTML med printfunktion** (print-CSS: sidbrytningar, marginaler, sidhuvud) —
+  samma fil läses på skärm och skrivs ut/sparas som PDF. Ingen Word-källa.
 - **Komponentlista** genereras ur datan (jfr `FORVALTNING_KOMPONENTER.md`).
 - Tryckeriets krav: format, utfall, färgprofil (CMYK), upplösning — fastställs med tryckeriet.
 - Varje utskrift märks med **regelversion**.
@@ -104,7 +105,45 @@ Varje område blir en naturlig tråd/session med tydlig ägare.
 
 ---
 
-## 4. Vad vi behåller som referens
+## 4. Utgångsläge för reglerna
+
+**Beslut:** Alla befintliga regelböcker är mer eller mindre inaktuella. Vi läser oss fram
+till vad som är korrekt. **Den version som till slut printades inför konferensen är mest
+korrekt** och blir baslinjen; avvikelser mot kod, data och senare dokument prövas mot den.
+
+Källmaterial i OneDrive (`SPELET 2/`):
+
+| Dokument | Plats | Datum | Roll |
+|---|---|---|---|
+| `ÅKEPOL_Regelbok.pdf` + `Regelframsida.pdf` | `0. Ledning/planer/ÅKEPOL_Regelbok_md/` | 2026-05-03 | Trolig printad regelbok — **baslinje** (bekräftas) |
+| `ÅKEPOL_Verksamhetsplan.pdf` | `0. Ledning/planer/…_md/` | 2026-05-03 | Uppstart/Ledning |
+| `ÅKEPOL_Projektledningsplan.pdf` | `0. Ledning/planer/…_md/` | 2026-05-03 | Skede 2.1 Planering |
+| `ÅKEPOL_Projektplan.pdf` | `0. Ledning/planer/…_md/` | 2026-05-03 | Skede 2.2 Genomförande |
+| `ÅKEPOL_Förvaltningsplan.pdf` | `0. Ledning/planer/…_md/` | 2026-05-03 | Skede 3 Förvaltning |
+| `ÅKEPOL_Regelbok.docx` | `0. Ledning/planer/`, `Spelinstruktioner/` | 2026-05-03 | Word-källor till ovan |
+| `ÅKEPOL_alla_kortdata.xlsx` | rot | 2026-05-18 | All kortdata samlad |
+| `detaljerat spelflöde Åkepol.xlsx` | rot | 2026-04-28 | Steg-för-steg-flöde |
+| `Att göra.docx` | rot | 2026-05-21 | Lärdomar efter konferensen (nedan) |
+| `FORVALTNING_DESIGN_2-1.md` | detta repo | 2026-07 | Senare omstart av Skede 3 |
+
+### Lärdomar efter konferensen (`Att göra.docx`)
+
+- Segerpoängen ska minska om man tagit moderbolagslån
+- Hyresrätter och Lokaler behöver färger som går att skilja åt
+- Tryck på båda sidor av projektbrickorna
+- Regelboken måste bli lättare att följa
+- Kulturvärdesrutan på samma höjd på alla kort (AC-, leverantörskort m.fl.)
+- Tydligare instruktionstext längst ner på korten (mer mättad färg)
+- Faskorten måste skickas runt/fotograferas — behöver en lösning
+- Segerpoäng även i slutet av Skede 1 och 2
+- Regler för nya projektuppsättningar inför runda 2 och 3
+- Vissa PU-brickor: välj en av två projekttyper
+- Illustrationer: beställa, hus sett ovanifrån på projektbrickorna
+- Kommentarer i regelhäftet om hur reglerna motsvarar verkligheten
+
+---
+
+## 5. Vad vi behåller som referens
 
 Omstart betyder inte att kasta bort: nuvarande kod, data och dokument
 (`REGELBOK_CHECKLIST.md`, `ANALYS_RAPPORT.md`, `FUTURE_UPGRADES.md`, `FORVALTNING_DESIGN_2-1.md`,
@@ -112,10 +151,12 @@ Omstart betyder inte att kasta bort: nuvarande kod, data och dokument
 
 ---
 
-## 5. Öppna frågor
+## 6. Öppna frågor
 
-1. **Facit** — är `ÅKEPOL_Regelbok.docx` fortfarande facit, och är Förvaltning 2.1 det senaste för Skede 3?
+1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
+   Öppet: är `ÅKEPOL_Regelbok.pdf` (2026-05-03) den som printades? Printades de fyra planerna också?
+   Gäller Förvaltning 2.1 före den printade Förvaltningsplanen?
 2. **Huvudprodukt** — är det fysiska spelet huvudprodukten med det digitala som stöd, eller tvärtom?
 3. **Var** — omstart i det här repot med ny struktur, eller ett nytt repo?
-4. **Källsanning** — flyttar regler (som markdown) och kortdata in i repot, med Word och tryckfiler genererade? Eller förblir OneDrive/SPELET 2 källan?
+4. **Källsanning** — regelböckerna blir HTML i repot (beslutat). Flyttar även kortdatan in i repot, eller förblir SPELET 2 källan?
 5. **Tryck** — vilket tryckeri/format? Finns företagsmall/grafisk profil (ÅKEPOL) att utgå från?
