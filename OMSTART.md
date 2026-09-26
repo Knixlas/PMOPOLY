@@ -172,6 +172,20 @@ färgschema.xlsx → uppdatera_färger.py → CSV per korttyp (+ bildsida/textsi
 - CSV-format: semikolon, cp1252, kolumnerna `fill_color`, `line_color`, `ordning_bild`, `ordning_text`, `@bild` m.fl. är
   produktionsdata; resten är kortinnehåll.
 
+### JSON-filer att behålla och bygga vidare på
+
+Produktionsdata från tryckkörningen (`version 1/PDF/Tryckbara/_tryckeri_temp/` m.fl.):
+
+| Fil | Innehåll | Användning framåt |
+|---|---|---|
+| `*_layout.json` (en per korttyp och sida) | Kortformat (58×88, 88×88, 88×146 mm) och varje korts position per tryckark | Mall för nya printfiler, klistermärken och ersättningskort |
+| `manifest_{format}.json` | Kopplingen tryckfil ↔ **exakt CSV-sökväg** ↔ bild-/textsida ↔ exemplarnr | Bevis för vilken data som trycktes (täcker bara senaste körningen per format) |
+| `exemplar_map.json`, `Bilder/utskrift_config.json` | Antal exemplar per korttyp (t.ex. PL-korten och BTA/BYA ×4) | Antal kort i nya Excel |
+| `Old/byggartefakter_2026-05/skede_config.json`, `typsnitt_config.json` | Skedesfärger och typsnitt | Grafisk profil |
+
+I detta repo: `data/shapes.json` (projektbrickornas former), `data/companion_texts.json` (stegtexter),
+`data/quiz_questions.json`.
+
 ### Metod för de nya Excel-filerna
 
 1. Läs CSV:n från `version 1` (kortinnehåll + antal rader = antal tryckta kort).
