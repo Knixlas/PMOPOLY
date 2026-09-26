@@ -18,8 +18,8 @@ from kortexcel import ROT, bygg_arbetsbok
 KALLA = ROT / "data/forvaltning_2-1"
 SPEC = ROT / "FORVALTNING_KORTSPEC.md"
 
-# Koder som står i spec-tabellerna som "a / b" eller bara i löptext
-EXTRA_KODER = {"engangskassa_minus", "typbred_dn_minus", "typbred_ek_minus", "dd_plus", "dd_minus", "dd_ek"}
+# Koder som bara står i löptext i kortspecen (inga i dag)
+EXTRA_KODER = set()
 
 # (fil, xlsx, antal enligt spec, beskrivning, {kolumn: förklaring})
 LEKAR = [
@@ -44,7 +44,10 @@ TEXT = {"Rubrik", "Beskrivning", "Namn", "Junior", "Junior_styrka", "Junior_svag
 
 def koder_i_spec():
     s = SPEC.read_text(encoding="utf-8")
-    return set(re.findall(r"^\| `([a-z_]+)`", s, re.M)) | EXTRA_KODER
+    koder = set()
+    for cell in re.findall(r"^\| ((?:`[a-z_]+`(?: / )?)+) \|", s, re.M):
+        koder |= set(re.findall(r"`([a-z_]+)`", cell))
+    return koder | EXTRA_KODER
 
 
 def main():
