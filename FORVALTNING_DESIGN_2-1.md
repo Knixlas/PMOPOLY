@@ -50,6 +50,7 @@ Konsekvenserna:
 
 ## 3. Lånemodellen — motorn
 
+- **Grundspelet: lånet är alltid 70 % (eget kapital 30 %).** Variabel belåning är en expansion.
 - **Lån = 70 % av MV vid förvärvet**, avrundat till närmaste 10 Mkr, capat ≤ MV.
   Läses av i samma tabelluppslag som MV och **fryser** där. Ändras aldrig medan du äger.
 - **Räntan är inbakad i DN** (grundspel). Lånet kostar alltså ingenting löpande. Det

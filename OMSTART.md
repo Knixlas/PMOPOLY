@@ -401,7 +401,9 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
 
 - **Marknaden är nästan död med lån 70 %:** banken tar 0,08 fastigheter per parti, 1,9 köp, 0,02 tvångsbud.
   Med ±0,5-steg i yield krävs ~3 steg nedåt innan MV < lån. Känslighet: lån 80 % → 0,36 bank/parti,
-  85 % → 0,77, 90 % → 2,4. *Kalibreringsfråga: lånenivå (eller DN/MV-skalan när projektkorten görs om).*
+  85 % → 0,77, 90 % → 2,4. **Beslut: lånet är fast 70 % (30 % eget kapital) i grundspelet —
+  variabel belåning är en expansion.** Marknaden får i stället liv via DN/MV-skalan på projektkorten,
+  energiuppgraderingens pris/effekt och händelsernas storlek.
 - **Energiuppgradering är för billig:** ~23 per parti (nästan maxtaket 6 per spelare), 74 % lyckas per försök.
   +1 energiklass = +1 DN ≈ +20–25 Mkr MV för ~4 Mkr. Vid 8 Mkr/försök: 14 per parti.
 - **Strategierna vinner lika ofta (24–26 %)** — startportföljen (3–5 fastigheter) avgör mer än besluten.
