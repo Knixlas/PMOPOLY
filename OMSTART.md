@@ -491,6 +491,9 @@ slutpoäng 31 (5–55). Skede 2: billig strategi vinner 9 % (Mu ~0,5), balansera
   (färre projekt, TG ~0). Test med sänkt driftnetto på tre hyresrättskort gav ingen mätbar effekt → återställt.
 - **Poängdelarnas tyngd:** spridning (std) PU 3,7, TG 15,7, F 9,7. TG avgör redan mest; att dela PU och F
   ytterligare skulle göra TG ännu mer avgörande.
+- **Beslut (Niklas):** balansen är som avsett. PU ska inte avgöra spelet (kvarteren ut ganska lika), TG
+  får vara volatilt, och att bostäder ofta är bästa valet är budskapet från en bostadsbyggare. Poäng-
+  formlerna behålls: PU = ABT ÷ 20, TG i %, F = (EK + ½ kassa − 100 × lån) ÷ 15, allt × Mu.
 
 ## 6. Öppna frågor
 
