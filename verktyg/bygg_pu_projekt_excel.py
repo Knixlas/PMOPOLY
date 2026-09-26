@@ -26,6 +26,16 @@ FORM_FIL = Path(__file__).resolve().parent.parent / "data" / "shapes.json"
 OMTRYCK = {
     # Formen på brickan gäller (7 rutor à 250 kvm); kortet sa 2000.
     "Förskolan Regnbågen": {"BTA": "1750"},
+    # Hyresrätter är det trygga valet: anskaffningen sänkt cirka 5 % (beslut 2026-09-26).
+    "Hyresrätt Hamnskiftet": {"Anskaffning": "32"},
+    "Hyresrätt Fågelsången": {"Anskaffning": "52"},
+    "Hyresrätt Bergsluttningen": {"Anskaffning": "71"},
+    "Hyresrätt Rosenlunden": {"Anskaffning": "35"},
+    "Hyresrätt Lövängen": {"Anskaffning": "63"},
+    "Hyresrätt Kvarnbacken": {"Anskaffning": "78"},
+    "Hyresrätt Åkanten": {"Anskaffning": "37"},
+    "Hyresrätt Stenbrynet": {"Anskaffning": "116"},
+    "Hyresrätt Sjöglimten": {"Anskaffning": "96"},
 }
 
 NIVAER = ["MARK", "HUSUNDERBYGGNAD", "STOMME", "YTTERTAK", "FASADER",
@@ -214,6 +224,7 @@ def main():
                           "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
             ("Beslut", "Förvaltningssektionen på baksidan görs om; alla 45 kort trycks om (360 kort)."),
             ("Omtryck BTA", "Förskolan Regnbågen: BTA 2000 → 1750, så att kortet stämmer med brickans form (7 rutor)."),
+            ("Omtryck anskaffning", "Hyresrätter: anskaffningen sänkt cirka 5 % (tryggt val ska kosta lite i Projektutvecklingen)."),
             ("Former", "Brickornas former från data/shapes.json; kontroll: rutor × 250 = BTA för alla 45."),
             ("Omtryck", "Marknadsvärde, energiklass, driftnetto (nu efter ränta, per år), räntekostnad och lån "
                         "för förvaltningsbara typer kommer från data/forvaltning_2-1/F2-1_projektkort.csv — "

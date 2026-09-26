@@ -494,6 +494,8 @@ slutpoäng 31 (5–55). Skede 2: billig strategi vinner 9 % (Mu ~0,5), balansera
 - **Beslut (Niklas):** balansen är som avsett. PU ska inte avgöra spelet (kvarteren ut ganska lika), TG
   får vara volatilt, och att bostäder ofta är bästa valet är budskapet från en bostadsbyggare. Poäng-
   formlerna behålls: PU = ABT ÷ 20, TG i %, F = (EK + ½ kassa − 100 × lån) ÷ 15, allt × Mu.
+- **Hyresrätternas anskaffning sänkt cirka 5 %** (omtryck, `verktyg/bygg_pu_projekt_excel.py` OMTRYCK):
+  kvarter med ≥ 40 % hyresrätter vinner 33 % (förut 35 %), utan hyresrätt 14 % (förut 11 %).
 
 ## 6. Öppna frågor
 
