@@ -424,8 +424,10 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
 - **Projektkortet trycks med:** DN efter ränta, ränta, lån, energiklass, MV vid startyield.
 - **Vinstformeln görs om:** varje del ger ett tal där ~20 = riktigt tokbra. Genomförandet = TG.
   Förvaltningen ska premiera fastigheter över kontanter (bättre köpa till överpris än sitta på kassa).
-  FÖRSLAG i motorn: F = avkastning i % på tillgångarna vid start (MV + kassa), slutkassan räknas till
-  hälften. Kalibreringen av nivån pågår.
+  FÖRSLAG i motorn: F = ökning av viktat värde (eget kapital + ½ kassa) i % av tillgångarna vid start
+  (MV + kassa). Ett vanligt köp till MV ger poäng (det är korten och tärningen som avgör vem som får köpa);
+  ett tvångsköp till 1,2 × MV är ungefär ±0 — lönar sig bara med rätt kort. Nivån: vinnarens median ~48
+  → behöver skalas ned ungefär ×0,4 för att ~20 ska vara tokbra.
 - **Kalibrerat förslag (standard i motorn):** driftnetto före ränta 2–7 Mkr/år (≈ 2 × gamla kortets
   DN/kvartal + 1) → DN efter ränta 1–4, ränta 0–4; energiuppgradering 10 Mkr/försök; +2 "−1 DN direkt"
   i lokal- och kontorsleken. Resultat 800 partier: 5,6 köp, 0,95 bankövertag, 0,9 sanering, 17 lyckade

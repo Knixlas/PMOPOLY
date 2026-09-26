@@ -666,11 +666,12 @@ class Motor:
         return self.slutrakning()
 
     def f_poang(self, sp):
-        """F-poäng (FÖRSLAG): avkastning i % på tillgångarna vid start (MV + kassa).
-        Slutkassan räknas bara till kassa_vikt — en fastighet slår kontanter. ~20 = tokbra."""
+        """F-poäng (FÖRSLAG): ökning av viktat värde i % av tillgångarna vid start (MV + kassa).
+        Kassan räknas till kassa_vikt både vid start och slut — ett vanligt köp till MV ger alltså
+        poäng, ett tvångsköp till 1,2 × MV ungefär ±0. ~20 = tokbra."""
         kassa = sp.kassa + sp.vantande_kassa + sp.restkort * 0.25
         slut = sum(self.mv(f) - f.lan for f in sp.fastigheter) + self.p.kassa_vikt * kassa
-        return 100 * (slut - sp.start_ek - sp.start_kassa) / max(sp.start_tillgangar, 1)
+        return 100 * (slut - sp.start_ek - self.p.kassa_vikt * sp.start_kassa) / max(sp.start_tillgangar, 1)
 
     def slutrakning(self):
         for spar, bana in self.spel.yieldbana.items():
