@@ -21,6 +21,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 | `energi_minus` | nej | ackumulerar; 3 i netto → **−1 energiklass** (energi hanteras i tredjedelar precis som DN) |
 | `direkt_dn_plus` | ja | **+1 bas-DN direkt** & permanent (sällsynt) |
 | `direkt_dn_minus` | ja | **−1 bas-DN direkt** & permanent (sällsynt) |
+| `direkt_ek_plus` / `direkt_ek_minus` | ja | **±1 energiklass direkt** & permanent (sällsynt, DD) |
 | `underhallsvarning` | ja | betala `Värde` Mkr i marknaden för att röja; 3 oåtgärdade → −1 DN **+ uppgraderingsstopp** tills röjt |
 | `villkorskort` | ja | effekt beror på tillstånd (t.ex. ”om EK ≤ D → −1 DN”, ”äger du 3+ av typen → −1 DN på alla”) |
 | `engangskassa_plus` / `engangskassa_minus` | ja | vid nästa marknad: ± `Värde` Mkr (engångs) |
@@ -130,9 +131,12 @@ marknad (och vid slutavräkningen) flyttas yieldpekaren med kortet på den plats
 (bostäder 2–6 %, kommersiellt 3–7 %). Omvärldskortet som dras i kvartal *n* påverkar plats *n+1*.
 
 ### DD — `F2-1_DD.csv` (36)
-Dolt vid övergång + köp; räknas i samma ackumulering som händelsekort; avslöjas vid
-försäljning/tvångstagande. Kolumner: `ID;Effekt;Rubrik;Beskrivning`
-dd_plus (Intäkt) 16, dd_minus (Kostnad) 18, dd_ek 2.
+**Ett DD-kort dras för varje fastighet du köper** (inte vid övergången från Skede 2). Effekten följer
+fyndet och använder samma koder som händelsekorten; dolda effekter blir brickor, synliga läggs öppet.
+Kolumner: `ID;Effekt;Synlig;Värde;Rubrik;Beskrivning`
+dolt_plus_dn 8, energi_plus 3, engangskassa_plus 4 (2–5 Mkr), direkt_dn_plus 1, direkt_ek_plus 1 —
+dolt_minus_dn 6, energi_minus 1, underhallsvarning 5 (3–4 Mkr), engangskassa_minus 5 (2–5 Mkr),
+direkt_dn_minus 1, direkt_ek_minus 1. (17 bra, 19 dåliga — ett köp ska kännas som en risk.)
 
 ### FC / FS-arketyper — `F2-1_FC.csv` (6), `F2-1_FS.csv` (6)
 Omgjorda 2026-09-26, se §5. FC har **typ** och lutar mot marknad/slag; FS lutar mot fastighetsnivå.
@@ -174,8 +178,9 @@ lån-clips (ex-bank).
 ## 5. FC och FS — typ och utveckling
 
 - **FC har en typ:** HYRESRÄTT, FÖRSKOLA, LOKAL, KONTOR, eller en bred typ — BOSTÄDER (hyresrätt +
-  förskola) eller KOMMERSIELLT (lokal + kontor), samma uppdelning som yieldspåren. Specialisten är stark
-  på sin typ; den breda svagare men på två.
+  förskola, de stabila typerna) eller KOMMERSIELLT (lokal + kontor, de volatila). Specialisten är stark
+  på sin typ; den breda svagare men på två. (Obs: yieldspåren är en annan uppdelning — bostadsspåret
+  gäller hyresrätt, det kommersiella förskola, lokal och kontor.)
 - **Dubbelsidiga kort.** Alla börjar som **junior**. Med **två utvecklingsbrickor** vänds kortet till
   **senior**: starkare version plus en ny egenskap (se filerna). Brickorna tas bort.
 - **Utvecklingsbrickor** kommer från händelsekort (`utveckling`, 1 per typlek) och personkort

@@ -230,9 +230,9 @@ eller en vändning över tid. *(Om hamstring gör spelet segt: inför ett gener�
 en årsskiftesrensning. Börja utan.)*
 
 ### DD-kort
-Dras dolt vid övergången och vid varje nytt köp. **Intäkt = pluskort, Kostnad =
-minuskort** — räknas i samma ackumulering som händelsekorten. Avslöjas för alla vid
-försäljning eller tvångstagande.
+**Ett dras för varje fastighet du köper.** Effekten följer fyndet (dold bricka, underhållsvarning,
+engångsbelopp eller sällsynt direkt ±1) — se `FORVALTNING_KORTSPEC.md`. Dolda delar avslöjas för alla
+vid försäljning eller tvångstagande.
 
 ### Konsekvens- och garantikort
 Från genomförandet, kopplade till projekten. Kan justera energiklass/DN.
