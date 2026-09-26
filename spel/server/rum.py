@@ -140,6 +140,7 @@ class Rum:
             "fraga": None if f is None else {"nr": f.nr, "kanal": f.kanal, "kvarter": f.kvarter, "skede": f.skede,
                                              "vy": f.vy, "min": self.far_svara(kvarter) if kvarter else False},
             "svar": self.svar[-30:],
+            "drag": [e["visa"] for e in self.parti.logg[-400:] if e.get("visa")][-15:],
             "klart": self.klart,
             "resultat": self.parti.resultat if self.klart else None,
             "fel": self.fel,

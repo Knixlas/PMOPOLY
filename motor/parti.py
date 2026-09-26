@@ -184,5 +184,22 @@ class Parti:
             post = {"kanal": "slump", "metod": metod, "varde": ss.koda(metod, args, varde)}
             if metod == "dra":
                 post["lek"] = args[0]
+            visa = _visa(metod, args, varde)
+            if visa:
+                post["visa"] = visa                    # läsbart för händelseflödet (påverkar inte uppspelning)
         self.logg.append(post)
         return varde
+
+
+def _visa(metod, args, varde):
+    """Tärningsslag och dragna kort som text för spelarna."""
+    from .slump import kortnamn
+    if metod == "d20":
+        return f"Tärning D20: {varde}"
+    if metod == "tarning":
+        return f"Tärning D{args[0]}: {varde}"
+    if metod in ("dra", "dra_kort"):
+        namn = varde.get("Rubrik") or varde.get("Namn") if isinstance(varde, dict) else None
+        id_ = kortnamn(varde)
+        return f"Drog {id_}{f' {namn}' if namn and namn != id_ else ''} ({args[0]})"
+    return None

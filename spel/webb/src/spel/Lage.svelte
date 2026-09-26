@@ -2,7 +2,9 @@
   // Spelläget: varje kvarters siffror i det skede partiet är i. Det egna kvarteret först.
   import type { Bild } from './anslutning.svelte';
 
-  let { bild, jag, svar = [] }: { bild: Bild | null; jag: string; svar?: { kvarter: string; rubrik: string; svar: string }[] } = $props();
+  let { bild, jag, svar = [], slump = [] }: {
+    bild: Bild | null; jag: string; svar?: { kvarter: string; rubrik: string; svar: string }[]; slump?: string[];
+  } = $props();
   const kvarter = $derived(bild ? [...bild.kvarter].sort((a, b) => (a.namn === jag ? -1 : b.namn === jag ? 1 : 0)) : []);
   const tal = (n: unknown) => (typeof n === 'number' ? n.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) : '–');
   const procent = (n: number) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) + ' %';   // yielden lagras i procent
@@ -63,6 +65,16 @@
       {/each}
     </div>
 
+    {#if slump.length}
+      <details class="logg" open>
+        <summary>Tärningar och kort</summary>
+        <ol reversed>
+          {#each [...slump].reverse().slice(0, 8) as t}
+            <li class:tarning={t.startsWith('Tärning')}>{t}</li>
+          {/each}
+        </ol>
+      </details>
+    {/if}
     {#if bild.handelser?.length || svar.length}
       <details class="logg" open>
         <summary>Senaste händelserna</summary>
@@ -102,4 +114,5 @@
   .logg summary { cursor: pointer; font-weight: 700; }
   .logg ol { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 3px; max-height: 240px; overflow: auto; }
   .motor { color: var(--dampad); }
+  .tarning { font-weight: 700; font-variant-numeric: tabular-nums; }
 </style>

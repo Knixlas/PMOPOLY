@@ -25,6 +25,7 @@ export interface Lage {
   bild: Bild | null;
   fraga: Fraga | null;
   svar: { nr: number; kvarter: string; rubrik: string; svar: string }[];
+  drag: string[];                       // senaste tärningsslag och dragna kort
   klart: boolean;
   resultat: Record<string, unknown>[] | null;
   fel: string | null;

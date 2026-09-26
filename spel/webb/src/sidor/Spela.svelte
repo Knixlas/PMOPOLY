@@ -99,7 +99,7 @@
   {#if anslutning?.fel}<p class="panel fel" role="alert">{anslutning.fel}</p>{/if}
 
   {#if lage}
-    <Lage bild={lage.bild} jag={kvarter} svar={lage.svar} />
+    <Lage bild={lage.bild} jag={kvarter} svar={lage.svar} slump={lage.drag ?? []} />
   {/if}
 {/if}
 
