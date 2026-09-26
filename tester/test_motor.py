@@ -44,6 +44,17 @@ class TestMotor(unittest.TestCase):
         self.assertLessEqual(f.lan, f.eff_noi() / 0.05 + 5)
         self.assertEqual(f.lan % 10, 0)
 
+    def test_projektkortens_forvaltningsvarden_hanger_ihop(self):
+        """MV = (DN + ränta) ÷ startyield, lån = 70 % av MV, ränta = 3 % av lånet — som tryckt."""
+        from motor.modell import START_YIELD, SPAR, avrunda
+        for p in DATA.projekt:
+            noi = p["Driftnetto (Mkr/år)"] + p["Räntekostnad (Mkr/år)"]
+            mv = avrunda(noi / (START_YIELD[SPAR[p["Typ"]]] / 100), 5)
+            self.assertEqual(p["Marknadsvärde (Mkr)"], mv, p["Namn"])
+            self.assertEqual(p["Lån (Mkr)"], avrunda(0.7 * mv, 10), p["Namn"])
+            self.assertEqual(p["Räntekostnad (Mkr/år)"], round(0.03 * p["Lån (Mkr)"]), p["Namn"])
+            self.assertGreaterEqual(p["Driftnetto (Mkr/år)"], 0, p["Namn"])
+
     def test_alla_effektkoder_hanteras(self):
         """Varje effekt i lekarna ska motorn känna till (annars tyst ignorerad)."""
         import re

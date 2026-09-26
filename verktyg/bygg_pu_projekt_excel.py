@@ -4,15 +4,22 @@ Källor:
   - arv/spelet2_v1/1. Projektutveckling/PU_projekt.csv  (datan som InDesign-mallen fylldes med)
   - arv/tryckt_text/PU_projekt_tryckeri.txt             (text utläst ur tryckfilen, 2 rader per kort)
 
-Skriptet kontrollerar varje kort mot tryckfilen och avbryter om något skiljer.
+  - data/forvaltning_2-1/F2-1_projektkort.csv          (NYA förvaltningsvärden för omtrycket)
+
+Skriptet kontrollerar varje kort mot tryckfilen och avbryter om något skiljer. Därefter läggs
+förvaltningsvärdena för omtrycket på (DN efter ränta, ränta, lån, MV, energiklass) — de ersätter
+de tryckta värdena för alla förvaltningsbara typer (ej BRF).
 Kör:  python verktyg/bygg_pu_projekt_excel.py
 """
+import csv
 import re
 import sys
+from pathlib import Path
 
 from kortexcel import TRYCKT_TEXT, bygg_arbetsbok, las_csv, normalisera
 
 TRYCK_FIL = TRYCKT_TEXT / "PU_projekt_tryckeri.txt"
+F_FIL = Path(__file__).resolve().parent.parent / "data" / "forvaltning_2-1" / "F2-1_projektkort.csv"
 
 NIVAER = ["MARK", "HUSUNDERBYGGNAD", "STOMME", "YTTERTAK", "FASADER",
           "STOMKOMPLETTERING", "INV YTSKIKT", "INSTALLATIONER", "GEMENSAMMA ARBETEN"]
@@ -34,10 +41,16 @@ KORT_KOLUMNER = [
     ("Tidspåverkan T", "Tid", True, "'-' = ingen påverkan"),
     ("Riskbuffert", "Riskbuffert", True, "'-' = ingen"),
     ("Passera nämnden (>)", "Nämndbeslut", True, "Tärningsresultatet måste överstiga detta"),
-    ("Marknadsvärde (Mkr)", "Marknadsvärde", True, ""),
+    ("Marknadsvärde (Mkr)", "Marknadsvärde", True, "BRF: försäljningspris. Övriga: NYTT — MV vid startyield "
+                                                  "= driftnetto före ränta ÷ yield (bostäder 4 %, övriga 5 %)"),
     ("Rörligt marknadsvärde", "Rörligt marknadsvärde", True, "Endast BRF — text på kortet"),
-    ("Energiklass", "Energiklass", True, "Tryckt endast på förvaltningsbara typer (ej BRF)"),
-    ("Driftnetto (Mkr/kvartal)", "Driftnetto", True, "Tryckt endast på förvaltningsbara typer (ej BRF)"),
+    ("Energiklass", "Energiklass", True, "Ej BRF. NYTT värde för omtrycket (Kvadranten och Sjöglimten D → C)"),
+    ("Driftnetto (Mkr/år)", "F_DN", True, "NYTT. Ej BRF. Efter ränta, vid kortets energiklass. Kan vara 0"),
+    ("Räntekostnad (Mkr/år)", "F_ranta", True, "NYTT. Ej BRF. 3 % av lånet, fast i grundspelet"),
+    ("Lån (Mkr)", "F_lan", True, "NYTT. Ej BRF. 70 % av MV vid start, avrundat till 10"),
+    ("Driftnetto före ränta (Mkr/år)", "F_noi", False, "Ej tryckt — = driftnetto + ränta; styr MV"),
+    ("F-karaktär", "F_karaktar", False, "Ej tryckt — MV/anskaffning: kassako ≥ 1,25, prestige ≤ 0,85"),
+    ("F-motivering", "F_motivering", False, "Ej tryckt — avsiktliga avsteg från grundregeln"),
 ] + [(f"Nivåkrav {etikett}", niva, True, "'-' = inget krav") for niva, etikett in zip(NIVAER, NIVA_ETIKETT)] + [
     ("Förekomst", "Förekomst", False, "Ej tryckt — speldata"),
     ("Formfaktor", "Formfaktor", False, "Ej tryckt — styr brickans form (1–8)"),
@@ -66,10 +79,10 @@ MALLTEXT = [
     ("Baksida", "Etiketter", "BTA · Utvecklingskostnad · Anskaffning · Riskbuffert · Passera nämnden · "
                              "Hållbarhetskrav · Kvalitetskrav · Tidspåverkan"),
     ("Baksida", "Sektion", "PLANERING"),
-    ("Baksida (ej BRF)", "Sektion", "KÖP OCH SÄLJ FÖRVALTNING"),
-    ("Baksida (ej BRF)", "Etiketter", "Aktuellt marknadsvärde · Driftnetto / Yield · Driftnetto · Energiklass · /kvartal"),
-    ("Baksida (ej BRF)", "Regel", "Min. accepterat bud: 80 % av marknadsvärde"),
-    ("Baksida (ej BRF)", "Regel", "Kontantinsats: 30 % av köpeskillingen"),
+    ("Baksida (ej BRF)", "Sektion", "FÖRVALTNING"),
+    ("Baksida (ej BRF)", "Etiketter", "Driftnetto · Räntekostnad · Lån · Marknadsvärde · Energiklass · Mkr/år"),
+    ("Baksida (ej BRF)", "Regel", "Marknadsvärde = (driftnetto + ränta) ÷ yield"),
+    ("Baksida (ej BRF)", "Regel", "Marknadsvärde under lånet → tvångsförsäljning"),
     ("Baksida", "Regel", "BEHÅLL KORTET UNDER HELA SPELET SÅ LÄNGE NI ÄGER DET"),
 ]
 
@@ -123,6 +136,27 @@ def jamfor(csv_rader, tryck):
     return avvikelser
 
 
+def lagg_pa_forvaltning(rader):
+    """Förvaltningsvärden för omtrycket ersätter de tryckta (ej BRF)."""
+    with open(F_FIL, encoding="utf-8", newline="") as f:
+        fv = {r["Namn"]: r for r in csv.DictReader(f, delimiter=";")}
+    for r in rader:
+        if r["Typ"] == "BRF":
+            continue
+        n = fv.pop(r["Namn"], None)
+        if n is None:
+            sys.exit(f"Förvaltningsvärden saknas för {r['Namn']}")
+        dn, ranta, noi = (int(n[k]) for k in ("Driftnetto (Mkr/år)", "Räntekostnad (Mkr/år)",
+                                              "Driftnetto före ränta (Mkr/år)"))
+        if dn + ranta != noi:
+            sys.exit(f"{r['Namn']}: driftnetto + ränta ≠ driftnetto före ränta")
+        r.update({"Marknadsvärde": n["Marknadsvärde (Mkr)"], "Energiklass": n["Energiklass"], "F_DN": str(dn),
+                  "F_ranta": str(ranta), "F_lan": n["Lån (Mkr)"], "F_noi": str(noi),
+                  "F_karaktar": n["F-karaktär"], "F_motivering": n["Motivering"]})
+    if fv:
+        sys.exit(f"Okända namn i {F_FIL.name}: {list(fv)}")
+
+
 def main():
     rader = las_csv("1. Projektutveckling/PU_projekt.csv", "Namn")
     avvikelser = jamfor(rader, las_tryck())
@@ -130,6 +164,7 @@ def main():
         for a in avvikelser:
             print("AVVIKELSE", a)
         sys.exit("CSV och tryck skiljer — åtgärda innan Excel byggs.")
+    lagg_pa_forvaltning(rader)
 
     ut = bygg_arbetsbok(
         filnamn="PU_projekt.xlsx",
@@ -154,6 +189,9 @@ def main():
             ("Etiketter", "Bekräftat mot fysiskt kort (BRF Eldningen): Utvecklingskostnad = CSV 'Kostnad', "
                           "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
             ("Beslut", "Förvaltningssektionen på baksidan görs om; alla 45 kort trycks om (360 kort)."),
+            ("Omtryck", "Marknadsvärde, energiklass, driftnetto (nu efter ränta, per år), räntekostnad och lån "
+                        "för förvaltningsbara typer kommer från data/forvaltning_2-1/F2-1_projektkort.csv — "
+                        "de tryckta värdena finns kvar i arv/ och i tryckfilens text."),
             ("Byggd med", "verktyg/bygg_pu_projekt_excel.py"),
         ],
     )

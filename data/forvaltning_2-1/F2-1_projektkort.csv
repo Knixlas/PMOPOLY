@@ -1,0 +1,37 @@
+Namn;Energiklass;Driftnetto före ränta (Mkr/år);Räntekostnad (Mkr/år);Driftnetto (Mkr/år);Lån (Mkr);Marknadsvärde (Mkr);MV/anskaffning;F-karaktär;Motivering
+Förskolan Draklyan;C;3;1;2;40;60;1,33;Kassako: billig att ta fram, stark i förvaltningen;
+Förskolan Kullerbyttan;D;3;1;2;40;60;0,90;Balanserad;
+Förskolan Nyckelpigan;D;2;1;1;30;40;1,29;Kassako: billig att ta fram, stark i förvaltningen;"Minsta förskolan; golv på 2 Mkr så att den bär sin ränta."
+Förskolan Regnbågen;C;6;2;4;80;120;0,96;Balanserad;
+Förskolan Skattkistan;C;3;1;2;40;60;0,94;Balanserad;
+Förskolan Smultronstället;C;5;2;3;70;100;0,99;Balanserad;
+Förskolan Stjärnfröet;D;2;1;1;30;40;0,75;Prestige: dyr att ta fram, svagare i förvaltningen;
+Förskolan Trollskogen;D;3;1;2;40;60;0,85;Prestige: dyr att ta fram, svagare i förvaltningen;
+Förskolan Tussilagon;B;6;2;4;80;120;1,32;Kassako: billig att ta fram, stark i förvaltningen;
+Lokalen Bonden;C;2;1;1;30;40;1,11;Balanserad;
+Lokalen Drottningen;D;3;1;2;40;60;1,05;Balanserad;
+Lokalen Gambiten;D;3;1;2;40;60;0,78;Prestige: dyr att ta fram, svagare i förvaltningen;
+Lokalen Kungen;C;5;2;3;70;100;1,02;Balanserad;
+Lokalen Löparen;D;3;1;2;40;60;0,94;Balanserad;
+Lokalen Motdraget;D;2;1;1;30;40;0,78;Prestige: dyr att ta fram, svagare i förvaltningen;
+Lokalen Rokaden;C;2;1;1;30;40;1,60;Kassako: billig att ta fram, stark i förvaltningen;
+Lokalen Springaren;D;5;2;3;70;100;0,83;Prestige: dyr att ta fram, svagare i förvaltningen;
+Lokalen Tornet;D;4;2;2;60;80;0,78;Prestige: dyr att ta fram, svagare i förvaltningen;
+Kontoret Galaxen;C;3;1;2;40;60;1,28;Kassako: billig att ta fram, stark i förvaltningen;
+Kontoret Fyrtornet;D;3;1;2;40;60;0,87;Balanserad;
+Kontoret Bastionen;D;4;2;2;60;80;0,90;Balanserad;
+Kontoret Nebulosan;C;4;2;2;60;80;1,29;Kassako: billig att ta fram, stark i förvaltningen;
+Kontoret Kvadranten;C;5;2;3;70;100;1,03;Balanserad;Tvilling med Kometbanan i Projektutvecklingen, men C i stället för D — samma pris, bättre förvaltning.
+Kontoret Kometbanan;D;4;2;2;60;80;0,82;Prestige: dyr att ta fram, svagare i förvaltningen;
+Kontoret Stjärnhamnen;C;7;3;4;100;140;1,11;Balanserad;
+Kontoret Rymdaxeln;D;5;2;3;70;100;0,83;Prestige: dyr att ta fram, svagare i förvaltningen;
+Kontoret Observatoriet;D;6;2;4;80;120;0,93;Balanserad;
+Hyresrätt Hamnskiftet;C;3;2;1;50;75;2,21;Kassako: billig att ta fram, stark i förvaltningen;Instegsprojektet som blir spelets kassako i förvaltningen — låg yield på bostäder.
+Hyresrätt Fågelsången;D;2;1;1;40;50;0,91;Balanserad;
+Hyresrätt Bergsluttningen;D;3;2;1;50;75;1,00;Balanserad;
+Hyresrätt Rosenlunden;C;2;1;1;40;50;1,35;Kassako: billig att ta fram, stark i förvaltningen;"Liten hyresrätt; dämpad så att inte alla små hyresrätter blir kassakor."
+Hyresrätt Lövängen;D;3;2;1;50;75;1,14;Balanserad;
+Hyresrätt Kvarnbacken;D;4;2;2;70;100;1,22;Balanserad;
+Hyresrätt Åkanten;C;2;1;1;40;50;1,28;Kassako: billig att ta fram, stark i förvaltningen;"Liten hyresrätt; dämpad så att inte alla små hyresrätter blir kassakor."
+Hyresrätt Stenbrynet;B;7;4;3;120;175;1,43;Kassako: billig att ta fram, stark i förvaltningen;
+Hyresrätt Sjöglimten;C;5;3;2;90;125;1,24;Balanserad;"Stort hållbart projekt; C i stället för D (texten nämner ingen energiklass)."

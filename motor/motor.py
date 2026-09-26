@@ -36,9 +36,7 @@ class Parametrar:
     losen_andel: float = 0.1                       # lösen: ägaren behåller fastigheten mot 10 % av MV till budgivaren
     handgrans: int = 6
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
-    ranta_sats: float = 0.03                       # ANTAGANDE: fast ränta i grundspelet; räntemarknad = expansion
-    dn_faktor: float = 2.0                         # kalibrering: DN före ränta/år = faktor × gamla kortets DN/kvartal + tillägg
-    dn_tillagg: float = 1.0
+    ranta_sats: float = 0.03                       # fast ränta i grundspelet (står på kortet); räntemarknad = expansion
 
 
 class Motor:
@@ -93,11 +91,11 @@ class Motor:
         f.ranta = int(round(self.p.ranta_sats * lan))
 
     def ny_fastighet(self, projekt):
-        f = Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=int(round(self.p.dn_faktor * tal(projekt["Driftnetto (Mkr/kvartal)"]) + self.p.dn_tillagg)),
-                      ek=projekt["Energiklass"] or "C", lan=0)
-        mv = f.eff_noi() / (START_YIELD[SPAR[f.typ]] / 100)
-        self.satt_lan(f, min(avrunda(self.p.lan_andel * mv, 10), avrunda(mv, 5)))
-        return f
+        """Fastigheten som den står på projektkortet: driftnetto efter ränta, ränta, lån, energiklass."""
+        ek = projekt["Energiklass"] or "C"
+        noi = int(tal(projekt["Driftnetto (Mkr/år)"]) + tal(projekt["Räntekostnad (Mkr/år)"]))
+        return Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=noi - EK_MOD[ek], ek=ek,
+                         lan=int(tal(projekt["Lån (Mkr)"])), ranta=int(tal(projekt["Räntekostnad (Mkr/år)"])))
 
     # ------------------------------------------------------------------ brickor, trösklar, utveckling
     def dn_bricka(self, f, n):
