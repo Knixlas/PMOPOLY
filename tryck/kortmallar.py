@@ -19,7 +19,7 @@ TYPBILD = {"HYRESRÄTT": "Hyresrätt Generell", "FÖRSKOLA": "FÖRSKOLOR Generel
 
 # Skedenas färger (skede_color i Produktion-fliken): markerar i vilken del av spelet uppgiften används
 SKEDE = {"PU": "#DDA063", "PL": "#1A6B9A", "G": "#91B542", "F": "#EF5656"}
-# Kubfärgerna på scoreboarden: visar vilken kub kravet flyttar (ANTAGANDE tills Niklas bekräftat vilken som är vilken)
+# Kubfärgerna på scoreboarden (bekräftat av Niklas): visar vilken kub kravet flyttar
 KUB = {"H": "#4E9A3A", "Q": "#7B4FA0", "T": "#E08A2E"}
 BILDPREFIX = {"FÖRSKOLA": "FÖRSKOLOR", "KONTOR": "KONTOR", "LOKAL": "LOKAL", "HYRESRÄTT": "Hyresrätt", "BRF": "BRF"}
 # FC och FS: befintliga personalbilder (Bilder/Skapade bilder)
