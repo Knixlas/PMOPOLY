@@ -1,0 +1,37 @@
+ID;Effekt;Rubrik;Beskrivning
+DD-01;dd_plus;Ankarhyresgäst med långt avtal;En stabil hyresgäst har tio år kvar på kontraktet med full indexering.
+DD-02;dd_plus;Outnyttjad byggrätt;Detaljplanen medger fler kvadratmeter än vad som är byggt.
+DD-03;dd_plus;Taket nylagt med garanti;Yttertaket lades om för två år sedan med 25 års garanti.
+DD-04;dd_plus;Stambyte nyligen klart;Stammar och våtrum renoverades i fjol. Underhållsbehovet är lågt de närmaste åren.
+DD-05;dd_plus;Hyrorna ligger över snitt;Indexklausulerna är strikta och hyrorna redan höjda till marknadsnivå.
+DD-06;dd_plus;Vakans redan uthyrd;Lokalen som stod tom i prospektet har fått ny hyresgäst.
+DD-07;dd_plus;Miljöcertifiering på plats;Fastigheten har giltig Miljöbyggnad Silver, vilket lockar fler hyresgäster.
+DD-08;dd_plus;Underhållsplanen har följts;Säljaren har skött löpande underhåll noggrant. Inga eftersläpningar hittas.
+DD-09;dd_plus;Solceller ger extra intäkt;Taket har solceller som säljer överskottsel till nätet.
+DD-10;dd_plus;Servitut gynnar fastigheten;Grannfastigheten betalar för att nyttja garageinfarten.
+DD-11;dd_plus;Kö av intressenter till lediga lägenheter;Bostadskön är lång och vakansgraden nästan obefintlig.
+DD-12;dd_plus;Fasaden nyrenoverad;Fönster och fasad byttes för tre år sedan. Inget akut underhåll krävs.
+DD-13;dd_plus;Förråd och parkering efterfrågas;Outhyrda extraytor har fler intressenter än platser.
+DD-14;dd_plus;Bergvärme sänker driftkostnaden;Fastigheten värms med bergvärme, vilket ger lägre energikostnad än väntat.
+DD-15;dd_plus;Fiberavtal ger löpande intäkt;Ett nätbolag hyr in sig i teknikutrymmet och betalar årlig avgift.
+DD-16;dd_plus;Byggrätt för vindsinredning;Outnyttjad vind kan byggas om till fler lägenheter enligt gällande plan.
+DD-17;dd_minus;Fuktskada i bjälklag;Fukt har trängt in via en otät genomföring och skadat bärande konstruktion.
+DD-18;dd_minus;Förorenad mark under garage;Miljöprov visar olja och tungmetaller i marken.
+DD-19;dd_minus;Asbest i ventilationskanaler;Äldre ventilationskanaler innehåller asbest som måste saneras.
+DD-20;dd_minus;Ventilationen underdimensionerad;Anläggningen klarar inte dagens luftflödeskrav och måste byggas om.
+DD-21;dd_minus;Taket eftersatt;Yttertaket har nått slutet av sin livslängd och läcker vid kraftigt regn.
+DD-22;dd_minus;Radonhalt över gränsvärde;Mätning visar förhöjd radonhalt. Radonsug krävs.
+DD-23;dd_minus;Hissen ej tillgänglighetsanpassad;Hissen uppfyller inte dagens krav och behöver bytas ut.
+DD-24;dd_minus;Brandskyddet brister i garage;Sprinkler och brandlarm saknas på garageplanet.
+DD-25;dd_minus;Fasaden vittrar;Tegelfogarna är nedslitna och behöver helfogas.
+DD-26;dd_minus;Dolt servitut belastar fastigheten;Grannen har rätt att nyttja infarten utan ersättning.
+DD-27;dd_minus;Föråldrade hyresavtal;Flera avtal saknar indexklausul och ligger under marknadshyra.
+DD-28;dd_minus;Vakans dold i prospektet;Säljaren har inte redovisat att en våning stått tom i ett halvår.
+DD-29;dd_minus;Indexklausul saknas i avtal;Tre kommersiella hyresgäster har kontrakt utan uppräkning.
+DD-30;dd_minus;Stammar i dåligt skick;Rörstammarna är gamla och riskerar läckage inom kort.
+DD-31;dd_minus;Fuktskada i garage;Dränering saknas och källarplanet står fuktigt vid regn.
+DD-32;dd_minus;Olovlig inredning upptäcks;En vind har inretts till bostad utan bygglov.
+DD-33;dd_minus;Tvist med hyresgäst pågår;En hyresgäst har stämt fastighetsägaren för uteblivet underhåll.
+DD-34;dd_minus;Dåligt fungerande dränering;Marken runt grunden håller kvar vatten och riskerar fuktskador.
+DD-35;dd_ek;Energiklassen sämre än uppgiven;Ny energideklaration visar lägre klass än vad säljaren angav.
+DD-36;dd_ek;Energiprestandan bättre än väntat;Tilläggsisolering och nya fönster ger bättre energiklass än deklarerat.
