@@ -280,6 +280,7 @@ class Motor:
             sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
             sp.brf_intakt = brf_intakt
             sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(sp.tb + brf_intakt)
+        for sp in sorted(self.spel.spelare, key=lambda x: x.kassa):     # 9.2: minst kassa väljer först
             sp.fc = sp.strategi.valj_fc(self, sp, fc_kvar)
             fc_kvar.remove(sp.fc)
             sp.fs = sp.strategi.valj_fs(self, sp, fs_kvar)
