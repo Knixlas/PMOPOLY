@@ -46,24 +46,26 @@ tärningsintervall, klassgränser och etiketter. Regelboken skrivs om efter kort
 
 ### Beslutade regeländringar
 
-#### R1. Nämnden — ett gemensamt slag med andra chans (2026-09-26)
+#### R1. Nämnden — ett gemensamt slag, fler tärningar per försök (2026-09-26)
 
 1. Summera **"Passera nämnden"** på alla projekt man tar med (tryckt på projektkorten som "> N").
-2. Dra av projektchefens **nämndslag** (PU_personal).
-3. Slå D20 — resultatet måste vara **över** summan.
-4. **Miss:** justera Q- eller H-kravet och slå igen, nu med **två** D20 — det räcker att ett av dem är över.
-5. **Miss igen:** ny kravjustering, nytt försök — upprepas tills man lyckas.
+2. Dra av projektchefens **nämndslag** (PU_personal; projektchefer utan nämndslag drar av 0).
+3. **Försök 1:** slå 1 D20 — resultatet måste vara **över** summan.
+4. **Miss:** välj **antingen**
+   - **+1 på Q- eller H-kravet**, **eller**
+   - **ta bort ett projekt** — summan sjunker med projektets nämndvärde, och kraven sjunker med
+     projektets bidrag till Q/H.
+5. **Nästa försök** slås med **en tärning mer** än förra (försök 2: 2 D20, försök 3: 3 D20 …).
+   Det räcker att en tärning är över summan.
+6. Upprepa tills man lyckas.
+
+**Tak:** man får inte ta med fler projekt än att nämnden **går** att klara — summan (efter nämndslag)
+måste vara högst 19. Är den högre måste projekt tas bort innan första slaget.
 
 Kräver inget omtryck: projektkortens "> N" och personalkortens nämndslag används som de är.
 
-Öppna detaljer:
-- Hur mycket justeras kravet per miss — +1 på Q eller H (spelarens val)?
-- Tredje försöket och senare: fortfarande två D20, eller ett extra per miss?
-- Summan kan bli ≥ 20 (projekten har 1, 3 eller 4; upp till 9 projekt) och då går det inte att slå över med D20.
-  Tak på summan, eller att 20 alltid lyckas?
-- Projektchefer utan nämndslag (tre st) drar av 0.
-
-Chans att lyckas (slå över summan): mål 6 → 70 % / 91 % med två slag; mål 10 → 50 % / 75 %; mål 14 → 30 % / 51 %.
+Chans att lyckas per försök (slå över summan): summa 6 → 70 % / 91 % / 97 %; summa 10 → 50 % / 75 % / 88 %;
+summa 14 → 30 % / 51 % / 66 % (1 / 2 / 3 tärningar).
 
 ### Slutmål: exakt rätt filer — varken mer eller mindre
 

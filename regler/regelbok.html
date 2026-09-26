@@ -114,20 +114,20 @@
   figcaption { font-size: 13px; color: var(--text-svag); margin-top: 6px; }
   img { max-width: 100%; height: auto; }
 
-  /* ---------- Utskrift: A5-häfte ---------- */
-  @page { size: A5; margin: 14mm 13mm 16mm; }
+  /* ---------- Utskrift: A4 ---------- */
+  @page { size: A4; margin: 20mm 20mm 22mm; }
   @media print {
     :root { --text: #000; --text-svag: #444; --bakgrund: #fff; --yta: #fff; --linje: #ccc; --ruta: #f4ece8; --ton: #eadbd2; }
-    body { font-size: 9.6pt; line-height: 1.42; background: #fff; }
+    body { font-size: 10.5pt; line-height: 1.45; background: #fff; }
     .verktyg, nav.innehall { display: none !important; }
     .sida { display: block; max-width: none; padding: 0; }
     main { max-width: none; padding: 0; }
-    .titelsida { break-after: page; min-height: 170mm; display: flex; flex-direction: column; justify-content: center; border: 0; }
+    .titelsida { break-after: page; min-height: 240mm; display: flex; flex-direction: column; justify-content: center; border: 0; }
     .utskrift-innehall { display: block !important; break-after: page; }
-    .del { break-before: page; min-height: 160mm; display: flex; flex-direction: column; justify-content: center; border: 0; }
+    .del { break-before: page; min-height: 230mm; display: flex; flex-direction: column; justify-content: center; border: 0; }
     .del + h1 { break-before: page; }
-    h1 { break-before: page; font-size: 15pt; margin-top: 0; }
-    h2 { font-size: 11.5pt; }
+    h1 { break-before: page; font-size: 18pt; margin-top: 0; }
+    h2 { font-size: 13pt; }
     h1, h2, h3, .ruta-rubrik { break-after: avoid; }
     figure, .ruta, tr { break-inside: avoid; }
     .version { align-self: flex-start; }
