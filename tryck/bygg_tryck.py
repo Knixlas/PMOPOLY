@@ -24,7 +24,7 @@ CHROME = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
 # Bahnschrift hämtas från Niklas Adobe Fonts-licens via ett webbkit (Regular 400 och Bold 700).
 # Typsnittet sparas aldrig på disk eller i repot: Chromiums anrop till Typekit hämtas av Python
 # (verifierad TLS via miljöns CA) och lämnas direkt till sidan. Byt kit med miljövariabeln ADOBE_KIT.
-ADOBE_KIT = os.environ.get("ADOBE_KIT", "yeb0rca")
+ADOBE_KIT = os.environ.get("ADOBE_KIT", "rex1ldm")   # kitet "ÅKEPOL tryck" på fonts.adobe.com
 
 
 def sida(innehall, extra_css=""):
