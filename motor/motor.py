@@ -287,7 +287,7 @@ class Motor:
             self.dra_personkort(sp, 3)
             sp.start_ek = sum(self.mv(f) - f.lan for f in sp.fastigheter)
             sp.start_kassa = sp.kassa
-            sp.start_tillgangar = sum(self.mv(f) for f in sp.fastigheter) + sp.kassa
+            sp.startvarde = self.varde(sp, sp.kassa)
 
     # ------------------------------------------------------------------ 1. marknad
     def marknad(self):
@@ -725,13 +725,14 @@ class Motor:
             self.kvartalet()
         return self.slutrakning()
 
+    def varde(self, sp, kassa):
+        """Värdet: eget kapital (MV − lån) + halva kassan. Pengar som ligger still räknas till hälften."""
+        return sum(self.mv(f) - f.lan for f in sp.fastigheter) + self.p.kassa_vikt * kassa
+
     def f_poang(self, sp):
-        """F-poäng (FÖRSLAG): ökning av viktat värde i % av tillgångarna vid start (MV + kassa).
-        Kassan räknas till kassa_vikt både vid start och slut — ett vanligt köp till MV ger alltså
-        poäng, ett tvångsköp till 1,2 × MV ungefär ±0. ~20 = tokbra."""
+        """F-poäng = (värde vid slut − värde vid start) ÷ 10. ~20 = tokbra."""
         kassa = sp.kassa + sp.vantande_kassa + sp.restkort * 0.25
-        slut = sum(self.mv(f) - f.lan for f in sp.fastigheter) + self.p.kassa_vikt * kassa
-        return 100 * (slut - sp.start_ek - self.p.kassa_vikt * sp.start_kassa) / max(sp.start_tillgangar, 1)
+        return (self.varde(sp, kassa) - sp.startvarde) / 10
 
     def slutrakning(self):
         for spar, bana in self.spel.yieldbana.items():
@@ -751,5 +752,6 @@ class Motor:
                 "start_ek": sp.start_ek, "startkassa": sp.start_kassa, "tb": sp.tb, "brf": sp.brf_intakt,
                 # F-poäng: avkastning i % på viktat värde (jämför TG i Genomförandet: ~20 = tokbra)
                 "F": self.f_poang(sp),
+                "dn_ar": sum(self.eff_dn(f, sp) for f in sp.fastigheter),
             })
         return resultat
