@@ -109,7 +109,12 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    skede (`motor/lage.py`) och klienten (nytt parti, en enhet per kvarter, bordet för tärningar och
    kort, pusslet vid 4.3, slutställning). Provat med hela partier i webbläsaren i båda lägena.
    Tärningsslag och dragna kort syns i händelseflödet; projektval visar kortens bilder.
-   *Kvar:* brädorna och korten som grafik i spelvyn, animeringar, tärningar på skärmen, QR-skanning.
+   *PU-brädet i spelvyn (2026-09-27):* det tryckta brädet med klistermärkena, kvarterens pjäser som
+   går ruta för ruta, en ring kring kvarteret som är på tur och projektbankens storlek.
+   Markexpansionerna är egna bitar som får flyttas fram till 4.3 (kant i kant med marken), och
+   pusslet fungerar på mobilen (handen ovanför tomten, beskuren tomt, tryck för att lägga).
+   *Kvar:* brädorna för Skede 2 och Förvaltningen, korten som grafik, tärningar på skärmen,
+   QR-skanning.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**
 7. **Balans** — se `BALANS.md` (nattens mätningar och förslag).

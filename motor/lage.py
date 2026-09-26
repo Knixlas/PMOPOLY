@@ -10,7 +10,7 @@ def _pu(m):
     return {"skede": "PU", "namn": "Skede 1 · Projektutveckling", "handelser": list(getattr(m, "logg", []))[-40:],
             "kvarter": [{
                 "namn": kv.namn,
-                "ruta": BRADE[kv.position], "varv": kv.varv,
+                "ruta": BRADE[kv.position], "position": kv.position, "varv": kv.varv,
                 "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid,
                 "riskbuffert": kv.riskbuffert, "erfarenhet": kv.erfarenhet,
                 "pc": (kv.pc or {}).get("Namn"),

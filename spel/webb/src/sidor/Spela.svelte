@@ -2,6 +2,7 @@
   // En enhet i ett parti: välj vilket kvarter ni är, svara på era frågor, följ läget.
   import { onDestroy } from 'svelte';
   import { Anslutning, hamtaLage, type Lage as LageT } from '../spel/anslutning.svelte';
+  import Brade from '../spel/Brade.svelte';
   import Fraga from '../spel/Fraga.svelte';
   import Lage from '../spel/Lage.svelte';
 
@@ -26,6 +27,8 @@
   const fraga = $derived(lage?.fraga ?? null);
   const minTur = $derived(!!fraga?.min);
   const lank = $derived(`${location.origin}${location.pathname}#/parti/${id}`);
+  // brädet visas i Skede 1, men inte medan man själv lägger pusslet (då behövs hela bredden)
+  const visaBrade = $derived(lage?.bild?.skede === 'PU' && !(minTur && ['pussel', 'markexpansion'].includes(fraga?.vy.typ ?? '')));
   const skedenamn: Record<string, string> = { PU: 'Skede 1', S2: 'Skede 2', F: 'Förvaltning' };
 
   async function kopiera() {
@@ -86,7 +89,10 @@
       </div>
       <p class="not">Slutpoäng = (PU + TG + F) × Mu. <a href="#/">Nytt parti</a></p>
     </section>
-  {:else if fraga && minTur}
+  {:else}
+  <div class="spelyta" class:med-brade={visaBrade}>
+  <div class="huvud">
+  {#if fraga && minTur}
     <Fraga {fraga} svara={s => anslutning?.svara(fraga.nr, s)} skickar={anslutning?.skickar} />
   {:else if fraga}
     <p class="panel vantar">
@@ -95,6 +101,12 @@
     </p>
   {:else}
     <p class="panel">Ansluter till partiet …</p>
+  {/if}
+  </div>
+  {#if visaBrade && lage?.bild}
+    <Brade kvarter={lage.bild.kvarter as any} jag={kvarter} aktiv={fraga?.kvarter ?? null} bank={lage.bild.projektbank?.length ?? 0} />
+  {/if}
+  </div>
   {/if}
   {#if anslutning?.fel}<p class="panel fel" role="alert">{anslutning.fel}</p>{/if}
 
@@ -109,6 +121,10 @@
   .skede { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--pu-mork); }
   h1 { margin: 0; font-size: clamp(24px, 4.5vw, 34px); }
   h2 { margin: 0 0 8px; }
+  .spelyta { display: grid; gap: 12px; align-items: start; }
+  .spelyta.med-brade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  @media (max-width: 820px) { .spelyta.med-brade { grid-template-columns: minmax(0, 1fr); } }
+  .huvud { min-width: 0; }
   .panel { background: var(--panel); border-radius: 6px; padding: 14px 16px; margin: 0 0 12px; }
   .val { display: grid; gap: 8px; max-width: 520px; }
   .kvarterknapp { display: block; padding: 14px 16px; border-radius: 6px; background: var(--black); color: var(--panel); font-weight: 700; font-size: 18px; text-decoration: none; }

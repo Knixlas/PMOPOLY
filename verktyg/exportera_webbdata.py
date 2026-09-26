@@ -3,6 +3,7 @@
 - spel/webb/src/data/pussel.json   projekt (namn, typ, form, BTA), markexpansioner och bitarnas färger,
                                    ur kortdata/*.xlsx (källan)
 - spel/webb/public/bilder/*.jpg    projektens bilder, nedskalade (ur tryck/bilder)
+- spel/webb/public/brade/pu.jpg     PU-brädet med klistermärkena (ur tryck/ut, byggs av tryck/bygg_klistermarken.py)
 - tester/pussel_fall.json          gemensamma testfall: webbklientens regler och lösare ska ge
                                    samma svar som motor/pussel.py
 
@@ -73,6 +74,16 @@ def exportera_data():
     return data
 
 
+def exportera_brade():
+    kalla = ROT / "tryck" / "ut" / "PU_brade_med_klistermarken.png"
+    if not kalla.exists():
+        return None
+    ut = WEBB / "public" / "brade" / "pu.jpg"
+    ut.parent.mkdir(parents=True, exist_ok=True)
+    Image.open(kalla).convert("RGB").save(ut, quality=80, optimize=True, progressive=True)
+    return ut
+
+
 def testfall(data, antal=40):
     """Slumpade kvarter med facit från motor/pussel.py."""
     R = random.Random(2026)
@@ -128,5 +139,6 @@ def testfall(data, antal=40):
 if __name__ == "__main__":
     d = exportera_data()
     f = testfall(d)
+    print("brädet →", exportera_brade())
     print(f"{len(d['projekt'])} projekt, {len(d['markexpansioner'])} markexpansioner → spel/webb/src/data/pussel.json")
     print(f"{len(f['granska'])} granskningsfall, {len(f['losa'])} lösarfall → tester/pussel_fall.json")
