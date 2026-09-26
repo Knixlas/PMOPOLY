@@ -59,6 +59,9 @@ tärningsintervall, klassgränser och etiketter. Regelboken skrivs om efter kort
    Det räcker att en tärning är över summan.
 6. Upprepa tills man lyckas.
 
+**Allt måste genom nämnden:** projekt som tas i efterhand (komplettering efter nämnden, 4.2) prövas med samma
+regler för de nya projekten.
+
 **Tak:** man får inte ta med fler projekt än att nämnden **går** att klara — summan (efter nämndslag)
 måste vara högst 19. Är den högre måste projekt tas bort innan första slaget.
 
