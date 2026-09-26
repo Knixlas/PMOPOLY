@@ -369,19 +369,33 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
   Ändringar märkta "Ändrat i 2.0"; sammanfattning i rutan "Nytt i version 2.0".
 - Saknas: regelbokens 12 bilder (hämtas när nätverket för Dropbox är öppet).
 
-## 5d. Status Skede 3 (Förvaltning 2.1)
+## 5d. Skede 3 (Förvaltning 2.1) — status och implementationsplan
 
-Designas i en separat session. Första utkastet finns: kvartalsloopen (marknad → omvärld → driftnetto →
-personal → händelser → kvartalskort → energiuppgradering) och 256 kort i fem lekar + FC/FS-arketyper.
+Underlag på main: `FORVALTNING_DESIGN_2-1.md` (logiken), `FORVALTNING_KORTSPEC.md` (effektkoder och
+frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC + 4 FS, med text.
 
-- Filerna (`data/forvaltning_2-1/*.csv`) är **bara committade lokalt i den sessionen** — inte pushade.
-  De måste pushas innan de kan tas in här.
-- Enligt principen *Excel är motorn* ska korten till slut ligga som `kortdata/F_*.xlsx`, byggda med
-  `verktyg/kortexcel.py` som övriga korttyper.
-- **Nästa steg:** implementationsplan för 2.1 — görs här när den andra sessionen har pushat sina filer.
-- **Beslut:** den gamla appen (`backend/`, `frontend/`) ändras inte — den ersätts. Pusselspelet lämnas som det är.
-- Tio öppna designfrågor (villkorskort, bankens ordning, påfyllning, omvärld vs yieldbana, FS-förmågor,
-  3-i-netto, fokustyp, uppgraderingskostnad, konsekvens-/garantikort, konkurs) — besvaras i den sessionen.
+### Designluckor att stänga innan bottarna (F0)
+- **Konsekvens-/garantikort finns bara i Kvartal 0**, men FC-4 Nätverkaren (svaghet), FC-5 Skölden och
+  FS-4 Besiktningsgeniet verkar "per varv" på dem. Antingen dras sådana kort i loopen, eller så måste de
+  tre egenskaperna skrivas om — annars är Skölden nästan värdelös.
+- **FC saknar typ.** Alla sex är generella (förhandling/energi/resurs). Pokémon-delen finns i lekarnas
+  typkaraktär men inte i personalen. Beslut: behåll generella, eller ge FC en typ?
+- **FS-2 Kvalitetsoptimeraren** (+1 dolt DN per varv) blir +1 bas-DN efter tre kvartal — misstänkt
+  starkast. Bottarna får avgöra.
+- **Tio öppna loopfrågor** från den andra tråden (villkorskort, bankens ordning, påfyllning, omvärld vs
+  yieldbana, FS-förmågor, 3-i-netto, fokustyp, uppgraderingskostnad, konsekvenskortens plats, konkurs).
+
+### Plan
+| Fas | Innehåll | Resultat |
+|---|---|---|
+| F0 | Stäng designluckorna ovan | Beslut i designdokumentet |
+| F1 | Kortdata: `kortdata/F_*.xlsx` byggda ur CSV:erna med `kortexcel.py`; kontroll att mekanik-kolumnerna (`ID/Typ/Effekt/Synlig/Timing/Värde/Påverkar`) är orörda och att fördelningarna stämmer mot kortspecen. Därefter är Excel källan och `data/forvaltning_2-1/` utgår. | 7 Excel-filer |
+| F2 | Motor för Skede 3 först: ren tillståndsmaskin (tillstånd + handling → tillstånd), läser `kortdata/`, slumpen utbytbar (online / spellogg). Startportföljer genereras ur `PU_projekt`. | `motor/` + tester |
+| F3 | Bottar: några strategier (försiktig, hävstång, sabotör, energi) som spelar tusentals partier. Mäter: bankövertag, DN-drift per typ, poängspridning, FC/FS-vinstandel, kortens verkan. | Balansrapport |
+| F4 | Kalibrering ur F3: 0,7/1,2-faktorer, fördelningar, slutformelns faktor, FC/FS. | Justerade Excel |
+| F5 | Regelbok kapitel 9 skrivs om efter låst loop; kapitel 10 (slutvärdering) efter kalibrering. | Regelbok 3.0 |
+| F6 | Tryck: nya F-kort, MV-tabell, yieldbana, kvartalsspår, brickor/clips, stora DN-kort. **Projektkortens nya baksida** (tryckt lån + ny förvaltningssektion) samordnas med omtrycket av alla 45 projektkort. | Printfiler |
+| F7 | Online/spellogg ovanpå motorn — när Skede 1–2 också finns i motorn. | App |
 
 ## 6. Öppna frågor
 
