@@ -18,6 +18,7 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 
 @dataclass
 class Parametrar:
+    projektutveckling: bool = True                 # spela Skede 1 först (annars slumpad portfölj)
     startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
@@ -90,6 +91,15 @@ class Motor:
     def satt_lan(self, f, lan):
         f.lan = lan
         f.ranta = int(round(self.p.ranta_sats * lan))
+
+    def projektutveckling(self):
+        """Spela Skede 1 med samma slump; ett resultat per spelare (i spelarordning)."""
+        from .pu import PUData, PUMotor, PUParametrar
+        from .pu_strategi import PU_STRATEGIER
+        if not hasattr(self.d, "pu"):
+            self.d.pu = PUData()                      # läses en gång per Kortdata
+        strategier = [self.s.valj(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
+        return PUMotor(strategier, PUParametrar(), self.s, self.d.pu).spela()
 
     def ny_fastighet(self, projekt):
         """Fastigheten som den står på projektkortet: driftnetto efter ränta, ränta, lån, energiklass."""
@@ -262,16 +272,29 @@ class Motor:
         self.projektpool = pool
         brf = s.blanda_lista(d.brf)
         fc_kvar, fs_kvar = list(d.fc), list(d.fs)
+        pu = self.projektutveckling() if self.p.projektutveckling else None
+        if pu:                                       # kvarterens egna projekt finns inte på marknaden
+            byggda = {p["Namn"] for r in pu for p in r["placerade"]}
+            pool[:] = [p for p in pool if p["Namn"] not in byggda]
         for sp in s.blanda_lista(self.spel.spelare):
             sp.riskbuffert = s.rng.randint(*self.p.start_riskbuffert)
-            # Genomförandet: projekten dras ur hela leken (BRF med), BRF säljs direkt
-            antal = s.rng.randint(*self.p.start_projekt)
-            abt = brf_intakt = 0.0
-            for _ in range(antal):
-                ar_brf = brf and s.rng.random() < len(brf) / (len(brf) + len(pool))
-                projekt = brf.pop() if ar_brf else pool.pop()
-                # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad (tomt och expansion ej modellerade)
-                abt += tal(projekt["Anskaffning (Mkr)"]) - tal(projekt["Utvecklingskostnad (Mkr)"])
+            if pu:                                   # Skede 1 i motorn; Skede 2 (Planering, Genomförande) ännu inte
+                r = pu[self.spel.spelare.index(sp)]
+                sp.pu = r
+                sp.riskbuffert = r["riskbuffert"]   # ANTAGANDE: oförändrat genom Skede 2
+                valda = r["placerade"]
+                abt = r["abt"]
+            else:                                    # utan Skede 1: slumpa en portfölj
+                antal = s.rng.randint(*self.p.start_projekt)
+                valda = []
+                for _ in range(antal):
+                    ar_brf = brf and s.rng.random() < len(brf) / (len(brf) + len(pool))
+                    valda.append(brf.pop() if ar_brf else pool.pop())
+                # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad
+                abt = sum(tal(p["Anskaffning (Mkr)"]) - tal(p["Utvecklingskostnad (Mkr)"]) for p in valda)
+            brf_intakt = 0.0
+            for projekt in valda:
+                ar_brf = projekt["Typ"] == "BRF"
                 if ar_brf:   # 8.6: intäkt = marknadsvärde − anskaffning + rörlig intäkt (kortets tärning)
                     tarning = int(re.search(r"D(\d+)", projekt["Rörligt marknadsvärde"] or "D0").group(1))
                     brf_intakt += (tal(projekt["Marknadsvärde (Mkr)"]) - tal(projekt["Anskaffning (Mkr)"])

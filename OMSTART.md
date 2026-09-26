@@ -441,6 +441,27 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
   uppgraderingar per parti; strategierna 23–27 % vinst. F-poäng median 15, vinnarens median 33 — för högt
   mot målet 20.
 
+## 5e. Skede 1 (Projektutveckling) i motorn — status (2026-09-26)
+
+`motor/pu.py` + `motor/pu_strategi.py`: brädet som tryckt (24 rutor medsols från Stadsbyggnadskontoret),
+PC-val, startprojekt, projektrutor/projektbank, händelsekort (40 + 12 special, D20 + erfarenhet, omslag),
+hörn (verkar vid passering och stopp), nämnd 4.1 (en tärning mer per försök), komplettering 4.2,
+placering 4.3 (kapacitet: mark + expansioner; bostäder på mark eller ovanpå), kvartertyp, ABT 5.1.
+Förvaltningen startar nu från Skede 1:s utfall (Skede 2 ännu inte i motorn: TG slumpas).
+
+**Beslut (Niklas):** tryckta PU-brädet gäller (Skönhetsrådet *ökar* kraven 2, Länsstyrelsen minskar 2);
+"tid" flyttar T-utfallet (start 12); "intäkt" = anskaffning; PC:s kravminskning direkt; omslag i nämnden
+tillåtet; oplacerade projekt betalar utveckling men ger ingen anskaffning; BYA = fotavtrycket;
+Regnbågen BTA 2000 → 1750 (formen gäller); tomtkostnad 10 Mkr (kalibrerat: vinnarens PU-poäng ≈ 20).
+**Antaganden kvar:** två varv och rundan spelas klart; projektruta = översta i högen eller ur banken;
+markanvisning = markexpansion (5 Mkr); återlämnade projekt till banken; PC väljs öppet i spelordning.
+**Simulerat (800 partier):** 5 projekt (4–7), anskaffning 364 Mkr (261–471), BTA 7 250 (5 250–9 250),
+kravsumma ~24, vinnarens ABT 416 → PU-poäng ≈ 20 med tomt 10. Niklas: 5–8 projekt är vanligt.
+
+**Klistermärken PU-brädet:** en av högplatserna "Lokal" → "Förskola"; rutan utan bild (lokal före
+Skönhetsrådet) får bild; Stadshuset "BY" → "BYT". **F-brädet:** "betala lönekostnader" → "dra två
+nätverkskort"; yieldbanan Q2–Q4 och fokusordningen (HR, lokal, kontor, förskola) gäller som tryckt.
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.

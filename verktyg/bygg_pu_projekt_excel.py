@@ -20,6 +20,13 @@ from kortexcel import TRYCKT_TEXT, bygg_arbetsbok, las_csv, normalisera
 
 TRYCK_FIL = TRYCKT_TEXT / "PU_projekt_tryckeri.txt"
 F_FIL = Path(__file__).resolve().parent.parent / "data" / "forvaltning_2-1" / "F2-1_projektkort.csv"
+FORM_FIL = Path(__file__).resolve().parent.parent / "data" / "shapes.json"
+
+# Omtryck: medvetna ändringar mot det tryckta kortet (kortet trycks om).
+OMTRYCK = {
+    # Formen på brickan gäller (7 rutor à 250 kvm); kortet sa 2000.
+    "Förskolan Regnbågen": {"BTA": "1750"},
+}
 
 NIVAER = ["MARK", "HUSUNDERBYGGNAD", "STOMME", "YTTERTAK", "FASADER",
           "STOMKOMPLETTERING", "INV YTSKIKT", "INSTALLATIONER", "GEMENSAMMA ARBETEN"]
@@ -52,6 +59,8 @@ KORT_KOLUMNER = [
     ("F-karaktär", "F_karaktar", False, "Ej tryckt — MV/anskaffning: kassako ≥ 1,25, prestige ≤ 0,85"),
     ("F-motivering", "F_motivering", False, "Ej tryckt — avsiktliga avsteg från grundregeln"),
 ] + [(f"Nivåkrav {etikett}", niva, True, "'-' = inget krav") for niva, etikett in zip(NIVAER, NIVA_ETIKETT)] + [
+    ("Antal rutor", "F_rutor", False, "Ej tryckt — brickans storlek; en ruta = 250 kvm (= BTA / 250)"),
+    ("Form (rutor)", "F_form", False, "Ej tryckt — brickans form som [rad, kolumn] per ruta (från brickorna)"),
     ("Förekomst", "Förekomst", False, "Ej tryckt — speldata"),
     ("Formfaktor", "Formfaktor", False, "Ej tryckt — styr brickans form (1–8)"),
     ("Linjetyp", "linjetyp", False, "Ej tryckt — ramens linjestil"),
@@ -136,6 +145,20 @@ def jamfor(csv_rader, tryck):
     return avvikelser
 
 
+def lagg_pa_former_och_omtryck(rader):
+    """Brickornas former (placeringspusslet) och medvetna ändringar mot trycket."""
+    import json
+    former = json.loads(FORM_FIL.read_text(encoding="utf-8"))
+    for r in rader:
+        r.update(OMTRYCK.get(r["Namn"], {}))
+        nyckel = next(k for k in former if k.split(" ", 1)[1] == r["Namn2"])
+        form = former[nyckel]
+        if len(form) * 250 != int(r["BTA"]):
+            sys.exit(f"{r['Namn']}: formen har {len(form)} rutor men BTA är {r['BTA']}")
+        r["F_rutor"] = str(len(form))
+        r["F_form"] = json.dumps(form)
+
+
 def lagg_pa_forvaltning(rader):
     """Förvaltningsvärden för omtrycket ersätter de tryckta (ej BRF)."""
     with open(F_FIL, encoding="utf-8", newline="") as f:
@@ -165,6 +188,7 @@ def main():
             print("AVVIKELSE", a)
         sys.exit("CSV och tryck skiljer — åtgärda innan Excel byggs.")
     lagg_pa_forvaltning(rader)
+    lagg_pa_former_och_omtryck(rader)
 
     ut = bygg_arbetsbok(
         filnamn="PU_projekt.xlsx",
@@ -189,6 +213,8 @@ def main():
             ("Etiketter", "Bekräftat mot fysiskt kort (BRF Eldningen): Utvecklingskostnad = CSV 'Kostnad', "
                           "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
             ("Beslut", "Förvaltningssektionen på baksidan görs om; alla 45 kort trycks om (360 kort)."),
+            ("Omtryck BTA", "Förskolan Regnbågen: BTA 2000 → 1750, så att kortet stämmer med brickans form (7 rutor)."),
+            ("Former", "Brickornas former från data/shapes.json; kontroll: rutor × 250 = BTA för alla 45."),
             ("Omtryck", "Marknadsvärde, energiklass, driftnetto (nu efter ränta, per år), räntekostnad och lån "
                         "för förvaltningsbara typer kommer från data/forvaltning_2-1/F2-1_projektkort.csv — "
                         "de tryckta värdena finns kvar i arv/ och i tryckfilens text."),
