@@ -1,10 +1,13 @@
-/* Kortens gemensamma stil. Typsnittet byts på ett ställe: --typsnitt. */
+/* Kortens gemensamma stil. Typsnitt som tryckt: Bahnschrift (rubrik Bold, brödtext Regular).
+   Bahnschrift följer med Windows och får inte ligga i repot: lägg bahnschrift.ttf i typsnitt/ lokalt
+   (ignoreras av git). Saknas filen används Barlow Semi Condensed (fri, OFL) som ersättare. */
+@font-face { font-family: "Bahnschrift lokal"; src: url("typsnitt/bahnschrift.ttf"); font-weight: 300 700; }
 @font-face { font-family: "Kort"; font-weight: 400; src: url("typsnitt/BarlowSemiCondensed-400.ttf"); }
 @font-face { font-family: "Kort"; font-weight: 400; font-style: italic; src: url("typsnitt/BarlowSemiCondensed-400-italic.ttf"); }
 @font-face { font-family: "Kort"; font-weight: 500; src: url("typsnitt/BarlowSemiCondensed-500.ttf"); }
 @font-face { font-family: "Kort"; font-weight: 600; src: url("typsnitt/BarlowSemiCondensed-600.ttf"); }
 @font-face { font-family: "Kort"; font-weight: 700; src: url("typsnitt/BarlowSemiCondensed-700.ttf"); }
-:root { --typsnitt: "Kort", sans-serif; --text: #2B2323; }
+:root { --typsnitt: "Bahnschrift", "Bahnschrift lokal", "Kort", sans-serif; --text: #2B2323; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--typsnitt); color: var(--text); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
