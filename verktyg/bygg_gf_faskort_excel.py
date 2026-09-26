@@ -188,6 +188,10 @@ def main():
                                     "Tagen från trycket (kolumnen 'Kostnad kulturaktiviteter (Mkr)')."),
             ("Mall", "Förklaringsrutan på textsidan skriver 'ARB Arbetsmiljö' medan värdena använder 'ABM' "
                      "(GF_kultur skriver 'ABM Arbetsmiljö')."),
+            ("B/S/K", "Bostad / Special / Komplex — tidigare indelning, samma logik (bekräftat av användaren)."),
+            ("Kulturkostnad", "Steg 1 = 2 Mkr, steg 2–8 = stegnumret. Avsiktligt: 'andra chans' till samma kostnad "
+                              "när man förstått logiken (bekräftat av användaren)."),
+            ("Namn", "De fulla namnen i kolumnen Namn är de rätta; 'Namn som tryckt' visar tryckets avkortning."),
             ("Byggd med", "verktyg/bygg_gf_faskort_excel.py"),
         ],
     )
