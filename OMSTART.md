@@ -369,6 +369,18 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
   Ändringar märkta "Ändrat i 2.0"; sammanfattning i rutan "Nytt i version 2.0".
 - Saknas: regelbokens 12 bilder (hämtas när nätverket för Dropbox är öppet).
 
+## 5d. Status Skede 3 (Förvaltning 2.1)
+
+Designas i en separat session. Första utkastet finns: kvartalsloopen (marknad → omvärld → driftnetto →
+personal → händelser → kvartalskort → energiuppgradering) och 256 kort i fem lekar + FC/FS-arketyper.
+
+- Filerna (`data/forvaltning_2-1/*.csv`) är **bara committade lokalt i den sessionen** — inte pushade.
+  De måste pushas innan de kan tas in här.
+- Enligt principen *Excel är motorn* ska korten till slut ligga som `kortdata/F_*.xlsx`, byggda med
+  `verktyg/kortexcel.py` som övriga korttyper.
+- Tio öppna designfrågor (villkorskort, bankens ordning, påfyllning, omvärld vs yieldbana, FS-förmågor,
+  3-i-netto, fokustyp, uppgraderingskostnad, konsekvens-/garantikort, konkurs) — besvaras i den sessionen.
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
