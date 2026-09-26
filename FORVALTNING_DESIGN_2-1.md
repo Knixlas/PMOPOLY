@@ -90,7 +90,7 @@ Därefter, per spelare:
    modifierare *(tas fram separat).*
 7. **Ta tre nätverkskort.** Får spelas när som helst, om inte kortet uttryckligen säger annat.
 8. **Dra tre projekt till projektbanken** (marknadsutbudet).
-9. **Lägg fram yieldbanan:** fyra yieldkort öppet per spår (platserna Q2, Q3, Q4, Slut) — se
+9. **Lägg fram yieldbanan:** tre yieldkort öppet per spår (platserna Q2, Q3, Q4) — se
    `FORVALTNING_KORTSPEC.md`, Yieldkort.
 
 ---

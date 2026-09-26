@@ -79,7 +79,7 @@ class Spel:
     spelare: list
     kvartal: int = 0
     yieldniva: dict = field(default_factory=lambda: dict(START_YIELD))
-    yieldbana: dict = field(default_factory=dict)   # spår -> [ändring för Q2, Q3, Q4, Slut]
+    yieldbana: dict = field(default_factory=dict)   # spår -> [Q2, Q3, Q4, efter Q4 (bara omvärld i Q4)]
     projektbank: list = field(default_factory=list)
     bankfynd: list = field(default_factory=list)
     tvang_faktor: float = None                      # omvärld "köparnas marknad": tvångsbud till lägre faktor vid nästa marknad

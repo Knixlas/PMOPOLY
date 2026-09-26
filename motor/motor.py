@@ -25,7 +25,7 @@ class Parametrar:
     f_delare: float = 15                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
-    fokustyp: tuple = ("HYRESRÄTT", "FÖRSKOLA", "LOKAL", "KONTOR")   # ANTAGANDE: fast rotation Q1–Q4
+    fokustyp: tuple = ("HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA")   # som tryckt på F-brädet (Kvartal 1–4)
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
     max_uppgraderingar: tuple = (3, 2, 1, 0)
     uppgradering_kostnad: int = 8                  # kalibrerat (varv 3, startkassa enligt 8.6)
@@ -256,7 +256,8 @@ class Motor:
         s.blanda("dd", d.dd)
         for spar in ("bostäder", "kommersiellt"):
             s.blanda("yield_" + spar, [k for k in d.yieldkort if k["Spår"] == spar])
-            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(4)]
+            # F-brädet: tre platser per spår (Q2–Q4); platsen efter Q4 (index 3) fylls bara av omvärldskort i Q4
+            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)] + [0.0]
         pool = s.blanda_lista(d.projekt)
         self.projektpool = pool
         brf = s.blanda_lista(d.brf)
