@@ -1,0 +1,164 @@
+<script lang="ts">
+  // Den aktuella frågan och sättet att svara på den. Varje frågetyp har sitt eget svarsläge;
+  // "Gör som förslaget" finns alltid (bottens val), så att ingen fråga kan fastna.
+  import data from '../data/pussel.json';
+  import Pussel from '../pussel/Pussel.svelte';
+  import { cellerFor, type Del, type Lagd } from '../pussel/kvarter';
+  import { GRUNDMARK, nyckel, type Form, type Ruta } from '../pussel/regler';
+  import type { Fraga, Svar } from './anslutning.svelte';
+
+  let { fraga, svara, skickar = false }: { fraga: Fraga; svara: (s: Svar) => void; skickar?: boolean } = $props();
+  const vy = $derived(fraga.vy);
+
+  let valda = $state<number[]>([]);
+  let tal = $state(0);
+  let sok = $state('');
+  $effect.pre(() => {
+    void fraga.nr;
+    valda = [];
+    sok = '';
+    tal = vy.typ === 'tal' ? (vy.min ?? 0) : 0;
+  });
+
+  const synliga = $derived((vy.alternativ ?? []).map((a, i) => ({ ...a, i }))
+    .filter(a => !sok || (a.text + ' ' + (a.detalj ?? '')).toLowerCase().includes(sok.toLowerCase())));
+
+  // ------------------------------------------------------------------ pusslet (4.3 och markexpansion)
+  const projektData = new Map(data.projekt.map(p => [p.namn, p]));
+  const grund = new Set(GRUNDMARK.map(([r, k]) => nyckel(r, k)));
+
+  function fastMark(): { del: Del; lagd: Lagd } | null {
+    const extra = (vy.mark ?? []).filter(([r, k]) => !grund.has(nyckel(r, k))) as Ruta[];
+    if (!extra.length) return null;
+    const r0 = Math.min(...extra.map(c => c[0])), k0 = Math.min(...extra.map(c => c[1]));
+    return {
+      del: { id: '__mark', namn: 'Lagd mark', typ: 'MARK', form: extra.map(([r, k]) => [r - r0, k - k0]) as Form },
+      lagd: { id: '__mark', lage: 0, rad: r0, kol: k0, lager: 0 },
+    };
+  }
+
+  const pussel = $derived.by(() => {
+    if (vy.typ !== 'pussel' && vy.typ !== 'markexpansion') return null;
+    const fast = fastMark();
+    const delar: Del[] = fast ? [fast.del] : [];
+    const start: Lagd[] = fast ? [fast.lagd] : [];
+    if (vy.typ === 'pussel') {
+      for (const p of vy.projekt ?? []) {
+        const d = projektData.get(p.namn);
+        delar.push({ id: p.namn, namn: p.namn, typ: p.typ, form: p.form as Form, bta: d?.bta, bild: d?.bild });
+      }
+    } else {
+      delar.push({ id: '__ny', namn: 'Ny markexpansion', typ: 'MARK', form: vy.form as Form, bya: (vy.form?.length ?? 0) * 250 });
+    }
+    return { delar, start, delMap: new Map(delar.map(d => [d.id, d])) };
+  });
+
+  function lamnaPussel(lagda: Lagd[]) {
+    if (!pussel) return;
+    const cell = (l: Lagd) => { const d = pussel.delMap.get(l.id)!; return cellerFor(d.form, l.lage, l.rad, l.kol); };
+    if (vy.typ === 'pussel') {
+      const placering = lagda.filter(l => pussel.delMap.get(l.id)!.typ !== 'MARK').map(l => [l.id, cell(l), l.lager]);
+      svara({ placering });
+      return;
+    }
+    const ny = lagda.find(l => l.id === '__ny');
+    if (!ny) return;
+    const mal = new Set(cell(ny).map(([r, k]) => nyckel(r, k)));
+    const i = (vy.platser ?? []).findIndex(p => p.length === mal.size && p.every(([r, k]) => mal.has(nyckel(r, k))));
+    if (i >= 0) svara({ val: i });
+  }
+  const kravMarkexpansion = (lagda: Lagd[]) => (lagda.some(l => l.id === '__ny') ? null : 'Lägg markexpansionen på tomten först.');
+</script>
+
+<section class="fraga" aria-live="polite">
+  <h2>{vy.rubrik}</h2>
+
+  {#if vy.typ === 'janej'}
+    <div class="knappar">
+      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: true })}>Ja</button>
+      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: false })}>Nej</button>
+    </div>
+  {:else if vy.typ === 'tal'}
+    {#if (vy.max ?? 0) - (vy.min ?? 0) <= 20}
+      <div class="rutnat" role="group" aria-label="Välj ett tal">
+        {#each Array((vy.max ?? 0) - (vy.min ?? 0) + 1) as _, i}
+          <button type="button" class="tal" disabled={skickar} onclick={() => svara({ svar: (vy.min ?? 0) + i })}>{(vy.min ?? 0) + i}</button>
+        {/each}
+      </div>
+    {:else}
+      <div class="knappar">
+        <label for="tal-{fraga.nr}">Tal ({vy.min}–{vy.max})</label>
+        <input id="tal-{fraga.nr}" type="number" min={vy.min} max={vy.max} bind:value={tal} />
+        <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: Math.round(tal) })}>Svara</button>
+      </div>
+    {/if}
+  {:else if vy.typ === 'val' || vy.typ === 'flerval'}
+    {#if (vy.alternativ?.length ?? 0) > 8}
+      <input class="sok" type="search" placeholder="Sök kort eller namn" bind:value={sok} aria-label="Sök bland alternativen" />
+    {/if}
+    <ul class="alternativ">
+      {#each synliga as a (a.i)}
+        <li>
+          {#if vy.typ === 'val'}
+            <button type="button" class="alt" disabled={skickar} onclick={() => svara({ val: a.i })}>
+              <span class="text">{a.text}</span>{#if a.detalj}<span class="detalj">{a.detalj}</span>{/if}
+            </button>
+          {:else}
+            <label class="alt kryss">
+              <input type="checkbox" checked={valda.includes(a.i)}
+                     disabled={!valda.includes(a.i) && vy.max !== undefined && valda.length >= vy.max}
+                     onchange={e => (valda = (e.currentTarget as HTMLInputElement).checked ? [...valda, a.i] : valda.filter(x => x !== a.i))} />
+              <span class="text">{a.text}</span>{#if a.detalj}<span class="detalj">{a.detalj}</span>{/if}
+            </label>
+          {/if}
+        </li>
+      {/each}
+    </ul>
+    {#if vy.typ === 'flerval'}
+      <div class="knappar">
+        <button type="button" class="stor" disabled={skickar} onclick={() => svara({ flera: valda })}>
+          {valda.length ? `Klart (${valda.length} valda)` : 'Inga, gå vidare'}
+        </button>
+      </div>
+    {/if}
+  {:else if pussel}
+    <Pussel delar={pussel.delar} start={pussel.start} fargar={data.fargar} lasta={['__mark']}
+            lamnaIn={lamnaPussel} lamnaText={vy.typ === 'pussel' ? 'Lämna in kvarteret' : 'Lägg markexpansionen här'}
+            lamnaKrav={vy.typ === 'markexpansion' ? kravMarkexpansion : undefined} />
+  {/if}
+
+  {#if fraga.kanal === 'beslut' && vy.forslag_text !== undefined}
+    <p class="forslag">
+      Förslag: <strong>{vy.forslag_text}</strong>
+      <button type="button" class="lank" disabled={skickar} onclick={() => svara({ forslag: true })}>Gör som förslaget</button>
+    </p>
+  {/if}
+</section>
+
+<style>
+  .fraga { background: var(--panel); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
+  h2 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+  .knappar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button { font: inherit; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  .stor { font-weight: 700; font-size: 17px; padding: 10px 22px; border-radius: 4px; border: 1px solid var(--black);
+          background: var(--black); color: var(--panel); min-width: 96px; }
+  .stor:hover:not(:disabled) { background: var(--pu-mork); border-color: var(--pu-mork); }
+  .rutnat { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; max-width: 520px; }
+  .tal { font-weight: 700; font-size: 17px; padding: 10px 0; border-radius: 4px; border: 1px solid var(--linje-stark);
+         background: #fff; color: var(--black); font-variant-numeric: tabular-nums; }
+  .tal:hover:not(:disabled) { background: var(--pu); }
+  .sok { font: inherit; padding: 8px 10px; border: 1px solid var(--linje-stark); border-radius: 4px; max-width: 360px; }
+  .alternativ { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 60vh; overflow: auto; }
+  .alt { width: 100%; display: grid; gap: 2px; text-align: left; padding: 9px 12px; border-radius: 4px;
+         border: 1px solid var(--linje-stark); background: #fff; color: var(--black); }
+  .alt:hover:not(:disabled) { border-color: var(--black); background: var(--panel-mork); }
+  .kryss { grid-template-columns: auto 1fr; column-gap: 10px; cursor: pointer; }
+  .kryss .detalj { grid-column: 2; }
+  .text { font-weight: 700; font-size: 15.5px; }
+  .detalj { font-size: 13px; color: var(--dampad); }
+  .forslag { margin: 0; font-size: 14px; color: var(--dampad); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+  .lank { background: none; border: none; padding: 0; color: var(--pu-mork); font-weight: 700; text-decoration: underline; }
+  button:focus-visible, input:focus-visible, label:focus-within { outline: 3px solid var(--pu); outline-offset: 2px; }
+  input[type='number'] { font: inherit; width: 90px; padding: 8px; border-radius: 4px; border: 1px solid var(--linje-stark); }
+</style>

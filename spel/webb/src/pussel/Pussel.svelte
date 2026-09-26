@@ -7,10 +7,14 @@
   import { losa } from './losare';
   import { BOSTAD, TOMT, granska, lagen, nyckel, spegla, vridMedurs, type Form, type Ruta } from './regler';
 
-  let { delar, start = [], fargar }: {
+  let { delar, start = [], fargar, lasta = [], lamnaIn, lamnaText = 'Lämna in', lamnaKrav }: {
     delar: Del[];
     start?: Lagd[];
     fargar: Record<string, { fyllning: string; ljus: string }>;
+    lasta?: string[];                               // bitar som ligger fast (t.ex. mark som redan är lagd)
+    lamnaIn?: (lagda: Lagd[]) => void;              // i spelet: lämna in kvarteret
+    lamnaText?: string;
+    lamnaKrav?: (lagda: Lagd[]) => string | null;   // skäl att inte kunna lämna in än (null = går)
   } = $props();
 
   const S = 40;                                   // rutans storlek i SVG-enheter
@@ -136,6 +140,7 @@
     if (e.button !== 0 || grepp) return;
     e.preventDefault();
     e.stopPropagation();
+    if (lasta.includes(l.id)) { meddelande = 'Den här marken är redan lagd och ligger fast.'; return; }
     const hinder = kanLyfta(l.id, lagda, delMap);
     if (hinder) { meddelande = hinder; return; }
     mattSkarm();
@@ -336,9 +341,16 @@
       {:else}
         <button type="button" onclick={angra} disabled={!historik.length} title="Ångra (Ctrl+Z)">Ångra</button>
         <button type="button" onclick={gorOm} disabled={!framtid.length} title="Gör om (Ctrl+Shift+Z)">Gör om</button>
-        <button type="button" onclick={garDet} disabled={raknar}>Går det?</button>
-        <button type="button" onclick={visaLosning} disabled={raknar}>Visa en lösning</button>
-        <button type="button" onclick={tomProjekten} disabled={!lagdaProjekt.length}>Töm tomten</button>
+        {#if projekt.length}
+          <button type="button" onclick={garDet} disabled={raknar}>Går det?</button>
+          <button type="button" onclick={visaLosning} disabled={raknar}>Visa en lösning</button>
+          <button type="button" onclick={tomProjekten} disabled={!lagdaProjekt.length}>Töm tomten</button>
+        {/if}
+        {#if lamnaIn}
+          {@const hinder = lamnaKrav ? lamnaKrav(lagda) : null}
+          <button type="button" class="lamna" onclick={() => lamnaIn!(lagda.map(l => ({ ...l })))} disabled={!!hinder || raknar}
+                  title={hinder ?? ''}>{lamnaText}</button>
+        {/if}
         <button type="button" aria-pressed={doljUppe} onclick={() => (doljUppe = !doljUppe)} disabled={!finnsUppe && !doljUppe}
                 title="Dölj bostäderna i andra lagret för att se projekten under">{doljUppe ? 'Visa lager 2' : 'Dölj lager 2'}</button>
       {/if}
@@ -505,6 +517,8 @@
   .verktyg button:hover:not(:disabled) { background: var(--panel-mork); }
   .verktyg button:disabled { opacity: .45; cursor: default; }
   .verktyg button.lagg:not(:disabled) { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .verktyg button.lamna { background: var(--pu); border-color: var(--pu-mork); }
+  .verktyg button.lamna:not(:disabled):hover { background: var(--pu-mork); color: #fff; }
   .verktyg button:focus-visible, .kort:focus-visible { outline: 3px solid var(--pu); outline-offset: 2px; }
   .haller-namn { font-weight: 600; margin-right: 4px; color: var(--black); }
 

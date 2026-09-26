@@ -1,0 +1,106 @@
+// Förbindelsen med servern: REST för att skapa och lista partier, en WebSocket per enhet i ett parti.
+// Läget (vad servern skickar) är reaktivt, så sidorna ritas om när något händer.
+
+export interface Alternativ { text: string; detalj?: string; kod: unknown }
+export interface Vy {
+  typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag';
+  rubrik: string;
+  kvarter?: string | null;
+  forslag_text?: string;
+  alternativ?: Alternativ[];
+  min?: number;
+  max?: number;
+  sok?: boolean;
+  mark?: [number, number][];
+  grundmark?: [number, number][];
+  projekt?: { namn: string; typ: string; form: [number, number][] }[];
+  form?: [number, number][];
+  platser?: [number, number][][];
+}
+export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
+export interface Lage {
+  rum: string;
+  slump: 'digital' | 'inmatad';
+  kvarter: { namn: string; styrning: string }[];
+  bild: Bild | null;
+  fraga: Fraga | null;
+  svar: { nr: number; kvarter: string; rubrik: string; svar: string }[];
+  klart: boolean;
+  resultat: Record<string, unknown>[] | null;
+  fel: string | null;
+}
+export interface Bild {
+  skede: string;
+  namn: string;
+  kvartal?: number;
+  yield?: Record<string, number>;
+  handelser: string[];
+  kvarter: Record<string, any>[];
+  projektbank?: string[];
+}
+
+export type Svar = { val: number } | { flera: number[] } | { svar: boolean | number } | { placering: unknown[] } | { forslag: true };
+
+const bas = () => (import.meta.env.DEV ? '' : '');
+
+export async function skapaParti(kropp: unknown): Promise<string> {
+  const r = await fetch(`${bas()}/api/rum`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(kropp) });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Servern svarade ${r.status}`);
+  return (await r.json()).id;
+}
+
+export async function listaPartier(): Promise<{ id: string; kvarter: string[]; slump: string; klart: boolean; skede?: string; skapad: number }[]> {
+  const r = await fetch(`${bas()}/api/rum`);
+  return r.ok ? r.json() : [];
+}
+
+export async function hamtaLage(id: string): Promise<Lage | null> {
+  const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`);
+  return r.ok ? r.json() : null;
+}
+
+/** En enhets förbindelse med ett parti. Återansluter själv om nätet går. */
+export class Anslutning {
+  lage = $state<Lage | null>(null);
+  status = $state<'ansluter' | 'ansluten' | 'borta'>('ansluter');
+  fel = $state('');
+  skickar = $state(false);
+  #ws: WebSocket | null = null;
+  #stangd = false;
+  #forsok = 0;
+
+  constructor(public id: string, public kvarter: string) {
+    this.#oppna();
+  }
+
+  #oppna() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${proto}://${location.host}/ws/${encodeURIComponent(this.id)}/${encodeURIComponent(this.kvarter)}`);
+    this.#ws = ws;
+    this.status = 'ansluter';
+    ws.onopen = () => { this.status = 'ansluten'; this.#forsok = 0; };
+    ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.typ === 'lage') { this.lage = msg; this.skickar = false; this.fel = ''; }
+      else if (msg.typ === 'fel') { this.fel = msg.text; this.skickar = false; }
+    };
+    ws.onclose = () => {
+      this.status = 'borta';
+      if (this.#stangd) return;
+      const vanta = Math.min(8000, 500 * 2 ** this.#forsok++);
+      setTimeout(() => !this.#stangd && this.#oppna(), vanta);
+    };
+  }
+
+  svara(nr: number, svar: Svar) {
+    if (!this.#ws || this.#ws.readyState !== WebSocket.OPEN) { this.fel = 'Ingen förbindelse med servern just nu.'; return; }
+    this.skickar = true;
+    this.fel = '';
+    this.#ws.send(JSON.stringify({ typ: 'svar', nr, svar }));
+  }
+
+  stang() {
+    this.#stangd = true;
+    this.#ws?.close();
+  }
+}

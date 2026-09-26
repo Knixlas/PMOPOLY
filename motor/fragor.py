@@ -154,8 +154,11 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag):
           "forslag_text": etikett(forslag, motor) if not isinstance(forslag, list)
           else (", ".join(etikett(x, motor) for x in forslag) or "Inga")}
     if pool:
-        vy["alternativ"] = [{"text": etikett(x, motor), "detalj": detalj(x, motor), "kod": koda(x, rotter)}
+        text = (lambda x: f"Q {x[0]:+d} · H {x[1]:+d}") if metod == "fordela_krav" else (lambda x: etikett(x, motor))
+        vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter)}
                             for x in pool(motor, subjekt, args)]
+        if metod == "fordela_krav":
+            vy["forslag_text"] = text(forslag)
         if inget:
             vy["alternativ"].append({"text": "Inget", "detalj": "", "kod": None})
     if typ == "tal":
