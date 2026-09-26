@@ -35,6 +35,8 @@ class Parametrar:
     ta_bort_kvartal: dict = field(default_factory=dict)
     yield_spann: dict = None                               # kalibrering: ersätter YIELD_SPANN
     bostadsveteran_duell: bool = False                     # beslut: Bostadsveteranen har ingen duellbonus
+    skold_typer: tuple = ("LOKAL",)                        # FC Skölden (junior) skyddar dessa typer
+    skold_per_kvartal: int = 1                             # så många gånger per kvartal
     extra_handelse: dict = field(default_factory=lambda: {t: {"direkt_dn_minus": 2} for t in ("LOKAL", "KONTOR")})
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
@@ -246,10 +248,10 @@ class Motor:
     def dra_handelse(self, f, sp):
         kort = self.s.dra("handelse_" + f.typ)
         if kort["Effekt"] in NEGATIVA:
-            skold = (self.ar_fc(sp, "Skölden") and not sp.skold_anvand
-                     and (f.typ == "LOKAL" or sp.fc_senior))
+            skold = (self.ar_fc(sp, "Skölden") and sp.skold_anvand < self.p.skold_per_kvartal
+                     and (f.typ in self.p.skold_typer or sp.fc_senior))
             if skold and sp.strategi.eliminera(self, sp, f, kort, gratis=True):
-                sp.skold_anvand = True
+                sp.skold_anvand += 1
                 self.stat["eliminerat"] += 1
                 if sp.fc_senior:
                     sp.riskbuffert += 1
@@ -700,7 +702,7 @@ class Motor:
     def personal(self):
         q = self.spel.kvartal
         for sp in self.spel.spelare:
-            sp.skold_anvand = False
+            sp.skold_anvand = 0
             if self.ar_fc(sp, "Den lugna"):
                 sp.riskbuffert += 1
             self.dra_natverkskort(sp, 3 if self.ar_fc(sp, "Nätverkaren") else 2)
