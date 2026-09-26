@@ -137,6 +137,52 @@ def natverkskort(k):
     return fram, text
 
 
+KVARTAL = {"HYRESRÄTT": 1, "LOKAL": 2, "KONTOR": 3, "FÖRSKOLA": 4}   # som tryckt på F-brädet
+
+
+def dela(text):
+    """'Stämning. Regel …' -> (stämning, regel): första meningen är stämning, resten regel."""
+    t = str(text or "").strip()
+    i = t.find(". ")
+    return (t[:i + 1], t[i + 2:]) if 0 < i < len(t) - 2 else (None, t)
+
+
+def kvartalskort(k):
+    q = KVARTAL[k["Typ"]]
+    regel = e(k["Beskrivning"]) if k["Effekt"] in REGEL_I_TEXTEN else REGEL[k["Effekt"]].format(v=tal(k["Värde"]))
+    stamning = None if k["Effekt"] in REGEL_I_TEXTEN else k["Beskrivning"]
+    fram = f_framsida("Kvartalskort", f"Kvartal {q} · {k['Typ'].capitalize()}", f"Kvartal {q}")
+    text = f_textsida(f"Kvartal {q} · {k['Typ'].lower()}", k["Rubrik"], stamning, regel, "Träffar allas fastigheter av typen", k["ID"])
+    return fram, text
+
+
+def omvarldskort(k):
+    stamning, regel = dela(k["Beskrivning"])
+    fram = f_framsida("Omvärldskort", "Träffar alla", "Omvärldskort Omvärld")
+    text = f_textsida("Omvärldskort", k["Rubrik"], stamning, e(regel), "Ett per kvartal", k["ID"])
+    return fram, text
+
+
+def ddkort(k):
+    stamning, regel = dela(k["Beskrivning"])
+    fram = f_framsida("Due diligence", "Dras vid köp", "Due Diligence")
+    text = f_textsida("DD-kort · läggs dolt", k["Rubrik"], stamning, e(regel), "Ett per köpt fastighet", k["ID"])
+    return fram, text
+
+
+def fs_kort(k, senior=False):
+    sida = "Senior" if senior else "Junior"
+    ruta = f'<div class="egenskap"><span>{"Senior" if senior else "Förmåga"}</span>{e(k["Senior"] if senior else k["Junior"])}</div>'
+    return f'''<div class="kort k58 text" style="--bg:{F["kram"]};--accent:{F["rod"]}">
+      <div class="topp">{bricka("F", F["rod"])}<span class="overrad">Förvaltningsstöd · {sida}</span></div>
+      <div class="fc-huvud">{sexkant(bild(PERSONBILD.get(k["ID"], "")), F["rod"])}
+        <div><div class="t-rubrik">{e(k["Namn"])}</div></div></div>
+      <div class="stamning">{e(k["Beskrivning"])}</div>
+      {ruta}
+      <div class="fot"><span>{"Vänd vid två utvecklingsbrickor" if not senior else "Senior"}</span><span>{e(k["ID"])}</span></div>
+      <div class="list"></div></div>'''
+
+
 def fc_kort(k, senior=False):
     """FC: dubbelsidigt, junior på ena sidan och senior på den andra."""
     sida = "Senior" if senior else "Junior"
