@@ -18,7 +18,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 | `dolt_plus_dn` | nej | ackumulerar; 3 i netto → **+1 bas-DN** |
 | `dolt_minus_dn` | nej | ackumulerar; 3 i netto → **−1 bas-DN** |
 | `energi_plus` | nej | ackumulerar; 3 → **+1 energiklass** |
-| `energivarning` | ja | ackumulerar; 3 → **−1 energiklass** |
+| `energi_minus` | nej | ackumulerar; 3 i netto → **−1 energiklass** (energi hanteras i tredjedelar precis som DN) |
 | `direkt_dn_plus` | ja | **+1 bas-DN direkt** & permanent (sällsynt) |
 | `direkt_dn_minus` | ja | **−1 bas-DN direkt** & permanent (sällsynt) |
 | `underhallsvarning` | ja | betala `Värde` Mkr i marknaden för att röja; 3 oåtgärdade → −1 DN **+ uppgraderingsstopp** tills röjt |
@@ -29,7 +29,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 | `riskbuffert` | ja | ta en riskbuffert (se designdokumentet §9) |
 
 Plus/minus är **dolda och tysta**; varning är **synlig och åtgärdbar**;
-energivarning drar ner energiklass (biter hårdare mot D/E).
+energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 
 ### B. Handeffekter (personkort)
 | Kod | Timing | Verkan |
@@ -38,6 +38,8 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 | `forhandling_auto` | före slag | vinner förhandlingen automatiskt |
 | `energi_mod` | efter slag | +1/+2/+3 på energiuppgraderingsslag (`Värde`) |
 | `lagg_dn_plus_egen` | när som helst | lägg en dold +1 DN-bricka på **egen** fastighet |
+| `lagg_energi_plus_egen` | när som helst | lägg en dold energiplusbricka på **egen** fastighet |
+| `direkt_dn_plus_egen` | när som helst | **+1 bas-DN direkt** och permanent på egen fastighet (sällsynt joker) |
 | `stada` | när som helst | ta bort ett minus- eller varningskort från egen fastighet |
 | `stopp` | reaktivt | avvärj ett tvångsbud |
 | `kika` | när som helst | titta på ett dolt kort hos en motståndare |
@@ -55,6 +57,12 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 | `bords_dn` | omvärld | ±1 DN på alla fastigheter av en typ |
 | `resurs` | båda | riskbuffert till alla / dra personkort |
 | `personalrotation` | omvärld | alla drar ett slumpvis personkort från spelaren till vänster |
+| `yield_byt_alla` | omvärld | byt ut **alla kvarvarande** yieldkort på `Påverkar`-spåret mot nya ur yieldleken |
+| `energistod` | omvärld | varje spelare höjer energiklassen ett steg på en valfri egen fastighet |
+| `slang_personkort` | omvärld | varje spelare slänger ett valfritt personkort |
+| `inget` | kvartal | inget händer |
+| `kvartal_dd` | kvartal | alla med fokustypen drar ett DD-kort dolt på en av sina fastigheter av typen |
+| `kvartal_kassa_minus` | kvartal | varje ägare av fokustypen betalar `Värde` Mkr **vid nästa marknad** (plånboken stängd) |
 | `typbred_dn_plus` / `typbred_dn_minus` | kvartal | ±1 DN på **allas** fastigheter av fokustypen |
 | `typbred_ek_plus` / `typbred_ek_minus` | kvartal | ±1 energiklass på allas fastigheter av fokustypen |
 | `spotlight` | kvartal | alla drar ett extra händelsekort för fokustypen |
@@ -74,7 +82,7 @@ Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 | dolt_plus_dn | 6 | 6 | 5 | 4 |
 | dolt_minus_dn | 3 | 3 | 6 | 6 |
 | energi_plus | 2 | 2 | 1 | 1 |
-| energivarning | 1 | 1 | 2 | 2 |
+| energi_minus | 1 | 1 | 2 | 2 |
 | direkt_dn_plus | 1 | 1 | 1 | 1 |
 | direkt_dn_minus | – | – | 1 | 2 |
 | underhallsvarning | 3 | 3 | 2 | 2 |
@@ -87,22 +95,27 @@ Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 
 Karaktär: stabila typer plus-lean utan direkta minus (men enstaka windfall + fler
 underhållsvarningar); volatila typer minus-övervikt med båda direktchockerna, mer
-energivarning och villkor.
+energiminus och villkor.
 
-### Kvartalskort — `F2-1_kvartalskort.csv` (36)
+### Kvartalskort — `F2-1_kvartalskort.csv` (46)
 Fyra typleker. Varje kvartal är en **fokustyp** aktiv; dess kvartalskort träffar allas
 fastigheter av typen. Kolumner: `ID;Typ;Effekt;Värde;Rubrik;Beskrivning`
-Per typ (9): typbred_dn_plus 1, typbred_dn_minus 2, typbred_ek_plus 1,
-typbred_ek_minus 1, spotlight 2, resurs 1, villkorat 1.
+Förskola, Lokal, Kontor (12 st var): typbred_dn_plus 1, typbred_dn_minus 2, typbred_ek_plus 1,
+typbred_ek_minus 1, spotlight 2, resurs 1, villkorat 1, inget 1, kvartal_dd 1, kvartal_kassa_minus 1
+(2 Mkr förskola, 5 Mkr lokal/kontor).
+**Hyresrätt (10 st) drabbas aldrig av typbrett minus** — i stället inget 2, kvartal_dd 1; plus
+typbred_dn_plus 1, typbred_ek_plus 1, spotlight 2, resurs 1, villkorat 1, kvartal_kassa_minus 1 (2 Mkr).
 
-### Personkort — `F2-1_personkort.csv` (67)
+### Personkort — `F2-1_personkort.csv` (73)
 En förbrukningslek, blandas om. Kolumner: `ID;Effekt;Timing;Värde;Rubrik;Beskrivning`
 forhandling_mod 10, forhandling_auto 3, energi_mod 10, lagg_dn_plus_egen 8, stada 6,
-stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3.
+stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3,
+lagg_energi_plus_egen 5, direkt_dn_plus_egen 1.
 
-### Omvärldskort — `F2-1_omvärldskort.csv` (26)
+### Omvärldskort — `F2-1_omvärldskort.csv` (31)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
-yield_ersatt 15 (alla ±0,5 pp), yield_byt 4, bords_dn 3, resurs 3, personalrotation 1.
+yield_ersatt 15 (alla ±0,5 pp), yield_byt 4, yield_byt_alla 2, bords_dn 3, resurs 3, personalrotation 1,
+energistod 1, slang_personkort 2.
 
 ### Yieldkort — `F2-1_yieldkort.csv` (24)
 Två lekar, 16 per spår (bostäder, kommersiellt). Innehållet är det **tryckta yieldkortet från
@@ -130,14 +143,14 @@ Alla kort är **dubbelsidiga: junior / senior**.
 | Lek | Antal |
 |---|---|
 | Händelsekort (4 typleker) | 106 |
-| Kvartalskort (4 typleker) | 36 |
-| Personkort | 67 |
-| Omvärldskort | 26 |
+| Kvartalskort (4 typleker) | 46 |
+| Personkort | 73 |
+| Omvärldskort | 31 |
 | Yieldkort (återanvänds från version 1, utan ±1,0) | 24 |
 | DD | 36 |
 | Fastighetskort (uppdaterad baksida: tryckt lån) | 45 |
 | FC + FS-arketyper (dubbelsidiga) | 12 |
-| **Summa** | **~318** |
+| **Summa** | **~351** |
 
 Brickor: utvecklingsbrickor, DN-siffror, energiclips A–E, +/− - och energibrickor, riskbuffert, restkort,
 lån-clips (ex-bank).
@@ -169,6 +182,20 @@ lån-clips (ex-bank).
   (`utveckling`, 3 st). Från ett händelsekort går brickan till **FC om fastigheten har FC:s typ**,
   annars till FS — FC växer alltså med den portfölj den passar.
 - **FC-3 Skölden** blockerar händelsekort (inte konsekvenskort, som bara förekommer i Kvartal 0).
+
+---
+
+## 6. Dolda brickor och visning (DN och energi)
+
+DN och energi hanteras **på samma sätt, i tredjedelar**: plus- och minusbrickor läggs dolt på fastigheten
+när de dras eller spelas. Vid **netto 3** åt något håll ändras bas-DN respektive energiklass permanent och
+brickorna kasseras.
+
+*Förslag, ej beslutat — visningsregel:*
+- **Netto −3 visas direkt** (tvingande; annars döljer alla sina minus).
+- **Netto +3 visar man när man vill.** Plus hjälper bara när det visas (högre MV, klarar balanskravet,
+  dyrare att tvångsbuda på) — men väntar man kan ett minus hinna sänka nettot till +2. Ett val: ta hem
+  vinsten nu eller vänta. (Alternativ: tvingande visning åt båda håll — enklare, men utan beslutet.)
 
 ---
 

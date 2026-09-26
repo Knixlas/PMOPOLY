@@ -66,3 +66,9 @@ PK-64;riskbuffert;nar_som_helst;;Extra kapital avsatt;Ta en riskbuffert.
 PK-65;utveckling;nar_som_helst;;Intern ledarutbildning;FC eller FS går en intern ledarutbildning. Lägg en utvecklingsbricka på din FC eller FS.
 PK-66;utveckling;nar_som_helst;;Branschcertifiering;Er förvaltningschef tar en eftertraktad certifiering. Lägg en utvecklingsbricka på din FC eller FS.
 PK-67;utveckling;nar_som_helst;;Mentorprogram;Erfaren kollega delar med sig av sina knep. Lägg en utvecklingsbricka på din FC eller FS.
+PK-68;lagg_energi_plus_egen;nar_som_helst;;Injustering av värmesystemet;Värmen balanseras om och radiatorerna slutar gå för fullt. Lägg en dold energiplusbricka på en egen fastighet.
+PK-69;lagg_energi_plus_egen;nar_som_helst;;Solceller på taket;Taket får solceller som täcker en del av fastighetselen. Lägg en dold energiplusbricka på en egen fastighet.
+PK-70;lagg_energi_plus_egen;nar_som_helst;;Tilläggsisolering av vinden;Vindsbjälklaget isoleras och värmeförlusten minskar. Lägg en dold energiplusbricka på en egen fastighet.
+PK-71;lagg_energi_plus_egen;nar_som_helst;;Byte till LED i allmänna ytor;Trapphus och garage får ny belysning med närvarostyrning. Lägg en dold energiplusbricka på en egen fastighet.
+PK-72;lagg_energi_plus_egen;nar_som_helst;;Frånluftsvärmepump installeras;Värmen i frånluften tas tillvara i stället för att blåsa ut. Lägg en dold energiplusbricka på en egen fastighet.
+PK-73;direkt_dn_plus_egen;nar_som_helst;;Genombrott i hyresförhandlingen;Ett nytt avtal höjer hyresnivån på en hel fastighet. +1 DN direkt och permanent på en egen fastighet.

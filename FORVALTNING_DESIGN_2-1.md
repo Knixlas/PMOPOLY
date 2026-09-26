@@ -104,7 +104,7 @@ Varje kvartal, i ordning:
    personkort, ge riskbuffert m.m. (makro, träffar alla).
 3. **Driftnetto** — summera all DN (synlig + dold), dela med 4, avrunda nedåt.
    Resten blir **restkort** (§9). Räntan är redan inbakad i DN.
-4. **Personal** — dra två personkort. (Ingen handspärr — du får bunkra.)
+4. **Personal** — dra två personkort. **Max sex kort på handen** — över sex slänger du valfria kort.
 5. **Händelser per fastighet** — dra ett händelsekort per fastighet (§7).
 6. **Kvartalskort** — dra ett. Som omvärldskort, men rör *aldrig* yield (tempo/resurs).
 7. **Energiuppgraderingar** — frivilligt (§8). Max **3 / 2 / 1** fastigheter i Q1 / Q2 / Q3.

@@ -10,7 +10,7 @@ HR-08;HYRESRÄTT;dolt_minus_dn;nej;;Andrahandsuthyrning upptäcks;Hyresgästen h
 HR-09;HYRESRÄTT;dolt_minus_dn;nej;;Källarförråd vattenskadat;Mindre läcka i grunden skadar hyresgästernas förvaring.
 HR-10;HYRESRÄTT;energi_plus;nej;;Nya termostatventiler monteras;Injustering av värmesystemet ger bättre reglering än beräknat.
 HR-11;HYRESRÄTT;energi_plus;nej;;Tätning av fönster lyckas;Fogar och tätningslister byts i samband med löpande underhåll.
-HR-12;HYRESRÄTT;energivarning;ja;;Fjärrvärmeväxlare åldras;Växlaren är original från byggåret och tappar verkningsgrad.
+HR-12;HYRESRÄTT;energi_minus;nej;;Fjärrvärmeväxlare åldras;Växlaren är original från byggåret och tappar verkningsgrad.
 HR-13;HYRESRÄTT;direkt_dn_plus;ja;;Kommunen tecknar blockhyra;Kommunen hyr tio lägenheter för nyanlända på ett tioårigt avtal.
 HR-14;HYRESRÄTT;underhallsvarning;ja;3;Stammar i akut behov av byte;Avloppsstammarna är uttjänta och läcker i flera våningsplan.
 HR-15;HYRESRÄTT;underhallsvarning;ja;3;Taket läcker vid slagregn;Papptäckningen har passerat sin livslängd och släpper in vatten.
@@ -33,7 +33,7 @@ FO-08;FÖRSKOLA;dolt_minus_dn;nej;;Personalutrymme underutnyttjat;Del av ytan st
 FO-09;FÖRSKOLA;dolt_minus_dn;nej;;Fuktskada i grovkök;Mindre läcka under diskbänken har gått obemärkt förbi ett tag.
 FO-10;FÖRSKOLA;energi_plus;nej;;Solavskärmning minskar kylbehov;Nya markiser håller nere temperaturen i lekrummen sommartid.
 FO-11;FÖRSKOLA;energi_plus;nej;;Behovsstyrd ventilation installeras;Luftflödet anpassas efter antal barn i lokalen.
-FO-12;FÖRSKOLA;energivarning;ja;;Undercentralen är original;Värmeväxlaren från byggåret börjar tappa i effektivitet.
+FO-12;FÖRSKOLA;energi_minus;nej;;Undercentralen är original;Värmeväxlaren från byggåret börjar tappa i effektivitet.
 FO-13;FÖRSKOLA;direkt_dn_plus;ja;;Kommunen bygger ut avtalet till hela huset;Kommunen tecknar långt hyresavtal för hela fastigheten inklusive tillbyggnad.
 FO-14;FÖRSKOLA;underhallsvarning;ja;2;Lekutrustningen underkänns;Rutschkana och klätterställning klarar inte säkerhetsbesiktningen.
 FO-15;FÖRSKOLA;underhallsvarning;ja;3;Ventilationen klarar inte OVK;Luftflödena i lekrummen understiger kraven och kräver ombyggnad.
@@ -57,8 +57,8 @@ LO-09;LOKAL;dolt_minus_dn;nej;;Fettavskiljaren läcker smått;Mindre läckage i 
 LO-10;LOKAL;dolt_minus_dn;nej;;Skyltfönster krossat en tid;Reparation dröjer och lokalen syns sämre mot gatan.
 LO-11;LOKAL;dolt_minus_dn;nej;;Hyresrabatt förhandlas fram i det tysta;Hyresgästen får tillfällig rabatt för att inte flytta.
 LO-12;LOKAL;energi_plus;nej;;Ny LED-belysning i butiksytan;Hyresgästen byter armaturer och sänker fastighetens elkostnad.
-LO-13;LOKAL;energivarning;ja;;Kylanläggningen börjar dra mer el;Kompressorn i livsmedelsbutikens kyla närmar sig sin livslängd.
-LO-14;LOKAL;energivarning;ja;;Ventilationsaggregatet är original;Aggregatet från byggåret har sämre verkningsgrad än moderna system.
+LO-13;LOKAL;energi_minus;nej;;Kylanläggningen börjar dra mer el;Kompressorn i livsmedelsbutikens kyla närmar sig sin livslängd.
+LO-14;LOKAL;energi_minus;nej;;Ventilationsaggregatet är original;Aggregatet från byggåret har sämre verkningsgrad än moderna system.
 LO-15;LOKAL;direkt_dn_plus;ja;;Ankarhyresgäst tecknar tioårsavtal;Stor kedjebutik flyttar in och lyfter hela husets attraktionskraft.
 LO-16;LOKAL;direkt_dn_minus;ja;;Ankarhyresgästen går i konkurs;Den stora hyresgästen lämnar utan uppsägningstid och lokalen står tom.
 LO-17;LOKAL;underhallsvarning;ja;2;Golvet i handelslokalen är utslitet;Betonggolvet måste slipas och beläggas på nytt.
@@ -82,8 +82,8 @@ KO-08;KONTOR;dolt_minus_dn;nej;;Elkapaciteten börjar bli en flaskhals;Ökad ser
 KO-09;KONTOR;dolt_minus_dn;nej;;Reception underutnyttjad;Delad servicefunktion i entrén ger lägre intäkt än planerat.
 KO-10;KONTOR;dolt_minus_dn;nej;;Parkeringsgaraget har lediga platser;Färre anställda på plats gör att garageintäkterna sjunker.
 KO-11;KONTOR;energi_plus;nej;;Behovsstyrd belysning installeras;Närvarostyrda armaturer sänker elförbrukningen i kontorskorridorerna.
-KO-12;KONTOR;energivarning;ja;;Kylmaskinen för komfortkyla åldras;Kompressorn börjar dra mer el än när den var ny.
-KO-13;KONTOR;energivarning;ja;;Klimatskalet läcker värme;Fönsterpartierna från byggåret har sämre isolerförmåga än moderna glas.
+KO-12;KONTOR;energi_minus;nej;;Kylmaskinen för komfortkyla åldras;Kompressorn börjar dra mer el än när den var ny.
+KO-13;KONTOR;energi_minus;nej;;Klimatskalet läcker värme;Fönsterpartierna från byggåret har sämre isolerförmåga än moderna glas.
 KO-14;KONTOR;direkt_dn_plus;ja;;Storbolag flyttar in på tioårsavtal;Ett väletablerat företag hyr hela plan för sitt regionkontor.
 KO-15;KONTOR;direkt_dn_minus;ja;;Storhyresgästen flyttar till nybygge;Ankarhyresgästen lämnar för modernare lokaler i nybyggt kvarter.
 KO-16;KONTOR;direkt_dn_minus;ja;;Hyresgästen läggs ner i omorganisation;Moderbolaget stänger den lokala verksamheten och avtalet upphör.

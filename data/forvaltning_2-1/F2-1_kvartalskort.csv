@@ -1,13 +1,14 @@
 ID;Typ;Effekt;Värde;Rubrik;Beskrivning
 QHR-01;HYRESRÄTT;typbred_dn_plus;;Bostadskön rekordlång;Flyttkedjorna har stannat. Alla med hyresrätt märker det direkt.
-QHR-02;HYRESRÄTT;typbred_dn_minus;;Hyresgästföreningen håller emot;Årets förhandling går trögt. Påslaget blir magrare än väntat.
-QHR-03;HYRESRÄTT;typbred_dn_minus;;Andrahandsmarknaden pressar;Svarta kontrakt och otillåten uthyrning syns i statistiken. Förtroendet dalar.
+QHR-02;HYRESRÄTT;inget;;Lugnt kvartal i bostadsbeståndet;Inget särskilt händer. Hyresgästerna bor kvar och husen står.
+QHR-03;HYRESRÄTT;inget;;Stabil efterfrågan;Kön är lång men oförändrad. Inget påverkar hyresrätterna detta kvartal.
 QHR-04;HYRESRÄTT;typbred_ek_plus;;Klimatbonus för bostäder;Staten skjuter till pengar för energirenovering av hyreshus.
-QHR-05;HYRESRÄTT;typbred_ek_minus;;Stambyten skjuts upp;Underhållet har väntat för länge. Slitaget syns nu på klassningen.
+QHR-05;HYRESRÄTT;kvartal_dd;;Ny besiktning av beståndet;Försäkringsbolaget begär en ny genomgång. Alla med hyresrätt drar ett DD-kort och lägger det dolt på en av sina hyresrätter.
 QHR-06;HYRESRÄTT;spotlight;;Renoveringsvågen sköljer över;Fastighetsägarna river och bygger om samtidigt. Ett extra kort väntar.
 QHR-07;HYRESRÄTT;spotlight;;Hyresgästernas vinter;Kyla, klagomål och trasiga hissar. Ett extra kort avgör läget.
 QHR-08;HYRESRÄTT;resurs;;Ny förvaltare på plats;En van hyresrättsförvaltare söker jobb. Ni har chansen att knyta till er kompetens.
 QHR-09;HYRESRÄTT;villkorat;;Slitna hus straffas hårdast;Hyresgästerna väljer bort dåligt isolerade hus. Villkor: energiklass D eller sämre ger -1 DN.
+QHR-10;HYRESRÄTT;kvartal_kassa_minus;2;Försäkringspremien höjs;Premierna för flerbostadshus går upp. Varje ägare av hyresrätt betalar 2 Mkr vid nästa marknad.
 QFO-01;FÖRSKOLA;typbred_dn_plus;;Barnkullarna växer;Kommunen behöver fler platser snabbt. Förskolorna fylls upp.
 QFO-02;FÖRSKOLA;typbred_dn_minus;;Kommunbudgeten stramas åt;Sparbeting i förvaltningen. Hyresförhandlingen präglas av det.
 QFO-03;FÖRSKOLA;typbred_dn_minus;;Vikande barnafödande;Färre barn föds i kommunen. Efterfrågan på förskoleplatser mattas av.
@@ -17,8 +18,11 @@ QFO-06;FÖRSKOLA;spotlight;;Kommunal upphandlingsrunda;Alla avtal ses över på 
 QFO-07;FÖRSKOLA;spotlight;;Skolinspektionen slår till;Oanmälda besök på flera adresser samtidigt. Ett extra kort väntar.
 QFO-08;FÖRSKOLA;resurs;;Erfaren förskoleförvaltare hörs av;Någon som känner kommunens rutiner utan och innan söker sig till er.
 QFO-09;FÖRSKOLA;villkorat;;Kommunen prioriterar bäst skick;Upphandlingen viktar driftskostnad tungt. Villkor: energiklass D eller sämre ger -1 DN.
+QFO-10;FÖRSKOLA;inget;;Ett vanligt kvartal på förskolorna;Verksamheten rullar på som vanligt. Inget påverkar förskolorna.
+QFO-11;FÖRSKOLA;kvartal_dd;;Kommunen granskar lokalerna;Miljöförvaltningen gör tillsyn. Alla med förskola drar ett DD-kort och lägger det dolt på en av sina förskolor.
+QFO-12;FÖRSKOLA;kvartal_kassa_minus;2;Krav på ny utemiljö;Gårdarna måste göras om enligt nya riktlinjer. Varje ägare av förskola betalar 2 Mkr vid nästa marknad.
 QLO-01;LOKAL;typbred_dn_plus;;Julhandeln slår rekord;Kunderna strömmar till. Omsättningshyrorna rusar för alla lokaler.
-QLO-02;LOKAL;typbred_dn_minus;;E-handeln tar mark;Ännu en butik skyltar med "allt måste bort". Handelslokalerna känner av det.
+QLO-02;LOKAL;typbred_dn_minus;;E-handeln tar mark;"Ännu en butik skyltar med ""allt måste bort"". Handelslokalerna känner av det."
 QLO-03;LOKAL;typbred_dn_minus;;Externhandel öppnar utanför stan;Ett nytt köpcentrum drar kunder från centrum. Lokalhyresgästerna blir nervösa.
 QLO-04;LOKAL;typbred_ek_plus;;Centrumlyft med statligt stöd;Kommunen och staten delar på notan för grönare butikslokaler.
 QLO-05;LOKAL;typbred_ek_minus;;Slitna köpcentrum tappar klass;Gamla ventilationssystem och sliten fasad syns i besiktningen.
@@ -26,6 +30,9 @@ QLO-06;LOKAL;spotlight;;Butiksdöden sprider sig;Flera konkurser samma kvartal. 
 QLO-07;LOKAL;spotlight;;Pop-up-våg fyller ytorna;Korta kontrakt överallt. Ett extra kort avgör vad som blir kvar.
 QLO-08;LOKAL;resurs;;Kommersiell förvaltare tillgänglig;Någon med känsla för butikshyresgäster söker en ny arbetsgivare.
 QLO-09;LOKAL;villkorat;;Bäst läge klarar sig bäst;Butikskedjorna kräver låga driftskostnader vid nyetablering. Villkor: energiklass D eller sämre ger -1 DN.
+QLO-10;LOKAL;inget;;Stilla i handelsstråket;Varken nya hyresgäster eller uppsägningar. Inget påverkar lokalerna.
+QLO-11;LOKAL;kvartal_dd;;Hyresgäst begär genomgång;En större hyresgäst kräver en teknisk genomgång. Alla med lokal drar ett DD-kort och lägger det dolt på en av sina lokaler.
+QLO-12;LOKAL;kvartal_kassa_minus;5;Hyresgästanpassning krävs;Konkurrensen tvingar fram anpassningar. Varje ägare av lokal betalar 5 Mkr vid nästa marknad.
 QKO-01;KONTOR;typbred_dn_plus;;Storföretag etablerar sig;Ett stort bolag flyttar sitt kontor till orten. Efterfrågan på kontorsyta stiger kraftigt.
 QKO-02;KONTOR;typbred_dn_minus;;Hybridarbete slår igenom;Färre dagar på kontoret betyder mindre yta per anställd. Vakanserna ökar.
 QKO-03;KONTOR;typbred_dn_minus;;Konjunkturen viker;Varsel och neddragningar i näringslivet. Kontorshyresgästerna drar öronen åt sig.
@@ -35,3 +42,6 @@ QKO-06;KONTOR;spotlight;;Kontorsmarknaden i gungning;Flera stora avtal löper ut
 QKO-07;KONTOR;spotlight;;Kontorshotellen expanderar;Flexibla ytor tar marknadsandelar från traditionella kontor. Ett extra kort väntar.
 QKO-08;KONTOR;resurs;;Kontorsspecialist på jakt efter uppdrag;En förvaltare med gott öga för kommersiella hyresgäster hör av sig.
 QKO-09;KONTOR;villkorat;;Moderna kontor klarar nedgången;Hyresgästerna flyttar till certifierade fastigheter. Villkor: energiklass D eller sämre ger -1 DN.
+QKO-10;KONTOR;inget;;Avvaktande kontorsmarknad;Företagen väntar med beslut. Inget påverkar kontoren detta kvartal.
+QKO-11;KONTOR;kvartal_dd;;Miljöcertifiering omprövas;Certifieringen ska förnyas. Alla med kontor drar ett DD-kort och lägger det dolt på ett av sina kontor.
+QKO-12;KONTOR;kvartal_kassa_minus;5;Nya krav på brandskydd;Myndigheten skärper kraven i kontorshus. Varje ägare av kontor betalar 5 Mkr vid nästa marknad.

@@ -25,3 +25,8 @@ OM-23;yield_byt;;bostäder;Osäkerhet på bostadsmarknaden;Bedömarna är oense 
 OM-24;yield_byt;;kommersiellt;Omvärdering av kommersiella fastigheter;Värderingsinstituten ser över sina antaganden för kontor och handel. Byt ut: ersätt nästa yieldkort på det kommersiella spåret med det översta kortet ur yieldleken.
 OM-25;yield_byt;;båda;Nya prognoser från banken;Storbankens analytiker skriver om hela sin fastighetsprognos. Byt ut: ersätt nästa yieldkort på både bostadsspåret och det kommersiella spåret med det översta kortet ur yieldleken.
 OM-26;yield_byt;;båda;Politiskt osäkert läge;Ett regeringsskifte gör framtiden svårläst för investerarna. Byt ut: ersätt nästa yieldkort på både bostadsspåret och det kommersiella spåret med det översta kortet ur yieldleken.
+OM-27;yield_byt_alla;;bostäder;Ny bostadspolitik;Regeringen lägger om hela bostadspolitiken. Byt ut alla kvarvarande yieldkort på bostadsspåret mot nya ur yieldleken.
+OM-28;yield_byt_alla;;kommersiellt;Strukturomvandling i näringslivet;Arbetsliv och handel förändras i grunden. Byt ut alla kvarvarande yieldkort på det kommersiella spåret mot nya ur yieldleken.
+OM-29;energistod;;alla;Statligt energistöd;Staten betalar en del av energiinvesteringarna i hela beståndet. Varje spelare höjer energiklassen ett steg på en valfri egen fastighet.
+OM-30;slang_personkort;;alla;Omorganisation i branschen;Konsulter och projektledare byter uppdrag. Varje spelare slänger ett valfritt personkort.
+OM-31;slang_personkort;;alla;Sparbeting från ägarna;Moderbolaget kräver lägre kostnader. Varje spelare slänger ett valfritt personkort.
