@@ -41,7 +41,7 @@ class Strategi:
 
     def forhandlingskort(self, m, sp, f):
         auto = [k for k in sp.hand if k["Effekt"] == "forhandling_auto"]
-        if auto and m.eff_dn(f) >= 6:
+        if auto and m.eff_dn(f) >= 3:
             return auto[:1]
         mod = sorted((k for k in sp.hand if k["Effekt"] == "forhandling_mod"), key=lambda k: -tal(k["Värde"]))
         return mod[:1]

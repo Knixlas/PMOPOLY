@@ -33,4 +33,6 @@ class Kortdata:
         self.yieldkort = las_lek("F_yieldkort.xlsx")
         self.fc = las_lek("F_FC.xlsx")
         self.fs = las_lek("F_FS.xlsx")
-        self.projekt = [p for p in las_lek("PU_projekt.xlsx") if p["Typ"] != "BRF"]
+        alla = las_lek("PU_projekt.xlsx")
+        self.projekt = [p for p in alla if p["Typ"] != "BRF"]
+        self.brf = [p for p in alla if p["Typ"] == "BRF"]

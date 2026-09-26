@@ -41,7 +41,7 @@ class TestMotor(unittest.TestCase):
     def test_lan_ar_70_procent_av_start_mv(self):
         m = Motor([Strategi()] * 2, Parametrar(), DigitalSlump(1), DATA)
         f = m.ny_fastighet(DATA.projekt[0])
-        self.assertLessEqual(f.lan, f.eff_dn() / 0.05 + 5)
+        self.assertLessEqual(f.lan, f.eff_noi() / 0.05 + 5)
         self.assertEqual(f.lan % 10, 0)
 
     def test_alla_effektkoder_hanteras(self):

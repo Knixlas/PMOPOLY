@@ -18,22 +18,26 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 
 @dataclass
 class Parametrar:
-    startkassa: float = 20.0                       # ANTAGANDE: kassa in i Skede 3
-    start_fastigheter: tuple = (3, 5)              # ANTAGANDE: antal fastigheter från genomförandet
+    startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
+    start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
+    tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
+    kassa_vikt: float = 0.5                        # F-poäng: kassa räknas till denna andel, fastigheter fullt
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "FÖRSKOLA", "LOKAL", "KONTOR")   # ANTAGANDE: fast rotation Q1–Q4
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
     max_uppgraderingar: tuple = (3, 2, 1, 0)
-    uppgradering_kostnad: int = 3
+    uppgradering_kostnad: int = 10                 # kalibrerat (varv 2)
     uppgradering_troskel: int = 10                 # slaget måste vara över detta
-    extra_handelse: dict = field(default_factory=dict)   # kalibrering: {typ: {effekt: antal}} läggs till i typleken
+    extra_handelse: dict = field(default_factory=lambda: {t: {"direkt_dn_minus": 2} for t in ("LOKAL", "KONTOR")})
+                                                   # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
     fientlig: float = 1.2                          # tvångsbud
     handgrans: int = 6
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
-    dn_faktor: float = 4.0                         # kalibrering: bas-DN/år = faktor × kortets DN/kvartal + tillägg
-    dn_tillagg: float = 0.0
+    ranta_sats: float = 0.03                       # ANTAGANDE: fast ränta i grundspelet; räntemarknad = expansion
+    dn_faktor: float = 2.0                         # kalibrering: DN före ränta/år = faktor × gamla kortets DN/kvartal + tillägg
+    dn_tillagg: float = 1.0
 
 
 class Motor:
@@ -72,15 +76,24 @@ class Motor:
         sp = sp or self.agare(f)
         return f.eff_dn(self.villkorsavdrag(f, sp))
 
+    def eff_noi(self, f, sp=None):
+        sp = sp or self.agare(f)
+        return f.eff_noi(self.villkorsavdrag(f, sp))
+
     def mv(self, f, faktor=1.0):
+        """Marknadsvärde = driftnetto före ränta ÷ yield."""
         y = self.spel.yieldniva[SPAR[f.typ]]
-        return avrunda(self.eff_dn(f) / (y / 100) * faktor, 5)
+        return avrunda(self.eff_noi(f) / (y / 100) * faktor, 5)
+
+    def satt_lan(self, f, lan):
+        f.lan = lan
+        f.ranta = int(round(self.p.ranta_sats * lan))
 
     def ny_fastighet(self, projekt):
         f = Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=int(round(self.p.dn_faktor * tal(projekt["Driftnetto (Mkr/kvartal)"]) + self.p.dn_tillagg)),
                       ek=projekt["Energiklass"] or "C", lan=0)
-        mv = f.eff_dn() / (START_YIELD[SPAR[f.typ]] / 100)
-        f.lan = min(avrunda(self.p.lan_andel * mv, 10), avrunda(mv, 5))
+        mv = f.eff_noi() / (START_YIELD[SPAR[f.typ]] / 100)
+        self.satt_lan(f, min(avrunda(self.p.lan_andel * mv, 10), avrunda(mv, 5)))
         return f
 
     # ------------------------------------------------------------------ brickor, trösklar, utveckling
@@ -238,12 +251,25 @@ class Motor:
             self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(4)]
         pool = s.blanda_lista(d.projekt)
         self.projektpool = pool
+        brf = s.blanda_lista(d.brf)
         fc_kvar, fs_kvar = list(d.fc), list(d.fs)
         for sp in s.blanda_lista(self.spel.spelare):
-            sp.kassa = self.p.startkassa
             sp.riskbuffert = s.rng.randint(*self.p.start_riskbuffert)
-            for _ in range(s.rng.randint(*self.p.start_fastigheter)):
-                sp.fastigheter.append(self.ny_fastighet(pool.pop()))
+            # Genomförandet: projekten dras ur hela leken (BRF med), BRF säljs direkt
+            antal = s.rng.randint(*self.p.start_projekt)
+            abt = brf_intakt = 0.0
+            for _ in range(antal):
+                ar_brf = brf and s.rng.random() < len(brf) / (len(brf) + len(pool))
+                projekt = brf.pop() if ar_brf else pool.pop()
+                # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad (tomt och expansion ej modellerade)
+                abt += tal(projekt["Anskaffning (Mkr)"]) - tal(projekt["Utvecklingskostnad (Mkr)"])
+                if ar_brf:
+                    brf_intakt += tal(projekt["Marknadsvärde (Mkr)"])   # ANTAGANDE: BRF säljs till kortets MV
+                else:
+                    sp.fastigheter.append(self.ny_fastighet(projekt))
+            sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
+            sp.brf_intakt = brf_intakt
+            sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(sp.tb + brf_intakt)
             sp.fc = sp.strategi.valj_fc(self, sp, fc_kvar)
             fc_kvar.remove(sp.fc)
             sp.fs = sp.strategi.valj_fs(self, sp, fs_kvar)
@@ -252,6 +278,9 @@ class Motor:
             for f in sp.fastigheter:
                 self.dra_handelse(f, sp)
             self.dra_personkort(sp, 3)
+            sp.start_ek = sum(self.mv(f) - f.lan for f in sp.fastigheter)
+            sp.start_kassa = sp.kassa
+            sp.start_tillgangar = sum(self.mv(f) for f in sp.fastigheter) + sp.kassa
 
     # ------------------------------------------------------------------ 1. marknad
     def marknad(self):
@@ -312,7 +341,7 @@ class Motor:
                     break
             else:
                 mv = self.mv(f)
-                f.lan = min(avrunda(self.p.lan_andel * mv, 10), mv)
+                self.satt_lan(f, min(avrunda(self.p.lan_andel * mv, 10), mv))   # banken lånar om
                 self.spel.bankfynd.append(f)
 
         self.kopsrundor()
@@ -474,7 +503,8 @@ class Motor:
     # ------------------------------------------------------------------ 3. driftnetto
     def driftnetto(self):
         for sp in self.spel.spelare:
-            ar = sum(self.eff_dn(f, sp) + f.dn_brickor / 3 for f in sp.fastigheter)
+            # dolda brickor ger inget förrän nettot når ±3 och bas-DN ändras (beslut)
+            ar = sum(self.eff_dn(f, sp) for f in sp.fastigheter)
             kvartal = max(0.0, ar / 4)
             hela = math.floor(kvartal)
             sp.kassa += hela
@@ -635,6 +665,13 @@ class Motor:
             self.kvartalet()
         return self.slutrakning()
 
+    def f_poang(self, sp):
+        """F-poäng (FÖRSLAG): avkastning i % på tillgångarna vid start (MV + kassa).
+        Slutkassan räknas bara till kassa_vikt — en fastighet slår kontanter. ~20 = tokbra."""
+        kassa = sp.kassa + sp.vantande_kassa + sp.restkort * 0.25
+        slut = sum(self.mv(f) - f.lan for f in sp.fastigheter) + self.p.kassa_vikt * kassa
+        return 100 * (slut - sp.start_ek - sp.start_kassa) / max(sp.start_tillgangar, 1)
+
     def slutrakning(self):
         for spar, bana in self.spel.yieldbana.items():
             lo, hi = YIELD_SPANN[spar]
@@ -650,5 +687,8 @@ class Motor:
                 "fc_senior": sp.fc_senior, "fs_senior": sp.fs_senior,
                 "fastigheter": len(sp.fastigheter), "eget_kapital": eget_kapital,
                 "kassa": sp.kassa + sp.restkort * 0.25, "S3": eget_kapital + sp.kassa + sp.restkort * 0.25,
+                "start_ek": sp.start_ek, "startkassa": sp.start_kassa, "tb": sp.tb, "brf": sp.brf_intakt,
+                # F-poäng: avkastning i % på viktat värde (jämför TG i Genomförandet: ~20 = tokbra)
+                "F": self.f_poang(sp),
             })
         return resultat

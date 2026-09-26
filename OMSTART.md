@@ -410,8 +410,27 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
 - **Plus-visning tvingande eller valfri: ingen skillnad** i utfall → tvingande åt båda håll räcker (enklast).
 - **FC:** Bostadsveteranen och Den lugna ~30 % vinst, Skölden 18 %. **FS:** jämna (23–26 %).
 - **Typkaraktären fungerar:** DN-drift per parti hyresrätt +1,6, förskola +1,3, lokal +0,4, kontor −0,7.
-- **Motorantaganden att bekräfta:** brickor = 1/3 DN i intäkten (Anna-exemplet räknade 1), startkassa 20,
-  fokustyp i fast rotation, villkorskort tolkade ur texten.
+- ~~Motorantaganden att bekräfta~~ → se beslut nedan. Kvar: villkorskort tolkade ur texten.
+
+### Beslut efter kalibreringsvarv 2 (2026-09-26)
+
+- **Dolda brickor ger ingen intäkt** förrän nettot når ±3 och bas-DN ändras.
+- **Startkassa = TB från Genomförandet + sålda BRF.** Det finns alltså gott om pengar i Förvaltningen
+  (simulerat median ~90 Mkr, 10–90 %: 20–190).
+- **Fokustyp i fast rotation** per kvartal (hyresrätt → förskola → lokal → kontor).
+- **DN på kortet är efter ränta** vid 70 % belåning och kan vara 0. **Räntan står på kortet** (fast i
+  grundspelet; räntemarknad och belåning = expansion). **MV = (DN + ränta) ÷ yield.**
+  Om MV < lånet på kortet → tvångsförsäljning (balanskravet).
+- **Projektkortet trycks med:** DN efter ränta, ränta, lån, energiklass, MV vid startyield.
+- **Vinstformeln görs om:** varje del ger ett tal där ~20 = riktigt tokbra. Genomförandet = TG.
+  Förvaltningen ska premiera fastigheter över kontanter (bättre köpa till överpris än sitta på kassa).
+  FÖRSLAG i motorn: F = avkastning i % på tillgångarna vid start (MV + kassa), slutkassan räknas till
+  hälften. Kalibreringen av nivån pågår.
+- **Kalibrerat förslag (standard i motorn):** driftnetto före ränta 2–7 Mkr/år (≈ 2 × gamla kortets
+  DN/kvartal + 1) → DN efter ränta 1–4, ränta 0–4; energiuppgradering 10 Mkr/försök; +2 "−1 DN direkt"
+  i lokal- och kontorsleken. Resultat 800 partier: 5,6 köp, 0,95 bankövertag, 0,9 sanering, 17 lyckade
+  uppgraderingar per parti; strategierna 23–27 % vinst. F-poäng median 15, vinnarens median 33 — för högt
+  mot målet 20.
 
 ## 6. Öppna frågor
 

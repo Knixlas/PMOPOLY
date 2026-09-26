@@ -25,9 +25,10 @@ def avrunda(v, steg):
 class Fastighet:
     namn: str
     typ: str
-    bas_dn: int              # årligt driftnetto (Mkr) i energiklass C
+    bas_dn: int              # årligt driftnetto FÖRE ränta (Mkr) i energiklass C — styr marknadsvärdet
     ek: str                  # energiklass A–E
     lan: int                 # tryckt lån (eller nedskrivet efter banken)
+    ranta: int = 0           # årlig räntekostnad på lånet (fast i grundspelet)
     dn_brickor: int = 0      # dolt netto: + plus / − minus
     ek_brickor: int = 0      # dolt netto energi
     plus_att_visa: int = 0   # antal +1 DN som nått netto +3 men inte visats (regeln "plus valfritt")
@@ -36,8 +37,13 @@ class Fastighet:
     uppgraderingsstopp: bool = False
     varningsstraff_tagit: bool = False
 
-    def eff_dn(self, extra=0):
+    def eff_noi(self, extra=0):
+        """Driftnetto före ränta — det marknaden värderar."""
         return max(0, self.bas_dn + EK_MOD[self.ek] + extra)
+
+    def eff_dn(self, extra=0):
+        """Driftnetto efter ränta (det som står på kortet) — det som går till kassan. Kan vara 0."""
+        return max(0, self.eff_noi(extra) - self.ranta)
 
 
 @dataclass
@@ -58,6 +64,11 @@ class Spelare:
     vantande_kassa: float = 0.0                     # engångsbelopp som realiseras vid nästa marknad
     sanering: list = field(default_factory=list)    # [(fastighet, skuld)] åtaganden sedan förra marknaden
     skold_anvand: bool = False                      # FC Skölden, en gång per kvartal
+    tb: float = 0.0                                 # täckningsbidrag från Genomförandet
+    brf_intakt: float = 0.0                         # sålda BRF
+    start_ek: float = 0.0                           # fastigheternas nettovärde vid start
+    start_kassa: float = 0.0
+    start_tillgangar: float = 0.0                   # MV + kassa vid start (nämnare i F-poäng)
 
     def fc_typer(self):
         return FC_TYPER.get(self.fc["Typ"], set()) if self.fc else set()

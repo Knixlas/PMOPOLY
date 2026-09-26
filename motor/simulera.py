@@ -24,14 +24,16 @@ def kor(partier, parametrar, fro=1, spelare=4):
         klasser = [slump.valj(list(STRATEGIER.values())) for _ in range(spelare)]
         m = Motor([k() for k in klasser], parametrar, slump, data)
         res = m.spela()
-        bast = max(res, key=lambda r: r["S3"])
+        bast = max(res, key=lambda r: r["F"])
         for r in res:
             for kat in ("strategi", "fc", "fs"):
                 deltog[kat][r[kat]] += 1
                 if r is bast:
                     vinst[kat][r[kat]] += 1
-            s3[r["strategi"]].append(r["S3"])
-            s3["alla"].append(r["S3"])
+            s3[r["strategi"]].append(r["F"])
+            s3["alla"].append(r["F"])
+            s3["_startkassa"].append(r["startkassa"])
+            s3["_fastigheter"].append(r["fastigheter"])
         for k, v in m.stat.items():
             if k == "dn_drift":
                 for t, n in v.items():
@@ -47,11 +49,14 @@ def rapport(partier, parametrar, fro):
     for kat, rubrik in (("strategi", "Strategi"), ("fc", "FC"), ("fs", "FS")):
         print(f"## {rubrik}: vinstandel (förväntat 25 %)")
         for namn, n in sorted(deltog[kat].items(), key=lambda x: -vinst[kat][x[0]] / x[1]):
-            extra = f", snitt S3 {statistics.mean(s3[namn]):.0f}" if kat == "strategi" else ""
+            extra = f", snitt F {statistics.mean(s3[namn]):.1f}" if kat == "strategi" else ""
             print(f"  {namn:32} {100 * vinst[kat][namn] / n:5.1f} %  ({n} deltagare{extra})")
         print()
-    print(f"## Slutpoäng S3: median {statistics.median(s3['alla']):.0f}, "
-          f"10–90 %: {sorted(s3['alla'])[len(s3['alla']) // 10]:.0f}–{sorted(s3['alla'])[9 * len(s3['alla']) // 10]:.0f}\n")
+    for nyckel, rubrik in (("alla", "F-poäng"), ("_startkassa", "Startkassa (TB + BRF)"), ("_fastigheter", "Fastigheter vid slut")):
+        v = sorted(s3[nyckel])
+        print(f"## {rubrik}: median {statistics.median(v):.1f}, 10–90 %: {v[len(v) // 10]:.1f}–{v[9 * len(v) // 10]:.1f}, "
+              f"bästa 5 %: {v[95 * len(v) // 100]:.1f}")
+    print()
     print("## Händelser per parti (snitt)")
     for k, v in stat.items():
         print(f"  {k:22} {statistics.mean(v):6.2f}")
