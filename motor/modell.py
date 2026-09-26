@@ -69,7 +69,6 @@ class Spelare:
     brf_intakt: float = 0.0                         # sålda BRF
     start_ek: float = 0.0                           # fastigheternas nettovärde vid start
     start_kassa: float = 0.0
-    startvarde: float = 0.0                         # eget kapital + ½ kassa vid start (F-poäng)
 
     def fc_typer(self):
         return FC_TYPER.get(self.fc["Typ"], set()) if self.fc else set()

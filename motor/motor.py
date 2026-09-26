@@ -22,6 +22,7 @@ class Parametrar:
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
     kassa_vikt: float = 0.5                        # F-poäng: kassa räknas till denna andel, fastigheter fullt
+    f_delare: float = 20                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "FÖRSKOLA", "LOKAL", "KONTOR")   # ANTAGANDE: fast rotation Q1–Q4
@@ -287,7 +288,6 @@ class Motor:
             self.dra_personkort(sp, 3)
             sp.start_ek = sum(self.mv(f) - f.lan for f in sp.fastigheter)
             sp.start_kassa = sp.kassa
-            sp.startvarde = self.varde(sp, sp.kassa)
 
     # ------------------------------------------------------------------ 1. marknad
     def marknad(self):
@@ -800,9 +800,10 @@ class Motor:
         return sum(self.mv(f) - f.lan for f in sp.fastigheter) + self.p.kassa_vikt * kassa
 
     def f_poang(self, sp):
-        """F-poäng = (värde vid slut − värde vid start) ÷ 10. ~20 = tokbra."""
+        """F-poäng = (eget kapital + halva kassan) ÷ 20, räknat vid slut. ~20 = tokbra.
+        Beslut: prova den enklaste varianten först (inget startvärde att komma ihåg)."""
         kassa = sp.kassa + sp.vantande_kassa + sp.restkort * 0.25
-        return (self.varde(sp, kassa) - sp.startvarde) / 10
+        return self.varde(sp, kassa) / self.p.f_delare
 
     def slutrakning(self):
         for spar, bana in self.spel.yieldbana.items():
