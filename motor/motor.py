@@ -26,10 +26,14 @@ class Parametrar:
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
     max_uppgraderingar: tuple = (3, 2, 1, 0)
     uppgradering_kostnad: int = 3
+    uppgradering_troskel: int = 10                 # slaget måste vara över detta
+    extra_handelse: dict = field(default_factory=dict)   # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
     fientlig: float = 1.2                          # tvångsbud
     handgrans: int = 6
-    lan_andel: float = 0.7
+    lan_andel: float = 0.7                         # fast i grundspelet (beslut)
+    dn_faktor: float = 4.0                         # kalibrering: bas-DN/år = faktor × kortets DN/kvartal + tillägg
+    dn_tillagg: float = 0.0
 
 
 class Motor:
@@ -73,7 +77,7 @@ class Motor:
         return avrunda(self.eff_dn(f) / (y / 100) * faktor, 5)
 
     def ny_fastighet(self, projekt):
-        f = Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=int(round(4 * tal(projekt["Driftnetto (Mkr/kvartal)"]))),
+        f = Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=int(round(self.p.dn_faktor * tal(projekt["Driftnetto (Mkr/kvartal)"]) + self.p.dn_tillagg)),
                       ek=projekt["Energiklass"] or "C", lan=0)
         mv = f.eff_dn() / (START_YIELD[SPAR[f.typ]] / 100)
         f.lan = min(avrunda(self.p.lan_andel * mv, 10), avrunda(mv, 5))
@@ -222,7 +226,9 @@ class Motor:
     def starta(self):
         d, s = self.d, self.s
         for typ in TYPER:
-            s.blanda("handelse_" + typ, [k for k in d.handelse if k["Typ"] == typ])
+            extra = [{"ID": f"X-{typ}-{e}-{i}", "Typ": typ, "Effekt": e, "Värde": None}
+                     for e, n in self.p.extra_handelse.get(typ, {}).items() for i in range(n)]
+            s.blanda("handelse_" + typ, [k for k in d.handelse if k["Typ"] == typ] + extra)
             s.blanda("kvartal_" + typ, [k for k in d.kvartal if k["Typ"] == typ])
         s.blanda("person", d.person)
         s.blanda("omvarld", d.omvarld)
@@ -596,14 +602,15 @@ class Motor:
                     if self.ar_fs(sp, "Energicoachen") and sp.fs_senior:
                         mod += 1
                     bast = max(slag) + mod
-                    if bast <= 10:
-                        for kort in sp.strategi.energikort(self, sp, 11 - bast):
+                    grans = self.p.uppgradering_troskel
+                    if bast <= grans:
+                        for kort in sp.strategi.energikort(self, sp, grans + 1 - bast):
                             sp.hand.remove(kort)
                             bast += tal(kort["Värde"])
-                    if bast <= 10 and sp.riskbuffert and sp.strategi.sla_om(self, sp):
+                    if bast <= grans and sp.riskbuffert and sp.strategi.sla_om(self, sp):
                         sp.riskbuffert -= 1
                         bast = max(self.s.d20() for _ in range(tarningar)) + mod
-                    if bast > 10:
+                    if bast > grans:
                         self.andra_ek(f, 1)
                         self.stat["uppgradering"] += 1
                         break
