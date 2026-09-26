@@ -97,3 +97,7 @@ KO-23;KONTOR;engangskassa_minus;ja;4;Elcentralen måste uppgraderas akut;Ökad e
 KO-24;KONTOR;engangskassa_minus;ja;2;Sprinklerhuvud löser ut felaktigt;Vattenskadan efter felutlösningen måste åtgärdas omgående.
 KO-25;KONTOR;forkop;ja;;Tips om kontorsfastighet i city;Behåll på hand. Ger förstaval när ett kontor sätts till budgivning.
 KO-26;KONTOR;forkop;ja;;Kontakt hos kommersiell fastighetsmäklare;Behåll på hand. Kortet ger dig förstaval nästa gång ett kontor går till budgivning.
+HR-24;HYRESRÄTT;utveckling;ja;;Lyckad hyresförhandling;Förhandlingen med hyresgästföreningen går smidigt och ger erfarenhet. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
+FO-24;FÖRSKOLA;utveckling;ja;;Kommunen ger förnyat förtroende;Förvaltningen av förskolan lyfts fram som ett gott exempel. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
+LO-27;LOKAL;utveckling;ja;;Hyresgästsamverkan ger resultat;Samarbetet med hyresgästerna i handelsstråket blir en förebild. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
+KO-27;KONTOR;utveckling;ja;;Certifierad förvaltning;Kontorsfastigheten klarar en miljöcertifiering med glans. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.

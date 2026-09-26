@@ -1,7 +1,7 @@
-ID;Namn;Styrka;Svaghet;Beskrivning
-FC-1;Förhandlaren;+3 på förhandlingsslag;-1 på energiuppgraderingsslag;Briljant vid förhandlingsbordet, men otålig med detaljerna.
-FC-2;Tekniska experten;+3 på energiuppgraderingsslag;-1 på förhandling;Kan energisystemen utan och innan; mindre vass i affären.
-FC-3;Generalisten;+1 förhandling och +1 energi;ingen spets;Solid i alla lägen, utan vare sig toppar eller dalar.
-FC-4;Nätverkaren;drar 1 extra personkort per varv;-1 motstånd mot konsekvenskort;Har koll på marknaden och fler kontakter än de andra, men lämnar ryggen bar.
-FC-5;Skölden;blockar/halverar ett konsekvenskort per varv;0 på alla slag;Tar smällarna utan att blinka.
-FC-6;Den lugna;+1 riskbuffert i början av varje kvartal;0 på alla slag;Metodisk och förutseende; bygger alltid in en marginal.
+ID;Namn;Typ;Junior_styrka;Junior_svaghet;Senior;Beskrivning
+FC-1;Förhandlaren;KONTOR;+3 på förhandlingsslag om kontor, +1 om övriga;-1 på energiuppgraderingsslag;Svagheten försvinner. En gång per kvartal: förstaval på ett kontor utan att slå.;Briljant vid förhandlingsbordet, men otålig med tekniken.
+FC-2;Tekniska experten;FÖRSKOLA;+3 på energiuppgraderingsslag för förskolor, +1 för övriga;-1 på förhandlingsslag;Svagheten försvinner. Första uppgraderingsförsöket varje kvartal är gratis.;Kan energisystemen utan och innan, mindre vass i affären.
+FC-3;Skölden;LOKAL;En gång per kvartal: ignorera ett händelsekort med minus, varning eller direkt minus på en lokal;0 på alla slag;Skyddet gäller alla typer, och du tar en riskbuffert varje gång du använder det.;Tar smällarna utan att blinka.
+FC-4;Bostadsveteranen;HYRESRÄTT;Underhållsvarningar på hyresrätter ger straff först vid 4, och kostar 1 Mkr mindre att röja;0 på alla slag;Lägg en dold plusbricka på en egen hyresrätt varje kvartal.;Har sett fler stambyten än någon annan och vet vad som kan vänta.
+FC-5;Nätverkaren;KOMMERSIELLT;Drar 1 extra personkort varje kvartal;-1 på förhandlingsslag om bostäder;Svagheten försvinner. Titta på nästa omvärldskort innan det vänds.;Har fler kontakter än de andra, i rätt korridorer.
+FC-6;Den lugna;BOSTÄDER;Tar 1 riskbuffert i början av varje kvartal;0 på alla slag;En riskbuffert kan också användas som stoppkort mot ett tvångsbud.;Metodisk och förutseende, bygger alltid in en marginal.

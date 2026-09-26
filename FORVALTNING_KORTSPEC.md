@@ -25,6 +25,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 | `villkorskort` | ja | effekt beror på tillstånd (t.ex. ”om EK ≤ D → −1 DN”, ”äger du 3+ av typen → −1 DN på alla”) |
 | `engangskassa_plus` / `engangskassa_minus` | ja | vid nästa marknad: ± `Värde` Mkr (engångs) |
 | `forkop` | — | går till **handen**; ger förstaval vid köp av matchande typ |
+| `utveckling` | ja | lägg en **utvecklingsbricka** på din FC om fastigheten har FC:s typ, annars på din FS (se §5) |
 
 Plus/minus är **dolda och tysta**; varning är **synlig och åtgärdbar**;
 energivarning drar ner energiklass (biter hårdare mot D/E).
@@ -39,8 +40,9 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 | `stada` | när som helst | ta bort ett minus- eller varningskort från egen fastighet |
 | `stopp` | reaktivt | avvärj ett tvångsbud |
 | `kika` | när som helst | titta på ett dolt kort hos en motståndare |
-| `sabotage_minus` | när som helst | lägg ett minus-/varningskort hos en **motståndare** |
-| `sabotage_slang` | när som helst | tvinga en motståndare att slänga ur handen |
+| `hyresgastvarvning` | när som helst | kräver egen fastighet av samma typ som motspelarens: **+1 dold plusbricka på din, +1 dold minusbricka på motspelarens** (konkurrens om hyresgäster — lagligt, inte sabotage) |
+| `headhunting` | när som helst | ta ett **slumpvis personkort** från en motspelares hand |
+| `utveckling` | när som helst | lägg en utvecklingsbricka på din FC eller FS |
 | `dra_personkort` | när som helst | dra ett personkort |
 | `riskbuffert` | när som helst | ta en riskbuffert |
 
@@ -51,6 +53,7 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 | `yield_stor` | omvärld | stor yield-rörelse (±1 pp) |
 | `bords_dn` | omvärld | ±1 DN på alla fastigheter av en typ |
 | `resurs` | båda | riskbuffert till alla / dra personkort |
+| `personalrotation` | omvärld | alla drar ett slumpvis personkort från spelaren till vänster |
 | `typbred_dn_plus` / `typbred_dn_minus` | kvartal | ±1 DN på **allas** fastigheter av fokustypen |
 | `typbred_ek_plus` / `typbred_ek_minus` | kvartal | ±1 energiklass på allas fastigheter av fokustypen |
 | `spotlight` | kvartal | alla drar ett extra händelsekort för fokustypen |
@@ -60,7 +63,7 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 
 ## 2. Lekar, attribut och frekvens
 
-### Händelsekort — `F2-1_händelsekort.csv` (~98)
+### Händelsekort — `F2-1_händelsekort.csv` (102)
 Fyra typleker (Hyresrätt, Förskola, Lokal, Kontor). **Återanvändbar lek:** dra, lös
 (lägg bricka / applicera), lägg tillbaka. Förköp går till handen.
 Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
@@ -77,7 +80,8 @@ Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 | villkorskort | 2 | 2 | 2 | 3 |
 | engangskassa_plus / minus | 2/1 | 3/– | 2/2 | 1/2 |
 | forkop | 2 | 2 | 2 | 2 |
-| **Summa** | **23** | **23** | **26** | **26** |
+| utveckling | 1 | 1 | 1 | 1 |
+| **Summa** | **24** | **24** | **27** | **27** |
 
 Karaktär: stabila typer plus-lean utan direkta minus (men enstaka windfall + fler
 underhållsvarningar); volatila typer minus-övervikt med båda direktchockerna, mer
@@ -89,40 +93,38 @@ fastigheter av typen. Kolumner: `ID;Typ;Effekt;Värde;Rubrik;Beskrivning`
 Per typ (9): typbred_dn_plus 1, typbred_dn_minus 2, typbred_ek_plus 1,
 typbred_ek_minus 1, spotlight 2, resurs 1, villkorat 1.
 
-### Personkort — `F2-1_personkort.csv` (64)
+### Personkort — `F2-1_personkort.csv` (67)
 En förbrukningslek, blandas om. Kolumner: `ID;Effekt;Timing;Värde;Rubrik;Beskrivning`
 forhandling_mod 10, forhandling_auto 3, energi_mod 10, lagg_dn_plus_egen 8, stada 6,
-stopp 5, kika 4, sabotage_minus 6, sabotage_slang 3, dra_personkort 5, riskbuffert 4.
+stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3.
 
 ### Omvärldskort — `F2-1_omvärldskort.csv` (22)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
-yield_rorelse 12, yield_stor 3, bords_dn 3, resurs 4.
+yield_rorelse 12, yield_stor 3, bords_dn 3, resurs 3, personalrotation 1.
 
 ### DD — `F2-1_DD.csv` (36)
 Dolt vid övergång + köp; räknas i samma ackumulering som händelsekort; avslöjas vid
 försäljning/tvångstagande. Kolumner: `ID;Effekt;Rubrik;Beskrivning`
 dd_plus (Intäkt) 16, dd_minus (Kostnad) 18, dd_ek 2.
 
-### FC / FS-arketyper — `F2-1_FC.csv` (6), `F2-1_FS.csv` (4)
-Egenskaper beslutade (se filerna). Inga kostnader, inga kapacitetstak — passiva
-modifierare. FC lutar mot marknad/slag, FS mot fastighetsnivå.
-
----
+### FC / FS-arketyper — `F2-1_FC.csv` (6), `F2-1_FS.csv` (6)
+Omgjorda 2026-09-26, se §5. FC har **typ** och lutar mot marknad/slag; FS lutar mot fastighetsnivå.
+Alla kort är **dubbelsidiga: junior / senior**.
 
 ## 3. Komponentöversikt (nya/uppdaterade kort)
 
 | Lek | Antal |
 |---|---|
-| Händelsekort (4 typleker) | ~98 |
+| Händelsekort (4 typleker) | 102 |
 | Kvartalskort (4 typleker) | 36 |
-| Personkort | 64 |
+| Personkort | 67 |
 | Omvärldskort | 22 |
 | DD | 36 |
 | Fastighetskort (uppdaterad baksida: tryckt lån) | 45 |
-| FC + FS-arketyper | 10 |
-| **Summa** | **~311** |
+| FC + FS-arketyper (dubbelsidiga) | 12 |
+| **Summa** | **~318** |
 
-Brickor: DN-siffror, energiclips A–E, +/− - och energibrickor, riskbuffert, restkort,
+Brickor: utvecklingsbrickor, DN-siffror, energiclips A–E, +/− - och energibrickor, riskbuffert, restkort,
 lån-clips (ex-bank).
 
 ---
@@ -138,6 +140,20 @@ lån-clips (ex-bank).
   fördelningarna stämmer och flaggar outliers.
 - **Fastighetskortens baksida:** tryck lån (70 % av entry-MV, avrundat 10). Räntekolumn
   utgår (inbakad i DN).
+
+---
+
+## 5. FC och FS — typ och utveckling
+
+- **FC har en typ:** HYRESRÄTT, FÖRSKOLA, LOKAL, KONTOR, eller en bred typ — BOSTÄDER (hyresrätt +
+  förskola) eller KOMMERSIELLT (lokal + kontor), samma uppdelning som yieldspåren. Specialisten är stark
+  på sin typ; den breda svagare men på två.
+- **Dubbelsidiga kort.** Alla börjar som **junior**. Med **två utvecklingsbrickor** vänds kortet till
+  **senior**: starkare version plus en ny egenskap (se filerna). Brickorna tas bort.
+- **Utvecklingsbrickor** kommer från händelsekort (`utveckling`, 1 per typlek) och personkort
+  (`utveckling`, 3 st). Från ett händelsekort går brickan till **FC om fastigheten har FC:s typ**,
+  annars till FS — FC växer alltså med den portfölj den passar.
+- **FC-3 Skölden** blockerar händelsekort (inte konsekvenskort, som bara förekommer i Kvartal 0).
 
 ---
 

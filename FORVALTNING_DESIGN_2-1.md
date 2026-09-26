@@ -219,6 +219,8 @@ En gemensam lek. Får spelas när som helst om inte kortet säger annat. Innehå
 - **Modifierare på energiuppgraderingsslag** (+1/+2/+3, spelas *efter* slaget).
 - **Modifierare på förhandling** (spelas *innan* slaget), eller **auto-vunnen förhandling**.
 - **Stoppkort** mot tvångsbud.
+- **Hyresgästvärvning** (plus på din, minus på motspelarens av samma typ) och **headhunting**
+  (ta ett personkort ur en motspelares hand) — konkurrens, inte sabotage.
 - **Dra / släng personkort**, **riskbuffert** m.m.
 
 Ingen handspärr — man får **bunkra kort** för att kunna slå till på ett saneringsuppdrag
@@ -262,7 +264,8 @@ Energiklass kan inte gå förbi A.
 
 ## 9. Personal, riskbuffert, restkort
 
-- **FC + FS:** båda anställs, inga kostnader; passiva egenskaper *(tas fram)*.
+- **FC + FS:** båda anställs, inga kostnader. FC har typ; båda är dubbelsidiga junior/senior och
+  utvecklas med utvecklingsbrickor — se `FORVALTNING_KORTSPEC.md` §5.
 - **Riskbuffert = omslag av ett tärningsslag** (energiuppgradering eller förhandling).
   Kan **fås från alla korttyper** — omvärld, person, kvartal. En löpande valuta.
 - **Restkort:** vid DN ÷ 4 blir resten restkort. **1 restkort = 0,25 Mkr; 4 restkort =

@@ -1,5 +1,7 @@
-ID;Namn;Egenskap;Beskrivning
-FS-1;"Margareta ""Rivaren""";ta bort ett minus- eller varningskort från valfri fastighet per varv;Sliter loss problemen innan de hinner sätta rötter.
-FS-2;"Per ""Kvalitetsoptimeraren""";+1 dolt DN på en vald fastighet per varv;Letar alltid efter sista procenten kvalitet, och hyresgästerna märker det.
-FS-3;"Lars ""Spionen""";titta på ett dolt kort hos en motståndare per varv;Vet alltid mer än han borde.
-FS-4;"Sara ""Besiktningsgeniet""";ignorera första konsekvens-/garantikortet som drabbar varje fastighet;Hittar felen innan besiktningsmannen hinner fram.
+ID;Namn;Junior;Senior;Beskrivning
+FS-1;"Margareta ""Rivaren""";Varannat kvartal (Q1, Q3): ta bort en minus- eller varningsbricka från en egen fastighet;Varje kvartal.;Sliter loss problemen innan de hinner sätta rötter.
+FS-2;"Per ""Kvalitetsoptimeraren""";Varannat kvartal (Q2, Q4): lägg en dold plusbricka på en egen fastighet;Varje kvartal.;Letar alltid efter sista procenten kvalitet, och hyresgästerna märker det.
+FS-3;"Lars ""Spionen""";En gång per kvartal: titta på en dold bricka hos en motspelare;Vid köp: titta på DD-kortet innan du bestämmer dig.;Vet alltid mer än han borde.
+FS-4;"Sara ""Besiktningsgeniet""";Vid köp: dra två DD-kort och behåll det ena;Ignorera även det första energivarningskortet på varje fastighet.;Hittar felen innan besiktningsmannen hinner fram.
+FS-5;"Jonas ""Mäklaren""";Frivillig försäljning till banken ger 1,1 × MV;Vid tvångsbud mot dig: du får 1,3 × MV i stället för 1,2.;Säljer is till eskimåer, och fastigheter till rätt pris.
+FS-6;"Aisha ""Energicoachen""";Energivarningar ger straff först vid 4;+1 på alla energiuppgraderingsslag.;Får hyresgästerna att släcka lampan efter sig.

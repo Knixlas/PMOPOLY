@@ -45,15 +45,15 @@ PK-43;kika;nar_som_helst;;Tips från branschen;Titta på ett dolt kort hos en mo
 PK-44;kika;nar_som_helst;;Insyn i affären;Titta på ett dolt kort hos en motståndare.
 PK-45;kika;nar_som_helst;;Bra rykte i huset;Titta på ett dolt kort hos en motståndare.
 PK-46;kika;nar_som_helst;;Läckt information;Titta på ett dolt kort hos en motståndare.
-PK-47;sabotage_minus;nar_som_helst;;Missnöjd hyresgäst hittad;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-48;sabotage_minus;nar_som_helst;;Anmälan till kommunen;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-49;sabotage_minus;nar_som_helst;;Rykte om dålig skötsel;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-50;sabotage_minus;nar_som_helst;;Underleverantör hoppar av;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-51;sabotage_minus;nar_som_helst;;Granne som klagar;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-52;sabotage_minus;nar_som_helst;;Uppmärksammad brist;Lägg ett minus- eller varningskort på en motståndares fastighet.
-PK-53;sabotage_slang;nar_som_helst;;Nyckelperson tackar nej;Tvinga en motståndare att slänga ett personkort ur handen.
-PK-54;sabotage_slang;nar_som_helst;;Dubbelbokad konsult;Tvinga en motståndare att slänga ett personkort ur handen.
-PK-55;sabotage_slang;nar_som_helst;;Kontakten byter sida;Tvinga en motståndare att slänga ett personkort ur handen.
+PK-47;hyresgastvarvning;nar_som_helst;;Bättre villkor lockar över hyresgästen;En hyresgäst hos en konkurrent flyttar till er efter ett bättre erbjudande. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-48;hyresgastvarvning;nar_som_helst;;Vi tar ankarhyresgästen;Er uthyrare vinner en stor hyresgäst som konkurrenten räknat med. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-49;hyresgastvarvning;nar_som_helst;;Flytterbjudande med hyresrabatt;Tre månaders rabatt räcker för att hyresgästen byter hyresvärd. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-50;hyresgastvarvning;nar_som_helst;;Snabbare felanmälan vinner;Hyresgästen tröttnar på konkurrentens service och flyttar till er. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-51;hyresgastvarvning;nar_som_helst;;Bättre läge, samma hyra;Er fastighet erbjuder mer för pengarna och hyresgästen byter. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-52;hyresgastvarvning;nar_som_helst;;Förnyelse med nya ytor;Ni erbjuder en anpassad yta som konkurrenten inte kan matcha. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-53;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis personkort från en motspelares hand.
+PK-54;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis personkort från en motspelares hand.
+PK-55;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis personkort från en motspelares hand.
 PK-56;dra_personkort;nar_som_helst;;Ny kontakt knuten;Dra ett personkort.
 PK-57;dra_personkort;nar_som_helst;;Rekommendation från kollega;Dra ett personkort.
 PK-58;dra_personkort;nar_som_helst;;Nätverksträff;Dra ett personkort.
@@ -63,3 +63,6 @@ PK-61;riskbuffert;nar_som_helst;;Extra marginal budgeterad;Ta en riskbuffert.
 PK-62;riskbuffert;nar_som_helst;;Buffert i god tid;Ta en riskbuffert.
 PK-63;riskbuffert;nar_som_helst;;Försiktig planering;Ta en riskbuffert.
 PK-64;riskbuffert;nar_som_helst;;Extra kapital avsatt;Ta en riskbuffert.
+PK-65;utveckling;nar_som_helst;;Intern ledarutbildning;FC eller FS går en intern ledarutbildning. Lägg en utvecklingsbricka på din FC eller FS.
+PK-66;utveckling;nar_som_helst;;Branschcertifiering;Er förvaltningschef tar en eftertraktad certifiering. Lägg en utvecklingsbricka på din FC eller FS.
+PK-67;utveckling;nar_som_helst;;Mentorprogram;Erfaren kollega delar med sig av sina knep. Lägg en utvecklingsbricka på din FC eller FS.
