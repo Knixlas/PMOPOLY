@@ -24,14 +24,25 @@ Den som tar flest projekt vinner i alla delar samtidigt: PU 18 (mot 14), TG 9 (m
 Mu sjunker bara till 0,72 (mot 0,82). Fler projekt ger mer ABT, större kvarter och fler fastigheter
 i Förvaltningen — och risken biter för lite:
 
-- **Nämnden (4.1)** släpper igenom nästan allt till slut. Varje miss höjer kraven ett steg och ger en
-  tärning till, så man kan fortsätta tills det går.
-- **Markexpansionens pris** spelar nästan ingen roll: 5 → 10 Mkr ändrar expansiv från 40 % till 40 %.
+Prövat i simuleringen (600 partier per variant), utan att ändra reglerna:
 
-**Förslag att pröva (regelboken 4.1 — ditt beslut):**
-1. ~~Högst ett eller två omförsök med höjda krav.~~ Prövat: ingen effekt (expansiv 39–40 %), nämnden
-   avgörs nästan alltid på första eller andra försöket.
-2. Alternativt: varje projekt över fem höjer nämndsumman med +1 ("stora mixar granskas hårdare").
+| Ändring | expansiv | försiktig |
+|---|---|---|
+| Som idag | 40 % | 14 % |
+| Markexpansion 8 Mkr / 10 Mkr (i stället för 5) | 37 % / 40 % | 15 % / 15 % |
+| Nämnden: högst 1–2 omförsök med höjda krav | 39–40 % | 14–15 % |
+| Nämnden: +1 per projekt över 4 / över 5 | 39 % / 39 % | 14 % / 15 % |
+
+**Slutsats:** övertaget är strukturellt. Storlek lönar sig i alla tre skedena, och små justeringar i
+nämnden eller markpriset rubbar det inte. En verklig motvikt behöver en kostnad som *växer* med
+storleken, till exempel:
+
+1. brantare priser per BTA-klass i Skede 2 (större kvarter = dyrare planering och genomförande),
+2. avtagande avkastning i slutpoängen (t.ex. F-poängen räknad per fastighet över en viss nivå), eller
+3. att riskbufferten/tidskravet påverkas av antalet projekt.
+
+Det är regel- och kortfrågor för dig. Motorn har parametrarna för att pröva dem snabbt. Om det är
+avsikten att stora kvarter ska vinna ("bostäder är ofta bästa valet"), kan det också få stå.
 
 ## Skede 2: varför är billigt en fälla?
 
