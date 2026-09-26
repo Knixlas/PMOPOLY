@@ -459,8 +459,13 @@ markanvisning = markexpansion (5 Mkr); återlämnade projekt till banken; PC vä
 kravsumma ~24, vinnarens ABT 416 → PU-poäng ≈ 20 med tomt 10. Niklas: 5–8 projekt är vanligt.
 
 **Klistermärken PU-brädet:** en av högplatserna "Lokal" → "Förskola"; rutan utan bild (lokal före
-Skönhetsrådet) får bild; Stadshuset "BY" → "BYT". **F-brädet:** "betala lönekostnader" → "dra två
-nätverkskort"; yieldbanan Q2–Q4 och fokusordningen (HR, lokal, kontor, förskola) gäller som tryckt.
+Skönhetsrådet) får bild; Stadshuset "BY" → "BYT". **F-brädet** byggs om med klistermärken (fler än
+på de andra): MARKNAD "Dra yieldkort" → "Uppdatera yielden"; EKONOMI "betala lönekostnader" → "dra två
+nätverkskort" (steg 3–4); ENERGI "1 fastigheter" → "1 fastighet"; nya högplatser för **DD-kort** och
+**nätverkskort** i vänsterkanten. Yieldbanan Q2–Q4 och fokusordningen (HR, lokal, kontor, förskola)
+gäller som tryckt. Alla märken byggs av `tryck/bygg_klistermarken.py` från brädornas PDF:er i
+`tryck/brada/` → `tryck/ut/klistermarken_PU.pdf`, `klistermarken_F.pdf` + kontrollbilder. Texten sätts
+med brädornas inbäddade Bahnschrift-subset (regular har bara versalerna D och U, därav formuleringarna).
 
 ## 5f. Skede 2 (Planering, Genomförande) i motorn — status (2026-09-26)
 
