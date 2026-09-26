@@ -19,6 +19,8 @@ TYPBILD = {"HYRESRÄTT": "Hyresrätt Generell", "FÖRSKOLA": "FÖRSKOLOR Generel
 
 # Skedenas färger (skede_color i Produktion-fliken): markerar i vilken del av spelet uppgiften används
 SKEDE = {"PU": "#DDA063", "PL": "#1A6B9A", "G": "#91B542", "F": "#EF5656"}
+# Kubfärgerna på scoreboarden: visar vilken kub kravet flyttar (ANTAGANDE tills Niklas bekräftat vilken som är vilken)
+KUB = {"H": "#4E9A3A", "Q": "#7B4FA0", "T": "#E08A2E"}
 BILDPREFIX = {"FÖRSKOLA": "FÖRSKOLOR", "KONTOR": "KONTOR", "LOKAL": "LOKAL", "HYRESRÄTT": "Hyresrätt", "BRF": "BRF"}
 # FC och FS: befintliga personalbilder (Bilder/Skapade bilder)
 PERSONBILD = {"Förhandlaren": "Fastighetschef Kommersiellt", "Tekniska experten": "Fastighetschef Samhälle",
@@ -50,6 +52,10 @@ REGEL = {   # händelse- och kvartalskortens effekter i spelarens ord
     "kvartal_kassa_minus": "Varje ägare av typen betalar <b>{v} Mkr</b> vid nästa marknad.",
 }
 REGEL_I_TEXTEN = {"villkorskort", "forkop", "utveckling", "riskbuffert", "natverkskort_fokus"}
+
+
+def kub(bokstav):
+    return f'<span class="kub" style="background:{KUB[bokstav]}"></span>'
 
 
 def sektion(rubrik, skede, extra=""):
@@ -153,7 +159,7 @@ def projekt_framsida(p):
       <div class="p-skede">{bricka("PU", SKEDE["PU"])}</div>
       <div class="p-typ">{e(p["Typ"])}</div>
       <div class="p-namn">{e(p["Kortnamn"])}</div>
-      <div class="p-hq"><span>H</span>{e(tal(p["Hållbarhetskrav H"]))}<span>Q</span>{e(tal(p["Kvalitetskrav Q"]))}</div>
+      <div class="p-hq">{kub("H")}H {e(tal(p["Hållbarhetskrav H"]))}{kub("Q")}Q {e(tal(p["Kvalitetskrav Q"]))}</div>
       {sexkant(bild(f'{BILDPREFIX[p["Typ"]]} {p["Kortnamn"]}'), mork)}
       <div class="p-besk">{e(p["Beskrivning"])}</div>
       <table class="p-tal">
@@ -170,9 +176,9 @@ def projekt_textsida(p):
     nivarader = "".join(f'<tr><td>{e(n)}</td><td>{e(v if v not in (None, "-") else "–")}</td></tr>' for n, v in niva)
     plan = [("BTA", f'{tal(p["BTA (kvm)"])} kvm'), ("Utvecklingskostnad", f'{tal(p["Utvecklingskostnad (Mkr)"])} Mkr'),
             ("Anskaffning", f'{tal(p["Anskaffning (Mkr)"])} Mkr'), ("Riskbuffert", tal(p["Riskbuffert"]) or "–"),
-            ("Passera nämnden", f'&gt; {tal(p["Passera nämnden (>)"])}'), ("Hållbarhetskrav", tal(p["Hållbarhetskrav H"])),
-            ("Kvalitetskrav", tal(p["Kvalitetskrav Q"]))]
-    planrader = "".join(f"<tr><td>{a}</td><td>{e(b) if '&gt;' not in str(b) else b}</td></tr>" for a, b in plan)
+            ("Passera nämnden", f'+{tal(p["Passera nämnden (>)"])}'),
+            (f'{kub("H")}Hållbarhetskrav', tal(p["Hållbarhetskrav H"])), (f'{kub("Q")}Kvalitetskrav', tal(p["Kvalitetskrav Q"]))]
+    planrader = "".join(f"<tr><td>{a}</td><td>{e(b)}</td></tr>" for a, b in plan)
     if p["Typ"] == "BRF":
         forv = f'''{sektion("Försäljning", "G")}
           <table class="p-tal"><tr><td>Marknadsvärde</td><td>{e(tal(p["Marknadsvärde (Mkr)"]))} Mkr</td></tr></table>
@@ -192,7 +198,7 @@ def projekt_textsida(p):
       <div class="p-kolumner">
         <div>{sektion("Projektutveckling", "PU")}<table class="p-tal">{planrader}</table>
              {sektion("Planering", "PL", "liten")}
-             <table class="p-tal"><tr><td>Tidspåverkan</td><td>{e(tal(p["Tidspåverkan T"]) or "–")}</td></tr></table>
+             <table class="p-tal"><tr><td>{kub("T")}Tidspåverkan</td><td>{e(tal(p["Tidspåverkan T"]) or "–")}</td></tr></table>
              <div class="p-underrubrik">Nivåkrav leverantörer</div><table class="p-tal liten">{nivarader}</table></div>
         <div>{forv}</div></div>
       <div class="fot"><span>Behåll kortet så länge ni äger projektet</span><span>{e(p["Kort-id"])}</span></div>

@@ -56,8 +56,8 @@ body { font-family: var(--typsnitt); color: var(--text); -webkit-print-color-adj
 .projekt .p-namn { text-align: center; color: var(--accent); font-size: 12pt; margin-top: 2mm; }
 .projekt .p-namn.vanster { text-align: left; font-weight: 700; font-size: 13pt; margin: 0 0 3mm; }
 .p-hq { text-align: center; margin: 1.5mm 0 4mm; color: var(--accent); font-weight: 700; }
-.p-hq span { display: inline-block; width: 4mm; height: 4mm; line-height: 4mm; border-radius: 50%; margin: 0 1mm 0 3mm;
-             background: var(--accent); color: var(--bg); font-size: 6pt; text-align: center; }
+.p-hq .kub { margin: 0 1mm 0 3mm; }
+.kub { display: inline-block; width: 2.4mm; height: 2.4mm; border-radius: .4mm; margin-right: 1.2mm; vertical-align: -.2mm; }
 .projekt.fram .sexkant { width: 52mm; height: 45mm; }
 .p-besk { margin: 6mm 2mm 5mm; text-align: center; color: var(--accent); }
 .p-tal { width: 100%; border-collapse: collapse; }
