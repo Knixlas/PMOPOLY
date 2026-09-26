@@ -69,8 +69,8 @@ PK-67;direkt_dn_plus_egen;nar_som_helst;;Genombrott i hyresförhandlingen;Hyresg
 PK-68;budstrid;vid_bud;1,1;Säljaren behöver likviditet;Kvartalsrapporten var inte vacker. De tar det ni bjuder.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
 PK-69;budstrid;vid_bud;1,1;Kall kalkyl;Siffrorna säger vad fastigheten är värd. Känslor kostar extra.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
 PK-70;budstrid;vid_bud;1,1;Pressat läge hos motparten;Banken ringer dem varje dag. Ni ringer en gång, med ett bud.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
-PK-71;overtagande;vid_bud;;Juridiskt vattentätt;Tre advokater, två ombud och en ursäktande notis i Dagens Industri.;Ditt tvångsbud kan inte stoppas — varken med stoppkort eller riskbuffertar. Spelas när du lägger budet.
-PK-72;overtagande;vid_bud;;Majoriteten i styrelsen;Rösterna var räknade innan stämman ens började.;Ditt tvångsbud kan inte stoppas — varken med stoppkort eller riskbuffertar. Spelas när du lägger budet.
+PK-71;overtagande;vid_bud;;Juridiskt vattentätt;Tre advokater, två ombud och en ursäktande notis i Dagens Industri.;Ditt tvångsbud kan inte stoppas och ingen duell slås: köpet går igenom. Spelas när du lägger budet.
+PK-72;overtagande;vid_bud;;Majoriteten i styrelsen;Rösterna var räknade innan stämman ens började.;Ditt tvångsbud kan inte stoppas och ingen duell slås: köpet går igenom. Spelas när du lägger budet.
 PK-73;gratis_uppgradering;nar_som_helst;;Totalentreprenad klar;Totalentreprenören lämnade över nycklarna och en garanti på fem år.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
 PK-74;gratis_uppgradering;nar_som_helst;;Fjärrvärmen konverteras;Oljepannan åker ut, fjärrvärmen kommer in. Energibolaget står för det mesta.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
 PK-75;gratis_uppgradering;nar_som_helst;;Energibolaget bjuder på åtgärden;Energibolaget behöver ett referensprojekt. Ni har ett hus.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.

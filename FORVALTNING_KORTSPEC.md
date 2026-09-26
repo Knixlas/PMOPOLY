@@ -51,7 +51,7 @@ energi plus/minus är dolda brickor som DN — se visningsregeln i §6.
 | `dra_natverkskort` | när som helst | dra ett nätverkskort |
 | `riskbuffert` | när som helst | ta en riskbuffert |
 | `budstrid` | vid bud | ditt tvångsbud kostar `Värde` × MV (1,1) i stället för 1,2 × MV |
-| `overtagande` | vid bud | ditt tvångsbud kan inte stoppas (varken stoppkort eller riskbuffert) |
+| `overtagande` | vid bud | ditt tvångsbud kan inte stoppas och ingen duell slås — köpet går igenom |
 | `gratis_uppgradering` | när som helst | +1 energiklass på egen fastighet, utan slag och kostnad — gör det värt att tvångsköpa en D/E-fastighet |
 | `omforhandlat_lan` | när som helst | räntan på en egen fastighet −`Värde` Mkr/år för resten av spelet (DN +1, MV oförändrat) |
 | `dd_val` | vid köp | vid köp (även tvångsköp): dra två DD-kort och välj ett |
