@@ -106,6 +106,8 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    sparning och återskapning), läsbara frågor för alla beslut (`motor/fragor.py`), spelläget per
    skede (`motor/lage.py`) och klienten (nytt parti, en enhet per kvarter, bordet för tärningar och
    kort, pusslet vid 4.3, slutställning). Provat med hela partier i webbläsaren i båda lägena.
-   *Kvar:* brädorna och korten som grafik i spelvyn, animeringar, tärningar på skärmen.
+   Tärningsslag och dragna kort syns i händelseflödet; projektval visar kortens bilder.
+   *Kvar:* brädorna och korten som grafik i spelvyn, animeringar, tärningar på skärmen, QR-skanning.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**
+7. **Balans** — se `BALANS.md` (nattens mätningar och förslag).
