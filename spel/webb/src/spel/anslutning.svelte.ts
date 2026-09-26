@@ -1,7 +1,7 @@
 // Förbindelsen med servern: REST för att skapa och lista partier, en WebSocket per enhet i ett parti.
 // Läget (vad servern skickar) är reaktivt, så sidorna ritas om när något händer.
 
-export interface Alternativ { text: string; detalj?: string; kod: unknown }
+export interface Alternativ { text: string; detalj?: string; kod: unknown; bild?: string; typ?: string }
 export interface Vy {
   typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag';
   rubrik: string;

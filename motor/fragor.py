@@ -63,6 +63,13 @@ def detalj(obj, m=None):
     return ""
 
 
+def bild(obj):
+    """Projektkortets bild i webbklienten (spel/webb/public/bilder/<Kort-id>.jpg), om det finns en."""
+    if isinstance(obj, dict) and "Anskaffning (Mkr)" in obj and obj.get("Kort-id") is not None:
+        return {"bild": f"bilder/{obj['Kort-id']}.jpg", "typ": obj.get("Typ")}
+    return {}
+
+
 # ---------------------------------------------------------------------------- beslutens beskrivningar
 # metod -> (typ, rubrik(m, s, a), pool(m, s, a) eller None, "inget" tillåtet)
 def _andra(m, s):
@@ -155,7 +162,7 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag):
           else (", ".join(etikett(x, motor) for x in forslag) or "Inga")}
     if pool:
         text = (lambda x: f"Q {x[0]:+d} · H {x[1]:+d}") if metod == "fordela_krav" else (lambda x: etikett(x, motor))
-        vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter)}
+        vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x)}
                             for x in pool(motor, subjekt, args)]
         if metod == "fordela_krav":
             vy["forslag_text"] = text(forslag)

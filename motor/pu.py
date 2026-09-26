@@ -43,6 +43,8 @@ class PUParametrar:
     start_q: int = 6
     start_h: int = 6
     start_t: int = 12
+    namnd_hoj_max: int = 99              # hur många gånger kraven får höjas för ett nytt nämndförsök (99 = obegränsat)
+    namnd_stor_mix: int = 99             # varje projekt utöver så här många höjer nämndsumman med 1 (99 = av)
 
 
 @dataclass
@@ -380,12 +382,14 @@ class PUMotor:
         """4.1: summan av 'Passera nämnden' minus nämndslag ska slås över; en tärning mer per försök."""
         forsok = 0
         while projekt:
-            summa = sum(tal(p["Passera nämnden (>)"]) for p in projekt) - kv.namndslag
+            summa = (sum(tal(p["Passera nämnden (>)"]) for p in projekt) - kv.namndslag
+                     + max(0, len(projekt) - self.p.namnd_stor_mix))
             while summa > 19 and projekt:                    # måste kunna klara nämnden
                 p = kv.strategi.samsta_projekt(self, kv, projekt)
                 projekt.remove(p)
                 self.lamna_projekt(kv, p)
-                summa = sum(tal(x["Passera nämnden (>)"]) for x in projekt) - kv.namndslag
+                summa = (sum(tal(x["Passera nämnden (>)"]) for x in projekt) - kv.namndslag
+                         + max(0, len(projekt) - self.p.namnd_stor_mix))
             forsok += 1
             self.stat["namnd_forsok"] += 1
             slag = [self.s.d20() for _ in range(forsok)]
@@ -395,7 +399,7 @@ class PUMotor:
                 slag = [self.s.d20() for _ in range(forsok)]
             if max(slag) > summa:
                 return projekt, forsok
-            if kv.strategi.namnd_miss_hoj_krav(self, kv, summa, forsok):
+            if forsok <= self.p.namnd_hoj_max and kv.strategi.namnd_miss_hoj_krav(self, kv, summa, forsok):
                 q, h = kv.strategi.fordela_krav(self, kv, +1)
                 self.andra_krav(kv, q, h)
                 self.stat["namnd_hojt_krav"] += 1

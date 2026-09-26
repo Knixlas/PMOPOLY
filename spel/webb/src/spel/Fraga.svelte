@@ -9,6 +9,7 @@
 
   let { fraga, svara, skickar = false }: { fraga: Fraga; svara: (s: Svar) => void; skickar?: boolean } = $props();
   const vy = $derived(fraga.vy);
+  const fargar = data.fargar as Record<string, { fyllning: string; ljus: string }>;
 
   let valda = $state<number[]>([]);
   let tal = $state(0);
@@ -100,7 +101,9 @@
       {#each synliga as a (a.i)}
         <li>
           {#if vy.typ === 'val'}
-            <button type="button" class="alt" disabled={skickar} onclick={() => svara({ val: a.i })}>
+            <button type="button" class="alt" class:medbild={!!a.bild} disabled={skickar} onclick={() => svara({ val: a.i })}
+                    style={a.typ ? `--typ:${fargar[a.typ]?.fyllning ?? 'transparent'}` : ''}>
+              {#if a.bild}<img src={a.bild} alt="" loading="lazy" />{/if}
               <span class="text">{a.text}</span>{#if a.detalj}<span class="detalj">{a.detalj}</span>{/if}
             </button>
           {:else}
@@ -154,6 +157,9 @@
          border: 1px solid var(--linje-stark); background: #fff; color: var(--black); }
   .alt:hover:not(:disabled) { border-color: var(--black); background: var(--panel-mork); }
   .kryss { grid-template-columns: auto 1fr; column-gap: 10px; cursor: pointer; }
+  .medbild { grid-template-columns: 52px 1fr; column-gap: 12px; align-items: center; border-left: 6px solid var(--typ); }
+  .medbild img { grid-row: span 2; width: 52px; height: 45px; object-fit: cover;
+                 clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
   .kryss .detalj { grid-column: 2; }
   .text { font-weight: 700; font-size: 15.5px; }
   .detalj { font-size: 13px; color: var(--dampad); }
