@@ -51,8 +51,6 @@ MALLTEXT = [
     ("Textsida", "Regel", "Slå D20 + ER erfarenhet"),
     ("Textsida", "Etiketter", "Intervall: 1-9 · 10-17 · 18-24 · 25+"),
     ("Textsida", "Regel", "LÄS - SLÅ - KASTA"),
-    ("Tomma kort", "Obs", "Två tomma kort (CSV-platshållare) trycktes med enbart malltexten "
-                          "(KONSEKVENSKORT · GF, rubriker och intervall utan värden)."),
 ]
 
 TEXT_MONSTER = re.compile(
@@ -121,8 +119,9 @@ def main():
             ("Korttyp", "GF_Konsekvenskort — konsekvenskort, Skede 2.2 Genomförande"),
             ("Antal kort", f"{len(rader)} unika (10 TID, 10 KVALITET, 10 HÅLLBARHET), 1 exemplar vardera "
                            f"per spel. Därtill {tomma} tomma kort (CSV:ns platshållarrader) som trycktes "
-                           f"med enbart malltext — totalt {len(rader) + tomma} kort, {2 * (len(rader) + tomma)} "
-                           "sidor i tryckfilen."),
+                           f"med enbart malltext av misstag och ska tas bort ur spelet (jfr beslut K10) — "
+                           f"totalt {len(rader) + tomma} kort, {2 * (len(rader) + tomma)} sidor i tryckfilen. "
+                           "De tomma korten ingår inte i kortdatan."),
             ("Format", "58 × 88 mm, dubbelsidigt (bildsida + textsida) — "
                        "_tryckeri_temp/GF_Konsekvenskort_bildsida_layout.json"),
             ("Tryckfil", "OneDrive: SPELET 2/PDF/Tryckbara/GF_Konsekvenskort_tryckeri.pdf "

@@ -299,9 +299,9 @@ mot tryckfilerna (utläst text i `arv/tryckt_text/`). Avvikelser mot CSV har lö
 | PL_personal | 10 | 1 | 58×88 |
 | PL_organisation | 16 | 4 (S1–S4) | 58×88 |
 | PL_leverantörer | 36 | 4 (S1–S4) | 58×88 |
-| PL_Händelsekort | 54 (+2 tomma) | 4 (S1–S4) | 58×88 |
+| PL_Händelsekort | 54 | 4 (S1–S4) | 58×88 |
 | GF_faskort | 31 | 1 | 88×88 |
-| GF_Konsekvenskort | 30 (+2 tomma) | 1 | 58×88 |
+| GF_Konsekvenskort | 30 | 1 | 58×88 |
 | GF_garantibesiktning | 44 | 1 | 58×88 |
 | GF_kultur | 80 | 1 | 58×88 |
 
@@ -331,8 +331,7 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
 - **Skede 2:** arbetschefen (PL_personal) *ökar* **kravuppfyllnaden**.
 - På den fysiska scoreboarden är **kravet den svarta kuben** och **uppfyllnaden de färgade kuberna**.
 
-Kvar att besvara:
-- K10. De 8 blanka PL-händelsekorten: reservkort i Excel eller bara notering?
+| K10 Blanka kort (8 PL-händelsekort, 2 GF-konsekvenskort) | Trycktes av misstag — **tas bort ur spelet**, ingår inte i kortdatan |
 
 ## 6. Öppna frågor
 

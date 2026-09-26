@@ -62,8 +62,6 @@ MALLTEXT = [
     ("Textsida", "Regel", "LÄS - SLÅ - LÖS - KASTA"),
     ("Textsida", "Etikett", "PROJEKTTYP:"),
     ("Textsida", "Avdelare", "' - ' mellan Fas och Kategori"),
-    ("Hela filen", "Tomma kort", "Två platshållarkort ('- tom', utan text) trycktes sist i varje tryckfil "
-                                "— 2 × 4 = 8 blanka kort. Ej med på fliken Kort."),
 ]
 
 
@@ -150,7 +148,8 @@ def main():
         kalla=[
             ("Korttyp", "PL_Händelsekort — händelsekort, Skede 2.1 Planering (fas Förberedelse)"),
             ("Antal kort", f"{len(rader)} unika × 4 exemplar = {4 * len(rader)} tryckta kort, "
-                           f"plus {tomma} tomma platshållarkort × 4 = {4 * tomma} blanka kort"),
+                           f"plus {tomma} tomma platshållarkort × 4 = {4 * tomma} blanka kort som trycktes av misstag "
+                           "och ska tas bort ur spelet (beslut K10). Ingår inte i kortdatan."),
             ("Exemplar S1–S4", "Varje kort trycktes i fyra tryckfiler _S1…_S4. Korten är identiska; enda "
                                "skillnaden är sorteringsmärket S1–S4 på bildsidan (för att sortera korten per spel)."),
             ("Format", "58 × 88 mm, dubbelsidigt (bildsida + textsida) — "
