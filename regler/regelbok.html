@@ -135,6 +135,11 @@
     a { color: inherit; text-decoration: none; }
   }
   .utskrift-innehall { display: none; }
+  .nytt { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+          vertical-align: middle; letter-spacing: .03em; background: var(--primar); color: #fff; font-family: "Segoe UI", system-ui, sans-serif; }
+  .omarbetas { margin: 16px 0; padding: 14px 16px; border: 2px dashed var(--primar); border-radius: 6px; background: var(--ruta); }
+  .omarbetas strong { color: var(--primar); }
+  @media print { .nytt { border: 1px solid #000; background: none; color: #000; } }
   .utskrift-innehall ol { list-style: none; padding-left: 0; }
 </style>
 </head>
@@ -152,16 +157,16 @@
 <li><a href="#k3">3. Markförvärv och projektval</a></li>
 <li><a href="#k4">4. Nämndbeslut och placering</a></li>
 <li><a href="#k5">5. Anskaffning, ABT-budget och övergång till Skede 2</a></li>
-<li><a href="#k5-2">5. Planering</a></li>
-<li><a href="#k6">6. Genomförande</a></li>
-<li><a href="#k7">7. Skedesavslut: konsekvenserna kommer</a></li>
-<li><a href="#k8">8. Förvaltning</a></li>
-<li><a href="#k9">9. Slutvärdering: vem vinner?</a></li>
-<li><a href="#k10">10. D20 + ackumulerad erfarenhet</a></li>
-<li><a href="#k11">11. Kompetenser</a></li>
-<li><a href="#k12">12. Termer</a></li>
-<li><a href="#k13">13. Snabbreferens: en sida</a></li>
-    </ol>
+<li><a href="#k6">6. Planering</a></li>
+<li><a href="#k7">7. Genomförande</a></li>
+<li><a href="#k8">8. Skedesavslut: konsekvenserna kommer</a></li>
+<li><a href="#k9">9. Förvaltning</a></li>
+<li><a href="#k10">10. Slutvärdering: vem vinner?</a></li>
+<li><a href="#k11">11. D20 + ackumulerad erfarenhet</a></li>
+<li><a href="#k12">12. Kompetenser</a></li>
+<li><a href="#k13">13. Termer</a></li>
+<li><a href="#k14">14. Snabbreferens: en sida</a></li>
+</ol>
   </nav>
   <main>
     <header class="titelsida">
@@ -170,7 +175,7 @@
       <p><em>Ett utbildningsspel om fastighetsutveckling, projektledning och ekonomi</em></p>
       <p>Åke Sundvalls Byggnads AB</p>
       <p>1–4 kvarter · Utbildningsspel</p>
-      <p class="version">Version 1.0 — som tryckt 2026-05-03</p>
+      <p class="version">Version 2.0 — rättad mot korten 2026-09-26</p>
     </header>
     <section class="utskrift-innehall">
       <h2>Innehåll</h2>
@@ -180,17 +185,29 @@
 <li><a href="#k3">3. Markförvärv och projektval</a></li>
 <li><a href="#k4">4. Nämndbeslut och placering</a></li>
 <li><a href="#k5">5. Anskaffning, ABT-budget och övergång till Skede 2</a></li>
-<li><a href="#k5-2">5. Planering</a></li>
-<li><a href="#k6">6. Genomförande</a></li>
-<li><a href="#k7">7. Skedesavslut: konsekvenserna kommer</a></li>
-<li><a href="#k8">8. Förvaltning</a></li>
-<li><a href="#k9">9. Slutvärdering: vem vinner?</a></li>
-<li><a href="#k10">10. D20 + ackumulerad erfarenhet</a></li>
-<li><a href="#k11">11. Kompetenser</a></li>
-<li><a href="#k12">12. Termer</a></li>
-<li><a href="#k13">13. Snabbreferens: en sida</a></li>
-      </ol>
+<li><a href="#k6">6. Planering</a></li>
+<li><a href="#k7">7. Genomförande</a></li>
+<li><a href="#k8">8. Skedesavslut: konsekvenserna kommer</a></li>
+<li><a href="#k9">9. Förvaltning</a></li>
+<li><a href="#k10">10. Slutvärdering: vem vinner?</a></li>
+<li><a href="#k11">11. D20 + ackumulerad erfarenhet</a></li>
+<li><a href="#k12">12. Kompetenser</a></li>
+<li><a href="#k13">13. Termer</a></li>
+<li><a href="#k14">14. Snabbreferens: en sida</a></li>
+</ol>
     </section>
+    <aside class="ruta" id="nytt-2-0">
+      <p class="ruta-rubrik">Nytt i version 2.0</p>
+      <p>Regelhäftet är rättat efter de tryckta korten. <strong>Korten gäller alltid först.</strong> Ändrade avsnitt är märkta <span class="nytt">Ändrat i 2.0</span>.</p>
+      <ul>
+        <li><strong>Nämndbeslutet (4.1)</strong> är nytt: ett gemensamt slag för hela projektmixen, med fler tärningar för varje nytt försök.</li>
+        <li><strong>Krav och kravuppfyllnad (3.3, 3.8, 6.1)</strong> förklaras: projektchefen minskar kravet, arbetschefen ökar uppfyllnaden.</li>
+        <li><strong>D20-skalorna (3.5, 11.1)</strong> följer korten: politik/dialog, planeringshändelser och konsekvens-/garantikort har olika intervall.</li>
+        <li><strong>Komponentlistan (1.5)</strong> stämmer med korten: 6 CEO/CFO/COO vardera, 54 planeringshändelsekort per set, 31 FAS-kort, 30 konsekvenskort.</li>
+        <li><strong>Kapitlen är omnumrerade</strong> — Planering var tidigare också kapitel 5 och är nu kapitel 6; följande kapitel har flyttats ett steg. Hänvisningarna är rättade.</li>
+        <li><strong>Förvaltningen (kapitel 9)</strong> görs om och gäller inte i denna version.</li>
+      </ul>
+    </aside>
 <div class="del"><p class="del-nr">Del I</p><p class="del-namn">Introduktion</p></div>
 
 <h1 id="k1">1. Välkommen till Åkepol</h1>
@@ -200,9 +217,9 @@
 <p>Bygg en fastighetsportfölj som ger högst poäng. Slutformeln är:</p>
 <aside class="ruta"><p class="ruta-rubrik">Slutformel</p>
 <p>Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)</p>
-<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.</p>
+<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 10.2.</p>
 <p>Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz</p>
-<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.</p>
+<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 10.</p>
 </aside>
 <p>Det kvarter med högst poäng när Förvaltningen är klar har skapat det effektivaste förvaltningsbolaget och vinner spelet.</p>
 <h2 id="k1-2">1.2 Bolagsstruktur: Dotterbolag till Moderbolaget</h2>
@@ -210,7 +227,7 @@
 <p>Moderbolagets enda insats, som dock inte ska underskattas, är att garantera byggnadskreditiv under produktionen, samt att erbjuda moderbolagslån om kapitalet inte skulle räcka under förvaltningen. Moderbolaget driver inget operativt och har ingen styrning över portföljen, men dess ekonomiska ryggrad är vad som möjliggör projekt i den storleksordningen dotterbolaget arbetar med.</p>
 <aside class="ruta"><p class="ruta-rubrik">Moderbolagets praktiska roll</p>
 <p>Garanterar byggnadskreditivet under Genomförandet.</p>
-<p>Erbjuder moderbolagslån om ABT-budgeten tar slut (100 Mkr per lån, 95 betalas ut). Se 6.2.</p>
+<p>Erbjuder moderbolagslån om ABT-budgeten tar slut (100 Mkr per lån, 95 betalas ut). Se 7.2.</p>
 <p>Moderbolagslån påverkar Förvaltningen hårt, sista utvägen, inte en strategi.</p>
 </aside>
 <h2 id="k1-3">1.3 Geografisk hierarki: Stad, Stadsdel, Kvarter, Projekt</h2>
@@ -343,7 +360,7 @@
 </tr>
 <tr>
 <td><strong>Planeringshändelsekort</strong></td>
-<td>56 st. Dras parallellt med varje planeringssteg samt efter varje FAS. (ett set per kvarter).</td>
+<td>54 st per set. Dras parallellt med varje planeringssteg samt efter varje FAS. (ett set per kvarter, märkta S1–S4). <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 </tbody>
 </table>
@@ -353,11 +370,11 @@
 <tbody>
 <tr>
 <td><strong>FAS-kort</strong></td>
-<td>Ett per utförandefas (8 st), tre kolumner per kvartertyp och fyra utfallsnivåer.</td>
+<td>31 st, 3–5 per utförandefas (8 faser). Ett dras per fas. Tre kolumner per kvartertyp och fyra utfallsnivåer. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 <tr>
 <td><strong>Konsekvenskort</strong></td>
-<td>32 st, Q-, H- och T-konsekvenser vid skedesavslut.</td>
+<td>30 st (10 Tid, 10 Kvalitet, 10 Hållbarhet), konsekvenser vid skedesavslut. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 <tr>
 <td><strong>Garantibesiktning</strong></td>
@@ -405,15 +422,15 @@
 <tbody>
 <tr>
 <td><strong>CEO</strong></td>
-<td>8 st.</td>
+<td>6 st. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 <tr>
 <td><strong>CFO</strong></td>
-<td>8 st.</td>
+<td>6 st. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 <tr>
 <td><strong>COO</strong></td>
-<td>8 st.</td>
+<td>6 st. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 </tbody>
 </table>
@@ -516,7 +533,7 @@
 </tr>
 <tr>
 <td><strong>Nämndkrav</strong></td>
-<td>Det värde som måste överträffas när ett projekt ska genom nämnden. Står på projektkortet. D20 + Nämnd-bonus (från PC) jämförs med Nämndkravet, erfarenhet räknas INTE.</td>
+<td>Projektets bidrag till nämndens summa ("Passera nämnden &gt; N" på projektkortet). Summan för alla projekt, minus PC:s nämndslag, ska överträffas med D20 — se 4.1. Erfarenhet räknas INTE. <span class="nytt">Ändrat i 2.0</span></td>
 </tr>
 <tr>
 <td><strong>Riskbuffert (Rb)</strong></td>
@@ -675,12 +692,20 @@
 <figure>
 <img alt="Bild från den tryckta regelboken" src="bilder/image4.jpeg" />
 <figcaption>Ett projektkort med fält: projekttyp, form, BTA, anskaffning, Q/H-påverkan, Nämndkrav, eventuella riskbuffertar.</figcaption>
-<p><strong>Q-krav vs Q: och H-krav vs H</strong></p>
+</figure>
+<aside class="ruta">
+<p class="ruta-rubrik">Q-krav vs Q: och H-krav vs H</p>
 <p>Q-krav (grå/svart markör) är vad kvarteret MÅSTE leverera. Startvärdet 6 kommer från Detaljplanen, det är markens grundkrav. Varje projekt kan höja eller sänka Q-kravet utöver detta.</p>
 <p>Q (färgad kub) är vad kvarteret FAKTISKT levererar, det utfall som mäts upp i Genomförandet via FAS-korten och händelser. Det är Q som jämförs med Q-kravet vid skedesavslut.</p>
 <p>Samma logik gäller H-krav (grå/svart) och H (färgad kub).</p>
 <p>T-kravet är fast: 12 månader. Det rör sig aldrig. Det är T-utfallet (färgad kub) som rör sig, startar på 12, ökar vid Planeringens setup (max till 14), och flyttas vidare i Genomförandet. Vid skedesavslut jämförs T-utfallet mot T-kravet 12.</p>
-</figure>
+</aside>
+<aside class="ruta">
+<p class="ruta-rubrik">Krav och kravuppfyllnad <span class="nytt">Ändrat i 2.0</span></p>
+<p>I <strong>Skede 1</strong> ändras bara <strong>kravet</strong> — projekt, hörnrutor och projektchefen höjer eller sänker det. Summan när Skede 1 är slut är det ni ska uppnå i Skede 2.</p>
+<p>I <strong>Skede 2</strong> arbetar ni med <strong>kravuppfyllnaden</strong> — arbetschef, leverantörer, organisation och FAS-kort flyttar den.</p>
+<p>På scoreboarden är <strong>kravet den svarta kuben</strong> och <strong>uppfyllnaden de färgade kuberna</strong>. Därför står det på projektchefens kort att den <em>minskar kraven</em>, och på arbetschefens att den <em>förbättrar kravuppfyllnaden</em>.</p>
+</aside>
 <p>När ett kvarter drar ett projektkort får bolagsledningen välja:</p>
 <ul>
 <li>
@@ -707,7 +732,7 @@
 <p>Använda kort läggs i spelboxen.</p>
 </li>
 </ul>
-<h2 id="k3-5">3.5 D20-skalan: riktlinjer</h2>
+<h2 id="k3-5">3.5 D20-skalan: riktlinjer <span class="nytt">Ändrat i 2.0</span></h2>
 <h2 id="skalan-kan-vara-olika-p-individuella-kort-s-kontrollera-per-kort"><em>(Skalan kan vara olika på individuella kort, så kontrollera per kort)</em></h2>
 <table>
 
@@ -730,6 +755,19 @@
 </tr>
 </tbody>
 </table>
+<aside class="ruta">
+<p class="ruta-rubrik">Skalorna på korten</p>
+<p>Varje korttyp har sin egen skala, tryckt på kortet. Korten gäller:</p>
+<table>
+<thead><tr><th>Korttyp</th><th>Intervall</th><th>Slag</th></tr></thead>
+<tbody>
+<tr><td>Politik/dialog (PU)</td><td>1–4 · 5–10 · 11–15 · 16–19 · 20+</td><td>D20 + samlad erfarenhet</td></tr>
+<tr><td>Planeringshändelser (PL)</td><td>1–5 · 6–17 · 18–20 · 21+</td><td>D20 + erfarenhet</td></tr>
+<tr><td>Konsekvenskort (GF)</td><td>1–9 · 10–17 · 18–24 · 25+</td><td>D20 + erfarenhet</td></tr>
+<tr><td>Garantibesiktning (GF)</td><td>1–9 · 10–17 · 18–24 · 25+</td><td>D20 + erfarenhet</td></tr>
+</tbody>
+</table>
+</aside>
 <h2 id="k3-6">3.6 Riskbuffert (Rb)</h2>
 <p>Riskbuffertar (stjärnmarkörer) kan fås på flera sätt:</p>
 <ul>
@@ -790,25 +828,40 @@
 <li>
 <p>Eventuella kompetenser (STA, KOM, SAM, NOG, INN, ABM) som hjälper i Genomförandet.</p>
 </li>
+<li>
+<p>Minskning av kraven (kvalitet, tid, hållbarhet) enligt kortet. <span class="nytt">Ändrat i 2.0</span></p>
+</li>
+<li>
+<p>Eventuellt nämndslag, som dras av från nämndens summa (se 4.1). <span class="nytt">Ändrat i 2.0</span></p>
+</li>
 </ul>
 <h1 id="k4">4. Nämndbeslut och placering</h1>
 <p>När alla rundor är gjorda kommer nämndbeslutet, moment då bolagsledningen får besked om vilka projekt som faktiskt får genomföras, och projekten placeras i kvarteret.</p>
-<h2 id="k4-1">4.1 Nämndbeslutet</h2>
-<p>För varje projekt ni tagit slår ni ett D20-slag. Tröskeln (Nämndkravet) står på projektkortet, oftast en låg siffra. Ni får addera nämndbonus från er PC.</p>
-<ul>
-<li>
-<p>D20 + Nämnd-bonus jämförs med Nämndkravet på projektkortet.</p>
-</li>
-<li>
-<p>Misslyckat slag, projektet lämnas tillbaka.</p>
-</li>
-<li>
-<p>Lyckat slag, projektet godkänns och går vidare till placering.</p>
-</li>
-<li>
-<p>Erfarenhetsbonusen påverkar INTE detta slag.</p>
-</li>
-</ul>
+<h2 id="k4-1">4.1 Nämndbeslutet <span class="nytt">Ändrat i 2.0</span></h2>
+<p>Nämnden prövar hela er projektmix på en gång.</p>
+<ol>
+<li><p><strong>Summera</strong> "Passera nämnden" (&gt; N) på alla projekt ni vill genomföra.</p></li>
+<li><p><strong>Dra av</strong> projektchefens nämndslag (om PC-kortet har ett).</p></li>
+<li><p><strong>Slå en D20.</strong> Blir resultatet <strong>över</strong> summan är hela projektmixen godkänd och går vidare till placering.</p></li>
+<li><p><strong>Miss:</strong> välj antingen att <strong>höja Q- eller H-kravet med 1</strong>, eller att <strong>lämna tillbaka ett projekt</strong>. Ett projekt som lämnas tillbaka tar med sig sitt nämndvärde och sin påverkan på kraven.</p></li>
+<li><p><strong>Slå igen med en tärning mer</strong> än förra gången (försök 2: två D20, försök 3: tre D20 …). Det räcker att en av tärningarna blir över summan.</p></li>
+<li><p>Upprepa tills nämnden godkänner.</p></li>
+</ol>
+<aside class="ruta">
+<p class="ruta-rubrik">Ni måste kunna klara nämnden</p>
+<p>Summan får vara högst 19 innan första slaget — annars går den inte att slå över med en D20. Har ni för många projekt måste ni lämna tillbaka projekt innan ni slår.</p>
+<p>Erfarenhetsbonusen påverkar INTE nämndslaget.</p>
+</aside>
+<p><strong>Chans att nämnden godkänner</strong> vid ett försök med 1, 2 eller 3 tärningar:</p>
+<table>
+<thead><tr><th>Summa</th><th>1 tärning</th><th>2 tärningar</th><th>3 tärningar</th></tr></thead>
+<tbody>
+<tr><td>6</td><td>70 %</td><td>91 %</td><td>97 %</td></tr>
+<tr><td>10</td><td>50 %</td><td>75 %</td><td>88 %</td></tr>
+<tr><td>14</td><td>30 %</td><td>51 %</td><td>66 %</td></tr>
+<tr><td>18</td><td>10 %</td><td>19 %</td><td>27 %</td></tr>
+</tbody>
+</table>
 <h2 id="k4-2">4.2 Komplettera er projektmix</h2>
 <p>Efter nämndbeslutet, innan placeringen, får ni ta nya projekt från projektbanken och från de översta korten i respektive projekthög. Pris: 3 gånger utvecklingskostnaden per projekt.</p>
 <p>Detta gäller både er som tappade projekt i nämnden och er som vill byta strategi efter att ha sett utfallet.</p>
@@ -884,15 +937,15 @@
 <figcaption>Skede 2-brädet: en blå och en grön spelplan på samma bräde. De blå används under 2.1 Planering och de gröna under 2.2 Genomförande.</figcaption>
 </figure>
 <p><strong>Skede 2.1: Planering</strong></p>
-<h1 id="k5-2">5. Planering</h1>
+<h1 id="k6">6. Planering</h1>
 <p>I Planeringen görs T-justeringen, kvartertypen sätts, och kvarteret går igenom 13 planeringssteg där bolagsledningen handlar upp leverantörer och organisation.</p>
-<h2 id="k5-1">5.1 Setup för Planeringen</h2>
+<h2 id="k6-1">6.1 Setup för Planeringen</h2>
 <ul>
 <li>
 <p>Plocka fram Skede 2-brädet.</p>
 </li>
 <li>
-<p>Välj Arbetschef. Kvarteret med lägst BTA väljer först.</p>
+<p>Välj Arbetschef. Kvarteret med lägst BTA väljer först. Arbetschefen förbättrar kravuppfyllnaden (de färgade kuberna) enligt kortet, se rutan <em>Krav och kravuppfyllnad</em> i 3.3. <span class="nytt">Ändrat i 2.0</span></p>
 </li>
 <li>
 <p>COO sorterar de blå korten (PL) i 13 högar, en hög per planeringssteg. Leverantörs-, organisations- och händelsekort finns i fyra exemplar av varje (ett per kvarter), så att kvarter kan välja samma alternativ samtidigt. I varje hög ligger lev/org-kortet (eller alternativen) ÖVERST och tillhörande händelsekort UNDER.</p>
@@ -901,14 +954,14 @@
 <p>Placera de 13 högarna på respektive ruta på spelbrädet.</p>
 </li>
 <li>
-<p>COO tar fram moderbolagslånekorten och placerar dem synligt, de finns som sista utväg under Genomförandet (se 6.2).</p>
+<p>COO tar fram moderbolagslånekorten och placerar dem synligt, de finns som sista utväg under Genomförandet (se 7.2).</p>
 </li>
 </ul>
 <figure>
 <img alt="Bild från den tryckta regelboken" src="bilder/image7.png" />
 <figcaption>De blå rutorna som används i 2.1 – Planering.</figcaption>
 </figure>
-<h2 id="k5-2-2">5.2 Tidsjusteringen</h2>
+<h2 id="k6-2">6.2 Tidsjusteringen</h2>
 <p>Vid Planeringens setup justeras T-utfallet (färgad kub). Ta det HÖGSTA T-värdet bland kvarterets projekt, inte summan, och LÄGG TILL på startvärdet 12. T-utfallet kan därmed öka högst 2 steg, från 12 till max 14 (sämre, längre byggtid). T-utfallet kan senare i Genomförandet både öka och minska, men kan aldrig sjunka under 8.</p>
 <aside class="ruta"><p class="ruta-rubrik">T-krav vs T-utfall</p>
 <p>T-kravet är fast: 12 månader. Det rör sig aldrig.</p>
@@ -917,7 +970,7 @@
 <p>Det är T-utfallet (färgad kub) som flyttas, inte T-kravet.</p>
 <p>T-utfallet kan röra sig vidare under Genomförandet via FAS-kort och händelser, men aldrig under 8.</p>
 </aside>
-<h2 id="k5-3">5.3 De 13 planeringsstegen</h2>
+<h2 id="k6-3">6.3 De 13 planeringsstegen</h2>
 <p>Vid varje av de 13 stegen ligger fyra alternativ uppe på spelbrädet. Alla kvarter har samma fyra alternativ tillgängliga, det är inte "ett per kvarter". Ni får välja samma alternativ som varandra (ett företag jobbar ofta åt flera beställare samtidigt).</p>
 <p>För varje steg:</p>
 <ul>
@@ -939,19 +992,19 @@
 <p>Ni får alltså inte välja en leverantör på nivå 1 om något av era projekt kräver nivå 2 eller högre. Den högsta minimi-nivån i projektmixen styr.</p>
 <p>Regeln gäller varje av de 13 planeringsstegen där en leverantör ska väljas.</p>
 </aside>
-<h2 id="k5-4">5.4 Händelsekort</h2>
+<h2 id="k6-4">6.4 Händelsekort</h2>
 <p>Efter varje vald leverantör dras ett händelsekort från draghögen. Draghögen växer efterhand. Dragna kort läggs i spelboxen. Totalt dras alltså 13 kort under planeringen. Högen fortsätter sedan med i Genomförandet, och ytterligare 8 kort kommer att dras.</p>
 <figure>
 <img alt="Bild från den tryckta regelboken" src="bilder/image8.png" />
 <figcaption>Ett händelsekort med D20-skala</figcaption>
 </figure>
 <p>Slå D20, lägg till kvarterets samlade erfarenhet (max 12) och utför kortets effekt. Den kan vara både positiv, negativ och neutral beroende på kort.</p>
-<h2 id="k5-5">5.5 Avslut av Planeringen</h2>
+<h2 id="k6-5">6.5 Avslut av Planeringen</h2>
 <p>När alla 13 steg är gjorda och alla 13 händelsekort är dragna är Planeringen klar.</p>
 <p><strong>Skede 2.2: Genomförande</strong></p>
-<h1 id="k6">6. Genomförande</h1>
+<h1 id="k7">7. Genomförande</h1>
 <p>I Genomförandet byggs projektet, åtta utförandefaser. För varje fas vänds ett FAS-kort med fyra utfallsnivåer (röd, gul, grön, mörkgrön). Bolagsledningen betalar med kompetens för att välja en bättre nivå än standardutfallet (röd). Vid skedets slut summeras Q, H och T mot kraven.</p>
-<h2 id="k6-1">6.1 Setup för Genomförandet</h2>
+<h2 id="k7-1">7.1 Setup för Genomförandet</h2>
 <p>Innan första FAS-kortet vänds gör COO i ordning bord, scoreboard och företagsroller, kortlekar, markörer och korthögar ska ligga där de ska.</p>
 <ul>
 <li>
@@ -968,8 +1021,8 @@
 <img alt="Bild från den tryckta regelboken" src="bilder/image9.png" />
 <figcaption>De gröna rutorna som används i 2.2– Genomförande.</figcaption>
 </figure>
-<h2 id="k6-2">6.2 Moderbolagslån: sista utväg</h2>
-<p>Om ABT-budgeten tar slut under Genomförandet kan moderbolaget, dotterbolagets tysta partner, gå in med ett lån. Lånekorten ligger redan framme (se 5.1).</p>
+<h2 id="k7-2">7.2 Moderbolagslån: sista utväg</h2>
+<p>Om ABT-budgeten tar slut under Genomförandet kan moderbolaget, dotterbolagets tysta partner, gå in med ett lån. Lånekorten ligger redan framme (se 6.1).</p>
 <ul>
 <li>
 <p>Lånet är 100 Mkr nominellt, bara 95 Mkr betalas ut till er kassa (5 Mkr i avgift).</p>
@@ -984,7 +1037,7 @@
 <p>Uppgraderingsstopp, ni får inte göra energiförbättringar.</p>
 </aside>
 <p>Moderbolagslån är en sista utväg, inte en strategi.</p>
-<h2 id="k6-3">6.3 Företagskultur (kompetenspoäng)</h2>
+<h2 id="k7-3">7.3 Företagskultur (kompetenspoäng)</h2>
 <p>Företagskulturkort är frivilliga inköp innan varje utförandefas. De ger kompetenspoäng (STA, KOM, SAM, NOG, INN, ABM) som ni kan använda för att betala FAS-kort. Priset stiger genom spelet.</p>
 <p>Totalt finns 80 kulturkort och de delas av samtliga kvarter. Tar de slut, så tar de slut, först till kvarn. Använda kort läggs i spelboxen.</p>
 <aside class="ruta"><p class="ruta-rubrik">Vad representerar kulturkorten?</p>
@@ -993,7 +1046,7 @@
 <p>Det vi spelar är alltså inte "hela arbetschefen" utan "AC:s extraenergi", och samma logik gäller för leverantörer, organisation och företagsledning.</p>
 <p>Detta förklarar också varför ledningens bidrag är relativt litet: ledningen har andra uppgifter att sköta utöver just detta projekt och har därför begränsad möjlighet att delta aktivt.</p>
 </aside>
-<h2 id="k6-4">6.4 FAS-kortets fyra nivåer</h2>
+<h2 id="k7-4">7.4 FAS-kortets fyra nivåer</h2>
 <p>Varje FAS-kort har fyra utfallsnivåer markerade med färg:</p>
 <table>
 
@@ -1024,7 +1077,7 @@
 <p>B-ÄTA = Beställarens Ändrings-, Tilläggs- eller Avgående arbeten. När FAS-kortets Mörkgrön-nivå ger en B-ÄTA-intäkt motsvarar det att beställaren beställer mer arbete och betalar för det.</p>
 <p>Konsekvens i spelet: B-ÄTA-intäkten Läggs till kassan, motsvarar vinsten på B-ÄTA, efter att AVT betalats.</p>
 </figure>
-<h2 id="k6-5">6.5 Klara FAS-kortet med kompetens</h2>
+<h2 id="k7-5">7.5 Klara FAS-kortet med kompetens</h2>
 <p>Ni väljer utfallsnivå genom att spela kort som har tillräcklig kompetens, leverantörs-, organisations-, personal- eller kulturkort. Om ni inte spelar någon kompetens står ni kvar på den röda (negativa) nivån. Reglerna för spel:</p>
 <ul>
 <li>
@@ -1037,14 +1090,14 @@
 <p><strong>Hela kortet förbrukas</strong> och läggs i spelboxen efter användning, även om kortet hade kompetenser ni inte behövde (t.ex. ett kort med STA 3 som ni bara använde för KOM-värdet).</p>
 </li>
 <li>
-<p><strong>Undantag:</strong> leverantörskort på nivå 1 eller 2 läggs INTE i spelboxen. De sparas på scoreboarden i särskild ruta, antalet räknas senare för garantibesiktningskorten vid skedets avslut (se 7.4).</p>
+<p><strong>Undantag:</strong> leverantörskort på nivå 1 eller 2 läggs INTE i spelboxen. De sparas på scoreboarden i särskild ruta, antalet räknas senare för garantibesiktningskorten vid skedets avslut (se 8.4).</p>
 </li>
 </ul>
 <figure>
 <img alt="Bild från den tryckta regelboken" src="bilder/image11.png" />
 <figcaption>Exempel på hur man hanterar ett faskort för att nå önskat utfall.</figcaption>
 </figure>
-<h2 id="k6-6">6.6 Händelsekort efter varje fas</h2>
+<h2 id="k7-6">7.6 Händelsekort efter varje fas</h2>
 <p>När FAS-kortet är hanterat drar bolagsledningen ETT kort från sin egen händelsekortshög, den hög som från planeringen ligger uppe på scoreboarden.</p>
 <ul>
 <li>
@@ -1060,17 +1113,17 @@
 <p>Använda händelsekort läggs i spelboxen.</p>
 </li>
 </ul>
-<h2 id="k6-7">6.7 Genomgång av alla 8 faser</h2>
+<h2 id="k7-7">7.7 Genomgång av alla 8 faser</h2>
 <p>Utför samtliga åtta utförandefaser på samma sätt: vänd FAS-kort, ev. köp kulturkort, betala kompetens för önskat utfall, justera scoreboarden, lägg använda kort i spelboxen (utom leverantörer nivå 1-2 som sparas på scoreboarden), och dra därefter ett händelsekort från er egen hög.</p>
-<h1 id="k7">7. Skedesavslut: konsekvenserna kommer</h1>
+<h1 id="k8">8. Skedesavslut: konsekvenserna kommer</h1>
 <p>Efter alla 8 utförandefaser jämförs Q-, H- och T-utfallet (de färgade kuberna) mot Q-krav, H-krav och T-krav 12 (de grå/svarta markörerna). Detta sker i tre separata steg.</p>
 <aside class="ruta"><p class="ruta-rubrik">CFO antecknar antalet dragna konsekvenskort</p>
 <p>Konsekvenskorten blandas tillbaka i draghögen mellan kvarter, eftersom de återanvänds finns korten inte kvar på bordet att räkna senare.</p>
-<p>Antalet dragna konsekvenskort påverkar antalet garantibesiktningskort som dras i 7.4, därför måste det noteras.</p>
+<p>Antalet dragna konsekvenskort påverkar antalet garantibesiktningskort som dras i 8.4, därför måste det noteras.</p>
 <p>CFO antecknar på balans- och resultaträkningen hur många konsekvenskort kvarteret drog totalt (Tid + Kvalitet + Hållbarhet).</p>
 <p>Notera också den totala avvikelsen från målen efter att alla kort är hanterade (även korten kan i värsta fall påverka måutfallet). T, Q, H summerat. Läs av i tabell för att få Mu till slutberäkningen av resultatet.</p>
 </aside>
-<h2 id="k7-1">7.1 Tidskonsekvenser (T)</h2>
+<h2 id="k8-1">8.1 Tidskonsekvenser (T)</h2>
 <ul>
 <li>
 <p>Jämför T-utfallet (färgad kub) med T-kravet 12.</p>
@@ -1088,7 +1141,7 @@
 <p>COO blandar tillbaka använda kort i draghögen, sedan kör nästa kvarter sin tidsloop.</p>
 </li>
 </ul>
-<h2 id="k7-2">7.2 Kvalitetskonsekvenser (Q)</h2>
+<h2 id="k8-2">8.2 Kvalitetskonsekvenser (Q)</h2>
 <ul>
 <li>
 <p>Jämför Q-utfallet (färgad kub) med Q-kravet (grå/svart markör).</p>
@@ -1106,7 +1159,7 @@
 <p>COO blandar tillbaka, sedan kör nästa kvarter sin Q-loop.</p>
 </li>
 </ul>
-<h2 id="k7-3">7.3 Hållbarhetskonsekvenser (H)</h2>
+<h2 id="k8-3">8.3 Hållbarhetskonsekvenser (H)</h2>
 <ul>
 <li>
 <p>Jämför H-utfallet (färgad kub) med H-kravet (grå/svart markör).</p>
@@ -1127,10 +1180,10 @@
 <aside class="ruta"><p class="ruta-rubrik">Q- och H-loopen kan rulla på</p>
 <p>Vissa Q- och H-konsekvenskort har utfall som drar utfallet ytterligare nedåt, då saknas fler steg och ni får dra fler kort. Mata på tills utfallet möter kravet, eller når 0. Vid 0 är ni klara med loopen, förmodligen också med karriären.</p>
 </aside>
-<h2 id="k7-4">7.4 Garantibesiktning</h2>
+<h2 id="k8-4">8.4 Garantibesiktning</h2>
 <p>Slutligen dras garantibesiktningskort: ett per draget konsekvenskort enligt CFO:s anteckningar (T + Q + H), plus ett per leverantör på nivå 1 eller 2 som sparats på scoreboarden. Garantibesiktningskorten är alltid negativa eller noll, aldrig en bonus.</p>
 <p>Om garantibesiktningshögen tar slut: blanda om använda kort och dra igen. (Är ni där har ni det förmodligen redan ganska illa ställt.)</p>
-<h2 id="k7-5">7.5 Ekonomisk uppgörelse</h2>
+<h2 id="k8-5">8.5 Ekonomisk uppgörelse</h2>
 <p>När alla konsekvenser och garantibesiktningar är gjorda summeras kvarvarande medel:</p>
 <p>CFO beräknar kvarterets nyckeltal:</p>
 <table>
@@ -1147,16 +1200,16 @@
 </tbody>
 </table>
 <aside class="ruta"><p class="ruta-rubrik">Sista justeringar</p>
-<p>Om moderbolagslån har tecknats (se 6.2).</p>
+<p>Om moderbolagslån har tecknats (se 7.2).</p>
 <p>Lägg kvarvarande medel i kassan, de följer med till Förvaltningen som eget kapital.</p>
 </aside>
-<h2 id="k7-6">7.6 BRF-försäljning</h2>
+<h2 id="k8-6">8.6 BRF-försäljning</h2>
 <p>Efter Skede 2, innan Förvaltningen tar vid, säljer kvarteret av sina BRF-projekt. Intäkt = marknadsvärde − anskaffningsvärde + rörlig intäkt (slå projektkortets tärning). Intäkten läggs i kassan.</p>
 <aside class="ruta"><p class="ruta-rubrik">Behåll BRF-projektkorten: och anteckna BTA</p>
 <p>Lägg sålda BRF-projektkort i en separat hög hos er.</p>
-<p>För in BRF:ens BTA-värde i er balans- och resultaträkning. Det behövs vid slutsammanräkningen, eftersom sålda BRF räknas med i BTA-divisorn, kassan från BRF-försäljningen ska "förtjäna sin yta" i jämförelsetalet (se 9.3).</p>
+<p>För in BRF:ens BTA-värde i er balans- och resultaträkning. Det behövs vid slutsammanräkningen, eftersom sålda BRF räknas med i BTA-divisorn, kassan från BRF-försäljningen ska "förtjäna sin yta" i jämförelsetalet (se 10.3).</p>
 </aside>
-<h2 id="k7-7">7.7 Avsluta Skede 2: städa bordet</h2>
+<h2 id="k8-7">8.7 Avsluta Skede 2: städa bordet</h2>
 <p>Innan ni går vidare till Skede 3 ska Skede 2-brädet och alla dess markörer rensas från bordet.</p>
 <aside class="ruta">
 <p>Räkna avvikelser INNAN scoreboarden plockas bort</p>
@@ -1174,7 +1227,7 @@
 <p>Eventuella oanvända lev/org/händelsekort läggs i spelboxen.</p>
 </li>
 <li>
-<p>Projektkorten behåller ni, både placerade och de godkända som inte placerades. Sålda BRF-kort (efter 7.6) sparas i sin separata hög.</p>
+<p>Projektkorten behåller ni, både placerade och de godkända som inte placerades. Sålda BRF-kort (efter 8.6) sparas i sin separata hög.</p>
 </li>
 <li>
 <p>Tärningarna ligger kvar på bordet, de behövs i Skede 3.</p>
@@ -1188,10 +1241,11 @@
 <figcaption>Skede 3-brädet: stadsdelens fastighetsmarknad med rutor för fastigheter byggda av andra aktörer, plus areal för draghögar (omvärldskort, händelsekort per fastighetstyp, yieldkort, DD-kort, kvartalskort).</figcaption>
 </figure>
 <p><strong>Skede 3: Förvaltning</strong></p>
-<h1 id="k8">8. Förvaltning</h1>
+<h1 id="k9">9. Förvaltning</h1>
+<div class="omarbetas"><strong>Görs om.</strong> Förvaltningen (Skede 3) arbetas om och kapitlet gäller inte i version 2.0. Texten nedan är kvar från den tryckta versionen som referens. Det gäller också avsnittet <em>Köp och sälj / Förvaltning</em> på projektkortens baksida.</div>
 <p>Förvaltningen spelas i fyra kvartal. För varje kvartal hanteras omvärldshändelser, händelsekort per fastighet, drift och eventuella köp/sälj. Vid slutet av Förvaltningen görs slutvärderingen.</p>
-<h2 id="k8-1">8.1 Setup för Förvaltningen</h2>
-<p>Skede 2 är avslutat och bordet är städat (se 7.7). Nu plockas Skede 3-brädet fram.</p>
+<h2 id="k9-1">9.1 Setup för Förvaltningen</h2>
+<p>Skede 2 är avslutat och bordet är städat (se 8.7). Nu plockas Skede 3-brädet fram.</p>
 <ul>
 <li>
 <p>Plocka fram Skede 3-brädet. Det representerar STADSDELEN, den marknad bolagsledningen agerar på.</p>
@@ -1206,7 +1260,7 @@
 <p>COO sorterar de röda korten (F): personalkort, händelsekort, omvärldskort, DD-kort och kvartalskort. Placerar draghögarna på sina rutor.</p>
 </li>
 </ul>
-<h2 id="k8-2">8.2 Personal: FC och FS</h2>
+<h2 id="k9-2">9.2 Personal: FC och FS</h2>
 <p>I Skede 3 anställer ni personal för förvaltningsbolaget:</p>
 <ul>
 <li>
@@ -1221,7 +1275,7 @@
 <p>Vid köp av fastigheter måste personalens ackumulerade kapacitet vara lika eller över antalet fastigheter ni äger.</p>
 <p>Personalstyrkan kan inte minskas, även om ni har övertalighet.</p>
 </aside>
-<h2 id="k8-3">8.3 Kvartalsspiralen: så spelar ni varje kvartal</h2>
+<h2 id="k9-3">9.3 Kvartalsspiralen: så spelar ni varje kvartal</h2>
 <p>Förvaltningen består av fyra kvartal. För varje kvartal upprepas följande sekvens:</p>
 <ul>
 <li>
@@ -1231,29 +1285,29 @@
 <p>Varje kvarter drar ett händelsekort av rätt typ per ägd fastighet (Hyresrätt, Kontor, Lokal, Förskola, egen draghög per typ). Lägg tillbaka och blanda mellan varje kvarter.</p>
 </li>
 <li>
-<p>Hantera köp/sälj på sekundärmarknaden om bolagsledningen vill (se 8.5).</p>
+<p>Hantera köp/sälj på sekundärmarknaden om bolagsledningen vill (se 9.6).</p>
 </li>
 <li>
-<p>Frivilligt: höj energiklass på en eller flera fastigheter (se 8.6).</p>
+<p>Frivilligt: höj energiklass på en eller flera fastigheter (se 9.7).</p>
 </li>
 <li>
 <p>CFO noterar utfall i balans- och resultaträkningen (eller Companion-koden).</p>
 </li>
 </ul>
 <p>När alla fyra kvartal är spelade är Förvaltningen klar och slutvärderingen tar vid (se Del VI).</p>
-<h2 id="k8-4">8.4 Händelsekort per fastighet</h2>
+<h2 id="k9-4">9.4 Händelsekort per fastighet</h2>
 <p>Varje kvartal drar ni ETT händelsekort av rätt typ per fastighet ni äger, typen står på fastigheten (Hyresrätt, Kontor, Lokal, Förskola) och varje typ har sin egen draghög. Ett kvarter med fyra fastigheter drar alltså fyra kort, ett kvarter med en fastighet drar ett.</p>
 <aside class="ruta"><p class="ruta-rubrik">Blanda mellan varje kvarter</p>
 <p>Lägg tillbaka korten och blanda direkt efter att ett kvarter dragit klart sina händelsekort. Sedan tar nästa kvarter. Detta ger varje kvarter samma sannolikheter, inte de kort som råkade bli kvar i högen.</p>
 </aside>
-<h2 id="k8-5">8.5 Marknadsvärdet: varierar över Skede 3</h2>
-<p>Marknadsvärdet (FV) för varje fastighet räknas som driftnetto (år) ÷ yield. Eftersom yielden uppdateras av yieldkorten (se 8.11) varierar marknadsvärdet mellan kvartalen, det är inte ett fast värde under hela skedet.</p>
+<h2 id="k9-5">9.5 Marknadsvärdet: varierar över Skede 3</h2>
+<p>Marknadsvärdet (FV) för varje fastighet räknas som driftnetto (år) ÷ yield. Eftersom yielden uppdateras av yieldkorten (se 9.10) varierar marknadsvärdet mellan kvartalen, det är inte ett fast värde under hela skedet.</p>
 <aside class="ruta"><p class="ruta-rubrik">Var noterar ni marknadsvärdet?</p>
 <p>Med Companion-koden: marknadsvärdet räknas om automatiskt varje kvartal när omvärldskort vänds.</p>
 <p>Utan Companion-koden: CFO för en matris på balans- och resultaträkningen, fastigheter som rader, marknadsvärde per kvartal som kolumner. Uppdatera när yielden ändras.</p>
-<p>Energibonusen räknas INTE in i marknadsvärdet under skedet, bara vid slutsammanräkningen (se 9.1).</p>
+<p>Energibonusen räknas INTE in i marknadsvärdet under skedet, bara vid slutsammanräkningen (se 10.1).</p>
 </aside>
-<h2 id="k8-6">8.6 Köp och sälj på sekundärmarknaden</h2>
+<h2 id="k9-6">9.6 Köp och sälj på sekundärmarknaden</h2>
 <p>Bolagsledningen kan köpa fastigheter från stadsdelens utbud (på spelbrädet) eller från andra kvarter som lägger ut till försäljning. Mekaniken:</p>
 <ul>
 <li>
@@ -1266,31 +1320,32 @@
 <p><strong>Banken köper alltid tillbaka för 80 %</strong>, säljaren kan alltid garanteras att kunna sälja, men då till "bankgolvet" 80 %.</p>
 </li>
 </ul>
-<p>Bud läggs på det aktuella marknadsvärdet (se 8.5). Eftersom yielden uppdateras av yieldkorten kan marknadsvärdet variera mellan kvartalen.</p>
+<p>Bud läggs på det aktuella marknadsvärdet (se 9.5). Eftersom yielden uppdateras av yieldkorten kan marknadsvärdet variera mellan kvartalen.</p>
 <p><strong>Vad säljaren får i handen:</strong> Säljaren får 30 % av köpeskillingen i handen — symmetriskt med köparens 30 %. De övriga 70 % motsvarar bankens lån som följer med fastigheten till köparen och löses tyst utanför spelets kassaflöde. Vid bank-tillbakaköp är budet 80 % av marknadsvärdet, vilket ger säljaren 30 % × 80 % = 24 % av MV i handen.</p>
 <aside class="ruta"><p class="ruta-rubrik">DD-kort dras vid varje köp</p>
 <p>Varje gång ett kvarter köper en fastighet på sekundärmarknaden dras ett Due Diligence-kort efter att affären är slutförd. Kortet kan vara en kostnad (oförutsedd renovering), neutralt eller positivt (övervärde). Det går inte att ångra köpet, utfallet får ni leva med.</p>
 </aside>
-<h2 id="k8-7">8.7 Energiklass</h2>
-<p>Varje fastighet har en energiklass A–E som markeras med en bokstavsbricka. Klassen påverkar inte marknadsvärdet under skedet, den slår bara igenom vid slutsammanräkningen som energibonus (se 9.1).</p>
-<h2 id="k8-8">8.8 Omvärldskort</h2>
+<h2 id="k9-7">9.7 Energiklass</h2>
+<p>Varje fastighet har en energiklass A–E som markeras med en bokstavsbricka. Klassen påverkar inte marknadsvärdet under skedet, den slår bara igenom vid slutsammanräkningen som energibonus (se 10.1).</p>
+<h2 id="k9-8">9.8 Omvärldskort</h2>
 <p>Vid varje kvartal vänds ett omvärldskort. Korten påverkar ALLA kvarter. Effekten gäller från det kvartal kortet vänds tills något annat säger emot.</p>
-<h2 id="k8-9">8.9 Driftnetto</h2>
+<h2 id="k9-9">9.9 Driftnetto</h2>
 <p>Varje fastighets driftnetto = hyresintäkter minus driftkostnader. Värdet per kvartal står på fastighetskortet.</p>
-<h2 id="k8-10">8.10 Yield</h2>
+<h2 id="k9-10">9.10 Yield</h2>
 <p>Yielden är ett avkastningskrav i procent och hämtas från egna yieldkort (inte omvärldskorten). Startvärden: bostäder 4 %, kommersiellt 5 %. Yieldkort dras i slutet av kvartal 1, 2 och 3 för att sätta nästa kvartals värde. I kvartal 4 är yielden låst (slutsättning sker innan eventuellt yieldkort skulle dras). Yielden är generell för marknaden och påverkar marknadsvärdet enligt formeln i 8.5: FV = Driftnetto (år) ÷ Yield.</p>
-<h2 id="k8-11">8.11 Avslut av Förvaltningen</h2>
+<h2 id="k9-11">9.11 Avslut av Förvaltningen</h2>
 <p>När alla fyra kvartal är spelade är förvaltningsperioden över. Det är nu fastigheternas värde låses fast och slutvärderingen tar vid (se Del VI).</p>
 <div class="del"><p class="del-nr">Del VI</p><p class="del-namn">Slutvärdering</p></div>
 
-<h1 id="k9">9. Slutvärdering: vem vinner?</h1>
+<h1 id="k10">10. Slutvärdering: vem vinner?</h1>
+<div class="omarbetas"><strong>Ses över</strong> när Förvaltningen görs om — slutformeln bygger på Skede 3 (fastighetsvärde, energibonus, moderbolagslån).</div>
 <p>När Förvaltningen är klar görs slutvärderingen. Det kvarter med högst poäng per kvadratmeter vinner. Detta belönar effektiv markanvändning och hög kvalitet, inte bara stora portföljer.</p>
-<h2 id="k9-1">9.1 Slutformeln</h2>
+<h2 id="k10-1">10.1 Slutformeln</h2>
 <aside class="ruta"><p class="ruta-rubrik">Slutformel</p>
 <p>Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)</p>
-<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.</p>
+<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 10.2.</p>
 <p>Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz</p>
-<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.</p>
+<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 10.</p>
 </aside>
 <p>Termerna i formeln, en för en:</p>
 <table>
@@ -1318,7 +1373,7 @@
 </tr>
 <tr>
 <td><strong>BTA</strong></td>
-<td>Total BTA i kvadratmeter, summan av BTA från alla placerade projekt (inklusive sålda BRF) plus köpta fastigheter. Se 9.3.</td>
+<td>Total BTA i kvadratmeter, summan av BTA från alla placerade projekt (inklusive sålda BRF) plus köpta fastigheter. Se 10.3.</td>
 </tr>
 <tr>
 <td><strong>÷ (BTA/1000)</strong></td>
@@ -1353,8 +1408,8 @@
 </tbody>
 </table>
 <p>Energibonusen räknas in BARA vid slutsammanräkningen, inte i marknadsvärdet under Skede 3.</p>
-<h2 id="k9-2">9.2 Straffaktor för Q-, H- och T-avvikelser</h2>
-<p>Avvikelser från projektkraven straffas i slutpoängen. Avvikelsen mäts vid Skede 2:s slut (se 7.7) och avvikelsehögen ligger framför kvarteret tills slutvärderingen.</p>
+<h2 id="k10-2">10.2 Straffaktor för Q-, H- och T-avvikelser</h2>
+<p>Avvikelser från projektkraven straffas i slutpoängen. Avvikelsen mäts vid Skede 2:s slut (se 8.7) och avvikelsehögen ligger framför kvarteret tills slutvärderingen.</p>
 <p>n = antal kort i avvikelsehögen = summan av Q-, H- och T-avvikelserna. Läs av Måluppfyllelsekofficient beroende på antal avvikelser.</p>
 <aside class="ruta">
 <p>n = 0 → Mu = 100 %</p>
@@ -1374,7 +1429,7 @@
 <p>n = 1 + 2 + 1 = 4 → f(4) = 70 %.</p>
 <p>Slutpoängen blir 70 % lägre än om samtliga målen nät</p>
 </aside>
-<h2 id="k9-3">9.3 BTA-divisorn: sålda BRF räknas med</h2>
+<h2 id="k10-3">10.3 BTA-divisorn: sålda BRF räknas med</h2>
 <p>Vid slutvärderingen räknas total BTA som summan av alla projekt kvarteret PLACERAT på marken (inklusive expansioner), plus BRF som sålts efter Skede 2, plus eventuella fastigheter som köpts på sekundärmarknaden under Förvaltningen.</p>
 <aside class="ruta"><p class="ruta-rubrik">Varför räknas sålda BRF?</p>
 <p>BRF-försäljningen genererar intäkter som ligger kvar i kassan när Förvaltningen är klar, kassan finns med i slutformeln via "eget kapital".</p>
@@ -1382,13 +1437,13 @@
 <p>Genom att räkna sålda BRF med i BTA-divisorn blir jämförelsetalet rättvist: kassan från BRF-försäljningen måste fortfarande "förtjäna sin yta".</p>
 <p>Praktiskt: behåll BRF-projektkorten även efter försäljning och anteckna BTA-summan i balans- och resultaträkningen (eller i Companion-koden).</p>
 </aside>
-<h2 id="k9-4">9.4 Det kvarter med högst poäng vinner</h2>
+<h2 id="k10-4">10.4 Det kvarter med högst poäng vinner</h2>
 <p>Jämför alla kvarterens poäng. Den med högst värde har skapat det effektivaste förvaltningsbolaget och vinner. Vid lika poäng är det kvarteret med högst förvaltad BTA som vinner.</p>
 <div class="del"><p class="del-nr">Del VII</p><p class="del-namn">Bilagor</p></div>
 
-<h1 id="k10">10. D20 + ackumulerad erfarenhet</h1>
+<h1 id="k11">11. D20 + ackumulerad erfarenhet</h1>
 <p>Vid alla händelsekort (i Projektutvecklingen, Planeringen, Genomförandet och Förvaltningen) slås en tjugosidig tärning (D20) och den ackumulerade erfarenheten adderas. Resultatet jämförs med kortets skala. Erfarenheten är cumulativ, den byggs upp genom projektchef, leverantörer, organisation och vissa händelsekort. Erfarenhetstaket är 12.</p>
-<h2 id="k10-1">10.1 Trösklar (riktlinje)</h2>
+<h2 id="k11-1">11.1 Trösklar (riktlinje) <span class="nytt">Ändrat i 2.0</span></h2>
 <table>
 
 <tbody>
@@ -1410,8 +1465,9 @@
 </tr>
 </tbody>
 </table>
+<p>Korten gäller: varje korttyp har sin egen skala, se tabellen i 3.5.</p>
 <p>Riskbuffert (Rb) får användas för omslag enligt 3.6: max 1 Rb per slag, max 1 omslag per slagomgång (ingen tredje serve).</p>
-<h1 id="k11">11. Kompetenser</h1>
+<h1 id="k12">12. Kompetenser</h1>
 <p>Sex parametrar som speglar personens, leverantörens eller företagskulturens styrkor. Personal-, leverantörs-, organisations- och kulturkort har dessa kompetenser tryckta på sig och spelas i Genomförandet för att möta kraven på FAS-korten.</p>
 <table>
 
@@ -1442,7 +1498,7 @@
 </tr>
 </tbody>
 </table>
-<h1 id="k12">12. Termer</h1>
+<h1 id="k13">13. Termer</h1>
 <aside class="ruta"><p class="ruta-rubrik">ÅKEPOL</p>
 <p>Spelets namn (versaler i rubrik, "Åkepol" i löptext).</p>
 <p><strong>Dotterbolag</strong></p>
@@ -1502,7 +1558,7 @@
 <p><strong>Moderbolag</strong></p>
 <p>dotterbolagets tysta partner. Garanterar byggnadskreditiv och erbjuder moderbolagslån.</p>
 <p><strong>Nämndkrav</strong></p>
-<p>Det värde som måste överträffas när ett projekt ska genom nämnden. D20 + Nämnd-bonus (från PC) jämförs med Nämndkravet, erfarenhet räknas INTE.</p>
+<p>Projektets bidrag till nämndens summa. Summan för alla projekt, minus PC:s nämndslag, ska överträffas med D20 (fler tärningar per nytt försök), se 4.1. Erfarenhet räknas INTE. <span class="nytt">Ändrat i 2.0</span></p>
 <p><strong>Moderbolagslån</strong></p>
 <p>100 Mkr per lån (95 betalas ut, 100 dras vid slut). Säljkrav, köpstopp, uppgraderingsstopp i Förvaltningen.</p>
 <p><strong>Personkort</strong></p>
@@ -1524,7 +1580,7 @@
 <p><strong>Yield</strong></p>
 <p>Avkastningskrav i procent. Marknadsvärdet = Driftnetto (år) ÷ Yield.</p>
 </aside>
-<h1 id="k13">13. Snabbreferens: en sida</h1>
+<h1 id="k14">14. Snabbreferens: en sida</h1>
 <h2 id="tre-skeden">Tre skeden</h2>
 <table>
 
@@ -1572,9 +1628,9 @@
 <h2 id="slutformel">Slutformel</h2>
 <aside class="ruta"><p class="ruta-rubrik">Slutformel</p>
 <p>Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)</p>
-<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.</p>
+<p>Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 10.2.</p>
 <p>Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz</p>
-<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.</p>
+<p>Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 10.</p>
 </aside>
 <h2 id="energibonus-per-energiklass">Energibonus per energiklass</h2>
 <table>

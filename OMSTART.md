@@ -356,6 +356,16 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
 
 | K10 Blanka kort (8 PL-händelsekort, 2 GF-konsekvenskort) | Trycktes av misstag — **tas bort ur spelet**, ingår inte i kortdatan |
 
+## 5c. Status regelbok
+
+`regler/regelbok.html` — en fil, läses på skärm och skrivs ut i A4 (knappen "Skriv ut").
+- **1.0** (git-historik): ordagrant som tryckt 2026-05-03, verifierad ord för ord mot tryck-PDF:en.
+- **2.0** (nu): rättad mot korten — nämnden R1 (4.1), krav/kravuppfyllnad (3.3, 3.8, 6.1), D20-skalor per
+  korttyp (3.5, 11.1), komponentantal (1.5), kapitel omnumrerade (Planering var också "5") med rättade
+  hänvisningar, Förvaltningen (9) och slutvärderingen (10) markerade som under omarbetning.
+  Ändringar märkta "Ändrat i 2.0"; sammanfattning i rutan "Nytt i version 2.0".
+- Saknas: regelbokens 12 bilder (hämtas när nätverket för Dropbox är öppet).
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
