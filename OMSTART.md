@@ -21,6 +21,21 @@ på var de säger emot varandra.
 
 **Omstartens kärna: en källa för varje sak, och allt annat genereras ur den.**
 
+### Excel-filerna är motorn
+
+En Excel per korttyp (`kortdata/`) är **den enda källan** för allt kortinnehåll. Ur dem genereras:
+- **tryck** (printfiler via mallar/skript),
+- **onlinespelet** (motorn läser samma data),
+- **vidareutveckling** (ändringar görs i Excel — aldrig direkt i kod, CSV eller InDesign).
+
+### Prioritet vid återskapandet av kortdata
+
+1. **Ledning (L), Skede 1 (PU), Skede 2 (PL, GF)** — återskapas fullständigt och verifieras mot tryck.
+2. **Skede 3 (F)** — görs om ordentligt: baksidorna blir i princip helt nya och fler kort tillkommer.
+   Nuvarande F-korts baksidor återskapas **inte**; framsidor/grafik noteras bara som referens.
+   Obs: projektkortens baksida (`PU_projekt`) har en sektion *KÖP OCH SÄLJ FÖRVALTNING*
+   (driftnetto, energiklass, 80 %-bud, 30 % kontantinsats) som hör till Skede 3 och kan påverkas.
+
 ### Slutmål: exakt rätt filer — varken mer eller mindre
 
 När omstarten är klar innehåller repot **exakt** de filer som behövs för att
