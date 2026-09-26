@@ -271,10 +271,10 @@ Energiklass kan inte gå förbi A.
 - **Riskbuffert (stjärnmarkör)** — samma markör som i Skede 1–2. En löpande valuta som kan **fås från alla
   korttyper**: händelse (1 per typlek), omvärld, person, kvartal.
   - **Omslag** av ett tärningsslag (energiuppgradering eller förhandling), som vanligt: max 1 per slag.
-  - *Förslag, ej beslutat:* **följer med från Skede 2** — oanvända riskbuffertar tas med in i Förvaltningen.
-  - *Förslag, ej beslutat:* **2 riskbuffertar = ett stoppkort** mot tvångsbud (FC Den lugna gör det för 1).
-  - *Förslag, ej beslutat:* **1 riskbuffert = försäkring** — ignorera ett synligt engångskassa-minus eller
-    en underhållsvarning när kortet dras.
+  - **Följer med från Skede 2:** oanvända riskbuffertar tas med in i Förvaltningen.
+  - **Stopp:** 2 riskbuffertar = ett stoppkort mot tvångsbud (FC Den lugna som senior: 1).
+  - **Eliminera:** när du drar ett händelsekort får du betala 1 riskbuffert och eliminera det —
+    kortet går tillbaka i leken utan effekt. (Beslut 2026-09-26.)
 - **Restkort:** vid DN ÷ 4 blir resten restkort. **1 restkort = 0,25 Mkr; 4 restkort =
   1 Mkr.** Vi rör bara hela miljoner; restkorten bokför avrundningen. Sparas mellan kvartal.
 
