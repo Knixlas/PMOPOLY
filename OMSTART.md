@@ -35,8 +35,9 @@ En Excel per korttyp (`kortdata/`) är **den enda källan** för allt kortinneh�
    Nuvarande F-korts baksidor återskapas **inte**; framsidor/grafik noteras bara som referens.
    Obs: projektkortens baksida (`PU_projekt`) har en sektion *KÖP OCH SÄLJ FÖRVALTNING*
    (driftnetto, energiklass, 80 %-bud, 30 % kontantinsats) som hör till Skede 3. **Den görs om.**
-   Berör 36 av 45 projektkort (alla utom BRF) × 8 spel = **288 kort**. Nya kort eller klistermärken —
-   öppen fråga (lutning: nya kort).
+   **Beslut:** alla 45 projektkort trycks om (även BRF, för enhetlighet) × 8 spel = **360 kort**.
+   Värdena ses också över: små justeringar (några Mkr) så att **driftnetto och marknadsvärde matchar**
+   (jfr yield). Görs i `kortdata/PU_projekt.xlsx`; de nya korten trycks ur den.
 
 ### Slutmål: exakt rätt filer — varken mer eller mindre
 
@@ -283,5 +284,5 @@ Allt byggs nytt; bara grafiken återanvänds. Nuvarande kod, data och dokument
 2. ~~**Huvudprodukt**~~ Besvarat: det fysiska spelet. Minimala ändringar i Skede 1–2, Skede 3 görs om, brädor fixas med klistermärken.
 3. **Var** — omstart i det här repot med ny struktur, eller ett nytt repo?
 4. **Källsanning** — regelböckerna blir HTML i repot (beslutat). Flyttar även kortdatan in i repot, eller förblir SPELET 2 källan?
-5. **Projektkortens förvaltningssektion** — nya kort (288 st) eller klistermärken? Lutning: nya kort.
+5. ~~Projektkortens förvaltningssektion~~ Besvarat: alla 45 projektkort trycks om.
 6. **Tryck** — vilket tryckeri/format? Finns företagsmall/grafisk profil (ÅKEPOL) att utgå från?

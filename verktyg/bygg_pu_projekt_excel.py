@@ -7,19 +7,12 @@ Källor:
 Skriptet kontrollerar varje kort mot tryckfilen och avbryter om något skiljer.
 Kör:  python verktyg/bygg_pu_projekt_excel.py
 """
-import csv
 import re
 import sys
-from pathlib import Path
 
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
+from kortexcel import TRYCKT_TEXT, bygg_arbetsbok, las_csv, normalisera
 
-ROT = Path(__file__).resolve().parent.parent
-CSV_FIL = ROT / "arv/spelet2_v1/1. Projektutveckling/PU_projekt.csv"
-TRYCK_FIL = ROT / "arv/tryckt_text/PU_projekt_tryckeri.txt"
-UT = ROT / "kortdata/PU_projekt.xlsx"
+TRYCK_FIL = TRYCKT_TEXT / "PU_projekt_tryckeri.txt"
 
 NIVAER = ["MARK", "HUSUNDERBYGGNAD", "STOMME", "YTTERTAK", "FASADER",
           "STOMKOMPLETTERING", "INV YTSKIKT", "INSTALLATIONER", "GEMENSAMMA ARBETEN"]
@@ -81,11 +74,6 @@ MALLTEXT = [
 ]
 
 
-def las_csv():
-    with open(CSV_FIL, encoding="utf-8", newline="") as f:
-        return [r for r in csv.DictReader(f, delimiter=";") if r.get("Namn")]
-
-
 def las_tryck():
     """Tolka tryckfilens text: rad 1 = framsida, rad 2 = baksida."""
     rader = [r for r in TRYCK_FIL.read_text(encoding="utf-8").splitlines() if r.strip()]
@@ -111,7 +99,7 @@ def las_tryck():
         besk = " ".join(f[2:f.index(bta + " kvm")])
         kort.append({
             "Typ": f[0], "Namn": b[0], "Namn2": f[1],
-            "Beskrivning": re.sub(r"(\w) - (\w)", r"\1\2", besk),  # avstavning i tryck
+            "Beskrivning": besk,
             "BTA": bta, "Kostnad": b[bi + 1].replace(" Mkr", ""), "Anskaffning": b[bi + 2].replace(" Mkr", ""),
             "Hållbarhet": m.group(1), "Kvalitet": m.group(2), "Tid": b[j + 1],
             "Riskbuffert": b[bi + 3], "Nämndbeslut": b[bi + 4].replace("> ", ""),
@@ -128,116 +116,48 @@ def jamfor(csv_rader, tryck):
     avvikelser = []
     for r, t in zip(csv_rader, tryck):
         for falt, tryckt in t.items():
-            csv_varde = r.get(falt, "").strip()
             if falt in ("Energiklass", "Driftnetto", "Rörligt marknadsvärde") and not tryckt:
                 continue  # inte tryckt på denna korttyp
-            if falt == "Beskrivning":
-                csv_varde, tryckt = csv_varde.replace("­", ""), tryckt
-            if csv_varde.replace(",", ".") != tryckt.replace(",", "."):
-                avvikelser.append((r["Namn"], falt, tryckt, csv_varde))
+            if normalisera(r.get(falt, "")) != normalisera(tryckt):
+                avvikelser.append((r["Namn"], falt, tryckt, r.get(falt, "")))
     return avvikelser
 
 
-def tal(v):
-    v = (v or "").strip()
-    if re.fullmatch(r"-?\d+", v):
-        return int(v)
-    if re.fullmatch(r"-?\d+[.,]\d+", v):
-        return float(v.replace(",", "."))
-    return v
-
-
-def rubrikrad(ws, rubriker, fyll="4D5E22"):
-    ws.append(rubriker)
-    for c in ws[1]:
-        c.font = Font(bold=True, color="FFFFFF")
-        c.fill = PatternFill("solid", fgColor=fyll)
-        c.alignment = Alignment(wrap_text=True, vertical="top")
-    ws.freeze_panes = "B2"
-
-
-def bredder(ws, standard=14, specifika=None):
-    for i in range(1, ws.max_column + 1):
-        ws.column_dimensions[get_column_letter(i)].width = standard
-    for kol, b in (specifika or {}).items():
-        ws.column_dimensions[kol].width = b
-
-
 def main():
-    rader = las_csv()
-    tryck = las_tryck()
-    avvikelser = jamfor(rader, tryck)
-    beskrivning_avvikelser = [a for a in avvikelser if a[1] == "Beskrivning"]
-    ovriga = [a for a in avvikelser if a[1] != "Beskrivning"]
-    if ovriga:
-        for a in ovriga:
+    rader = las_csv("1. Projektutveckling/PU_projekt.csv", "Namn")
+    avvikelser = jamfor(rader, las_tryck())
+    if avvikelser:
+        for a in avvikelser:
             print("AVVIKELSE", a)
-        sys.exit("Speldata skiljer mellan CSV och tryck — åtgärda innan Excel byggs.")
+        sys.exit("CSV och tryck skiljer — åtgärda innan Excel byggs.")
 
-    wb = Workbook()
-
-    ws = wb.active
-    ws.title = "Kort"
-    rubrikrad(ws, [k[0] for k in KORT_KOLUMNER])
-    for i, r in enumerate(rader, 1):
-        rad = []
-        for rubrik, kol, _, _ in KORT_KOLUMNER:
-            if rubrik == "Kort-id":
-                rad.append(i)
-            elif rubrik == "Antal exemplar":
-                rad.append(1)
-            elif kol == "Beskrivning":
-                rad.append(r[kol].strip())
-            else:
-                rad.append(tal(r.get(kol, "")))
-        ws.append(rad)
-    bredder(ws, 12, {"B": 12, "C": 26, "D": 16, "E": 60, "O": 40})
-    for rad in ws.iter_rows(min_row=2):
-        rad[4].alignment = Alignment(wrap_text=True, vertical="top")
-
-    ws = wb.create_sheet("Mallens fasta text")
-    rubrikrad(ws, ["Sida", "Slag", "Text"])
-    for m in MALLTEXT:
-        ws.append(list(m))
-    bredder(ws, 18, {"C": 110})
-
-    ws = wb.create_sheet("Produktion")
-    rubrikrad(ws, ["Kort-id", "Namn"] + PRODUKTION_KOLUMNER + ["Format (mm)"])
-    for i, r in enumerate(rader, 1):
-        ws.append([i, r["Namn"]] + [tal(r.get(k, "")) for k in PRODUKTION_KOLUMNER] + ["88 × 146"])
-    bredder(ws, 14, {"B": 26, "C": 50, "D": 50})
-
-    ws = wb.create_sheet("Kolumner")
-    rubrikrad(ws, ["Kolumn", "Källkolumn i CSV", "Tryckt på kortet", "Förklaring"])
-    for rubrik, kol, tryckt, forkl in KORT_KOLUMNER:
-        ws.append([rubrik, kol or "—", "Ja" if tryckt else "Nej", forkl])
-    bredder(ws, 22, {"D": 70})
-
-    ws = wb.create_sheet("Källa och kontroll")
-    rubrikrad(ws, ["Punkt", "Värde"])
-    for p in [
-        ("Korttyp", "PU_projekt — projektkort, Skede 1 Projektutveckling"),
-        ("Antal kort", f"{len(rader)} unika, 1 exemplar vardera"),
-        ("Format", "88 × 146 mm, dubbelsidigt (bildsida + textsida)"),
-        ("Tryckfil", "Dropbox: Åkepol tryckfiler/Kort/PU_projekt_tryckeri.pdf (2026-04-27 22:14 UTC)"),
-        ("Tryckfilens text", "arv/tryckt_text/PU_projekt_tryckeri.txt (utläst via OneDrive, 90 sidor)"),
-        ("Datakälla", "arv/spelet2_v1/1. Projektutveckling/PU_projekt.csv"),
-        ("CSV-datum", "2026-05-02 21:03 — efter tryck, men innehållet är oförändrat (endast omkodning cp1252→UTF-8)"),
-        ("Kontroll", f"Alla speldatafält jämförda kort för kort mot tryckfilen: 0 avvikelser. "
-                     f"Beskrivningar: {len(beskrivning_avvikelser)} avvikelser (avstavning i tryck)."),
-        ("Etiketter", "Bekräftat mot fysiskt kort (BRF Eldningen): Utvecklingskostnad = CSV 'Kostnad', "
-                      "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
-        ("Byggd med", "verktyg/bygg_pu_projekt_excel.py"),
-    ]:
-        ws.append(list(p))
-    bredder(ws, 20, {"B": 110})
-
-    UT.parent.mkdir(parents=True, exist_ok=True)
-    wb.save(UT)
-    print(f"Skrev {UT.relative_to(ROT)}: {len(rader)} kort, 0 avvikelser i speldata, "
-          f"{len(beskrivning_avvikelser)} i beskrivningar")
-    for a in beskrivning_avvikelser:
-        print("  beskrivning:", a[0], "| tryck:", a[2][:70], "| csv:", a[3][:70])
+    ut = bygg_arbetsbok(
+        filnamn="PU_projekt.xlsx",
+        kort_kolumner=KORT_KOLUMNER,
+        rader=rader,
+        namn_kolumn="Namn",
+        malltext=MALLTEXT,
+        produktion_kolumner=PRODUKTION_KOLUMNER,
+        format_mm="88 × 146",
+        exemplar=1,
+        langa_kolumner=("Beskrivning", "Rörligt marknadsvärde"),
+        kalla=[
+            ("Korttyp", "PU_projekt — projektkort, Skede 1 Projektutveckling"),
+            ("Antal kort", f"{len(rader)} unika, 1 exemplar vardera per spel (8 spel tryckta)"),
+            ("Format", "88 × 146 mm, dubbelsidigt (bildsida + textsida)"),
+            ("Tryckfil", "Dropbox: Åkepol tryckfiler/Kort/PU_projekt_tryckeri.pdf (2026-04-27 22:14 UTC)"),
+            ("Tryckfilens text", "arv/tryckt_text/PU_projekt_tryckeri.txt (utläst via OneDrive, 90 sidor)"),
+            ("Datakälla", "arv/spelet2_v1/1. Projektutveckling/PU_projekt.csv"),
+            ("CSV-datum", "2026-05-02 21:03 — efter tryck, men innehållet är oförändrat "
+                          "(endast omkodning cp1252→UTF-8)"),
+            ("Kontroll", "Alla speldatafält och beskrivningar jämförda kort för kort mot tryckfilen: 0 avvikelser."),
+            ("Etiketter", "Bekräftat mot fysiskt kort (BRF Eldningen): Utvecklingskostnad = CSV 'Kostnad', "
+                          "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
+            ("Beslut", "Förvaltningssektionen på baksidan görs om; alla 45 kort trycks om (360 kort)."),
+            ("Byggd med", "verktyg/bygg_pu_projekt_excel.py"),
+        ],
+    )
+    print(f"Skrev {ut}: {len(rader)} kort, 0 avvikelser")
 
 
 if __name__ == "__main__":
