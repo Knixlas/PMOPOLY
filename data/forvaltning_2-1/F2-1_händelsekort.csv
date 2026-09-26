@@ -101,3 +101,7 @@ HR-24;HYRESRÄTT;utveckling;ja;;Lyckad hyresförhandling;Förhandlingen med hyre
 FO-24;FÖRSKOLA;utveckling;ja;;Kommunen ger förnyat förtroende;Förvaltningen av förskolan lyfts fram som ett gott exempel. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
 LO-27;LOKAL;utveckling;ja;;Hyresgästsamverkan ger resultat;Samarbetet med hyresgästerna i handelsstråket blir en förebild. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
 KO-27;KONTOR;utveckling;ja;;Certifierad förvaltning;Kontorsfastigheten klarar en miljöcertifiering med glans. Lägg en utvecklingsbricka på din FC om den har fastighetens typ, annars på din FS.
+HR-25;HYRESRÄTT;riskbuffert;ja;;Skadefritt år belönas;Försäkringsbolaget sänker självrisken efter ett år utan skador. Ta en riskbuffert.
+FO-25;FÖRSKOLA;riskbuffert;ja;;Kommunen förlänger avtalet i god tid;Hyresgästen visar att den vill stanna länge. Ta en riskbuffert.
+LO-28;LOKAL;riskbuffert;ja;;Hyresgästen ställer extra säkerhet;Den nya hyresgästen lämnar en bankgaranti utöver det vanliga. Ta en riskbuffert.
+KO-28;KONTOR;riskbuffert;ja;;Långt hyresavtal med stark hyresgäst;Ett börsbolag skriver på för tio år. Ta en riskbuffert.

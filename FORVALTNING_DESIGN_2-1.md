@@ -268,8 +268,13 @@ Energiklass kan inte gå förbi A.
 
 - **FC + FS:** båda anställs, inga kostnader. FC har typ; båda är dubbelsidiga junior/senior och
   utvecklas med utvecklingsbrickor — se `FORVALTNING_KORTSPEC.md` §5.
-- **Riskbuffert = omslag av ett tärningsslag** (energiuppgradering eller förhandling).
-  Kan **fås från alla korttyper** — omvärld, person, kvartal. En löpande valuta.
+- **Riskbuffert (stjärnmarkör)** — samma markör som i Skede 1–2. En löpande valuta som kan **fås från alla
+  korttyper**: händelse (1 per typlek), omvärld, person, kvartal.
+  - **Omslag** av ett tärningsslag (energiuppgradering eller förhandling), som vanligt: max 1 per slag.
+  - *Förslag, ej beslutat:* **följer med från Skede 2** — oanvända riskbuffertar tas med in i Förvaltningen.
+  - *Förslag, ej beslutat:* **2 riskbuffertar = ett stoppkort** mot tvångsbud (FC Den lugna gör det för 1).
+  - *Förslag, ej beslutat:* **1 riskbuffert = försäkring** — ignorera ett synligt engångskassa-minus eller
+    en underhållsvarning när kortet dras.
 - **Restkort:** vid DN ÷ 4 blir resten restkort. **1 restkort = 0,25 Mkr; 4 restkort =
   1 Mkr.** Vi rör bara hela miljoner; restkorten bokför avrundningen. Sparas mellan kvartal.
 

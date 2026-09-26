@@ -26,6 +26,7 @@ Alla korts egenskaper är effekter ur en gemensam lista. Koderna nedan används 
 | `engangskassa_plus` / `engangskassa_minus` | ja | vid nästa marknad: ± `Värde` Mkr (engångs) |
 | `forkop` | — | går till **handen**; ger förstaval vid köp av matchande typ |
 | `utveckling` | ja | lägg en **utvecklingsbricka** på din FC om fastigheten har FC:s typ, annars på din FS (se §5) |
+| `riskbuffert` | ja | ta en riskbuffert (se designdokumentet §9) |
 
 Plus/minus är **dolda och tysta**; varning är **synlig och åtgärdbar**;
 energivarning drar ner energiklass (biter hårdare mot D/E).
@@ -63,7 +64,7 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 
 ## 2. Lekar, attribut och frekvens
 
-### Händelsekort — `F2-1_händelsekort.csv` (102)
+### Händelsekort — `F2-1_händelsekort.csv` (106)
 Fyra typleker (Hyresrätt, Förskola, Lokal, Kontor). **Återanvändbar lek:** dra, lös
 (lägg bricka / applicera), lägg tillbaka. Förköp går till handen.
 Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
@@ -81,7 +82,8 @@ Kolumner: `ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning`
 | engangskassa_plus / minus | 2/1 | 3/– | 2/2 | 1/2 |
 | forkop | 2 | 2 | 2 | 2 |
 | utveckling | 1 | 1 | 1 | 1 |
-| **Summa** | **24** | **24** | **27** | **27** |
+| riskbuffert | 1 | 1 | 1 | 1 |
+| **Summa** | **25** | **25** | **28** | **28** |
 
 Karaktär: stabila typer plus-lean utan direkta minus (men enstaka windfall + fler
 underhållsvarningar); volatila typer minus-övervikt med båda direktchockerna, mer
@@ -127,7 +129,7 @@ Alla kort är **dubbelsidiga: junior / senior**.
 
 | Lek | Antal |
 |---|---|
-| Händelsekort (4 typleker) | 102 |
+| Händelsekort (4 typleker) | 106 |
 | Kvartalskort (4 typleker) | 36 |
 | Personkort | 67 |
 | Omvärldskort | 26 |
