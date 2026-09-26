@@ -378,6 +378,8 @@ personal → händelser → kvartalskort → energiuppgradering) och 256 kort i 
   De måste pushas innan de kan tas in här.
 - Enligt principen *Excel är motorn* ska korten till slut ligga som `kortdata/F_*.xlsx`, byggda med
   `verktyg/kortexcel.py` som övriga korttyper.
+- **Nästa steg:** implementationsplan för 2.1 — görs här när den andra sessionen har pushat sina filer.
+- **Beslut:** den gamla appen (`backend/`, `frontend/`) ändras inte — den ersätts. Pusselspelet lämnas som det är.
 - Tio öppna designfrågor (villkorskort, bankens ordning, påfyllning, omvärld vs yieldbana, FS-förmågor,
   3-i-netto, fokustyp, uppgraderingskostnad, konsekvens-/garantikort, konkurs) — besvaras i den sessionen.
 
