@@ -89,7 +89,8 @@ Därefter, per spelare:
    modifierare *(tas fram separat).*
 7. **Ta tre personkort.** Får spelas när som helst, om inte kortet uttryckligen säger annat.
 8. **Dra tre projekt till projektbanken** (marknadsutbudet).
-9. **Lägg fram yieldbanan.**
+9. **Lägg fram yieldbanan:** fyra yieldkort öppet per spår (platserna Q2, Q3, Q4, Slut) — se
+   `FORVALTNING_KORTSPEC.md`, Yieldkort.
 
 ---
 
@@ -98,7 +99,8 @@ Därefter, per spelare:
 Varje kvartal, i ordning:
 
 1. **Marknad** — spelets enda avräkning (§6).
-2. **Omvärldskort** — dra ett, gör det som står. Kan flytta yieldbanan, dela ut/dra in
+2. **Omvärldskort** — dra ett, gör det som står. Kan *ersätta* nästa yieldkort (kortet läggs själv i
+   yieldbanan: "gäller nu") eller *byta ut* det mot ett nytt ur yieldleken, dela ut/dra in
    personkort, ge riskbuffert m.m. (makro, träffar alla).
 3. **Driftnetto** — summera all DN (synlig + dold), dela med 4, avrunda nedåt.
    Resten blir **restkort** (§9). Räntan är redan inbakad i DN.

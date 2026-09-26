@@ -49,8 +49,8 @@ energivarning drar ner energiklass (biter hårdare mot D/E).
 ### C. Däckeffekter (omvärld/kvartal)
 | Kod | Var | Verkan |
 |---|---|---|
-| `yield_rorelse` | omvärld | flytta yield ± `Värde` pp för `Påverkar`-spåret |
-| `yield_stor` | omvärld | stor yield-rörelse (±1 pp) |
+| `yield_ersatt` | omvärld | **Gäller nu:** lägg omvärldskortet på nästa plats på `Påverkar`-spåret i yieldbanan; dess `Värde` (± pp) gäller i stället för yieldkortet där |
+| `yield_byt` | omvärld | **Byt ut:** ersätt nästa yieldkort på `Påverkar`-spåret (eller båda) med översta kortet ur yieldleken |
 | `bords_dn` | omvärld | ±1 DN på alla fastigheter av en typ |
 | `resurs` | båda | riskbuffert till alla / dra personkort |
 | `personalrotation` | omvärld | alla drar ett slumpvis personkort från spelaren till vänster |
@@ -98,9 +98,20 @@ En förbrukningslek, blandas om. Kolumner: `ID;Effekt;Timing;Värde;Rubrik;Beskr
 forhandling_mod 10, forhandling_auto 3, energi_mod 10, lagg_dn_plus_egen 8, stada 6,
 stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffert 4, utveckling 3.
 
-### Omvärldskort — `F2-1_omvärldskort.csv` (22)
+### Omvärldskort — `F2-1_omvärldskort.csv` (26)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
-yield_rorelse 12, yield_stor 3, bords_dn 3, resurs 3, personalrotation 1.
+yield_ersatt 15 (varav 3 stora, ±1 pp), yield_byt 4, bords_dn 3, resurs 3, personalrotation 1.
+
+### Yieldkort — `F2-1_yieldkort.csv` (32)
+Två lekar, 16 per spår (bostäder, kommersiellt). Innehållet är det **tryckta yieldkortet från
+version 1** (`F_yield`) — samma rubriker och ändringar, så de tryckta korten kan återanvändas.
+Kolumner: `ID;Spår;Ändring;Rubrik`. Fördelning bostäder: −1,0 ×2, −0,5 ×5, 0 ×2, +0,5 ×5, +1,0 ×2;
+kommersiellt: −1,0 ×2, −0,5 ×6, 0 ×2, +0,5 ×4, +1,0 ×2.
+
+**Yieldbanan** har fyra platser per spår: **Q2, Q3, Q4, Slut**. Vid uppställningen läggs fyra yieldkort
+öppet per spår. Q1:s marknad sker på startyield (bostäder 4 %, kommersiellt 5 %). Vid varje följande
+marknad (och vid slutavräkningen) flyttas yieldpekaren med kortet på den platsen, inom spannet
+(bostäder 2–6 %, kommersiellt 3–7 %). Omvärldskortet som dras i kvartal *n* påverkar plats *n+1*.
 
 ### DD — `F2-1_DD.csv` (36)
 Dolt vid övergång + köp; räknas i samma ackumulering som händelsekort; avslöjas vid
@@ -118,7 +129,8 @@ Alla kort är **dubbelsidiga: junior / senior**.
 | Händelsekort (4 typleker) | 102 |
 | Kvartalskort (4 typleker) | 36 |
 | Personkort | 67 |
-| Omvärldskort | 22 |
+| Omvärldskort | 26 |
+| Yieldkort (återanvänds från version 1) | 32 |
 | DD | 36 |
 | Fastighetskort (uppdaterad baksida: tryckt lån) | 45 |
 | FC + FS-arketyper (dubbelsidiga) | 12 |
