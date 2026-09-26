@@ -87,6 +87,24 @@ class TestParti(unittest.TestCase):
         uppspelad = Parti.fran_sparat(json_kopia(p.uppstart()), json_kopia(p.logg), data=DATA).spela_klart()
         self.assertEqual(utan_strateginamn(uppspelad), utan_strateginamn(p.resultat))
 
+    def test_varje_fraga_ar_lasbar(self):
+        """Varje fråga har en vy med rubrik, och bottens förslag finns bland alternativen."""
+        p = Parti([{"namn": n, "styrning": "människa"} for n in ("Norr", "Söder")], fro=8, data=DATA)
+        typer = set()
+        while (f := p.steg()) is not None:
+            v = f.vy
+            json.dumps(v)
+            self.assertTrue(v.get("rubrik"), f.metod)
+            self.assertNotEqual(v["typ"], "forslag", f"{f.metod} saknar beskrivning i motor/fragor.py")
+            koder = [a["kod"] for a in v.get("alternativ", [])]
+            if v["typ"] == "val":
+                self.assertIn(f.forslag, koder, f.metod)
+            if v["typ"] == "flerval":
+                self.assertTrue(all(x in koder for x in f.forslag["lista"]), f.metod)
+            typer.add(v["typ"])
+            p.svara(f.forslag)
+        self.assertTrue({"val", "janej", "pussel"} <= typer)
+
     def test_ensam_i_partiet(self):
         self.assertEqual(len(Parti([{"namn": "Ensam"}], fro=73, data=DATA).spela_klart()), 1)
 

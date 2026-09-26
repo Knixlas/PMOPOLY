@@ -13,6 +13,7 @@ const sida = `<title>Kvarterspusslet</title>
 ${typsnitt}
 <style>${css.join('\n')}</style>
 <div id="app"></div>
+<script>if (!location.hash) location.hash = '#/pussel';</script>
 <script type="module">${js.join('\n').replace(/<\/script/g, '<\\/script')}</script>
 `;
 writeFileSync(new URL('artefakt.html', dist), sida);

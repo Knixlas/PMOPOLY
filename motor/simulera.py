@@ -25,6 +25,11 @@ def kor(partier, parametrar, fro=1, spelare=4):
         m = Motor([k() for k in klasser], parametrar, slump, data)
         res = m.spela()
         bast = max(res, key=lambda r: r.get("total", r["F"]))
+        if "total" in bast:                          # avgör något skede ensamt? vinnaren = ledaren i ...
+            for del_ in ("PU", "TG", "F"):
+                ledare = max(res, key=lambda r: r[del_])
+                stat["_vinnare_ledde_" + del_].append(1 if ledare is bast else 0)
+            stat["_marginal"].append(bast["total"] - sorted(r["total"] for r in res)[-2])
         for r in res:
             for kat in ("strategi", "fc", "fs"):
                 deltog[kat][r[kat]] += 1
@@ -72,8 +77,17 @@ def rapport(partier, parametrar, fro):
         print(f"## {rubrik}: median {statistics.median(v):.1f}, 10–90 %: {v[len(v) // 10]:.1f}–{v[9 * len(v) // 10]:.1f}, "
               f"bästa 5 %: {v[95 * len(v) // 100]:.1f}")
     print()
+    if stat.get("_vinnare_ledde_PU"):
+        print("## Avgör ett skede ensamt? Andel partier där vinnaren också ledde i ...")
+        for del_ in ("PU", "TG", "F"):
+            print(f"  {del_:3} {100 * statistics.mean(stat['_vinnare_ledde_' + del_]):5.1f} %   (slump med 4 spelare: 25 %)")
+        m = sorted(stat["_marginal"])
+        print(f"  vinstmarginal i slutpoäng: median {statistics.median(m):.1f}, 10–90 %: {m[len(m) // 10]:.1f}–{m[9 * len(m) // 10]:.1f}")
+        print()
     print("## Händelser per parti (snitt)")
     for k, v in stat.items():
+        if k.startswith("_"):
+            continue
         print(f"  {k:22} {statistics.mean(v):6.2f}")
     print("\n## DN-drift per typ och parti (summa bas-DN-ändring, alla spelare)")
     for t, v in drift.items():
