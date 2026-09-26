@@ -151,6 +151,34 @@ Dropbox: `Åkepol tryckfiler/` (mappen `Mentorsprogram` hör inte till spelet).
 - Plandokumenten är **genererade per bolag** ur en mall (pipeline i OneDrive `SPELET 2/0. Ledning/planer/`). Det är mallen som är regelinnehållet.
 - `PL_*_S1–S4` — fyra uppsättningar; innebörden (stadsdel/bord?) ska bekräftas.
 
+### Hur korten producerades — och vilken data som trycktes
+
+Kedjan (Dropbox `SPELET 2 - version 1 Åkepol/`, fryst 2026-05-13; se dess `AUTOMATISERING.md`, `CLAUDE.md`):
+
+```
+färgschema.xlsx → uppdatera_färger.py → CSV per korttyp (+ bildsida/textsida-sortering)
+  → InDesign Data Merge (master_kortproduktion.jsx, tryckeri_58x88/88x88/88x146.jsx)
+  → farglagg_projektkort.jsx → PDF → splitta_tryckeri.py → Åkepol tryckfiler/Kort/*_tryckeri.pdf
+```
+
+- InDesign-mallarna har **ingen fast länk** till en CSV — skriptet väljer `{PREFIX}_{KORTTYP}.csv` i samma mapp vid körning.
+- Tryckfilerna exporterades **2026-04-27 ca 22:14 UTC**. CSV:er ändrade före dess är det som trycktes.
+- **Ändrade efter tryck — lita inte på CSV:n, läs tryckfilen:** `PU_projekt.csv` (2026-05-02), `L_personal.csv` (2026-04-29).
+- Alla övriga kort-CSV:er i `version 1` (PU, PL, GF, F) är daterade 2026-04-26/27, före tryck.
+- **Statisk text finns i InDesign-mallen, inte i CSV:n** — t.ex. moderbolagslånets "MINNESKORT" och
+  "BEHÅLL KORTET TILLS LÅNET ÄR ÅTERBETALT". Den måste läsas ur tryckfilen (en gång per korttyp).
+- `S1–S4` på PL-korten är **exemplarnummer** (skriptet skriver "S1"…"S4" i `_exemplar_`-ramar), dvs. fyra uppsättningar
+  som bara skiljer sig i den markeringen.
+- CSV-format: semikolon, cp1252, kolumnerna `fill_color`, `line_color`, `ordning_bild`, `ordning_text`, `@bild` m.fl. är
+  produktionsdata; resten är kortinnehåll.
+
+### Metod för de nya Excel-filerna
+
+1. Läs CSV:n från `version 1` (kortinnehåll + antal rader = antal tryckta kort).
+2. Läs tryckfilens text för att fånga mallens statiska text och bekräfta att innehållet stämmer.
+3. För `PU_projekt` och `L_personal`: tryckfilen är facit, CSV:n är bara hjälp.
+4. Skriv en ny Excel per korttyp: en rad per unikt kort + antal exemplar; innehåll och produktionsdata på separata flikar.
+
 ### Övrigt källmaterial (OneDrive `SPELET 2/`)
 
 | Dokument | Datum | Roll |
@@ -192,7 +220,7 @@ Allt byggs nytt; bara grafiken återanvänds. Nuvarande kod, data och dokument
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
-   Tryckfilerna finns i Dropbox `Åkepol tryckfiler/` (se §4). Öppet: vad betyder `S1–S4` på PL-korten?
+   Tryckfilerna finns i Dropbox `Åkepol tryckfiler/` (se §4). `S1–S4` = exemplarnummer (se §4).
 2. ~~**Huvudprodukt**~~ Besvarat: det fysiska spelet. Minimala ändringar i Skede 1–2, Skede 3 görs om, brädor fixas med klistermärken.
 3. **Var** — omstart i det här repot med ny struktur, eller ett nytt repo?
 4. **Källsanning** — regelböckerna blir HTML i repot (beslutat). Flyttar även kortdatan in i repot, eller förblir SPELET 2 källan?
