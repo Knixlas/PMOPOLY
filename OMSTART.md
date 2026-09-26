@@ -453,7 +453,7 @@ Förvaltningen startar nu från Skede 1:s utfall (Skede 2 ännu inte i motorn: T
 "tid" flyttar T-utfallet (start 12); "intäkt" = anskaffning; PC:s kravminskning direkt; omslag i nämnden
 tillåtet; oplacerade projekt betalar utveckling men ger ingen anskaffning; BYA = fotavtrycket;
 Regnbågen BTA 2000 → 1750 (formen gäller); tomtkostnad 10 Mkr (kalibrerat: vinnarens PU-poäng ≈ 20).
-**Antaganden kvar:** två varv och rundan spelas klart; projektruta = översta i högen eller ur banken;
+Också beslutat: två varv och rundan spelas klart; projektruta = översta i högen eller ur banken;
 markanvisning = markexpansion (5 Mkr); återlämnade projekt till banken; PC väljs öppet i spelordning.
 **Simulerat (800 partier):** 5 projekt (4–7), anskaffning 364 Mkr (261–471), BTA 7 250 (5 250–9 250),
 kravsumma ~24, vinnarens ABT 416 → PU-poäng ≈ 20 med tomt 10. Niklas: 5–8 projekt är vanligt.

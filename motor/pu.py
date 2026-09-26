@@ -34,7 +34,7 @@ def tal(v):
 
 @dataclass
 class PUParametrar:
-    varv: int = 2                        # ANTAGANDE: brädfasen slutar efter två varv; rundan spelas klart
+    varv: int = 2                        # beslut: brädfasen slutar efter två varv; rundan spelas klart
     tomtkostnad: float = 10              # kalibrerat: vinnarens PU-poäng ≈ 20 (regelboken anger inget belopp)
     markexpansion_kostnad: float = 5     # regelboken 3.7
     komplettering_faktor: float = 3      # regelboken 4.2: 3 × utvecklingskostnaden
@@ -131,7 +131,7 @@ class PUMotor:
         self.andra_krav(kv, int(tal(p["Kvalitetskrav Q"])), int(tal(p["Hållbarhetskrav H"])))
 
     def lamna_projekt(self, kv, p, till_bank=True):
-        # ANTAGANDE: ett återlämnat projekt läggs i projektbanken
+        # beslut: ett återlämnat projekt läggs i projektbanken
         kv.projekt.remove(p)
         self.andra_krav(kv, -int(tal(p["Kvalitetskrav Q"])), -int(tal(p["Hållbarhetskrav H"])))
         if till_bank:
@@ -177,7 +177,7 @@ class PUMotor:
         self.markhog = s.blanda_lista(self.d.markexpansion)
         self.ordning = s.blanda_lista(self.kvarter)          # ANTAGANDE: slumpad (regelboken: slå D6)
         pc_kvar = list(self.d.personal)
-        for kv in self.ordning:                              # ANTAGANDE: PC väljs öppet i spelordning
+        for kv in self.ordning:                              # beslut: PC väljs öppet i spelordning
             kv.q_krav, kv.h_krav = self.p.start_q, self.p.start_h
             pc = kv.strategi.valj_pc(self, kv, pc_kvar)
             pc_kvar.remove(pc)
@@ -185,7 +185,7 @@ class PUMotor:
             kv.erfarenhet = int(tal(pc["Erfarenhet"]))
             kv.riskbuffert = int(tal(pc["Riskbuffert"]))
             kv.namndslag = int(tal(pc["Nämndslag"]))
-            # ANTAGANDE: PC:s kravminskning gäller direkt
+            # beslut: PC:s kravminskning gäller direkt
             self.andra_krav(kv, -int(tal(pc["Minskar krav: kvalitet (Q)"])), -int(tal(pc["Minskar krav: hållbarhet (H)"])))
             kv.tid -= int(tal(pc["Minskar krav: tid (T)"]))
         for kv in self.ordning:                              # brädet: "Vid start: ta markruta och valfritt projekt"
@@ -265,14 +265,14 @@ class PUMotor:
         elif m := re.fullmatch(r"([+-]\d) hållbarhetskrav", t):
             self.andra_krav(kv, h=int(m.group(1)))
         elif m := re.fullmatch(r"([+-]\d) tid", t):
-            kv.tid += int(m.group(1))                        # ANTAGANDE: "tid" flyttar T-utfallet
+            kv.tid += int(m.group(1))                        # beslut: "tid" flyttar T-utfallet (start 12)
         elif m := re.fullmatch(r"\+(\d) riskbuffert(ar)?", t):
             kv.riskbuffert += int(m.group(1))
         elif m := re.fullmatch(r"förlora (\d) riskbuffertar", t):
             kv.riskbuffert = max(0, kv.riskbuffert - int(m.group(1)))
         elif t.startswith("lämna tillbaka projekt med"):
             if kv.projekt:
-                # ANTAGANDE: "intäkt" = anskaffning; vid lika väljer kvarteret (här: först i listan)
+                # beslut: "intäkt" = anskaffning; vid lika väljer kvarteret (här: först i listan)
                 nyckel = {"högst intäkt": lambda p: -tal(p["Anskaffning (Mkr)"]),
                           "högst bta": lambda p: -tal(p["BTA (kvm)"]),
                           "lägst anskaffning": lambda p: tal(p["Anskaffning (Mkr)"])}
@@ -284,7 +284,7 @@ class PUMotor:
         elif t.startswith("ta projekt från valfri hög"):
             self.projektval(kv, TYPER)
         elif t.startswith("dra markanvisning"):
-            self.markexpansion(kv)                           # ANTAGANDE: markanvisning = markexpansion (5 Mkr)
+            self.markexpansion(kv)                           # beslut: markanvisning = markexpansion (5 Mkr)
         else:
             raise ValueError(f"Okänd effekt: {text}")
 
@@ -372,7 +372,7 @@ class PUMotor:
             self.stat["namnd_forsok"] += 1
             slag = [self.s.d20() for _ in range(forsok)]
             if max(slag) <= summa and kv.riskbuffert and kv.strategi.sla_om_namnd(self, kv, summa, forsok):
-                kv.riskbuffert -= 1                          # ANTAGANDE: omslag med riskbuffert tillåtet
+                kv.riskbuffert -= 1                          # beslut: omslag med riskbuffert tillåtet
                 self.stat["omslag"] += 1
                 slag = [self.s.d20() for _ in range(forsok)]
             if max(slag) > summa:
@@ -409,7 +409,7 @@ class PUMotor:
         kv.placerade, kv.oplacerade = [], []
         for p in sorted(kv.godkanda, key=lambda p: -kv.strategi.projektvarde(self, kv, p)):
             (kv.placerade if kv.ryms(p, kv.placerade) else kv.oplacerade).append(p)
-        for p in kv.oplacerade:                              # ANTAGANDE: oplacerade tar med sig kraven, går till banken
+        for p in kv.oplacerade:                              # beslut: oplacerade tar med sig kraven, går till banken
             self.andra_krav(kv, -int(tal(p["Kvalitetskrav Q"])), -int(tal(p["Hållbarhetskrav H"])))
             self.bank.append(p)
             self.stat["oplacerat"] += 1
@@ -433,7 +433,7 @@ class PUMotor:
     def spela(self):
         self.starta()
         klara = set()
-        while not klara:                                     # ANTAGANDE: när någon gått klart spelas rundan klart
+        while not klara:                                     # beslut: när någon gått klart spelas rundan klart
             for kv in self.ordning:
                 if kv.namn not in klara and self.flytta(kv):
                     klara.add(kv.namn)
