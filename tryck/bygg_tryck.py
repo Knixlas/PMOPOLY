@@ -8,6 +8,7 @@ Tryckfilerna följer de gamla: ett motiv per sida, 3 mm utfall, skärmärken, bi
 växelvis (sida 1 = kort 1 fram, sida 2 = kort 1 bak …), varje kort × "Antal exemplar".
 """
 import asyncio
+import os
 import re
 import sys
 from pathlib import Path
@@ -20,11 +21,57 @@ ROT = Path(__file__).resolve().parent
 UT = ROT / "ut"
 CHROME = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
 
+# Bahnschrift hämtas från Niklas Adobe Fonts-licens via ett webbkit (Regular 400 och Bold 700).
+# Typsnittet sparas aldrig på disk eller i repot: Chromiums anrop till Typekit hämtas av Python
+# (verifierad TLS via miljöns CA) och lämnas direkt till sidan. Byt kit med miljövariabeln ADOBE_KIT.
+ADOBE_KIT = os.environ.get("ADOBE_KIT", "yeb0rca")
+
 
 def sida(innehall, extra_css=""):
+    # Adobe-kitets teckenurval saknar minustecknet (U+2212): tankstreck som i trycket
+    innehall = innehall.replace("\u2212", "\u2013")
     css = (ROT / "kort.css").read_text(encoding="utf-8")
     return f"""<!doctype html><html lang="sv"><head><meta charset="utf-8"><base href="{ROT.as_uri()}/">
+<link rel="stylesheet" href="https://use.typekit.net/{ADOBE_KIT}.css">
 <style>{css}{extra_css}</style></head><body>{innehall}</body></html>"""
+
+
+async def _typekit(route, req):
+    import requests
+    h = {k: v for k, v in req.headers.items() if k.lower() in ("accept", "user-agent", "referer", "origin")}
+    try:
+        r = await asyncio.to_thread(requests.get, req.url, headers=h, timeout=30)
+    except requests.RequestException:
+        await route.abort()
+        return
+    await route.fulfill(status=r.status_code, body=r.content,
+                        headers={"content-type": r.headers.get("content-type", "application/octet-stream"),
+                                 "access-control-allow-origin": "*"})
+
+
+async def ny_sida(p):
+    """Starta Chromium med Typekit-hämtningen på plats. Returnerar (webbläsare, sida)."""
+    b = await p.chromium.launch(executable_path=CHROME)
+    s = await b.new_page()
+    await s.route("https://*.typekit.net/**", _typekit)
+    return b, s
+
+
+VARNAT = []
+
+
+async def ladda(s, uri):
+    """Öppna sidan och vänta in typsnitten. Varnar en gång om Bahnschrift inte laddades."""
+    await s.goto(uri)
+    ok = await s.evaluate("""async () => {
+        await document.fonts.ready;
+        const f = await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 12px bahnschrift')));
+        return f.every(l => l.some(x => x.family.toLowerCase() === 'bahnschrift'));
+    }""")
+    if not ok and not VARNAT:
+        VARNAT.append(1)
+        print("VARNING: Bahnschrift laddades inte (nät/kit) – ersättningstypsnittet används.", file=sys.stderr)
+    return ok
 
 
 def provark():
@@ -98,10 +145,8 @@ async def skriv_tryck(lek):
     tmp = UT / f"{lek}_tryckeri.html"
     tmp.write_text(html_, encoding="utf-8")
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=CHROME)
-        s = await b.new_page()
-        await s.goto(tmp.as_uri())
-        await s.wait_for_timeout(500)
+        b, s = await ny_sida(p)
+        await ladda(s, tmp.as_uri())
         await s.pdf(path=str(UT / f"{lek}_tryckeri.pdf"), width=f"{W}mm", height=f"{H}mm", print_background=True,
                     margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
         await b.close()
@@ -115,10 +160,8 @@ async def skriv(html_, pdf, png=None):
     tmp = UT / (pdf.stem + ".html")
     tmp.write_text(html_, encoding="utf-8")
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=CHROME)
-        s = await b.new_page()
-        await s.goto(tmp.as_uri())
-        await s.wait_for_timeout(300)
+        b, s = await ny_sida(p)
+        await ladda(s, tmp.as_uri())
         await s.pdf(path=str(pdf), format="A4", print_background=True, margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
         if png:
             await s.set_viewport_size({"width": 800, "height": 1100})
@@ -140,20 +183,20 @@ async def kontrollera():
     from playwright.async_api import async_playwright
     fel = []
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=CHROME)
-        s = await b.new_page()
+        b, s = await ny_sida(p)
         for lek in LEKAR:
             html_, _, _ = tryckark(lek)
             tmp = UT / f"_kontroll_{lek}.html"
             tmp.write_text(html_, encoding="utf-8")
-            await s.goto(tmp.as_uri())
-            await s.wait_for_timeout(300)
+            await ladda(s, tmp.as_uri())
             res = await s.evaluate("""() => [...document.querySelectorAll('.kort')].map((k, i) => {
                 const kr = k.getBoundingClientRect();
                 const fot = k.querySelector('.fot'); const lista = k.querySelector('.list');
                 const grans = fot ? fot.getBoundingClientRect().top : (lista ? lista.getBoundingClientRect().top : kr.bottom);
                 const barn = [...k.querySelectorAll('.regel, .egenskap, .stamning, .p-tal, .p-regel, .p-besk, .f-under')];
                 const over = barn.filter(e => e.getBoundingClientRect().bottom > grans - 1).map(e => e.className);
+                // tabeller som blivit bredare än sin spalt (värden bryts inte längre, de sticker ut)
+                k.querySelectorAll('.p-tal').forEach(t => { if (t.getBoundingClientRect().right > t.parentElement.getBoundingClientRect().right + 1) over.push('p-tal bred'); });
                 return {i, over, text: (k.querySelector('.t-rubrik, .p-namn, .f-rubrik') || {}).textContent};
             }).filter(r => r.over.length)""")
             for r in res:

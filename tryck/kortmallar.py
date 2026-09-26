@@ -238,7 +238,7 @@ def projekt_textsida(p):
             <tr><td>Marknadsvärde</td><td>{e(tal(p["Marknadsvärde (Mkr)"]))} Mkr</td></tr>
             <tr><td>Energiklass</td><td><span class="ek">{e(p["Energiklass"])}</span></td></tr></table>
           <div class="p-regel">Marknadsvärde = (driftnetto + ränta) ÷ yield.<br>
-            Marknadsvärde under lånet → tvångsförsäljning.</div>'''
+            Marknadsvärde under lånet ger tvångsförsäljning.</div>'''
     return f'''<div class="kort k88 text projekt" style="--bg:{ljus};--accent:{mork}">
       <div class="p-namn vanster">{e(p["Namn"])}</div>
       <div class="p-kolumner">
