@@ -3,7 +3,7 @@
   // Dra en bit till tomten, eller tryck på den så lyfts den upp över marken. Medan man håller en
   // bit: R eller hjulet vrider, F eller högerklick speglar, pilarna flyttar, Enter lägger, Esc släpper.
   import Minibit from './Minibit.svelte';
-  import { cellerFor, kanLyfta, orienterad, prova, somBitar, type Del, type Lagd } from './kvarter';
+  import { cellerFor, forstaPlats, kanLyfta, lagdFran, orienterad, prova, somBitar, type Del, type Lagd } from './kvarter';
   import { losa } from './losare';
   import { BOSTAD, TOMT, granska, lagen, nyckel, spegla, vridMedurs, type Form, type Ruta } from './regler';
 
@@ -49,6 +49,24 @@
   const markRutor = $derived([...g.mark].map(n => [Math.floor(n / TOMT), n % TOMT] as Ruta));
   const grundmark = new Set<number>();
   for (let r = 6; r < 10; r++) for (let k = 6; k < 10; k++) grundmark.add(nyckel(r, k));
+
+  // Vyn: tomten beskuren runt marken (plus plats för markexpansionerna), så att rutorna blir stora
+  // på mobilen. Ramen står still medan man drar, annars skulle rutorna flytta sig under fingret.
+  // plats runt marken för markexpansionerna i handen (och den man håller)
+  const marginal = $derived(Math.max(1, ...delar.filter(d => d.typ === 'MARK' && (iHanden.includes(d) || grepp?.id === d.id))
+    .flatMap(d => d.form).map(([r, k]) => Math.max(r, k) + 1)));
+  function berakna(): { r0: number; k0: number; n: number } {
+    const alla = [...granska(somBitar(lagda, delMap)).mark].map(x => [Math.floor(x / TOMT), x % TOMT]);
+    const rr = alla.map(c => c[0]), kk = alla.map(c => c[1]);
+    let r0 = Math.min(...rr) - marginal, r1 = Math.max(...rr) + marginal;
+    let k0 = Math.min(...kk) - marginal, k1 = Math.max(...kk) + marginal;
+    const n = Math.min(TOMT, Math.max(8, r1 - r0 + 1, k1 - k0 + 1));
+    r0 = Math.max(0, Math.min(TOMT - n, Math.round((r0 + r1 + 1 - n) / 2)));
+    k0 = Math.max(0, Math.min(TOMT - n, Math.round((k0 + k1 + 1 - n) / 2)));
+    return { r0, k0, n };
+  }
+  let ram = $state({ r0: 0, k0: 0, n: TOMT });
+  $effect(() => { if (!grepp?.lyfter) ram = berakna(); });
 
   const hallen = $derived(grepp ? delMap.get(grepp.id)! : null);
   const skugga = $derived(grepp && hallen ? cellerFor(hallen.form, grepp.lage, grepp.rad, grepp.kol) : []);
@@ -122,7 +140,7 @@
   }
 
   function mattSkarm() {
-    if (svg) skarmRuta = svg.getBoundingClientRect().width / TOMT;
+    if (svg) skarmRuta = svg.getBoundingClientRect().width / ram.n;
   }
 
   function lyftUrHanden(e: PointerEvent, d: Del) {
@@ -193,13 +211,28 @@
     const tryck = Math.hypot(e.clientX - grepp.startX, e.clientY - grepp.startY) < 6 && performance.now() - grepp.startTid < 350;
     grepp.lyfter = false;
     if (tryck) {                                   // ett tryck: lyft upp biten så den svävar
-      if (!grepp.fran) { grepp.overBrade = true; flyttaTill(grepp, [7, 7]); }
+      if (!grepp.fran) svava(grepp);
       meddelande = 'Vrid och spegla med knapparna, flytta med pilarna eller tryck på tomten. Lägg när den är grön.';
       return;
     }
     if (!grepp.overBrade) { tillbaka(); return; }
     if (prov && prov.lager !== null) lagg();
     else meddelande = prov?.skal ?? '';
+  }
+
+  /** Lägg biten svävande på första stället där den får ligga (eller mitt på marken). */
+  function svava(gr: Grepp) {
+    const d = delMap.get(gr.id)!;
+    const plats = forstaPlats(d, lagda.filter(l => l.id !== gr.id), delMap);
+    gr.overBrade = true;
+    if (plats) { gr.lage = plats.lage; gr.rad = plats.rad; gr.kol = plats.kol; }
+    else flyttaTill(gr, [7, 7]);
+  }
+  function valjMedTangent(d: Del) {
+    mattSkarm();
+    const gr: Grepp = { id: d.id, lage: 0, rad: 6, kol: 6, index: 0, fran: null, lyfter: false, overBrade: true, x: 0, y: 0, startX: 0, startY: 0, startTid: 0 };
+    svava(gr);
+    grepp = gr;
   }
 
   // ------------------------------------------------------------------ handlingar med biten man håller
@@ -266,16 +299,6 @@
   }
 
   // ------------------------------------------------------------------ lösaren
-  function franCeller(form: Form, celler: Ruta[]): { lage: number; rad: number; kol: number } {
-    const rad = Math.min(...celler.map(c => c[0])), kol = Math.min(...celler.map(c => c[1]));
-    const mal = new Set(celler.map(([r, k]) => nyckel(r, k)));
-    for (let lage = 0; lage < 8; lage++) {
-      const c = cellerFor(form, lage, rad, kol);
-      if (c.every(([r, k]) => mal.has(nyckel(r, k)))) return { lage, rad, kol };
-    }
-    throw new Error('formen passar inte lösningen');
-  }
-
   const markNu = () => {
     const alla = granska(somBitar(lagda, delMap)).mark;
     return [...alla].map(n => [Math.floor(n / TOMT), n % TOMT] as Ruta);
@@ -307,7 +330,7 @@
     await new Promise(r => setTimeout(r, 30));
     const l = losa(markNu(), projektIn(), { ms: 2000 });
     const mark = lagda.filter(x => delMap.get(x.id)!.typ === 'MARK');
-    const nya = Object.entries(l.placeringar).map(([id, p]) => ({ id, lager: p.lager, ...franCeller(delMap.get(id)!.form, p.celler) }));
+    const nya = Object.entries(l.placeringar).map(([id, p]) => ({ id, lager: p.lager, ...lagdFran(delMap.get(id)!.form, p.celler) }));
     spara([...mark, ...nya]);
     const utanfor = projekt.length - nya.length;
     meddelande = utanfor
@@ -359,7 +382,7 @@
     <svg
       bind:this={svg}
       class="tomt"
-      viewBox="-4 -4 {TOMT * S + 8} {TOMT * S + 8}"
+      viewBox="{ram.k0 * S - 4} {ram.r0 * S - 4} {ram.n * S + 8} {ram.n * S + 8}"
       role="application"
       aria-label="Tomten, 16 gånger 16 rutor"
       onpointerdown={tryckPaTomten}
@@ -411,9 +434,11 @@
       <!-- markexpansioner som går att lyfta (osynliga ytor ovanpå den gröna marken) -->
       {#each ovriga.filter(l => delMap.get(l.id)!.typ === 'MARK') as l (l.id)}
         {@const d = delMap.get(l.id)!}
+        {@const mc = cellerFor(d.form, l.lage, l.rad, l.kol)}
         <g class="bit markbit">
           <title>Markexpansion, {d.form.length} rutor ({tal(d.form.length * 250)} kvm BYA)</title>
-          {#each cellerFor(d.form, l.lage, l.rad, l.kol) as [r, k], i}
+          <path d={kontur(mc)} class="markkontur" />
+          {#each mc as [r, k], i}
             {#if !g.lager1.has(nyckel(r, k))}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <rect x={k * S + 1.5} y={r * S + 1.5} width={S - 3} height={S - 3} class="greppyta" onpointerdown={e => lyftFranTomten(e, l, i)} />
@@ -448,6 +473,7 @@
       <div><dt>Mark</dt><dd>{tal(g.mark.size * 250)} kvm</dd></div>
     </dl>
 
+    <div class="handlista">
     {#each [['MARK', 'Markexpansioner'], ['PROJEKT', 'Projekt att placera']] as [grupp, rubrik]}
       {@const lista = iHanden.filter(d => (d.typ === 'MARK') === (grupp === 'MARK'))}
       {#if lista.length}
@@ -458,7 +484,7 @@
               <button type="button" class="kort" class:vald={grepp?.id === d.id}
                       style="--typ:{farg(d.typ)};--ljus:{fargar[d.typ]?.ljus ?? '#fff'}"
                       onpointerdown={e => lyftUrHanden(e, d)}
-                      onkeydown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mattSkarm(); grepp = { id: d.id, lage: 0, rad: 6, kol: 6, index: 0, fran: null, lyfter: false, overBrade: true, x: 0, y: 0, startX: 0, startY: 0, startTid: 0 }; } }}>
+                      onkeydown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); valjMedTangent(d); } }}>
                 {#if d.bild}<img src={d.bild} alt="" loading="lazy" />{/if}
                 <span class="text">
                   <span class="namn">{d.namn}</span>
@@ -474,6 +500,7 @@
     {#if !iHanden.length}
       <p class="klart">Allt är placerat.</p>
     {/if}
+    </div>
 
     <details class="regler">
       <summary>Reglerna (4.3)</summary>
@@ -502,9 +529,7 @@
     gap: 20px;
     align-items: start;
   }
-  @media (max-width: 820px) {
-    .pussel { grid-template-columns: minmax(0, 1fr); }
-  }
+  .handlista { display: grid; gap: 10px; }
   .bord { display: grid; gap: 10px; min-width: 0; }
   .verktyg {
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px;
@@ -530,6 +555,7 @@
   .kontur { fill: none; stroke: var(--black); stroke-width: 3; stroke-linecap: square; pointer-events: none; }
   .bit rect { cursor: grab; }
   .greppyta { fill: transparent; cursor: grab; }
+  .markkontur { fill: none; stroke: #5d7a2c; stroke-width: 2; stroke-dasharray: 5 4; pointer-events: none; }
   .uppe rect:not(.fog) { filter: brightness(1.25) saturate(1.1); }
   .verktyg button[aria-pressed="true"] { background: var(--black); color: var(--panel); border-color: var(--black); }
   .bokstav { font: 700 17px var(--typsnitt); fill: #fff; text-anchor: middle; pointer-events: none; opacity: .9; }
@@ -576,4 +602,20 @@
   kbd { font: 600 12px var(--typsnitt); border: 1px solid var(--linje-stark); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: #fff; }
 
   .flygande { position: fixed; pointer-events: none; transform: translate(-50%, -50%); opacity: .85; z-index: 10; filter: drop-shadow(2px 4px 4px rgba(29, 42, 48, .4)); }
+  /* Mobilen: en spalt, handen direkt ovanför tomten som en rad att svepa i, verktygen fästa överst. */
+  @media (max-width: 820px) {
+    .pussel { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .bord, .hand { display: contents; }
+    .verktyg { order: 1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+               background: var(--panel); padding: 6px 0; }
+    .handlista { order: 2; }
+    .tomt { order: 3; }
+    .meddelande { order: 4; }
+    .siffror { order: 5; }
+    .regler { order: 6; }
+    .handlista ul { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 4px; scroll-snap-type: x proximity; }
+    .handlista li { flex: 0 0 min(78%, 260px); scroll-snap-align: start; }
+    .handlista h3 { margin-top: 0; }
+    .kort { touch-action: pan-x; }
+  }
 </style>

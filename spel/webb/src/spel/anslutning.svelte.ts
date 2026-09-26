@@ -16,6 +16,8 @@ export interface Vy {
   projekt?: { namn: string; typ: string; form: [number, number][] }[];
   form?: [number, number][];
   platser?: [number, number][][];
+  id?: string;                          // den nya markexpansionens id
+  markbitar?: { id: string; form: [number, number][]; celler: [number, number][] }[];
 }
 export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
 export interface Lage {
@@ -40,7 +42,7 @@ export interface Bild {
   projektbank?: string[];
 }
 
-export type Svar = { val: number } | { flera: number[] } | { svar: boolean | number } | { placering: unknown[] } | { forslag: true };
+export type Svar = { val: number } | { flera: number[] } | { svar: boolean | number } | { placering: unknown[]; mark?: unknown[] } | { mark: unknown[] } | { forslag: true };
 
 const bas = () => (import.meta.env.DEV ? '' : '');
 

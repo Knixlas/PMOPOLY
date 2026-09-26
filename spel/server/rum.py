@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 from motor.lage import bild
+from motor.pussel import las_marklayout
 from motor.parti import Parti
 from motor.styrning import koda
 
@@ -80,6 +81,9 @@ class Rum:
         if "forslag" in svar:                              # "gör som förslaget"
             return f.forslag
         typ = vy.get("typ")
+        mark = self._mark(svar, vy) if "mark" in svar else None
+        if typ == "markexpansion" and mark is not None:
+            return koda(mark, [])
         if typ in ("val", "markexpansion"):
             i = svar.get("val")
             alt = vy.get("alternativ", [])
@@ -112,8 +116,19 @@ class Rum:
                 raise SvarsFel("placeringen ska vara [[namn, [[rad, kol], ...], lager], ...]") from None
             if not all(n in namn for n, _, _ in rent):
                 raise SvarsFel("okänt projekt i placeringen")
-            return koda(rent, [])
+            return koda([[n, c, 0] for n, c in mark or []] + rent, [])
         raise SvarsFel("frågan kan bara besvaras med förslaget")
+
+    @staticmethod
+    def _mark(svar, vy):
+        """En flyttad marklayout ([[id, rutor], ...]) — granskas här så att spelaren får veta varför."""
+        former = {b["id"]: [tuple(c) for c in b["form"]] for b in vy.get("markbitar", [])}
+        if vy.get("typ") == "markexpansion":
+            former[vy["id"]] = [tuple(c) for c in vy["form"]]
+        bitar = las_marklayout(svar["mark"], former)
+        if isinstance(bitar, str):
+            raise SvarsFel(f"marken: {bitar}")
+        return [[i, sorted(list(c) for c in celler)] for i, celler in sorted(bitar.items())]
 
     def svara(self, kvarter, nr, svar):
         with self.las:
@@ -158,4 +173,6 @@ def _lasbart(vy, svar):
         return {True: "ja", False: "nej"}.get(svar["svar"], str(svar["svar"]))
     if "placering" in svar:
         return f"{len(svar['placering'])} projekt placerade"
+    if "mark" in svar:
+        return "markexpansionen lagd"
     return ""

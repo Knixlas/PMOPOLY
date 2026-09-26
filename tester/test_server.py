@@ -123,6 +123,30 @@ class TestServer(unittest.TestCase):
         self.assertEqual(r.status_code, 200, r.text)
         self.assertIsNone(r.json()["fel"])
 
+    def test_markexpansion_som_hel_layout(self):
+        """Markexpansionen kan besvaras med hela marken ([[id, rutor], ...]); fel layout avvisas med skäl."""
+        id_ = skapa(kvarter=[{"namn": "Norr"}], fro=5)
+        for _ in range(3000):
+            f = KLIENT.get(f"/api/rum/{id_}").json()["fraga"]
+            if f["vy"]["typ"] == "markexpansion":
+                break
+            svar = {"svar": True} if f["vy"]["typ"] == "janej" and "markexpansion" in f["vy"]["rubrik"] else {"forslag": True}
+            KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": f["kvarter"], "nr": f["nr"], "svar": svar})
+        else:
+            self.fail("ingen markexpansion")
+        vy = f["vy"]
+        lagda = [[b["id"], b["celler"]] for b in vy["markbitar"]]
+        fel = [[vy["id"], [[r, k] for r, k in vy["form"]]]]    # i hörnet: inte kant i kant
+        r = KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": "Norr", "nr": f["nr"], "svar": {"mark": lagda + fel}})
+        self.assertNotEqual(r.status_code, 200)
+        self.assertIn("marken", r.text)
+        ratt = [[vy["id"], vy["platser"][0]]]
+        r = KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": "Norr", "nr": f["nr"], "svar": {"mark": lagda + ratt}})
+        self.assertEqual(r.status_code, 200, r.text)
+        mark = {tuple(c) for c in KLIENT.get(f"/api/rum/{id_}").json()["fraga"]["vy"].get("mark", [])} or None
+        if mark:                                              # nästa fråga är en pusselfråga: marken syns där
+            self.assertTrue({tuple(c) for c in vy["platser"][0]} <= mark)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -168,6 +168,26 @@ def platser_markexpansion(mark, form):
     return ut
 
 
+def las_marklayout(svar, former):
+    """En hel marklayout från en spelare: [[id, [[rad, kol], ...]], ...] med varje markexpansion
+    (former: id -> kortets form). Returnerar {id: rutor} om layouten följer reglerna, annars ett
+    felmeddelande (str). Alla markexpansioner ska vara med, var och en med sitt korts form."""
+    try:
+        bitar = {str(i): frozenset((int(r), int(k)) for r, k in celler) for i, celler in svar}
+    except (TypeError, ValueError):
+        return "marken ska vara [[id, [[rad, kol], ...]], ...]"
+    if set(bitar) != set(former):
+        return "alla markexpansioner ska vara med, och inga andra"
+    for i, celler in bitar.items():
+        if len(celler) != len(former[i]) or normalisera(celler) not in lagen(former[i]):
+            return f"{i} har inte sitt korts form"
+    fel = granska([Bit(i, "MARK", c, 0) for i, c in bitar.items()]).fel
+    if fel:
+        i, varfor = next(iter(fel.items()))
+        return f"{i}: {varfor}"
+    return bitar
+
+
 # ---------------------------------------------------------------------------- lösaren
 def _platser(form, index):
     """Alla sätt att lägga formen inom rutorna i `index` ({ruta: bit}), som bitmasker."""

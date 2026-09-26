@@ -105,7 +105,7 @@
   h3 { margin: 0; font-size: 16px; }
   dl { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--dampad); }
-  dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+  dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .lista { margin: 0; font-size: 13px; color: var(--dampad); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; display: block; overflow-x: auto; }
   th, td { text-align: right; padding: 2px 6px; border-bottom: 1px solid var(--panel-mork); }

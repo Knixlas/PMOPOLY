@@ -3,8 +3,8 @@
   // "Gör som förslaget" finns alltid (bottens val), så att ingen fråga kan fastna.
   import data from '../data/pussel.json';
   import Pussel from '../pussel/Pussel.svelte';
-  import { cellerFor, type Del, type Lagd } from '../pussel/kvarter';
-  import { GRUNDMARK, nyckel, type Form, type Ruta } from '../pussel/regler';
+  import { cellerFor, lagdFran, type Del, type Lagd } from '../pussel/kvarter';
+  import { type Form, type Ruta } from '../pussel/regler';
   import type { Fraga, Svar } from './anslutning.svelte';
 
   let { fraga, svara, skickar = false }: { fraga: Fraga; svara: (s: Svar) => void; skickar?: boolean } = $props();
@@ -26,30 +26,27 @@
 
   // ------------------------------------------------------------------ pusslet (4.3 och markexpansion)
   const projektData = new Map(data.projekt.map(p => [p.namn, p]));
-  const grund = new Set(GRUNDMARK.map(([r, k]) => nyckel(r, k)));
-
-  function fastMark(): { del: Del; lagd: Lagd } | null {
-    const extra = (vy.mark ?? []).filter(([r, k]) => !grund.has(nyckel(r, k))) as Ruta[];
-    if (!extra.length) return null;
-    const r0 = Math.min(...extra.map(c => c[0])), k0 = Math.min(...extra.map(c => c[1]));
-    return {
-      del: { id: '__mark', namn: 'Lagd mark', typ: 'MARK', form: extra.map(([r, k]) => [r - r0, k - k0]) as Form },
-      lagd: { id: '__mark', lage: 0, rad: r0, kol: k0, lager: 0 },
-    };
+  // Lagd mark: varje markexpansion är en egen bit som får flyttas (kant i kant med marken).
+  function lagdMark(): { delar: Del[]; start: Lagd[] } {
+    const delar: Del[] = [], start: Lagd[] = [];
+    for (const b of vy.markbitar ?? []) {
+      const form = b.form as Form;
+      delar.push({ id: b.id, namn: b.id, typ: 'MARK', form, bya: form.length * 250 });
+      start.push({ id: b.id, lager: 0, ...lagdFran(form, b.celler as Ruta[]) });
+    }
+    return { delar, start };
   }
 
   const pussel = $derived.by(() => {
     if (vy.typ !== 'pussel' && vy.typ !== 'markexpansion') return null;
-    const fast = fastMark();
-    const delar: Del[] = fast ? [fast.del] : [];
-    const start: Lagd[] = fast ? [fast.lagd] : [];
+    const { delar, start } = lagdMark();
     if (vy.typ === 'pussel') {
       for (const p of vy.projekt ?? []) {
         const d = projektData.get(p.namn);
         delar.push({ id: p.namn, namn: p.namn, typ: p.typ, form: p.form as Form, bta: d?.bta, bild: d?.bild });
       }
     } else {
-      delar.push({ id: '__ny', namn: 'Ny markexpansion', typ: 'MARK', form: vy.form as Form, bya: (vy.form?.length ?? 0) * 250 });
+      delar.push({ id: vy.id!, namn: 'Ny markexpansion', typ: 'MARK', form: vy.form as Form, bya: (vy.form?.length ?? 0) * 250 });
     }
     return { delar, start, delMap: new Map(delar.map(d => [d.id, d])) };
   });
@@ -57,18 +54,16 @@
   function lamnaPussel(lagda: Lagd[]) {
     if (!pussel) return;
     const cell = (l: Lagd) => { const d = pussel.delMap.get(l.id)!; return cellerFor(d.form, l.lage, l.rad, l.kol); };
+    const arMark = (l: Lagd) => pussel.delMap.get(l.id)!.typ === 'MARK';
+    const mark = lagda.filter(arMark).map(l => [l.id, cell(l)]);
     if (vy.typ === 'pussel') {
-      const placering = lagda.filter(l => pussel.delMap.get(l.id)!.typ !== 'MARK').map(l => [l.id, cell(l), l.lager]);
-      svara({ placering });
+      const placering = lagda.filter(l => !arMark(l)).map(l => [l.id, cell(l), l.lager]);
+      svara({ placering, mark });
       return;
     }
-    const ny = lagda.find(l => l.id === '__ny');
-    if (!ny) return;
-    const mal = new Set(cell(ny).map(([r, k]) => nyckel(r, k)));
-    const i = (vy.platser ?? []).findIndex(p => p.length === mal.size && p.every(([r, k]) => mal.has(nyckel(r, k))));
-    if (i >= 0) svara({ val: i });
+    if (lagda.some(l => l.id === vy.id)) svara({ mark });
   }
-  const kravMarkexpansion = (lagda: Lagd[]) => (lagda.some(l => l.id === '__ny') ? null : 'Lägg markexpansionen på tomten först.');
+  const kravMarkexpansion = (lagda: Lagd[]) => (lagda.some(l => l.id === vy.id) ? null : 'Lägg markexpansionen på tomten först.');
 </script>
 
 <section class="fraga" aria-live="polite">
@@ -125,8 +120,7 @@
       </div>
     {/if}
   {:else if pussel}
-    <Pussel delar={pussel.delar} start={pussel.start} fargar={data.fargar} lasta={['__mark']}
-            lamnaIn={lamnaPussel} lamnaText={vy.typ === 'pussel' ? 'Lämna in kvarteret' : 'Lägg markexpansionen här'}
+    <Pussel delar={pussel.delar} start={pussel.start} fargar={data.fargar} lamnaIn={lamnaPussel} lamnaText={vy.typ === 'pussel' ? 'Lämna in kvarteret' : 'Lägg markexpansionen här'}
             lamnaKrav={vy.typ === 'markexpansion' ? kravMarkexpansion : undefined} />
   {/if}
 

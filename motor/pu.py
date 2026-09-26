@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 
 from .data import las_lek
-from .pussel import GRUNDMARK, Bit, form_av, granska, lagen, normalisera, platser_markexpansion
+from .pussel import GRUNDMARK, Bit, form_av, granska, lagen, las_marklayout, normalisera, platser_markexpansion
 from .slump import DigitalSlump
 
 BOSTAD = {"BRF", "HYRESRÄTT"}
@@ -22,6 +22,10 @@ BRADE = [
     "SKÖNHETSRÅDET", "FÖRSKOLA", "RISKBUFFERT", "HYRESRÄTT", "HÄNDELSE", "KONTOR",
 ]
 HORN = {"STADSBYGGNADSKONTORET", "STADSHUSET", "LÄNSSTYRELSEN", "SKÖNHETSRÅDET"}
+def markid(kort):
+    return f"Markexpansion {kort['Kort-id']}"
+
+
 CELL_KVM = 250          # en ruta = 250 kvm (markexpansionskortens BYA / 250)
 MARK_CELLER = 16        # 4 × 4
 
@@ -62,6 +66,7 @@ class Kvarter:
     vantande_rb: int = 0
     expansioner: list = field(default_factory=list)   # markexpansionskort
     mark: frozenset = GRUNDMARK                         # markens rutor på tomten (4.3)
+    markbitar: dict = field(default_factory=dict)       # markexpansionens id -> rutor (flyttbara till 4.3)
     layout: dict = field(default_factory=dict)          # projektets namn -> (rutor, lager)
     position: int = 0
     varv: int = 0
@@ -174,11 +179,37 @@ class PUMotor:
             kort = self.markhog.pop()
             kv.expansioner.append(kort)
             self.stat["markexpansion"] += 1
-            # "Placera på tomt, kasta kortet": kant i kant med marken (4.3)
+            # "Placera på tomt, kasta kortet": kant i kant med marken (4.3). Svaret är en av platserna
+            # för den nya biten, eller en hel ny marklayout där de lagda också får flyttas.
             alternativ = platser_markexpansion(kv.mark, form_av(kort))
             if alternativ:
                 val = kv.strategi.placera_markexpansion(self, kv, kort, alternativ)
-                kv.mark = kv.mark | (val if val in alternativ else alternativ[0])
+                ny = markid(kort)
+                if val in alternativ:
+                    self.lagg_mark(kv, {**kv.markbitar, ny: val})
+                elif not self.flytta_mark(kv, val, extra=kort):
+                    self.lagg_mark(kv, {**kv.markbitar, ny: alternativ[0]})
+
+    def markformer(self, kv, extra=None):
+        former = {markid(k): form_av(k) for k in kv.expansioner if markid(k) in kv.markbitar}
+        if extra is not None:
+            former[markid(extra)] = form_av(extra)
+        return former
+
+    def flytta_mark(self, kv, svar, extra=None):
+        """Spelarens nya marklayout ([[id, rutor], ...]); följer den reglerna läggs den, annars inte."""
+        if not isinstance(svar, (list, tuple)):
+            return False
+        bitar = las_marklayout(svar, self.markformer(kv, extra))
+        if isinstance(bitar, str):
+            return False
+        self.lagg_mark(kv, bitar)
+        return True
+
+    @staticmethod
+    def lagg_mark(kv, bitar):
+        kv.markbitar = dict(bitar)
+        kv.mark = GRUNDMARK.union(*bitar.values()) if bitar else GRUNDMARK
 
     # ------------------------------------------------------------------ uppställning
     def starta(self):
@@ -430,6 +461,10 @@ class PUMotor:
         # 4.3 placering: kvarteret lägger pusslet; det som inte ligger enligt reglerna placeras inte
         svar = kv.strategi.placering(self, kv, list(kv.godkanda))
         namn = {p["Namn"]: p for p in kv.godkanda}
+        # markexpansionerna får flyttas i samma drag (lager 0 med markexpansionens id)
+        mark = [[n, celler] for n, celler, lager in svar if n in kv.markbitar and int(lager) == 0]
+        if mark:
+            self.flytta_mark(kv, mark)
         bitar = [Bit(n, namn[n]["Typ"], frozenset(tuple(c) for c in celler), int(lager))
                  for n, celler, lager in svar if n in namn]
         for b in bitar:                                      # biten måste ha projektets egen form (i något läge)
@@ -482,5 +517,5 @@ class PUMotor:
             "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid, "riskbuffert": kv.riskbuffert,
             "erfarenhet": kv.erfarenhet, "kvartertyp": kv.kvartertyp, "namndforsok": kv.namndforsok,
             "expansioner": len(kv.expansioner), "placerade": kv.placerade, "pc_kort": kv.pc,
-            "mark": sorted(kv.mark), "layout": {n: (sorted(c), l) for n, (c, l) in kv.layout.items()},
+            "mark": sorted(kv.mark), "markbitar": {i: sorted(c) for i, c in kv.markbitar.items()}, "layout": {n: (sorted(c), l) for n, (c, l) in kv.layout.items()},
         }

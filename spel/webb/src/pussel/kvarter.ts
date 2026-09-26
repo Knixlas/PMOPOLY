@@ -95,4 +95,29 @@ export function kanLyfta(id: string, lagda: Lagd[], delar: Map<string, Del>): st
     : `Flytta först ${vad.namn}, som vilar på det här projektet.`;
 }
 
+/** Läge och position för en form som ska täcka precis de här rutorna. */
+export function lagdFran(form: Form, celler: Ruta[]): { lage: number; rad: number; kol: number } {
+  const rad = Math.min(...celler.map(c => c[0])), kol = Math.min(...celler.map(c => c[1]));
+  const mal = new Set(celler.map(([r, k]) => nyckel(r, k)));
+  for (let lage = 0; lage < 8; lage++) {
+    const c = cellerFor(form, lage, rad, kol);
+    if (c.every(([r, k]) => mal.has(nyckel(r, k)))) return { lage, rad, kol };
+  }
+  throw new Error('formen passar inte rutorna');
+}
+
+/** Första stället (nära mitten) där delen får ligga, eller null. Används när man trycker på en bit i handen. */
+export function forstaPlats(del: Del, ovriga: Lagd[], delar: Map<string, Del>): { lage: number; rad: number; kol: number } | null {
+  const ordning: Ruta[] = [];
+  for (let r = 0; r < TOMT; r++) for (let k = 0; k < TOMT; k++) ordning.push([r, k]);
+  ordning.sort((a, b) => Math.hypot(a[0] - 7, a[1] - 7) - Math.hypot(b[0] - 7, b[1] - 7));
+  for (const [rad, kol] of ordning) {
+    for (let lage = 0; lage < 8; lage++) {
+      const c = cellerFor(del.form, lage, rad, kol);
+      if (prova(del, c, ovriga, delar).lager !== null) return { lage, rad, kol };
+    }
+  }
+  return null;
+}
+
 export const rutaFran = ruta;

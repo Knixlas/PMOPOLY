@@ -9,6 +9,7 @@ Typer: "janej" (svar true/false), "val" (svar = ett alternativs kod), "flerval" 
 Varje alternativ bär sin egen svarskod (styrning.koda), så gränssnittet behöver inte känna motorn.
 Förslaget (bottens svar) följer alltid med, så att varje fråga kan besvaras med "gör som förslaget".
 """
+from .pu import markid
 from .pussel import GRUNDMARK, form_av
 from .slump import kortnamn
 from .styrning import koda
@@ -175,10 +176,16 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag):
     if typ in ("pussel", "markexpansion"):
         vy["mark"] = sorted(list(c) for c in subjekt.mark)
         vy["grundmark"] = sorted(list(c) for c in GRUNDMARK)
+        former = motor.markformer(subjekt)                   # lagda markexpansioner: får flyttas
+        vy["markbitar"] = [{"id": i, "form": [list(c) for c in former[i]], "celler": sorted(list(c) for c in celler)}
+                           for i, celler in sorted(subjekt.markbitar.items())]
     if typ == "pussel":
+        vy["forslag_text"] = f"{len(forslag)} av {len(args[0])} projekt placerade (visa med ”Visa en lösning”)"
         vy["projekt"] = [{"namn": p["Namn"], "typ": p["Typ"], "form": [list(c) for c in form_av(p)]} for p in args[0]]
     if typ == "markexpansion":
         vy["form"] = [list(c) for c in form_av(args[0])]
+        vy["id"] = markid(args[0])
+        vy["forslag_text"] = "den mest kompakta platsen"
         vy["platser"] = [sorted(list(c) for c in celler) for celler in args[1]]
     return vy
 

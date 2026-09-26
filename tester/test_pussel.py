@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from motor.pussel import GRUNDMARK, Bit, granska, lagen, lager_for, losa
+from motor.pussel import GRUNDMARK, Bit, granska, lagen, lager_for, las_marklayout, losa
 
 FALL = json.loads((Path(__file__).parent / "pussel_fall.json").read_text(encoding="utf-8"))
 DATA = json.loads((Path(__file__).parent.parent / "spel" / "webb" / "src" / "data" / "pussel.json").read_text(encoding="utf-8"))
@@ -53,6 +53,26 @@ class TestRegler(unittest.TestCase):
         self.assertEqual(len(lagen([(0, 0), (0, 1), (1, 0), (1, 1)])), 1)
         self.assertEqual(len(lagen([(0, 0), (1, 0)])), 2)
         self.assertEqual(len(lagen([(0, 0), (0, 1), (0, 2), (1, 0)])), 8)
+
+
+class TestMarklayout(unittest.TestCase):
+    """Markexpansioner får flyttas: en hel ny marklayout granskas som helhet."""
+    FORMER = {"A": [(0, 0), (1, 0)], "B": [(0, 0), (0, 1), (0, 2)]}
+
+    def test_giltig_och_kedjad(self):
+        # A kant i kant med grundmarken, B kant i kant med A (inte med grundmarken)
+        svar = [["A", [[4, 6], [5, 6]]], ["B", [[3, 6], [3, 7], [3, 8]]]]
+        self.assertEqual(las_marklayout(svar, self.FORMER)["B"], frozenset({(3, 6), (3, 7), (3, 8)}))
+
+    def test_vriden_form_godtas(self):
+        svar = [["A", [[5, 6], [5, 5]]], ["B", [[6, 5], [7, 5], [8, 5]]]]
+        self.assertIsInstance(las_marklayout(svar, self.FORMER), dict)
+
+    def test_fel(self):
+        self.assertIn("form", las_marklayout([["A", [[5, 6], [5, 7]]], ["B", [[4, 6], [4, 7], [3, 7]]]], self.FORMER))
+        self.assertIn("kant i kant", las_marklayout([["A", [[0, 0], [1, 0]]], ["B", [[5, 6], [5, 7], [5, 8]]]], self.FORMER))
+        self.assertIn("alla", las_marklayout([["A", [[5, 6], [4, 6]]]], self.FORMER))
+        self.assertIn("överlappar", las_marklayout([["A", [[6, 6], [5, 6]]], ["B", [[5, 7], [5, 8], [5, 9]]]], self.FORMER))
 
 
 class TestGemensammaFall(unittest.TestCase):
