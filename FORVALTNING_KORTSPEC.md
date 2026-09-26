@@ -146,8 +146,8 @@ kommersiellt: −0,5 ×6, 0 ×2, +0,5 ×4 (lutar mot sjunkande yield = stigande 
 **Yieldbanan** har tre platser per spår: **Q2, Q3, Q4** (som tryckt på F-brädet). Vid uppställningen läggs
 tre yieldkort öppet per spår. Q1:s marknad sker på startyield (bostäder 4 %, kommersiellt 5 %). Vid varje
 följande marknad flyttas yieldpekaren med kortet på den platsen, inom spannet (bostäder 2–6 %,
-kommersiellt 3–7 %). Omvärldskortet som dras i kvartal *n* påverkar plats *n+1*; ett yieldkort från
-omvärlden i Q4 gäller direkt vid slutvärderingen.
+kommersiellt 3–7 %). Omvärldskortet som dras i kvartal *n* påverkar plats *n+1*; i Q4 finns ingen plats
+kvar, så yieldkort från omvärlden saknar effekt. Slutvärderingen sker på Q4-yielden.
 
 ### DD — `F2-1_DD.csv` (36)
 **Ett DD-kort dras för varje fastighet du köper** (inte vid övergången från Skede 2). Effekten följer

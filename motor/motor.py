@@ -256,8 +256,8 @@ class Motor:
         s.blanda("dd", d.dd)
         for spar in ("bostäder", "kommersiellt"):
             s.blanda("yield_" + spar, [k for k in d.yieldkort if k["Spår"] == spar])
-            # F-brädet: tre platser per spår (Q2–Q4); platsen efter Q4 (index 3) fylls bara av omvärldskort i Q4
-            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)] + [0.0]
+            # F-brädet: tre platser per spår (Q2–Q4); yielden flyttas vid varje kvartals start
+            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)]
         pool = s.blanda_lista(d.projekt)
         self.projektpool = pool
         brf = s.blanda_lista(d.brf)
@@ -559,8 +559,10 @@ class Motor:
     def omvarld(self):
         kort = self.s.dra("omvarld")
         e, v, pav = kort["Effekt"], tal(kort.get("Värde")), kort.get("Påverkar") or ""
-        q = self.spel.kvartal                       # påverkar plats q+1 = index q-1 (Q2..Slut)
+        q = self.spel.kvartal                       # påverkar plats q+1 = index q-1 (Q2..Q4)
         spar = ["bostäder", "kommersiellt"] if pav in ("båda", "alla") else [pav]
+        if e.startswith("yield") and q >= 4:        # ingen plats efter Q4: slutvärderingen sker på Q4-yielden
+            return
         if e == "yield_ersatt":
             for sp_ in spar:
                 self.spel.yieldbana[sp_][q - 1] = v
@@ -569,7 +571,7 @@ class Motor:
                 self.spel.yieldbana[sp_][q - 1] = tal(self.s.dra("yield_" + sp_)["Ändring"])
         elif e == "yield_byt_alla":
             for sp_ in spar:
-                for i in range(q - 1, 4):
+                for i in range(q - 1, 3):
                     self.spel.yieldbana[sp_][i] = tal(self.s.dra("yield_" + sp_)["Ändring"])
         elif e == "bords_dn":
             n = 1 if "+1" in (kort.get("Beskrivning") or "") else -1
@@ -810,10 +812,7 @@ class Motor:
         return self.varde(sp, kassa) / self.p.f_delare
 
     def slutrakning(self):
-        for spar, bana in self.spel.yieldbana.items():
-            lo, hi = YIELD_SPANN[spar]
-            self.spel.yieldniva[spar] = min(max(self.spel.yieldniva[spar] + bana[3], lo), hi)
-        resultat = []
+        resultat = []                               # värdering på Q4-yielden
         for sp in self.spel.spelare:
             sp.kassa += sp.vantande_kassa
             for f in sp.fastigheter:
