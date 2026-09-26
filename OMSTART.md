@@ -21,6 +21,15 @@ på var de säger emot varandra.
 
 **Omstartens kärna: en källa för varje sak, och allt annat genereras ur den.**
 
+### Grundbeslut: det fysiska spelet är huvudprodukten
+
+- **Det tryckta materialet är facit** för Skede 1 och 2. Vi ändrar så lite som möjligt där,
+  för att slippa trycka nytt. Koden och de digitala verktygen anpassas efter det tryckta spelet — inte tvärtom.
+- **Skede 3 (Förvaltning) får göras om** (jfr `FORVALTNING_DESIGN_2-1.md`) och får nytt tryck.
+- **Spelplanerna ändras med klistermärken**, inte omtryck.
+- Varje föreslagen ändring i Skede 1–2 måste motivera sig: *vad måste tryckas om?*
+  Regeländringar som bara påverkar regelboken är billiga; ändringar på kort och brickor är dyra.
+
 ```
   Regler (md) ──┐
                 ├──► Motor ──► Online-spel
@@ -57,10 +66,13 @@ på var de säger emot varandra.
 - **Grafik** — kortmallar per korttyp, fylls från kortdatan.
 
 ### D. Spelplaner
-- **Grafik** — en mall per bräde (PU-brädet, planerings-/genomförandebrädet, förvaltningens marknadskarta m.m.).
+- **Befintliga brädor** (Skede 1–2) behålls; ändringar görs som **klistermärken** — printfiler för dessa.
+- **Nya brädor** för Skede 3 (t.ex. förvaltningens marknadskarta) — full mall.
 - Former och rutnät som **data** (t.ex. `shapes.json` som källa), grafiken ritas ur dem — inte tvärtom.
 
 ### E. Printfiler
+- Omfattning: **Skede 3-material** (nytt), **klistermärken** till befintliga brädor,
+  eventuella **ersättningskort** i Skede 1–2 (hålls till ett minimum), och regelböckerna.
 - Genereras automatiskt ur kortdata + mallar, så tryck och online alltid stämmer.
 - **Kortark** med utfall och skärmärken, baksidor, rätt antal exemplar per kort.
 - **Spelplaner** i skala, ev. uppdelade i delar.
@@ -141,6 +153,9 @@ Källmaterial i OneDrive (`SPELET 2/`):
 - Illustrationer: beställa, hus sett ovanifrån på projektbrickorna
 - Kommentarer i regelhäftet om hur reglerna motsvarar verkligheten
 
+*Med grundbeslutet sorteras dessa: regelboks-/poängändringar och Skede 3 — gör; färger, dubbelsidiga
+brickor och kortlayout — kräver omtryck, prövas ett i taget; illustrationer — senare.*
+
 ---
 
 ## 5. Vad vi behåller som referens
@@ -156,7 +171,7 @@ Omstart betyder inte att kasta bort: nuvarande kod, data och dokument
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
    Öppet: är `ÅKEPOL_Regelbok.pdf` (2026-05-03) den som printades? Printades de fyra planerna också?
    Gäller Förvaltning 2.1 före den printade Förvaltningsplanen?
-2. **Huvudprodukt** — är det fysiska spelet huvudprodukten med det digitala som stöd, eller tvärtom?
+2. ~~**Huvudprodukt**~~ Besvarat: det fysiska spelet. Minimala ändringar i Skede 1–2, Skede 3 görs om, brädor fixas med klistermärken.
 3. **Var** — omstart i det här repot med ny struktur, eller ett nytt repo?
 4. **Källsanning** — regelböckerna blir HTML i repot (beslutat). Flyttar även kortdatan in i repot, eller förblir SPELET 2 källan?
 5. **Tryck** — vilket tryckeri/format? Finns företagsmall/grafisk profil (ÅKEPOL) att utgå från?
