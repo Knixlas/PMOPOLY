@@ -28,10 +28,10 @@ class Strategi:
                 if fc["Namn"] == self.fc_preferens:
                     return fc
         typer = [f.typ for f in sp.fastigheter]
-        return max(lista, key=lambda fc: sum(t in m.d_fc_typer(fc) for t in typer) + m.s.rng.random())
+        return max(lista, key=lambda fc: sum(t in m.d_fc_typer(fc) for t in typer) + m.s.bott.random())
 
     def valj_fs(self, m, sp, lista):
-        return m.s.valj(lista)
+        return m.s.bott.choice(lista)
 
     # --- marknad
     def vill_kopa(self, m, sp, f, pris):
@@ -48,7 +48,7 @@ class Strategi:
         return mod[:1]
 
     def vill_sanera(self, m, sp, f, skuld):
-        return skuld > 0 and m.s.rng.random() < self.sanera and sp.kassa >= 0
+        return skuld > 0 and m.s.bott.random() < self.sanera and sp.kassa >= 0
 
     def tvangsbud_varde(self, m, sp, o, f):
         """Väntad ändring av F-värdet (eget kapital + vikt × kassa) av att tvångsbuda på f."""

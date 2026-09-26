@@ -46,11 +46,16 @@ class Parametrar:
 
 
 class Motor:
-    def __init__(self, strategier, parametrar=None, slump=None, data=None):
+    def __init__(self, strategier, parametrar=None, slump=None, data=None, pu_strategier=None, s2_strategier=None,
+                 namn=None):
+        """strategier: en per kvarter i Förvaltningen. pu_/s2_strategier: samma kvarter i Skede 1 och 2
+        (utelämnas de väljs bottar på måfå, som i simuleringen). namn: kvarterens namn."""
+        self.pu_strategier, self.s2_strategier = pu_strategier, s2_strategier
         self.p = parametrar or Parametrar()
         self.s = slump or DigitalSlump()
         self.d = data or Kortdata()
-        self.spel = Spel(spelare=[Spelare(namn=f"Spelare {i + 1}", strategi=st) for i, st in enumerate(strategier)])
+        self.spel = Spel(spelare=[Spelare(namn=namn[i] if namn else f"Spelare {i + 1}", strategi=st)
+                                  for i, st in enumerate(strategier)])
         self.stat = {k: 0 for k in ("bank_tar", "sanering_tagen", "sanering_raddad", "sanering_forlorad", "fynd_salt",
                                     "kop", "tvangsbud", "tvangsbud_stoppat", "salj", "konkurs", "uppgradering",
                                     "uppgradering_forsok", "eliminerat", "senior", "tvangskop", "budstrid",
@@ -116,9 +121,9 @@ class Motor:
         from .skede2_strategi import S2_STRATEGIER
         if not hasattr(self.d, "pu"):
             self.d.pu, self.d.s2 = PUData(), S2Data()     # läses en gång per Kortdata
-        strategier = [self.s.valj(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
-        pu = PUMotor(strategier, PUParametrar(), self.s, self.d.pu).spela()
-        strategier = [self.s.valj(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
+        strategier = self.pu_strategier or [self.s.bott.choice(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
+        pu = PUMotor(strategier, PUParametrar(), self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
+        strategier = self.s2_strategier or [self.s.bott.choice(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
         s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2).spela()
         for r, r2 in zip(pu, s2):
             r.update({"s2_strategi": r2["strategi"], "tb": r2["tb"], "TG": r2["TG"], "lan": r2["lan"],
@@ -305,7 +310,7 @@ class Motor:
             byggda = {p["Namn"] for r in pu for p in r["placerade"]}
             pool[:] = [p for p in pool if p["Namn"] not in byggda]
         for sp in s.blanda_lista(self.spel.spelare):
-            sp.riskbuffert = s.rng.randint(*self.p.start_riskbuffert)
+            sp.riskbuffert = s.heltal(*self.p.start_riskbuffert)
             if pu:                                   # Skede 1 och 2 i motorn
                 r = pu[self.spel.spelare.index(sp)]
                 sp.pu = r
@@ -314,10 +319,10 @@ class Motor:
                 valda = r["placerade"]
                 abt = r["abt"]
             else:                                    # utan Skede 1: slumpa en portfölj
-                antal = s.rng.randint(*self.p.start_projekt)
+                antal = s.heltal(*self.p.start_projekt)
                 valda = []
                 for _ in range(antal):
-                    ar_brf = brf and s.rng.random() < len(brf) / (len(brf) + len(pool))
+                    ar_brf = brf and s.slumptal() < len(brf) / (len(brf) + len(pool))
                     valda.append(brf.pop() if ar_brf else pool.pop())
                 # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad
                 abt = sum(tal(p["Anskaffning (Mkr)"]) - tal(p["Utvecklingskostnad (Mkr)"]) for p in valda)
@@ -327,14 +332,14 @@ class Motor:
                 if ar_brf:   # 8.6: intäkt = marknadsvärde − anskaffning + rörlig intäkt (kortets tärning)
                     tarning = int(re.search(r"D(\d+)", projekt["Rörligt marknadsvärde"] or "D0").group(1))
                     brf_intakt += (tal(projekt["Marknadsvärde (Mkr)"]) - tal(projekt["Anskaffning (Mkr)"])
-                                   + (s.rng.randint(1, tarning) if tarning else 0))
+                                   + (s.tarning(tarning) if tarning else 0))
                 else:
                     sp.fastigheter.append(self.ny_fastighet(projekt))
             if pu:                                   # 8.5: TB (och moderbolagslånens 95 Mkr) följer med
                 sp.tb = r["tb"]
                 start = sp.tb + sp.lan * 95 + brf_intakt
             else:
-                sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
+                sp.tb = max(0.0, s.triangel(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
                 start = sp.tb + brf_intakt
             sp.brf_intakt = brf_intakt
             sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(start)
@@ -757,9 +762,9 @@ class Motor:
                     self.stat["affarskort"] += 1
                 else:
                     self.ta_emot(sp, kort)              # ingen nytta nu — behåll kortet
-            elif e == "headhunting":
-                offer = max((o for o in self.spel.spelare if o is not sp), key=lambda o: len(o.hand))
-                if offer.hand:
+            elif e == "headhunting":                      # ensam i partiet: ingen att värva från
+                offer = max((o for o in self.spel.spelare if o is not sp), key=lambda o: len(o.hand), default=None)
+                if offer and offer.hand:
                     k = self.s.valj(offer.hand)
                     offer.hand.remove(k)
                     self.ta_emot(sp, k)

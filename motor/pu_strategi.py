@@ -23,7 +23,7 @@ class PUStrategi:
     # --- uppställning
     def valj_pc(self, m, kv, lista):
         return max(lista, key=lambda pc: 2 * tal(pc["Nämndslag"]) + tal(pc["Riskbuffert"]) + 2 * tal(pc["Erfarenhet"])
-                   + tal(pc["Minskar krav: kvalitet (Q)"]) + tal(pc["Minskar krav: hållbarhet (H)"]) + m.s.rng.random())
+                   + tal(pc["Minskar krav: kvalitet (Q)"]) + tal(pc["Minskar krav: hållbarhet (H)"]) + m.s.bott.random())
 
     def starttyp(self, m, kv):
         return max((t for t in TYPER if m.hogar[t]), key=lambda t: self.projektvarde(m, kv, m.hogar[t][-1]))
@@ -41,11 +41,10 @@ class PUStrategi:
         return max(mark, bostad) >= kv.markceller - 4
 
     def stadshuset(self, m, kv):
-        """Ta ett projekt om det finns ett bra; annars lämna tillbaka det sämsta om kraven är för höga."""
-        if m.projektval(kv, TYPER):
-            return
+        """Inget projekt togs: vilket projekt lämnas tillbaka (None = inget)? Det sämsta om kraven är för höga."""
         if kv.projekt and (kv.kravsumma > self.max_kravsumma or kv.namndsumma() > self.max_namnd):
-            m.lamna_projekt(kv, self.samsta_projekt(m, kv))
+            return self.samsta_projekt(m, kv)
+        return None
 
     def fordela_krav(self, m, kv, n):
         """Fördela n steg (minus = sänk) mellan Q och H: sänk det högsta, höj det lägsta."""
@@ -70,13 +69,16 @@ class PUStrategi:
         return t.startswith(("lämna tillbaka", "förlora", "+2 hållbarhet", "+2 kvalitet"))
 
     def byt_samma_typ(self, m, kv):
+        """Vilket eget projekt byts mot översta kortet i samma typs hög (None = inget)?"""
         for p in sorted(kv.projekt, key=lambda p: self.projektvarde(m, kv, p)):
             hog = m.hogar[p["Typ"]]
             if hog and self.projektvarde(m, kv, hog[-1]) > self.projektvarde(m, kv, p):
-                m.lamna_projekt(kv, p, till_bank=False)
-                hog.insert(0, p)                             # längst ned i högen
-                m.ta_projekt(kv, hog.pop())
-                return
+                return p
+        return None
+
+    def placeringsordning(self, m, kv, godkanda):
+        """I vilken ordning läggs projekten i pusslet (det som inte ryms blir oplacerat)?"""
+        return sorted(godkanda, key=lambda p: -self.projektvarde(m, kv, p))
 
     def samsta_projekt(self, m, kv, projekt=None):
         projekt = kv.projekt if projekt is None else projekt

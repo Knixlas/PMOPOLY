@@ -175,7 +175,7 @@ class Skede2:
 
     def pl_handelse(self, b):
         if b.handelsehog:
-            kort = b.handelsehog.pop(self.s.rng.randrange(len(b.handelsehog)))
+            kort = b.handelsehog.pop(self.s.index(len(b.handelsehog)))
             self.slag(b, kort, ["Konsekvens 1–5", "Konsekvens 6–17", "Konsekvens 18–20", "Konsekvens 21+"],
                       [5, 17, 20], True)
 

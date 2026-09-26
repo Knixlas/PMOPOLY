@@ -107,11 +107,12 @@ class PUData:
 
 
 class PUMotor:
-    def __init__(self, strategier, parametrar=None, slump=None, data=None):
+    def __init__(self, strategier, parametrar=None, slump=None, data=None, namn=None):
         self.p = parametrar or PUParametrar()
         self.s = slump or DigitalSlump()
         self.d = data or PUData()
-        self.kvarter = [Kvarter(namn=f"Kvarter {i + 1}", strategi=st) for i, st in enumerate(strategier)]
+        self.kvarter = [Kvarter(namn=namn[i] if namn else f"Kvarter {i + 1}", strategi=st)
+                        for i, st in enumerate(strategier)]
         self.bank = []                   # projektbanken (öppen, gemensam)
         self.hogar = {}                  # typ -> dragbunt
         self.logg = []
@@ -196,7 +197,7 @@ class PUMotor:
 
     # ------------------------------------------------------------------ brädet
     def flytta(self, kv):
-        steg = self.s.rng.randint(1, 6)
+        steg = self.s.tarning(6)
         for i in range(1, steg + 1):
             pos = (kv.position + i) % len(BRADE)
             ruta = BRADE[pos]
@@ -220,8 +221,11 @@ class PUMotor:
     def horn(self, kv, ruta, passerar):
         if ruta == "STADSBYGGNADSKONTORET":
             self.markexpansion(kv)
-        elif ruta == "STADSHUSET":
-            kv.strategi.stadshuset(self, kv)
+        elif ruta == "STADSHUSET":                           # ta ett projekt, annars ev. lämna tillbaka ett
+            if not self.projektval(kv, TYPER):
+                p = kv.strategi.stadshuset(self, kv)
+                if p:
+                    self.lamna_projekt(kv, p)
         elif ruta == "LÄNSSTYRELSEN":
             q, h = kv.strategi.fordela_krav(self, kv, -2)
             self.andra_krav(kv, q, h)
@@ -279,8 +283,13 @@ class PUMotor:
                 for k, f in nyckel.items():
                     if k in t:
                         self.lamna_projekt(kv, min(kv.projekt, key=f))
-        elif t.startswith("byt projekt"):
-            kv.strategi.byt_samma_typ(self, kv)
+        elif t.startswith("byt projekt"):                  # mot översta kortet i samma typs hög
+            p = kv.strategi.byt_samma_typ(self, kv)
+            if p:
+                hog = self.hogar[p["Typ"]]
+                self.lamna_projekt(kv, p, till_bank=False)
+                hog.insert(0, p)                             # längst ned i högen
+                self.ta_projekt(kv, hog.pop())
         elif t.startswith("ta projekt från valfri hög"):
             self.projektval(kv, TYPER)
         elif t.startswith("dra markanvisning"):
@@ -407,7 +416,7 @@ class PUMotor:
             self.stat["kompletterat"] += len(nya)
         # 4.3 placering: det som inte ryms placeras inte
         kv.placerade, kv.oplacerade = [], []
-        for p in sorted(kv.godkanda, key=lambda p: -kv.strategi.projektvarde(self, kv, p)):
+        for p in kv.strategi.placeringsordning(self, kv, list(kv.godkanda)):
             (kv.placerade if kv.ryms(p, kv.placerade) else kv.oplacerade).append(p)
         for p in kv.oplacerade:                              # beslut: oplacerade tar med sig kraven, går till banken
             self.andra_krav(kv, -int(tal(p["Kvalitetskrav Q"])), -int(tal(p["Hållbarhetskrav H"])))

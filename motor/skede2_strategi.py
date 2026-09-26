@@ -12,7 +12,7 @@ class S2Strategi:
     def valj_ac(self, m, b, lista):
         return max(lista, key=lambda k: 2 * tal(k["Erfarenhet"]) + tal(k["Riskbuffert"])
                    + tal(k["Förbättrar krav: kvalitet (Q)"]) + tal(k["Förbättrar krav: hållbarhet (H)"])
-                   + tal(k["Förbättrar krav: tid (T)"]) + sum(kompetenser(k).values()) / 4 + m.s.rng.random())
+                   + tal(k["Förbättrar krav: tid (T)"]) + sum(kompetenser(k).values()) / 4 + m.s.bott.random())
 
     def valj_niva(self, m, b, alternativ):
         mal = self.niva
