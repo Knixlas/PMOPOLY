@@ -34,8 +34,8 @@ KORT_KOLUMNER = [
     ("Kortnamn", "Namn2", True, "Namn på framsidan, t.ex. 'Draklyan'"),
     ("Beskrivning", "Beskrivning", True, "Mäklartext på framsidan"),
     ("BTA (kvm)", "BTA", True, "Bruttoarea"),
-    ("Kostnad (Mkr)", "Kostnad", True, "Tryckt under etiketten 'Anskaffning' — se Frågor"),
-    ("Anskaffning (Mkr)", "Anskaffning", True, "Tryckt under etiketten 'Utvecklingskostnad' — se Frågor"),
+    ("Utvecklingskostnad (Mkr)", "Kostnad", True, "Kostnad för att ta projektet i Skede 1"),
+    ("Anskaffning (Mkr)", "Anskaffning", True, ""),
     ("Hållbarhetskrav H", "Hållbarhet", True, ""),
     ("Kvalitetskrav Q", "Kvalitet", True, ""),
     ("Tidspåverkan T", "Tid", True, "'-' = ingen påverkan"),
@@ -67,10 +67,11 @@ PRODUKTION_KOLUMNER = ["@formbild", "@titelbild", "fill_color", "line_color", "s
                        "bakskede", "bakgrund_color", "ordning_bild", "ordning_text", "status fb", "temp", "temp2"]
 
 MALLTEXT = [
-    ("Framsida", "Etiketter", "Anskaffning · Utvecklingskostnad · BTA · H · Q"),
+    ("Framsida", "Etiketter", "H · Q · BTA · Utvecklingskostnad · Anskaffning"),
     ("Baksida", "Etiketter", "Marknadsvärde · Mark: · Husunderbyggnad: · Stomme: · Yttertak: · Fasader: · "
                              "Stomkomplettering: · Ytskikt: · Installationer: · Gemensamma arbeten:"),
-    ("Baksida", "Etiketter", "Passera nämnden · Riskbuffert · Hållbarhetskrav · Kvalitetskrav · Tidspåverkan"),
+    ("Baksida", "Etiketter", "BTA · Utvecklingskostnad · Anskaffning · Riskbuffert · Passera nämnden · "
+                             "Hållbarhetskrav · Kvalitetskrav · Tidspåverkan"),
     ("Baksida", "Sektion", "PLANERING"),
     ("Baksida (ej BRF)", "Sektion", "KÖP OCH SÄLJ FÖRVALTNING"),
     ("Baksida (ej BRF)", "Etiketter", "Aktuellt marknadsvärde · Driftnetto / Yield · Driftnetto · Energiklass · /kvartal"),
@@ -224,21 +225,12 @@ def main():
         ("CSV-datum", "2026-05-02 21:03 — efter tryck, men innehållet är oförändrat (endast omkodning cp1252→UTF-8)"),
         ("Kontroll", f"Alla speldatafält jämförda kort för kort mot tryckfilen: 0 avvikelser. "
                      f"Beskrivningar: {len(beskrivning_avvikelser)} avvikelser (avstavning i tryck)."),
+        ("Etiketter", "Bekräftat mot fysiskt kort (BRF Eldningen): Utvecklingskostnad = CSV 'Kostnad', "
+                      "Anskaffning = CSV 'Anskaffning'. Textordningen i PDF:en följer inte layouten."),
         ("Byggd med", "verktyg/bygg_pu_projekt_excel.py"),
     ]:
         ws.append(list(p))
     bredder(ws, 20, {"B": 110})
-
-    ws = wb.create_sheet("Frågor")
-    rubrikrad(ws, ["Fråga", "Bakgrund"])
-    ws.append(["Vilket värde står under 'Anskaffning' respektive 'Utvecklingskostnad' på framsidan?",
-               "Textordningen i tryckfilen är 'Anskaffning, Utvecklingskostnad, BTA, 2 Mkr, 33 Mkr'. CSV har "
-               "Kostnad=2 och Anskaffning=33. Om etiketterna följer värdeordningen är Anskaffning=2 och "
-               "Utvecklingskostnad=33 på kortet, dvs. CSV-namnen är omvända. Behöver bekräftas mot ett fysiskt kort."])
-    bredder(ws, 60, {"B": 110})
-    for rad in ws.iter_rows(min_row=2):
-        for c in rad:
-            c.alignment = Alignment(wrap_text=True, vertical="top")
 
     UT.parent.mkdir(parents=True, exist_ok=True)
     wb.save(UT)
