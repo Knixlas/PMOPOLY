@@ -71,10 +71,17 @@ def folj(vag, rotter):
     return obj
 
 
+def _ren(varde):
+    """En lista/tupel som bara består av primitiva värden och sådana listor/tupler."""
+    return isinstance(varde, (list, tuple)) and all(isinstance(v, PRIMITIVA) or _ren(v) for v in varde)
+
+
 def koda(varde, rotter):
     """Kodar ett värde som JSON: primitiva som de är, objekt som en väg in i rötterna."""
     if isinstance(varde, PRIMITIVA):
         return varde
+    if _ren(varde):                       # t.ex. rutor och placeringar: kodas som de är
+        return {"tupel" if isinstance(varde, tuple) else "lista": [koda(v, rotter) for v in varde]}
     vag = hitta(varde, rotter)
     if vag is not None:
         return {"ref": [list(s) for s in vag]}

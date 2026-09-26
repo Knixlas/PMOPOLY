@@ -1,5 +1,6 @@
 """Bottar för Skede 1 — samma idé som för Förvaltningen: några rattar, rimliga beslut."""
 from .pu import BOSTAD, TYPER, tal
+from .pussel import GRANNAR, form_av, losa
 
 
 class PUStrategi:
@@ -13,8 +14,17 @@ class PUStrategi:
         """Vad projektet ger till ABT-budgeten."""
         return tal(p["Anskaffning (Mkr)"]) - tal(p["Utvecklingskostnad (Mkr)"])
 
+    def ryms_i_pusslet(self, m, kv, projekt):
+        """Får alla projekten plats på kvarterets mark, med formerna (4.3)? Svaret cachas per mark och mix."""
+        nyckel = (kv.mark, frozenset(p["Namn"] for p in projekt))
+        cache = m.__dict__.setdefault("_pusselcache", {})
+        if nyckel not in cache:
+            plac, full = losa(kv.mark, [(p["Namn"], p["Typ"], form_av(p)) for p in projekt], alla=True, grans=5_000)
+            cache[nyckel] = bool(plac) or not full        # avbruten sökning: räkna med att det går
+        return cache[nyckel]
+
     def godtar(self, m, kv, p):
-        if not kv.ryms(p):
+        if not kv.ryms(p) or not self.ryms_i_pusslet(m, kv, kv.projekt + [p]):
             return False
         if kv.namndsumma() + tal(p["Passera nämnden (>)"]) > self.max_namnd:
             return False
@@ -76,9 +86,18 @@ class PUStrategi:
                 return p
         return None
 
-    def placeringsordning(self, m, kv, godkanda):
-        """I vilken ordning läggs projekten i pusslet (det som inte ryms blir oplacerat)?"""
-        return sorted(godkanda, key=lambda p: -self.projektvarde(m, kv, p))
+    def placera_markexpansion(self, m, kv, kort, alternativ):
+        """Var läggs markexpansionen? Så kompakt som möjligt: flest kanter mot marken, nära mitten."""
+        def poang(celler):
+            kanter = sum((r + dr, k + dk) in kv.mark for r, k in celler for dr, dk in GRANNAR)
+            avstand = sum(abs(r - 7.5) + abs(k - 7.5) for r, k in celler)
+            return (-kanter, avstand)
+        return min(alternativ, key=poang)
+
+    def placering(self, m, kv, godkanda):
+        """4.3: lägg pusslet. Svar: [[namn, [[rad, kol], ...], lager], ...] — lösaren lägger flest projekt."""
+        plac, _ = losa(kv.mark, [(p["Namn"], p["Typ"], form_av(p)) for p in godkanda], grans=20_000)
+        return [[n, sorted(list(c) for c in celler), lager] for n, (celler, lager) in sorted(plac.items())]
 
     def samsta_projekt(self, m, kv, projekt=None):
         projekt = kv.projekt if projekt is None else projekt

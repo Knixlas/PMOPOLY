@@ -8,6 +8,7 @@ import re
 from dataclasses import dataclass, field
 
 from .data import las_lek
+from .pussel import GRUNDMARK, Bit, form_av, granska, lagen, normalisera, platser_markexpansion
 from .slump import DigitalSlump
 
 BOSTAD = {"BRF", "HYRESRÄTT"}
@@ -58,6 +59,8 @@ class Kvarter:
     projekt: list = field(default_factory=list)       # tagna projekt (dict), ej nämndprövade
     vantande_rb: int = 0
     expansioner: list = field(default_factory=list)   # markexpansionskort
+    mark: frozenset = GRUNDMARK                         # markens rutor på tomten (4.3)
+    layout: dict = field(default_factory=dict)          # projektets namn -> (rutor, lager)
     position: int = 0
     varv: int = 0
     godkanda: list = field(default_factory=list)
@@ -77,7 +80,7 @@ class Kvarter:
 
     @property
     def markceller(self):
-        return MARK_CELLER + sum(int(tal(e["Antal rutor"])) for e in self.expansioner)
+        return len(self.mark)
 
     def upptaget(self, projekt=None):
         """(celler ej bostad, celler bostad) — bostäder får ligga på mark eller ovanpå andra projekt."""
@@ -166,8 +169,14 @@ class PUMotor:
         if not self.markhog:
             return
         if kv.strategi.vill_expandera(self, kv):
-            kv.expansioner.append(self.markhog.pop())
+            kort = self.markhog.pop()
+            kv.expansioner.append(kort)
             self.stat["markexpansion"] += 1
+            # "Placera på tomt, kasta kortet": kant i kant med marken (4.3)
+            alternativ = platser_markexpansion(kv.mark, form_av(kort))
+            if alternativ:
+                val = kv.strategi.placera_markexpansion(self, kv, kort, alternativ)
+                kv.mark = kv.mark | (val if val in alternativ else alternativ[0])
 
     # ------------------------------------------------------------------ uppställning
     def starta(self):
@@ -414,10 +423,18 @@ class PUMotor:
             kv.kompletterade = list(nya)
             kv.godkanda += nya
             self.stat["kompletterat"] += len(nya)
-        # 4.3 placering: det som inte ryms placeras inte
-        kv.placerade, kv.oplacerade = [], []
-        for p in kv.strategi.placeringsordning(self, kv, list(kv.godkanda)):
-            (kv.placerade if kv.ryms(p, kv.placerade) else kv.oplacerade).append(p)
+        # 4.3 placering: kvarteret lägger pusslet; det som inte ligger enligt reglerna placeras inte
+        svar = kv.strategi.placering(self, kv, list(kv.godkanda))
+        namn = {p["Namn"]: p for p in kv.godkanda}
+        bitar = [Bit(n, namn[n]["Typ"], frozenset(tuple(c) for c in celler), int(lager))
+                 for n, celler, lager in svar if n in namn]
+        for b in bitar:                                      # biten måste ha projektets egen form (i något läge)
+            if normalisera(b.celler) not in lagen(form_av(namn[b.id])):
+                b.lager = -1                                 # granskningen underkänner den
+        fel = granska([Bit("mark", "MARK", kv.mark - GRUNDMARK, 0)] + bitar).fel
+        kv.layout = {b.id: (b.celler, b.lager) for b in bitar if b.id not in fel}
+        kv.placerade = [p for p in kv.godkanda if p["Namn"] in kv.layout]
+        kv.oplacerade = [p for p in kv.godkanda if p["Namn"] not in kv.layout]
         for p in kv.oplacerade:                              # beslut: oplacerade tar med sig kraven, går till banken
             self.andra_krav(kv, -int(tal(p["Kvalitetskrav Q"])), -int(tal(p["Hållbarhetskrav H"])))
             self.bank.append(p)
@@ -452,8 +469,7 @@ class PUMotor:
 
     def resultat(self, kv):
         bta = sum(tal(p["BTA (kvm)"]) for p in kv.placerade)
-        mark, bostad = kv.upptaget(kv.placerade)
-        bya = max(mark, bostad) * CELL_KVM   # BYA = fotavtrycket: bostäder ligger först ovanpå andra projekt
+        bya = sum(len(c) for c, lager in kv.layout.values() if lager == 1) * CELL_KVM   # BYA = fotavtrycket
         return {
             "kvarter": kv.namn, "strategi": kv.strategi.namn, "pc": kv.pc["Namn"],
             "projekt": len(kv.placerade), "oplacerade": len(kv.oplacerade),
@@ -462,4 +478,5 @@ class PUMotor:
             "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid, "riskbuffert": kv.riskbuffert,
             "erfarenhet": kv.erfarenhet, "kvartertyp": kv.kvartertyp, "namndforsok": kv.namndforsok,
             "expansioner": len(kv.expansioner), "placerade": kv.placerade, "pc_kort": kv.pc,
+            "mark": sorted(kv.mark), "layout": {n: (sorted(c), l) for n, (c, l) in kv.layout.items()},
         }

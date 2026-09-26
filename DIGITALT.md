@@ -79,7 +79,12 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
 2. **Pusslet** som fristående sida med lösare — *första versionen klar:* `motor/pussel.py` (regler
    och lösare, facit), `spel/webb/` (Svelte: dra, vrid, spegla, två lager, ångra, "Går det?",
    "Visa en lösning"), markexpansionernas former i `PU_markexpansion.xlsx`, gemensamma testfall.
-   *Kvar:* motorn och bottarna går från att räkna rutor till riktig geometri (`pu.py`, 4.3).
+   *Klart även i motorn:* Skede 1 lägger pusslet på riktigt. Markexpansioner placeras kant i kant
+   (beslut `placera_markexpansion`), 4.3 är ett beslut `placering` som motorn granskar, BYA är det
+   faktiska fotavtrycket (lager 1). Bottarna tar bara projekt som får plats med formerna.
+   *Simulerat (400 partier):* 4,2 projekt placerade och 0,2 oplacerade per kvarter, vinnarens
+   PU-poäng 18 i median (19,7 när bara rutor räknades). Expansiv Skede 1-bott vinner oftare (40 %),
+   eftersom marken nu är den verkliga begränsningen.
 3. **Läge 2 och 3** (formulär; värde direkt vid fysiskt spel, motorn prövas mot riktiga partier).
 4. **Läge 1 online:** brädor, kort, tärningar, animeringar.
 5. **Ljud, röster (ElevenLabs) och putsning.**

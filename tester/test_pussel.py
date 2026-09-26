@@ -80,5 +80,26 @@ class TestGemensammaFall(unittest.TestCase):
             self.assertEqual(bool(losa(mark, proj, alla=True)[0]), f["alla"])
 
 
+class TestMotornsPlacering(unittest.TestCase):
+    """Skede 1 i motorn lägger pusslet på riktigt: markexpansioner kant i kant, projekt enligt 4.3."""
+
+    def test_layouter_foljer_reglerna(self):
+        from motor.pu import PUData, PUMotor, PUParametrar
+        from motor.pu_strategi import PU_STRATEGIER
+        from motor.pussel import form_av
+        from motor.slump import DigitalSlump
+        data, slump = PUData(), DigitalSlump(5)
+        for _ in range(6):
+            m = PUMotor([k() for k in PU_STRATEGIER.values()], PUParametrar(), slump, data)
+            for kv, r in zip(m.kvarter, m.spela()):
+                self.assertEqual(len(kv.mark), 16 + sum(len(form_av(e)) for e in kv.expansioner))
+                typ = {p["Namn"]: p["Typ"] for p in kv.godkanda}
+                bitar = [Bit("mark", "MARK", kv.mark - GRUNDMARK, 0)]
+                bitar += [Bit(n, typ[n], c, l) for n, (c, l) in kv.layout.items()]
+                self.assertTrue(granska(bitar).giltigt, kv.namn)
+                self.assertEqual(r["projekt"] + r["oplacerade"], len(kv.godkanda))
+                self.assertEqual(r["bya"], 250 * sum(len(c) for c, l in kv.layout.values() if l == 1))
+
+
 if __name__ == "__main__":
     unittest.main()

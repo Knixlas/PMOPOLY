@@ -145,6 +145,29 @@ def lager_for(typ, celler, mark, lager1):
     return None
 
 
+def form_av(kort):
+    """Formen ur kortdatans kolumn "Form (rutor)" (JSON [[rad, kol], ...])."""
+    import json
+    return [tuple(c) for c in json.loads(kort["Form (rutor)"])]
+
+
+def platser_markexpansion(mark, form):
+    """Alla sätt att lägga en markexpansion kant i kant med marken, på tomten, utan överlapp.
+    Ordnade stabilt (läge, rad, kolumn) och utan dubbletter."""
+    mark = frozenset(mark)
+    kant = {(r + dr, k + dk) for r, k in mark for dr, dk in GRANNAR} - mark
+    ut, sedda = [], set()
+    for c in lagen(form):
+        for rad in range(TOMT):
+            for kol in range(TOMT):
+                celler = frozenset((rad + r, kol + k) for r, k in c)
+                if celler in sedda or not pa_tomten(celler) or celler & mark or not celler & kant:
+                    continue
+                sedda.add(celler)
+                ut.append(celler)
+    return ut
+
+
 # ---------------------------------------------------------------------------- lösaren
 def _platser(form, index):
     """Alla sätt att lägga formen inom rutorna i `index` ({ruta: bit}), som bitmasker."""
