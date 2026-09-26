@@ -28,7 +28,8 @@ LEKAR = [
     ("F2-1_kvartalskort.csv", "F_kvartalskort.xlsx", 50, "Kvartalskort — fyra typleker; kvartalets fokustyp avgör leken",
      {"Typ": "Typlek (fokustyp)"}),
     ("F2-1_nätverkskort.csv", "F_nätverkskort.xlsx", 83, "Nätverkskort — en gemensam lek på hand (max sex)",
-     {"Timing": "När kortet får spelas"}),
+     {"Timing": "När kortet får spelas", "Stämning": "Stämningstext (sätts kursivt, skild från regeltexten)",
+      "Beskrivning": "Regeltext"}),
     ("F2-1_omvärldskort.csv", "F_omvärldskort.xlsx", 36, "Omvärldskort — ett per kvartal, makro",
      {"Påverkar": "Spår eller typ som träffas"}),
     ("F2-1_DD.csv", "F_DD.xlsx", 36, "DD-kort — dolda vid övergång och köp", {}),
@@ -39,7 +40,7 @@ LEKAR = [
 ]
 
 MEKANIK = {"ID", "Typ", "Effekt", "Synlig", "Timing", "Värde", "Påverkar", "Spår", "Ändring"}
-TEXT = {"Rubrik", "Beskrivning", "Namn", "Junior", "Junior_styrka", "Junior_svaghet", "Senior"}
+TEXT = {"Rubrik", "Stämning", "Beskrivning", "Namn", "Junior", "Junior_styrka", "Junior_svaghet", "Senior"}
 
 
 def koder_i_spec():
