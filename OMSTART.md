@@ -186,6 +186,21 @@ Produktionsdata från tryckkörningen (`version 1/PDF/Tryckbara/_tryckeri_temp/`
 I detta repo: `data/shapes.json` (projektbrickornas former), `data/companion_texts.json` (stegtexter),
 `data/quiz_questions.json`.
 
+### Python- och skriptkod att behålla och bygga vidare på
+
+Dropbox `SPELET 2 - version 1 Åkepol/` (35 .py + InDesign-skript .jsx):
+
+| Område | Filer | Användning framåt |
+|---|---|---|
+| **Tryckkedjan** | `förbered_csv.py`, `excel_till_config.py`, `Bilder/uppdatera_färger.py`, `skapa_tryckark.py`, `Mallar Indesign/splitta_tryckeri.py`, `interfoliera_pdf.py`, `provkort_ark.py` + `master_kortproduktion.jsx`, `master_tryckbart.jsx`, `tryckeri_58x88/88x88/88x146.jsx`, `farglagg_projektkort.jsx` | Grunden för nya printfiler (Skede 3, ersättningskort). Ska läsa de nya Excel-filerna |
+| **IDML-generering** | `_dev/idml_builder.py`, `_dev/build_jvpaket_idml.py` | Bygger InDesign-dokument från kod — t.ex. klistermärken utan handarbete |
+| **Former och bilder** | `1. Projektutveckling/generate_forms_v2.py`, `generate_svg.py` (Cricut), `konvertera_former_till_png.py`, `Bilder/shape_mask.py`, `Bilder/generate_images_v6.py`, `big_bang_skriv_om_prompter.py`, `patch_excel_testprompter.py` | Projektbrickornas former och kortbilder |
+| **Regelböcker/planer** | `0. Ledning/planer/docx_to_markdown.py`, `markdown_to_pdf.py`, `splitta_planer.py`, `applicera_omslag.py`, `_dev/generate_mottagardata.py` | Utgångspunkt för HTML-regelböckerna med printfunktion |
+| **Motor och testspelare** | `Old/kategori5_2026-05/husbyggspelet.py` (~180 kB), `simulering.py`, `spelare_optimal/forsiktig/aggressiv/kvalitet/kassabyggare.py`, `analys_abt.py` | **Testspelarna finns redan** — fem AI-strategier och batch-simulering. Referens för nya motorn och bottarna |
+
+Obs: skripten har hårdkodade Windows-sökvägar (`C:\Users\niklas.sviden\OneDrive…\SPELET 2\`) och InDesign-stegen
+kräver InDesign. Den delen körs på din dator — i ett projekt som en tråd "på din dator" via Remote Control.
+
 ### Metod för de nya Excel-filerna
 
 1. Läs CSV:n från `version 1` (kortinnehåll + antal rader = antal tryckta kort).
