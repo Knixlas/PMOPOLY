@@ -312,9 +312,9 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
 
 | Fråga | Beslut |
 |---|---|
-| K1 Gamla namn i L-texterna (Riktningsgivaren, Maskinrumsmästaren) | Står kvar som tryckt |
-| K2 "MINSKAR KRAVEN…" vs "FÖRBÄTTRAR KRAVUPPFYLLNADEN…" | Står kvar som tryckt |
-| K3 Bildfil PC-6 "Hållbarhetschefen" | Oväsentligt (produktion) |
+| K1 Gamla namn i L-texterna (Riktningsgivaren, Maskinrumsmästaren) | Står kvar — **personalkorten trycks inte om** |
+| K2 "MINSKAR KRAVEN…" vs "FÖRBÄTTRAR KRAVUPPFYLLNADEN…" | **Medvetet** — se *Krav och kravuppfyllnad* nedan |
+| K3 PC-6 | **Hållbarhetsivraren** är korrekt; bildfilens namn "Hållbarhetschefen" är fel (bara produktion) |
 | K5 Faskort: kulturkostnad steg 1 = 2 Mkr | **Avsiktligt** — "andra chans" till samma kostnad när man förstått logiken |
 | K6 Avkortade faskortsnamn | **De fulla namnen är de rätta** (tryckets avkortning står kvar tills ev. omtryck) |
 | K7 B/S/K på faskorten | **Bostad / Special / Komplex** — tidigare indelning, samma logik |
@@ -322,8 +322,16 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
 | K9 "erfa" | Står kvar som tryckt |
 | K11 Dubbla id "STO - 1…4" | Står kvar som tryckt |
 
+| K4 Ändring i L_personal.csv 2026-04-29 | Okänd — korten gäller |
+
+#### Krav och kravuppfyllnad (regelbegrepp)
+
+- **Skede 1:** alla ökningar/minskningar gäller **kravet** (Q/T/H). Slutsumman är det som ska uppnås i Skede 2.
+  Därför *minskar* projektchefen (PU_personal) **kravet**.
+- **Skede 2:** arbetschefen (PL_personal) *ökar* **kravuppfyllnaden**.
+- På den fysiska scoreboarden är **kravet den svarta kuben** och **uppfyllnaden de färgade kuberna**.
+
 Kvar att besvara:
-- K4. Vad ändrades i L_personal.csv 2026-04-29? (Tryckta fält oförändrade — låg prioritet.)
 - K10. De 8 blanka PL-händelsekorten: reservkort i Excel eller bara notering?
 
 ## 6. Öppna frågor
