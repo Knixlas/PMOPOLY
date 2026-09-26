@@ -51,20 +51,18 @@ class Strategi:
         return skuld > 0 and m.s.rng.random() < self.sanera and sp.kassa >= 0
 
     def tvangsbud_varde(self, m, sp, o, f):
-        """Väntad ändring av F-värdet (eget kapital + vikt × kassa) av att tvångsköpa f."""
+        """Väntad ändring av F-värdet (eget kapital + vikt × kassa) av att tvångsbuda på f."""
         pris = m.mv(f, m.tvangsfaktor(sp)) - f.lan
-        if sp.kassa - pris < self.kopbuffert:
+        if sp.kassa - pris - m.p.tvang_avgift < self.kopbuffert:
             return None
         vinst = (m.mv(f) - f.lan) - m.p.kassa_vikt * pris
         if m.har_kort(sp, "gratis_uppgradering") and f.ek != "A":
             vinst += 100 / m.spel.yieldniva[SPAR[f.typ]]          # +1 DN före ränta ÷ yield
-        satt = m.stoppsatt(o, f)
-        if satt and not m.har_kort(sp, "overtagande"):
-            if satt == ["losen"]:
-                vinst = min(vinst, m.p.kassa_vikt * m.losen(f))   # får vi inte fastigheten får vi lösen
-            else:
+        if not m.har_kort(sp, "overtagande"):
+            if m.stoppsatt(o, f):
                 vinst *= 0.3                                      # motspelaren stoppar troligen
-        return vinst
+            vinst *= m.duell_chans(sp, o, f)
+        return vinst - m.p.kassa_vikt * m.p.tvang_avgift
 
     def tvangsbud(self, m, sp):
         if self.tvangsbud_marginal is None:
@@ -77,12 +75,18 @@ class Strategi:
         return o, f
 
     def stoppa(self, m, sp, f, satt):
-        """Välj stoppsätt (eller None = låt budet gå igenom). Lösen bara om kassan tål det."""
-        for val in satt:
-            if val == "losen" and sp.kassa - m.losen(f) < self.kopbuffert:
-                continue
-            return val
-        return None
+        """Välj stoppsätt, eller None = ta duellen."""
+        return satt[0] if satt else None
+
+    def duellkort(self, m, sp, behov):
+        """Förhandlingskort som räcker för att vända duellen (minsta möjliga)."""
+        kort = sorted((k for k in sp.hand if k["Effekt"] == "forhandling_mod"), key=lambda k: tal(k["Värde"]))
+        for k in kort:
+            if tal(k["Värde"]) >= behov:
+                return [k]
+        if sum(tal(k["Värde"]) for k in kort[-2:]) >= behov:
+            return kort[-2:]
+        return []
 
     def motbudsmal(self, m, sp, budgivare):
         kand = [f for f in budgivare.fastigheter if sp.kassa - (m.mv(f) - f.lan) >= self.kopbuffert]

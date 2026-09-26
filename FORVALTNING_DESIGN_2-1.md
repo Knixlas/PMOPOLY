@@ -150,11 +150,19 @@ Buda **1,2 × MV** på en motspelares fastighet. Hen måste sälja om hen inte s
 stoppkort. Budgivaren betalar 1,2 × MV − lån; offret får 1,2 × MV − sitt lån (blir
 alltså **överbetalt** — därför lägger man bud bara på strategiskt viktiga fastigheter).
 
-**Stoppa ett tvångsbud** (ägaren väljer ett):
-- **Stoppkort** eller **Motbud** (personkort; motbudet låter dig dessutom köpa en av budgivarens
-  fastigheter till 1,0 × MV).
-- **2 riskbuffertar** (Den lugna som senior: 1).
-- **Lösen:** betala budgivaren 10 % av MV (avrundat till 5 Mkr) och behåll fastigheten.
+**Budavgift:** den som lägger ett tvångsbud betalar 5 Mkr till banken, oavsett utfall.
+
+**Stoppa ett tvångsbud** (ägaren kan):
+- spela **Stoppkort** eller **Motbud** (personkort; motbudet låter dig dessutom köpa en av budgivarens
+  fastigheter till 1,0 × MV), eller
+- lägga **2 riskbuffertar** (Den lugna som senior: 1).
+
+**Annars duell:** båda slår d20 + FC-justering; **lika vinner ägaren**.
+- FC: Förhandlaren +2 när den budar (+3 på kontor), Den lugna och Skölden +2 när de försvarar,
+  Bostadsveteranen +2 när den försvarar en hyresrätt, Nätverkaren +1 åt båda hållen. Senior: +1 till.
+- Den som ligger under får slå om en gång med 1 riskbuffert.
+- Därefter får budgivaren, och sedan ägaren, spela förhandlingskort (+1/+2/+3) för att vända.
+- **Övertagande** (personkort): budet kan inte stoppas och ingen duell — köpet går igenom.
 
 **Skydd:** en fastighet som köpts eller tvångsköpts i en marknadsfas kan inte tvångsköpas i samma fas.
 **Övertagande** (personkort) gör att budet inte kan stoppas alls. Budstrid, köparnas marknad (1,1 × MV)

@@ -33,7 +33,7 @@ class Parametrar:
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
     fientlig: float = 1.2                          # tvångsbud
-    losen_andel: float = 0.1                       # lösen: ägaren behåller fastigheten mot 10 % av MV till budgivaren
+    tvang_avgift: float = 5                        # budavgift för tvångsbud (Mkr till banken, oavsett utfall)
     handgrans: int = 6
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
     ranta_sats: float = 0.03                       # fast ränta i grundspelet (står på kortet); räntemarknad = expansion
@@ -49,7 +49,7 @@ class Motor:
                                     "kop", "tvangsbud", "tvangsbud_stoppat", "salj", "konkurs", "uppgradering",
                                     "uppgradering_forsok", "eliminerat", "senior", "tvangskop", "budstrid",
                                     "overtagande", "affarskort", "stopp_motbud", "stopp_kort", "stopp_rb",
-                                    "stopp_losen", "motbud_kop")}
+                                    "duell_forlorad", "motbud_kop")}
         self.stat["dn_drift"] = {t: 0 for t in TYPER}
         self.spel.statistik = self.stat
 
@@ -426,13 +426,51 @@ class Motor:
             satt.append("kort")
         if sp.riskbuffert >= (1 if (self.ar_fc(sp, "Den lugna") and sp.fc_senior) else 2):
             satt.append("rb")
-        if sp.kassa >= self.losen(f):
-            satt.append("losen")
         return satt
 
-    def losen(self, f):
-        """Lösen: ägaren behåller fastigheten mot att budgivaren får andel × MV."""
-        return avrunda(self.mv(f) * self.p.losen_andel, 5) or 5
+    def duell_fc(self, sp, f, anfall):
+        """FC:s justering i tvångsbudsduellen. Senior ger +1 extra på en justering som finns."""
+        if not sp.fc:
+            return 0
+        namn, mod = sp.fc["Namn"], 0
+        if namn == "Förhandlaren" and anfall:
+            mod = 3 if f.typ == "KONTOR" else 2
+        elif namn in ("Den lugna", "Skölden") and not anfall:
+            mod = 2
+        elif namn == "Bostadsveteranen" and not anfall and f.typ == "HYRESRÄTT":
+            mod = 2
+        elif namn == "Nätverkaren":
+            mod = 1
+        return mod + (1 if mod and sp.fc_senior else 0)
+
+    def duell_chans(self, budgivare, offer, f):
+        """Sannolikheten att budgivaren vinner duellen (d20 mot d20, lika = ägaren), med FC och
+        ungefär +2 per förhandlingskort på hand."""
+        kort = lambda sp: 2 * sum(1 for k in sp.hand if k["Effekt"] == "forhandling_mod")
+        diff = (self.duell_fc(budgivare, f, True) + kort(budgivare)) - (self.duell_fc(offer, f, False) + kort(offer))
+        return sum(1 for a in range(1, 21) for b in range(1, 21) if a + diff > b) / 400
+
+    def duell(self, budgivare, offer, f):
+        """Tvångsbudsduell. Returnerar True om budgivaren vinner."""
+        a = self.s.d20() + self.duell_fc(budgivare, f, True)
+        b = self.s.d20() + self.duell_fc(offer, f, False)
+        # den som ligger under får slå om med en riskbuffert (en gång)
+        if a <= b and budgivare.riskbuffert and budgivare.strategi.sla_om(self, budgivare):
+            budgivare.riskbuffert -= 1
+            a = self.s.d20() + self.duell_fc(budgivare, f, True)
+        elif a > b and offer.riskbuffert and offer.strategi.sla_om(self, offer):
+            offer.riskbuffert -= 1
+            b = self.s.d20() + self.duell_fc(offer, f, False)
+        # förhandlingskort: först budgivaren om den ligger under, sedan ägaren
+        for sp, eget, mot, maste_over in ((budgivare, "a", "b", True), (offer, "b", "a", False)):
+            varden = {"a": a, "b": b}
+            behov = varden[mot] - varden[eget] + (1 if maste_over else 0)
+            if behov > 0:
+                for kort in sp.strategi.duellkort(self, sp, behov):
+                    sp.hand.remove(kort)
+                    varden[eget] += tal(kort["Värde"])
+            a, b = varden["a"], varden["b"]
+        return a > b
 
     def kan_tvangsbudas(self, f):
         return f.kopt_kvartal != self.spel.kvartal          # nyköpt är skyddad i samma marknad
@@ -454,9 +492,10 @@ class Motor:
             offer, f = val
             faktor = self.tvangsfaktor(budgivare)
             pris = self.mv(f, faktor)
-            if budgivare.kassa < pris - f.lan:
+            if budgivare.kassa < pris - f.lan + self.p.tvang_avgift:
                 continue
             self.stat["tvangsbud"] += 1
+            budgivare.kassa -= self.p.tvang_avgift          # budavgift till banken, oavsett utfall
             if faktor < (self.spel.tvang_faktor or self.p.fientlig):
                 budgivare.hand.remove(self.har_kort(budgivare, "budstrid"))
                 self.stat["budstrid"] += 1
@@ -474,10 +513,6 @@ class Motor:
                     offer.hand.remove(self.har_kort(offer, "stopp"))
                 elif val_ == "rb":
                     offer.riskbuffert -= 1 if (self.ar_fc(offer, "Den lugna") and offer.fc_senior) else 2
-                elif val_ == "losen":
-                    belopp = self.losen(f)
-                    offer.kassa -= belopp
-                    budgivare.kassa += belopp
                 elif val_ == "motbud":
                     offer.hand.remove(self.har_kort(offer, "motbud"))
                     mal = offer.strategi.motbudsmal(self, offer, budgivare)
@@ -490,6 +525,9 @@ class Motor:
                         mal.kopt_kvartal = self.spel.kvartal
                         self.dra_dd(mal, offer)
                         self.stat["motbud_kop"] += 1
+                continue
+            if not overtag and not self.duell(budgivare, offer, f):
+                self.stat["duell_forlorad"] += 1
                 continue
             ersattning = self.mv(f, max(faktor, 1.3) if (self.ar_fs(offer, "Mäklaren") and offer.fs_senior) else faktor)
             offer.kassa += ersattning - f.lan
