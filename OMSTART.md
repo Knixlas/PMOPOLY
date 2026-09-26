@@ -389,7 +389,7 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
 | Fas | Innehåll | Resultat |
 |---|---|---|
 | F0 | Stäng designluckorna ovan | Beslut i designdokumentet |
-| F1 | Kortdata: `kortdata/F_*.xlsx` byggda ur CSV:erna med `kortexcel.py`; kontroll att mekanik-kolumnerna (`ID/Typ/Effekt/Synlig/Timing/Värde/Påverkar`) är orörda och att fördelningarna stämmer mot kortspecen. Därefter är Excel källan och `data/forvaltning_2-1/` utgår. | 7 Excel-filer |
+| F1 ✅ | Kortdata: `kortdata/F_*.xlsx` (8 filer, ~350 kort) byggda med `verktyg/bygg_f_excel.py` — effektkoder mot kortspecen, antal, unika ID:n och korttext kontrollerade. Excel är nu källan; `data/forvaltning_2-1/` utgår när grenarna slagits ihop. | 8 Excel-filer |
 | F2 | Motor för Skede 3 först: ren tillståndsmaskin (tillstånd + handling → tillstånd), läser `kortdata/`, slumpen utbytbar (online / spellogg). Startportföljer genereras ur `PU_projekt`. | `motor/` + tester |
 | F3 | Bottar: några strategier (försiktig, hävstång, sabotör, energi) som spelar tusentals partier. Mäter: bankövertag, DN-drift per typ, poängspridning, FC/FS-vinstandel, kortens verkan. | Balansrapport |
 | F4 | Kalibrering ur F3: 0,7/1,2-faktorer, fördelningar, slutformelns faktor, FC/FS. | Justerade Excel |

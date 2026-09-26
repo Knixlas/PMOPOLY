@@ -191,11 +191,10 @@ DN och energi hanteras **på samma sätt, i tredjedelar**: plus- och minusbricko
 när de dras eller spelas. Vid **netto 3** åt något håll ändras bas-DN respektive energiklass permanent och
 brickorna kasseras.
 
-*Förslag, ej beslutat — visningsregel:*
-- **Netto −3 visas direkt** (tvingande; annars döljer alla sina minus).
-- **Netto +3 visar man när man vill.** Plus hjälper bara när det visas (högre MV, klarar balanskravet,
-  dyrare att tvångsbuda på) — men väntar man kan ett minus hinna sänka nettot till +2. Ett val: ta hem
-  vinsten nu eller vänta. (Alternativ: tvingande visning åt båda håll — enklare, men utan beslutet.)
+**Visningsregel:**
+- **Netto −3 visas direkt** — tvingande (beslut 2026-09-26).
+- **Netto +3:** *öppet — testas med bottarna.* Antingen tvingande visning även här (enklast), eller
+  valfri tidpunkt (plus hjälper först när det visas, men ett minus kan hinna sänka nettot till +2).
 
 ---
 
