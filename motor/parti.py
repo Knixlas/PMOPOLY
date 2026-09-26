@@ -19,6 +19,7 @@ from .pu_strategi import PU_STRATEGIER
 from .skede2_strategi import S2_STRATEGIER
 from .slump import DigitalSlump, InmatadSlump
 from .strategi import STRATEGIER
+from .fragor import beskriv_beslut, beskriv_slump
 from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
 
 REGELVERSION = "2026-09-26"      # höjs när reglerna i motorn ändras; loggen bär versionen
@@ -55,6 +56,7 @@ class Parti:
         self._fragor, self._svar = queue.Queue(), queue.Queue()
         self._nr = 0
         self.motor = None
+        self.aktuell_motor = None
         self.resultat = None
         self.aktuell = None           # frågan som väntar på svar
         self._trad = None
@@ -131,7 +133,8 @@ class Parti:
 
     def _fraga_slump(self, metod, argument):
         """Fysiskt spel: fråga spelarna om en tärning eller ett draget kort (svaret: tal eller index)."""
-        return self._fraga(kanal="slump", kvarter=None, skede=None, metod=metod, argument=argument)
+        return self._fraga(kanal="slump", kvarter=None, skede=None, metod=metod, argument=argument,
+                           vy=beskriv_slump(metod, argument))
 
     def _nasta_post(self, kanal, metod, kvarter=None):
         post = self._uppspelning.popleft()
@@ -143,6 +146,7 @@ class Parti:
     def beslut(self, styrd, metod, motor, subjekt, args, kw):
         rotter = [*args, *kw.values(), subjekt, motor]
         kvarter, skede = styrd._kvarter, styrd._skede
+        self.aktuell_motor = motor                     # för spellägesbilden (motor/lage.py)
         if self._uppspelning:
             # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
             # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
@@ -151,12 +155,13 @@ class Parti:
             post = self._nasta_post("beslut", metod, kvarter)
             self.logg.append(post)
             return avkoda(post["svar"], rotter)
-        forslag = None
+        forslag = svar = None
         if styrd._bott is not None:
             svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)
             forslag = koda(svar, rotter)
         if styrd._manniska:
-            kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag)
+            vy = beskriv_beslut(metod, motor, subjekt, args, rotter, svar)
+            kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
             svar = avkoda(kod, rotter)
             av = "människa"
         else:

@@ -111,6 +111,7 @@ class Fraga:
     metod: str                    # strategimetodens eller slumpmetodens namn
     argument: list = field(default_factory=list)   # kodade argument (vägar in i rötterna)
     forslag: object = None        # bottens svar, kodat (ledtråd och standardval)
+    vy: dict = field(default_factory=dict)          # det människan ser: rubrik, typ, alternativ (motor/fragor.py)
 
 
 # ---------------------------------------------------------------------------- beslut
