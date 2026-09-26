@@ -22,19 +22,19 @@ class Parametrar:
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
     kassa_vikt: float = 0.5                        # F-poäng: kassa räknas till denna andel, fastigheter fullt
-    f_delare: float = 20                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare
+    f_delare: float = 15                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "FÖRSKOLA", "LOKAL", "KONTOR")   # ANTAGANDE: fast rotation Q1–Q4
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
     max_uppgraderingar: tuple = (3, 2, 1, 0)
-    uppgradering_kostnad: int = 10                 # kalibrerat (varv 2)
+    uppgradering_kostnad: int = 8                  # kalibrerat (varv 3, startkassa enligt 8.6)
     uppgradering_troskel: int = 10                 # slaget måste vara över detta
     extra_handelse: dict = field(default_factory=lambda: {t: {"direkt_dn_minus": 2} for t in ("LOKAL", "KONTOR")})
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken
     tvang: float = 0.7                             # bankens nedskrivning vid fynd
     fientlig: float = 1.2                          # tvångsbud
-    tvang_avgift: float = 5                        # budavgift för tvångsbud (Mkr till banken, oavsett utfall)
+    tvang_avgift: float = 2                        # budavgift för tvångsbud (Mkr till banken, oavsett utfall)
     handgrans: int = 6
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
     ranta_sats: float = 0.03                       # fast ränta i grundspelet (står på kortet); räntemarknad = expansion
@@ -271,8 +271,10 @@ class Motor:
                 projekt = brf.pop() if ar_brf else pool.pop()
                 # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad (tomt och expansion ej modellerade)
                 abt += tal(projekt["Anskaffning (Mkr)"]) - tal(projekt["Utvecklingskostnad (Mkr)"])
-                if ar_brf:
-                    brf_intakt += tal(projekt["Marknadsvärde (Mkr)"])   # ANTAGANDE: BRF säljs till kortets MV
+                if ar_brf:   # 8.6: intäkt = marknadsvärde − anskaffning + rörlig intäkt (kortets tärning)
+                    tarning = int(re.search(r"D(\d+)", projekt["Rörligt marknadsvärde"] or "D0").group(1))
+                    brf_intakt += (tal(projekt["Marknadsvärde (Mkr)"]) - tal(projekt["Anskaffning (Mkr)"])
+                                   + (s.rng.randint(1, tarning) if tarning else 0))
                 else:
                     sp.fastigheter.append(self.ny_fastighet(projekt))
             sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
