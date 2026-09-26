@@ -1,33 +1,25 @@
 ID;Spår;Ändring;Rubrik
-YB-01;bostäder;-1,0;Riksbanken sänker räntan
-YB-02;bostäder;-1,0;Bostadsbrist i kommunen ökar
-YB-03;bostäder;0,0;Bostadspriser stabiliseras
-YB-04;bostäder;-0,5;Hyresnivåer justeras uppåt
-YB-05;bostäder;-0,5;Nyproduktion minskar
-YB-06;bostäder;+0,5;Ränteuppgång pressar marknaden
-YB-07;bostäder;+0,5;Konjunkturnedgång
-YB-08;bostäder;-0,5;Stark efterfrågan på hyresrätter
-YB-09;bostäder;-0,5;Kommunen expanderar
-YB-10;bostäder;-0,5;Infrastruktursatsning i närheten
-YB-11;bostäder;0,0;Stabilt bostadsläge
-YB-12;bostäder;+0,5;Stigande materialkostnader
-YB-13;bostäder;+0,5;Investerarflykt från bostäder
-YB-14;bostäder;+1,0;Räntechock
-YB-15;bostäder;+0,5;Pandemins eftereffekt
-YB-16;bostäder;+1,0;Demografisk förskjutning
-YK-01;kommersiellt;-1,0;Stark detaljhandel
-YK-02;kommersiellt;-0,5;Ökad kontorsefterfrågan
-YK-03;kommersiellt;+1,0;E-handel pressar butiker
-YK-04;kommersiellt;-0,5;Teknikbolag etablerar sig
-YK-05;kommersiellt;+0,5;Vakanser stiger i kontor
-YK-06;kommersiellt;+0,5;Lågkonjunktur
-YK-07;kommersiellt;0,0;Flexkontor tar marknadsandelar
-YK-08;kommersiellt;-0,5;Kommersiellt uppsving
-YK-09;kommersiellt;-0,5;Turistboom i centrum
-YK-10;kommersiellt;-0,5;Restaurangbransch växer
-YK-11;kommersiellt;+1,0;Handelsdöd i stadskärna
-YK-12;kommersiellt;0,0;Logistikhub planeras
-YK-13;kommersiellt;+0,5;Kontorsflykt till förort
-YK-14;kommersiellt;+0,5;Hyrestak införs
-YK-15;kommersiellt;-0,5;Pandemieffekt avtar
-YK-16;kommersiellt;-1,0;Grön omställning driver efterfrågan
+YB-01;bostäder;0,0;Bostadspriser stabiliseras
+YB-02;bostäder;-0,5;Hyresnivåer justeras uppåt
+YB-03;bostäder;-0,5;Nyproduktion minskar
+YB-04;bostäder;+0,5;Ränteuppgång pressar marknaden
+YB-05;bostäder;+0,5;Konjunkturnedgång
+YB-06;bostäder;-0,5;Stark efterfrågan på hyresrätter
+YB-07;bostäder;-0,5;Kommunen expanderar
+YB-08;bostäder;-0,5;Infrastruktursatsning i närheten
+YB-09;bostäder;0,0;Stabilt bostadsläge
+YB-10;bostäder;+0,5;Stigande materialkostnader
+YB-11;bostäder;+0,5;Investerarflykt från bostäder
+YB-12;bostäder;+0,5;Pandemins eftereffekt
+YK-01;kommersiellt;-0,5;Ökad kontorsefterfrågan
+YK-02;kommersiellt;-0,5;Teknikbolag etablerar sig
+YK-03;kommersiellt;+0,5;Vakanser stiger i kontor
+YK-04;kommersiellt;+0,5;Lågkonjunktur
+YK-05;kommersiellt;0,0;Flexkontor tar marknadsandelar
+YK-06;kommersiellt;-0,5;Kommersiellt uppsving
+YK-07;kommersiellt;-0,5;Turistboom i centrum
+YK-08;kommersiellt;-0,5;Restaurangbransch växer
+YK-09;kommersiellt;0,0;Logistikhub planeras
+YK-10;kommersiellt;+0,5;Kontorsflykt till förort
+YK-11;kommersiellt;+0,5;Hyrestak införs
+YK-12;kommersiellt;-0,5;Pandemieffekt avtar

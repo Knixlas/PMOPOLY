@@ -100,13 +100,14 @@ stopp 5, kika 4, hyresgastvarvning 6, headhunting 3, dra_personkort 5, riskbuffe
 
 ### Omvärldskort — `F2-1_omvärldskort.csv` (26)
 Kolumner: `ID;Effekt;Värde;Påverkar;Rubrik;Beskrivning`
-yield_ersatt 15 (varav 3 stora, ±1 pp), yield_byt 4, bords_dn 3, resurs 3, personalrotation 1.
+yield_ersatt 15 (alla ±0,5 pp), yield_byt 4, bords_dn 3, resurs 3, personalrotation 1.
 
-### Yieldkort — `F2-1_yieldkort.csv` (32)
+### Yieldkort — `F2-1_yieldkort.csv` (24)
 Två lekar, 16 per spår (bostäder, kommersiellt). Innehållet är det **tryckta yieldkortet från
-version 1** (`F_yield`) — samma rubriker och ändringar, så de tryckta korten kan återanvändas.
-Kolumner: `ID;Spår;Ändring;Rubrik`. Fördelning bostäder: −1,0 ×2, −0,5 ×5, 0 ×2, +0,5 ×5, +1,0 ×2;
-kommersiellt: −1,0 ×2, −0,5 ×6, 0 ×2, +0,5 ×4, +1,0 ×2.
+version 1** (`F_yield`) utom de åtta korten med ±1,0 — **bara ±0,5-steg** (beslut 2026-09-26).
+De tryckta korten kan återanvändas; ±1,0-korten plockas bort.
+Kolumner: `ID;Spår;Ändring;Rubrik`. Fördelning bostäder: −0,5 ×5, 0 ×2, +0,5 ×5;
+kommersiellt: −0,5 ×6, 0 ×2, +0,5 ×4 (lutar mot sjunkande yield = stigande MV — kontrolleras av bottarna).
 
 **Yieldbanan** har fyra platser per spår: **Q2, Q3, Q4, Slut**. Vid uppställningen läggs fyra yieldkort
 öppet per spår. Q1:s marknad sker på startyield (bostäder 4 %, kommersiellt 5 %). Vid varje följande
@@ -130,7 +131,7 @@ Alla kort är **dubbelsidiga: junior / senior**.
 | Kvartalskort (4 typleker) | 36 |
 | Personkort | 67 |
 | Omvärldskort | 26 |
-| Yieldkort (återanvänds från version 1) | 32 |
+| Yieldkort (återanvänds från version 1, utan ±1,0) | 24 |
 | DD | 36 |
 | Fastighetskort (uppdaterad baksida: tryckt lån) | 45 |
 | FC + FS-arketyper (dubbelsidiga) | 12 |
