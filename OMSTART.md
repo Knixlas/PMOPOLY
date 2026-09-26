@@ -390,12 +390,26 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
 |---|---|---|
 | F0 | Stäng designluckorna ovan | Beslut i designdokumentet |
 | F1 ✅ | Kortdata: `kortdata/F_*.xlsx` (8 filer, ~350 kort) byggda med `verktyg/bygg_f_excel.py` — effektkoder mot kortspecen, antal, unika ID:n och korttext kontrollerade. Excel är nu källan; `data/forvaltning_2-1/` utgår när grenarna slagits ihop. | 8 Excel-filer |
-| F2 | Motor för Skede 3 först: ren tillståndsmaskin (tillstånd + handling → tillstånd), läser `kortdata/`, slumpen utbytbar (online / spellogg). Startportföljer genereras ur `PU_projekt`. | `motor/` + tester |
-| F3 | Bottar: några strategier (försiktig, hävstång, sabotör, energi) som spelar tusentals partier. Mäter: bankövertag, DN-drift per typ, poängspridning, FC/FS-vinstandel, kortens verkan. | Balansrapport |
+| F2 ✅ | Motor för Skede 3: `motor/` (tillstånd, kortladdning ur `kortdata/`, utbytbar slump, hela kvartalsloopen, slutavräkning). Antaganden samlade i `Parametrar`. Tester i `tester/`. | `motor/` + tester |
+| F3 ▶ | Bottar: fem strategier (balanserad, försiktig, hävstång, aggressiv, energi), `python -m motor.simulera`. Första resultat nedan. | Balansrapport |
 | F4 | Kalibrering ur F3: 0,7/1,2-faktorer, fördelningar, slutformelns faktor, FC/FS. | Justerade Excel |
 | F5 | Regelbok kapitel 9 skrivs om efter låst loop; kapitel 10 (slutvärdering) efter kalibrering. | Regelbok 3.0 |
 | F6 | Tryck: nya F-kort, MV-tabell, yieldbana, kvartalsspår, brickor/clips, stora DN-kort. **Projektkortens nya baksida** (tryckt lån + ny förvaltningssektion) samordnas med omtrycket av alla 45 projektkort. | Printfiler |
 | F7 | Online/spellogg ovanpå motorn — när Skede 1–2 också finns i motorn. | App |
+
+### Första bottresultat (4000 partier, 2026-09-26)
+
+- **Marknaden är nästan död med lån 70 %:** banken tar 0,08 fastigheter per parti, 1,9 köp, 0,02 tvångsbud.
+  Med ±0,5-steg i yield krävs ~3 steg nedåt innan MV < lån. Känslighet: lån 80 % → 0,36 bank/parti,
+  85 % → 0,77, 90 % → 2,4. *Kalibreringsfråga: lånenivå (eller DN/MV-skalan när projektkorten görs om).*
+- **Energiuppgradering är för billig:** ~23 per parti (nästan maxtaket 6 per spelare), 74 % lyckas per försök.
+  +1 energiklass = +1 DN ≈ +20–25 Mkr MV för ~4 Mkr. Vid 8 Mkr/försök: 14 per parti.
+- **Strategierna vinner lika ofta (24–26 %)** — startportföljen (3–5 fastigheter) avgör mer än besluten.
+- **Plus-visning tvingande eller valfri: ingen skillnad** i utfall → tvingande åt båda håll räcker (enklast).
+- **FC:** Bostadsveteranen och Den lugna ~30 % vinst, Skölden 18 %. **FS:** jämna (23–26 %).
+- **Typkaraktären fungerar:** DN-drift per parti hyresrätt +1,6, förskola +1,3, lokal +0,4, kontor −0,7.
+- **Motorantaganden att bekräfta:** brickor = 1/3 DN i intäkten (Anna-exemplet räknade 1), startkassa 20,
+  fokustyp i fast rotation, villkorskort tolkade ur texten.
 
 ## 6. Öppna frågor
 
