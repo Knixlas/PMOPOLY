@@ -48,7 +48,8 @@ class Motor:
         self.spel = Spel(spelare=[Spelare(namn=f"Spelare {i + 1}", strategi=st) for i, st in enumerate(strategier)])
         self.stat = {k: 0 for k in ("bank_tar", "sanering_tagen", "sanering_raddad", "sanering_forlorad", "fynd_salt",
                                     "kop", "tvangsbud", "tvangsbud_stoppat", "salj", "konkurs", "uppgradering",
-                                    "uppgradering_forsok", "eliminerat", "senior")}
+                                    "uppgradering_forsok", "eliminerat", "senior", "tvangskop", "budstrid",
+                                    "overtagande", "affarskort")}
         self.stat["dn_drift"] = {t: 0 for t in TYPER}
         self.spel.statistik = self.stat
 
@@ -218,7 +219,13 @@ class Motor:
         self.fastighetseffekt(kort, f, sp)
 
     def dra_dd(self, f, sp):
-        if self.ar_fs(sp, "Besiktningsgeniet"):
+        val = self.ar_fs(sp, "Besiktningsgeniet")
+        if not val:
+            kort = next((k for k in sp.hand if k["Effekt"] == "dd_val"), None)
+            if kort:
+                sp.hand.remove(kort)
+                val = True
+        if val:
             a, b = self.s.dra("dd"), self.s.dra("dd")
             kort = sp.strategi.valj_dd(self, sp, f, [a, b])
         else:
@@ -417,17 +424,35 @@ class Motor:
             return "rb"
         return None
 
+    def har_kort(self, sp, effekt):
+        return next((k for k in sp.hand if k["Effekt"] == effekt), None)
+
+    def tvangsfaktor(self, sp):
+        """Priset på ett tvångsbud i × MV: 1,2, lägre vid köparnas marknad eller med budstrid på hand."""
+        faktor = self.spel.tvang_faktor or self.p.fientlig
+        kort = self.har_kort(sp, "budstrid")
+        return min(faktor, tal(kort["Värde"])) if kort else faktor
+
     def tvangsbud(self):
         for budgivare in self.spel.spelare:
             val = budgivare.strategi.tvangsbud(self, budgivare)
             if not val:
                 continue
             offer, f = val
-            pris = self.mv(f, self.p.fientlig)
+            faktor = self.tvangsfaktor(budgivare)
+            pris = self.mv(f, faktor)
             if budgivare.kassa < pris - f.lan:
                 continue
             self.stat["tvangsbud"] += 1
+            if faktor < (self.spel.tvang_faktor or self.p.fientlig):
+                budgivare.hand.remove(self.har_kort(budgivare, "budstrid"))
+                self.stat["budstrid"] += 1
+            overtag = self.har_kort(budgivare, "overtagande")
             satt = self.kan_stoppa(offer)
+            if satt and overtag:
+                budgivare.hand.remove(overtag)          # budet kan inte stoppas
+                self.stat["overtagande"] += 1
+                satt = None
             if satt and offer.strategi.stoppa(self, offer, f):
                 if satt == "kort":
                     offer.hand.remove(next(k for k in offer.hand if k["Effekt"] == "stopp"))
@@ -435,13 +460,19 @@ class Motor:
                     offer.riskbuffert -= 1 if (self.ar_fc(offer, "Den lugna") and offer.fc_senior) else 2
                 self.stat["tvangsbud_stoppat"] += 1
                 continue
-            ersattning = self.mv(f, 1.3 if (self.ar_fs(offer, "Mäklaren") and offer.fs_senior) else self.p.fientlig)
+            ersattning = self.mv(f, max(faktor, 1.3) if (self.ar_fs(offer, "Mäklaren") and offer.fs_senior) else faktor)
             offer.kassa += ersattning - f.lan
             budgivare.kassa -= pris - f.lan
             offer.fastigheter.remove(f)
             self.visa_plus(f)
             budgivare.fastigheter.append(f)
+            self.stat["tvangskop"] += 1
             self.dra_dd(f, budgivare)
+            gratis = self.har_kort(budgivare, "gratis_uppgradering")
+            if gratis and f.ek != "A":                  # köpet var planerat kring kortet
+                budgivare.hand.remove(gratis)
+                self.andra_ek(f, 1)
+        self.spel.tvang_faktor = None
 
     def likviditet(self):
         for sp in self.spel.spelare:
@@ -499,6 +530,16 @@ class Motor:
             for sp in self.spel.spelare:
                 if sp.hand:
                     sp.hand.remove(sp.strategi.slang(self, sp))
+        elif e == "personkort_per_typ":
+            for sp in self.spel.spelare:
+                self.dra_personkort(sp, sum(1 for f in sp.fastigheter if f.typ == pav))
+        elif e == "personkort_minst":
+            ek = {sp.namn: sum(self.mv(f) - f.lan for f in sp.fastigheter) for sp in self.spel.spelare}
+            for sp in self.spel.spelare:
+                if ek[sp.namn] == min(ek.values()):
+                    self.dra_personkort(sp, int(v))
+        elif e == "kopares_marknad":
+            self.spel.tvang_faktor = v
 
     # ------------------------------------------------------------------ 3. driftnetto
     def driftnetto(self):
@@ -562,6 +603,23 @@ class Motor:
                     egen, motspelarens = mal
                     self.dn_bricka(egen, 1)
                     self.dn_bricka(motspelarens, -1)
+            elif e == "gratis_uppgradering":
+                f = sp.strategi.valj_energifastighet(self, sp)
+                if f:
+                    self.andra_ek(f, 1)
+                    self.stat["affarskort"] += 1
+            elif e == "omforhandlat_lan" and sp.fastigheter:
+                f = max(sp.fastigheter, key=lambda x: x.ranta)
+                f.ranta = max(0, f.ranta - int(tal(kort["Värde"], 1)))
+                self.stat["affarskort"] += 1
+            elif e == "konvertering":
+                f = sp.strategi.konverteringsmal(self, sp)
+                if f and sp.kassa >= tal(kort["Värde"]):
+                    sp.kassa -= tal(kort["Värde"])
+                    f.typ = "HYRESRÄTT"
+                    self.stat["affarskort"] += 1
+                else:
+                    self.ta_emot(sp, kort)              # ingen nytta nu — behåll kortet
             elif e == "headhunting":
                 offer = max((o for o in self.spel.spelare if o is not sp), key=lambda o: len(o.hand))
                 if offer.hand:
@@ -594,6 +652,8 @@ class Motor:
                     self.dra_handelse(f, sp)
             elif e == "resurs":
                 self.dra_personkort(sp)
+            elif e == "personkort_fokus":
+                self.dra_personkort(sp, len(egna))
             elif e == "villkorat":
                 for f in egna:
                     if f.ek in ("D", "E"):

@@ -428,6 +428,12 @@ frekvenser), `data/forvaltning_2-1/F2-1_*.csv` — 256 kort i fem lekar + 6 FC +
   (MV + kassa). Ett vanligt köp till MV ger poäng (det är korten och tärningen som avgör vem som får köpa);
   ett tvångsköp till 1,2 × MV är ungefär ±0 — lönar sig bara med rätt kort. Nivån: vinnarens median ~48
   → behöver skalas ned ungefär ×0,4 för att ~20 ska vara tokbra.
+- **Affärskort (personkort) och personkortskällor (2026-09-26):** budstrid 3, övertagande 2, gratis
+  uppgradering 3, omförhandlat lån 3, DD-val 2, konvertering 1 (ersätter 3 förhandlings- och 3 energikort
+  → 81 personkort). Omvärld +4 (personkort per hyresrätt/kontor, mentorsprogram för den som ligger sist,
+  köparnas marknad) → 35. Kvartal +1 per typlek "personkort per fastighet av fokustypen" → 50.
+  Bottarna räknar tvångsbud i F-värde (kort på hand, stopprisk). Resultat 2000 partier: 3,5 tvångsbud
+  per parti (3,3 genomförda, 0,25 stoppade), budstrid 0,56, övertagande 0,19; strategierna 23–28 % vinst.
 - **Kalibrerat förslag (standard i motorn):** driftnetto före ränta 2–7 Mkr/år (≈ 2 × gamla kortets
   DN/kvartal + 1) → DN efter ränta 1–4, ränta 0–4; energiuppgradering 10 Mkr/försök; +2 "−1 DN direkt"
   i lokal- och kontorsleken. Resultat 800 partier: 5,6 köp, 0,95 bankövertag, 0,9 sanering, 17 lyckade

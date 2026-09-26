@@ -30,3 +30,7 @@ OM-28;yield_byt_alla;;kommersiellt;Strukturomvandling i näringslivet;Arbetsliv 
 OM-29;energistod;;alla;Statligt energistöd;Staten betalar en del av energiinvesteringarna i hela beståndet. Varje spelare höjer energiklassen ett steg på en valfri egen fastighet.
 OM-30;slang_personkort;;alla;Omorganisation i branschen;Konsulter och projektledare byter uppdrag. Varje spelare slänger ett valfritt personkort.
 OM-31;slang_personkort;;alla;Sparbeting från ägarna;Moderbolaget kräver lägre kostnader. Varje spelare slänger ett valfritt personkort.
+OM-32;personkort_per_typ;;HYRESRÄTT;Bostadsdagarna;Hela bostadsbranschen samlas. Varje spelare drar ett personkort per egen hyresrätt.
+OM-33;personkort_per_typ;;KONTOR;Kontorsmässan i Cannes;Internationella investerare och rådgivare på plats. Varje spelare drar ett personkort per eget kontor.
+OM-34;personkort_minst;2;alla;Branschens mentorsprogram;Erfarna kollegor hjälper den som ligger efter. Spelaren med lägst eget kapital drar två personkort (vid lika: alla som delar platsen).
+OM-35;kopares_marknad;1,1;alla;Finansoro — köparnas marknad;Säljarna är nervösa. Alla tvångsbud vid nästa marknad kostar 1,1 × MV i stället för 1,2 × MV.

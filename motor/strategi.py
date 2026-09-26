@@ -7,7 +7,8 @@ from .data import tal
 from .modell import SPAR
 
 POSITIVA_HANDKORT = {"lagg_dn_plus_egen", "lagg_energi_plus_egen", "direkt_dn_plus_egen", "stada",
-                     "dra_personkort", "riskbuffert", "utveckling", "headhunting", "hyresgastvarvning"}
+                     "dra_personkort", "riskbuffert", "utveckling", "headhunting", "hyresgastvarvning",
+                     "omforhandlat_lan"}
 
 
 class Strategi:
@@ -15,7 +16,7 @@ class Strategi:
     kopbuffert = 5          # Mkr kvar i kassan efter köp
     min_avkastning = 0.0    # kräv att köp ger (eff DN/4) / pris över detta
     sanera = 0.5            # benägenhet att ta saneringsuppdrag (0–1)
-    tvangsbud_ar = False
+    tvangsbud_marginal = 15   # lägg tvångsbud om F-värdet väntas öka minst så här (Mkr); None = aldrig
     uppgradera_kassa = 8    # uppgradera bara om kassan är minst så här
     rb_eliminera = True
     fc_preferens = None
@@ -49,12 +50,27 @@ class Strategi:
     def vill_sanera(self, m, sp, f, skuld):
         return skuld > 0 and m.s.rng.random() < self.sanera and sp.kassa >= 0
 
-    def tvangsbud(self, m, sp):
-        if not self.tvangsbud_ar:
+    def tvangsbud_varde(self, m, sp, o, f):
+        """Väntad ändring av F-värdet (eget kapital + vikt × kassa) av att tvångsköpa f."""
+        pris = m.mv(f, m.tvangsfaktor(sp)) - f.lan
+        if sp.kassa - pris < self.kopbuffert:
             return None
-        kandidater = [(o, f) for o in m.spel.spelare if o is not sp for f in o.fastigheter
-                      if sp.kassa - (m.mv(f, m.p.fientlig) - f.lan) >= self.kopbuffert and f.ek in ("A", "B")]
-        return max(kandidater, key=lambda of: m.eff_dn(of[1]), default=None)
+        vinst = (m.mv(f) - f.lan) - m.p.kassa_vikt * pris
+        if m.har_kort(sp, "gratis_uppgradering") and f.ek != "A":
+            vinst += 100 / m.spel.yieldniva[SPAR[f.typ]]          # +1 DN före ränta ÷ yield
+        if m.kan_stoppa(o) and not m.har_kort(sp, "overtagande"):
+            vinst *= 0.3                                          # motspelaren stoppar troligen
+        return vinst
+
+    def tvangsbud(self, m, sp):
+        if self.tvangsbud_marginal is None:
+            return None
+        kand = [(v, o, f) for o in m.spel.spelare if o is not sp for f in o.fastigheter
+                if (v := self.tvangsbud_varde(m, sp, o, f)) is not None and v >= self.tvangsbud_marginal]
+        if not kand:
+            return None
+        _, o, f = max(kand, key=lambda x: x[0])
+        return o, f
 
     def stoppa(self, m, sp, f):
         return True
@@ -94,7 +110,25 @@ class Strategi:
         return min(sp.hand, key=lambda k: varde.get(k["Effekt"], 3) + tal(k.get("Värde")))
 
     def spela_nu(self, m, sp):
-        return [k for k in list(sp.hand) if k["Effekt"] in POSITIVA_HANDKORT]
+        ut = [k for k in list(sp.hand) if k["Effekt"] in POSITIVA_HANDKORT]
+        for k in sp.hand:
+            if k["Effekt"] == "gratis_uppgradering" and not self.spara_for_tvangsbud(m, sp):
+                ut.append(k)
+            elif k["Effekt"] == "konvertering" and self.konverteringsmal(m, sp) and sp.kassa >= tal(k["Värde"]) + self.kopbuffert:
+                ut.append(k)
+        return ut
+
+    def spara_for_tvangsbud(self, m, sp):
+        """Håll gratis uppgradering till ett tvångsköp om det finns ett D/E-mål hos någon annan."""
+        return self.tvangsbud_marginal is not None and any(
+            f.ek in ("D", "E") for o in m.spel.spelare if o is not sp for f in o.fastigheter)
+
+    def konverteringsmal(self, m, sp):
+        """Kommersiell fastighet som vinner mest på att flytta till bostadsspåret."""
+        if m.spel.yieldniva["kommersiellt"] <= m.spel.yieldniva["bostäder"]:
+            return None
+        kand = [f for f in sp.fastigheter if f.typ in ("LOKAL", "KONTOR")]
+        return max(kand, key=lambda f: m.eff_noi(f), default=None)
 
     def valj_plusfastighet(self, m, sp):
         # närmast undervatten först, annars högst eff DN
@@ -150,19 +184,21 @@ class Forsiktig(Strategi):
     kopbuffert = 20
     min_avkastning = 0.06
     sanera = 0.1
+    tvangsbud_marginal = None
 
 
 class Havstang(Strategi):
     namn = "hävstång"
     kopbuffert = 0
     sanera = 0.9
+    tvangsbud_marginal = 5
     uppgradera_kassa = 3
 
 
 class Aggressiv(Strategi):
     namn = "aggressiv"
     kopbuffert = 2
-    tvangsbud_ar = True
+    tvangsbud_marginal = 0
     sanera = 0.6
 
 

@@ -4,71 +4,79 @@ PK-02;forhandling_mod;fore_slag;+1;Väl förberedd;+1 på ett förhandlingsslag.
 PK-03;forhandling_mod;fore_slag;+1;Lokal känsla;+1 på ett förhandlingsslag. Spelas före slaget.
 PK-04;forhandling_mod;fore_slag;+1;Rätt tajming;+1 på ett förhandlingsslag. Spelas före slaget.
 PK-05;forhandling_mod;fore_slag;+2;Skicklig förhandlare;+2 på ett förhandlingsslag. Spelas före slaget.
-PK-06;forhandling_mod;fore_slag;+2;Starkt kontaktnät;+2 på ett förhandlingsslag. Spelas före slaget.
-PK-07;forhandling_mod;fore_slag;+2;Inhyrd jurist;+2 på ett förhandlingsslag. Spelas före slaget.
-PK-08;forhandling_mod;fore_slag;+2;Övertaget läge;+2 på ett förhandlingsslag. Spelas före slaget.
-PK-09;forhandling_mod;fore_slag;+3;Branschens bäste;+3 på ett förhandlingsslag. Spelas före slaget.
-PK-10;forhandling_mod;fore_slag;+3;Motpartens svaghet;+3 på ett förhandlingsslag. Spelas före slaget.
-PK-11;forhandling_auto;fore_slag;;Signerat på plats;Vinn en förhandling automatiskt.
-PK-12;forhandling_auto;fore_slag;;Oemotståndligt bud;Vinn en förhandling automatiskt.
-PK-13;forhandling_auto;fore_slag;;Fast handslag;Vinn en förhandling automatiskt.
-PK-14;energi_mod;efter_slag;+1;Bättre isolering;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-15;energi_mod;efter_slag;+1;Injusterat system;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-16;energi_mod;efter_slag;+1;Extra timme på plats;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-17;energi_mod;efter_slag;+1;Rätt verktyg;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-18;energi_mod;efter_slag;+2;Energikonsult inhyrd;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-19;energi_mod;efter_slag;+2;Erfaren installatör;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-20;energi_mod;efter_slag;+2;Statligt stöd hittat;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-21;energi_mod;efter_slag;+2;Noggrann besiktning;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-22;energi_mod;efter_slag;+3;Certifierad expert;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-23;energi_mod;efter_slag;+3;Helhetslösning levererad;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
-PK-24;lagg_dn_plus_egen;nar_som_helst;;Dold förbättring;Lägg en dold +1 DN på en av dina fastigheter.
-PK-25;lagg_dn_plus_egen;nar_som_helst;;Tyst uppgradering;Lägg en dold +1 DN på en av dina fastigheter.
-PK-26;lagg_dn_plus_egen;nar_som_helst;;Extra underhåll;Lägg en dold +1 DN på en av dina fastigheter.
-PK-27;lagg_dn_plus_egen;nar_som_helst;;Kvalitetshöjning;Lägg en dold +1 DN på en av dina fastigheter.
-PK-28;lagg_dn_plus_egen;nar_som_helst;;Diskret investering;Lägg en dold +1 DN på en av dina fastigheter.
-PK-29;lagg_dn_plus_egen;nar_som_helst;;Renoverat i tysthet;Lägg en dold +1 DN på en av dina fastigheter.
-PK-30;lagg_dn_plus_egen;nar_som_helst;;Fastighetsskötarens tips;Lägg en dold +1 DN på en av dina fastigheter.
-PK-31;lagg_dn_plus_egen;nar_som_helst;;Väl skött förvaltning;Lägg en dold +1 DN på en av dina fastigheter.
-PK-32;stada;nar_som_helst;;Problemet är löst;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-33;stada;nar_som_helst;;Snabb insats;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-34;stada;nar_som_helst;;Städat upp;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-35;stada;nar_som_helst;;Åtgärdat i tid;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-36;stada;nar_som_helst;;Krisen avvärjd;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-37;stada;nar_som_helst;;Rent bord igen;Ta bort ett minus- eller varningskort från en av dina fastigheter.
-PK-38;stopp;reaktivt;;Hembudsrätt använd;Avvärj ett fientligt bud på en av dina fastigheter.
-PK-39;stopp;reaktivt;;Motbud i sista minuten;Avvärj ett fientligt bud på en av dina fastigheter.
-PK-40;stopp;reaktivt;;Låst avtal;Avvärj ett fientligt bud på en av dina fastigheter.
-PK-41;stopp;reaktivt;;Styrelsen säger nej;Avvärj ett fientligt bud på en av dina fastigheter.
-PK-42;stopp;reaktivt;;Juridiskt hinder;Avvärj ett fientligt bud på en av dina fastigheter.
-PK-43;kika;nar_som_helst;;Tips från branschen;Titta på ett dolt kort hos en motståndare.
-PK-44;kika;nar_som_helst;;Insyn i affären;Titta på ett dolt kort hos en motståndare.
-PK-45;kika;nar_som_helst;;Bra rykte i huset;Titta på ett dolt kort hos en motståndare.
-PK-46;kika;nar_som_helst;;Läckt information;Titta på ett dolt kort hos en motståndare.
-PK-47;hyresgastvarvning;nar_som_helst;;Bättre villkor lockar över hyresgästen;En hyresgäst hos en konkurrent flyttar till er efter ett bättre erbjudande. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-48;hyresgastvarvning;nar_som_helst;;Vi tar ankarhyresgästen;Er uthyrare vinner en stor hyresgäst som konkurrenten räknat med. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-49;hyresgastvarvning;nar_som_helst;;Flytterbjudande med hyresrabatt;Tre månaders rabatt räcker för att hyresgästen byter hyresvärd. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-50;hyresgastvarvning;nar_som_helst;;Snabbare felanmälan vinner;Hyresgästen tröttnar på konkurrentens service och flyttar till er. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-51;hyresgastvarvning;nar_som_helst;;Bättre läge, samma hyra;Er fastighet erbjuder mer för pengarna och hyresgästen byter. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-52;hyresgastvarvning;nar_som_helst;;Förnyelse med nya ytor;Ni erbjuder en anpassad yta som konkurrenten inte kan matcha. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
-PK-53;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis personkort från en motspelares hand.
-PK-54;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis personkort från en motspelares hand.
-PK-55;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis personkort från en motspelares hand.
-PK-56;dra_personkort;nar_som_helst;;Ny kontakt knuten;Dra ett personkort.
-PK-57;dra_personkort;nar_som_helst;;Rekommendation från kollega;Dra ett personkort.
-PK-58;dra_personkort;nar_som_helst;;Nätverksträff;Dra ett personkort.
-PK-59;dra_personkort;nar_som_helst;;Gammal bekant hör av sig;Dra ett personkort.
-PK-60;dra_personkort;nar_som_helst;;Tips vid kaffeautomaten;Dra ett personkort.
-PK-61;riskbuffert;nar_som_helst;;Extra marginal budgeterad;Ta en riskbuffert.
-PK-62;riskbuffert;nar_som_helst;;Buffert i god tid;Ta en riskbuffert.
-PK-63;riskbuffert;nar_som_helst;;Försiktig planering;Ta en riskbuffert.
-PK-64;riskbuffert;nar_som_helst;;Extra kapital avsatt;Ta en riskbuffert.
-PK-65;utveckling;nar_som_helst;;Intern ledarutbildning;FC eller FS går en intern ledarutbildning. Lägg en utvecklingsbricka på din FC eller FS.
-PK-66;utveckling;nar_som_helst;;Branschcertifiering;Er förvaltningschef tar en eftertraktad certifiering. Lägg en utvecklingsbricka på din FC eller FS.
-PK-67;utveckling;nar_som_helst;;Mentorprogram;Erfaren kollega delar med sig av sina knep. Lägg en utvecklingsbricka på din FC eller FS.
-PK-68;lagg_energi_plus_egen;nar_som_helst;;Injustering av värmesystemet;Värmen balanseras om och radiatorerna slutar gå för fullt. Lägg en dold energiplusbricka på en egen fastighet.
-PK-69;lagg_energi_plus_egen;nar_som_helst;;Solceller på taket;Taket får solceller som täcker en del av fastighetselen. Lägg en dold energiplusbricka på en egen fastighet.
-PK-70;lagg_energi_plus_egen;nar_som_helst;;Tilläggsisolering av vinden;Vindsbjälklaget isoleras och värmeförlusten minskar. Lägg en dold energiplusbricka på en egen fastighet.
-PK-71;lagg_energi_plus_egen;nar_som_helst;;Byte till LED i allmänna ytor;Trapphus och garage får ny belysning med närvarostyrning. Lägg en dold energiplusbricka på en egen fastighet.
-PK-72;lagg_energi_plus_egen;nar_som_helst;;Frånluftsvärmepump installeras;Värmen i frånluften tas tillvara i stället för att blåsa ut. Lägg en dold energiplusbricka på en egen fastighet.
-PK-73;direkt_dn_plus_egen;nar_som_helst;;Genombrott i hyresförhandlingen;Ett nytt avtal höjer hyresnivån på en hel fastighet. +1 DN direkt och permanent på en egen fastighet.
+PK-06;forhandling_mod;fore_slag;+2;Inhyrd jurist;+2 på ett förhandlingsslag. Spelas före slaget.
+PK-07;forhandling_mod;fore_slag;+3;Branschens bäste;+3 på ett förhandlingsslag. Spelas före slaget.
+PK-08;forhandling_auto;fore_slag;;Signerat på plats;Vinn en förhandling automatiskt.
+PK-09;forhandling_auto;fore_slag;;Oemotståndligt bud;Vinn en förhandling automatiskt.
+PK-10;forhandling_auto;fore_slag;;Fast handslag;Vinn en förhandling automatiskt.
+PK-11;energi_mod;efter_slag;+1;Bättre isolering;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-12;energi_mod;efter_slag;+1;Injusterat system;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-13;energi_mod;efter_slag;+2;Energikonsult inhyrd;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-14;energi_mod;efter_slag;+2;Erfaren installatör;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-15;energi_mod;efter_slag;+2;Statligt stöd hittat;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-16;energi_mod;efter_slag;+3;Certifierad expert;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-17;energi_mod;efter_slag;+3;Helhetslösning levererad;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-18;lagg_dn_plus_egen;nar_som_helst;;Dold förbättring;Lägg en dold +1 DN på en av dina fastigheter.
+PK-19;lagg_dn_plus_egen;nar_som_helst;;Tyst uppgradering;Lägg en dold +1 DN på en av dina fastigheter.
+PK-20;lagg_dn_plus_egen;nar_som_helst;;Extra underhåll;Lägg en dold +1 DN på en av dina fastigheter.
+PK-21;lagg_dn_plus_egen;nar_som_helst;;Kvalitetshöjning;Lägg en dold +1 DN på en av dina fastigheter.
+PK-22;lagg_dn_plus_egen;nar_som_helst;;Diskret investering;Lägg en dold +1 DN på en av dina fastigheter.
+PK-23;lagg_dn_plus_egen;nar_som_helst;;Renoverat i tysthet;Lägg en dold +1 DN på en av dina fastigheter.
+PK-24;lagg_dn_plus_egen;nar_som_helst;;Fastighetsskötarens tips;Lägg en dold +1 DN på en av dina fastigheter.
+PK-25;lagg_dn_plus_egen;nar_som_helst;;Väl skött förvaltning;Lägg en dold +1 DN på en av dina fastigheter.
+PK-26;stada;nar_som_helst;;Problemet är löst;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-27;stada;nar_som_helst;;Snabb insats;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-28;stada;nar_som_helst;;Städat upp;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-29;stada;nar_som_helst;;Åtgärdat i tid;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-30;stada;nar_som_helst;;Krisen avvärjd;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-31;stada;nar_som_helst;;Rent bord igen;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-32;stopp;reaktivt;;Hembudsrätt använd;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-33;stopp;reaktivt;;Motbud i sista minuten;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-34;stopp;reaktivt;;Låst avtal;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-35;stopp;reaktivt;;Styrelsen säger nej;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-36;stopp;reaktivt;;Juridiskt hinder;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-37;kika;nar_som_helst;;Tips från branschen;Titta på ett dolt kort hos en motståndare.
+PK-38;kika;nar_som_helst;;Insyn i affären;Titta på ett dolt kort hos en motståndare.
+PK-39;kika;nar_som_helst;;Bra rykte i huset;Titta på ett dolt kort hos en motståndare.
+PK-40;kika;nar_som_helst;;Läckt information;Titta på ett dolt kort hos en motståndare.
+PK-41;hyresgastvarvning;nar_som_helst;;Bättre villkor lockar över hyresgästen;En hyresgäst hos en konkurrent flyttar till er efter ett bättre erbjudande. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-42;hyresgastvarvning;nar_som_helst;;Vi tar ankarhyresgästen;Er uthyrare vinner en stor hyresgäst som konkurrenten räknat med. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-43;hyresgastvarvning;nar_som_helst;;Flytterbjudande med hyresrabatt;Tre månaders rabatt räcker för att hyresgästen byter hyresvärd. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-44;hyresgastvarvning;nar_som_helst;;Snabbare felanmälan vinner;Hyresgästen tröttnar på konkurrentens service och flyttar till er. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-45;hyresgastvarvning;nar_som_helst;;Bättre läge, samma hyra;Er fastighet erbjuder mer för pengarna och hyresgästen byter. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-46;hyresgastvarvning;nar_som_helst;;Förnyelse med nya ytor;Ni erbjuder en anpassad yta som konkurrenten inte kan matcha. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-47;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis personkort från en motspelares hand.
+PK-48;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis personkort från en motspelares hand.
+PK-49;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis personkort från en motspelares hand.
+PK-50;dra_personkort;nar_som_helst;;Ny kontakt knuten;Dra ett personkort.
+PK-51;dra_personkort;nar_som_helst;;Rekommendation från kollega;Dra ett personkort.
+PK-52;dra_personkort;nar_som_helst;;Nätverksträff;Dra ett personkort.
+PK-53;dra_personkort;nar_som_helst;;Gammal bekant hör av sig;Dra ett personkort.
+PK-54;dra_personkort;nar_som_helst;;Tips vid kaffeautomaten;Dra ett personkort.
+PK-55;riskbuffert;nar_som_helst;;Extra marginal budgeterad;Ta en riskbuffert.
+PK-56;riskbuffert;nar_som_helst;;Buffert i god tid;Ta en riskbuffert.
+PK-57;riskbuffert;nar_som_helst;;Försiktig planering;Ta en riskbuffert.
+PK-58;riskbuffert;nar_som_helst;;Extra kapital avsatt;Ta en riskbuffert.
+PK-59;utveckling;nar_som_helst;;Intern ledarutbildning;FC eller FS går en intern ledarutbildning. Lägg en utvecklingsbricka på din FC eller FS.
+PK-60;utveckling;nar_som_helst;;Branschcertifiering;Er förvaltningschef tar en eftertraktad certifiering. Lägg en utvecklingsbricka på din FC eller FS.
+PK-61;utveckling;nar_som_helst;;Mentorprogram;Erfaren kollega delar med sig av sina knep. Lägg en utvecklingsbricka på din FC eller FS.
+PK-62;lagg_energi_plus_egen;nar_som_helst;;Injustering av värmesystemet;Värmen balanseras om och radiatorerna slutar gå för fullt. Lägg en dold energiplusbricka på en egen fastighet.
+PK-63;lagg_energi_plus_egen;nar_som_helst;;Solceller på taket;Taket får solceller som täcker en del av fastighetselen. Lägg en dold energiplusbricka på en egen fastighet.
+PK-64;lagg_energi_plus_egen;nar_som_helst;;Tilläggsisolering av vinden;Vindsbjälklaget isoleras och värmeförlusten minskar. Lägg en dold energiplusbricka på en egen fastighet.
+PK-65;lagg_energi_plus_egen;nar_som_helst;;Byte till LED i allmänna ytor;Trapphus och garage får ny belysning med närvarostyrning. Lägg en dold energiplusbricka på en egen fastighet.
+PK-66;lagg_energi_plus_egen;nar_som_helst;;Frånluftsvärmepump installeras;Värmen i frånluften tas tillvara i stället för att blåsa ut. Lägg en dold energiplusbricka på en egen fastighet.
+PK-67;direkt_dn_plus_egen;nar_som_helst;;Genombrott i hyresförhandlingen;Ett nytt avtal höjer hyresnivån på en hel fastighet. +1 DN direkt och permanent på en egen fastighet.
+PK-68;budstrid;vid_bud;1,1;Säljaren behöver likviditet;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-69;budstrid;vid_bud;1,1;Kall kalkyl;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-70;budstrid;vid_bud;1,1;Pressat läge hos motparten;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-71;overtagande;vid_bud;;Juridiskt vattentätt;Ditt tvångsbud kan inte stoppas — varken med stoppkort eller riskbuffertar. Spelas när du lägger budet.
+PK-72;overtagande;vid_bud;;Majoriteten i styrelsen;Ditt tvångsbud kan inte stoppas — varken med stoppkort eller riskbuffertar. Spelas när du lägger budet.
+PK-73;gratis_uppgradering;nar_som_helst;;Totalentreprenad klar;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-74;gratis_uppgradering;nar_som_helst;;Fjärrvärmen konverteras;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-75;gratis_uppgradering;nar_som_helst;;Energibolaget bjuder på åtgärden;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-76;omforhandlat_lan;nar_som_helst;1;Ny bank lockar;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-77;omforhandlat_lan;nar_som_helst;1;Grön obligation;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-78;omforhandlat_lan;nar_som_helst;1;Räntebindning i rätt läge;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-79;dd_val;vid_kop;;Grundlig besiktning;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
+PK-80;dd_val;vid_kop;;Due diligence-team;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
+PK-81;konvertering;nar_som_helst;5;Kontor blir bostäder;Betala 5 Mkr: en egen lokal eller ett eget kontor byggs om till hyresrätt och följer bostadsspåret i yieldbanan. DN och energiklass behålls.
