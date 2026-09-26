@@ -17,6 +17,8 @@ TYPFARG = {"BRF": ("#7a3835", "#f6e2dd"), "FÖRSKOLA": ("#3f4a1f", "#e9ebd5"), "
 TYPBILD = {"HYRESRÄTT": "Hyresrätt Generell", "FÖRSKOLA": "FÖRSKOLOR Generell", "LOKAL": "LOKAL Generell",
            "KONTOR": "KONTOR Generell"}
 
+# Skedenas färger (skede_color i Produktion-fliken): markerar i vilken del av spelet uppgiften används
+SKEDE = {"PU": "#DDA063", "PL": "#1A6B9A", "G": "#91B542", "F": "#EF5656"}
 BILDPREFIX = {"FÖRSKOLA": "FÖRSKOLOR", "KONTOR": "KONTOR", "LOKAL": "LOKAL", "HYRESRÄTT": "Hyresrätt", "BRF": "BRF"}
 # FC och FS: befintliga personalbilder (Bilder/Skapade bilder)
 PERSONBILD = {"Förhandlaren": "Fastighetschef Kommersiellt", "Tekniska experten": "Fastighetschef Samhälle",
@@ -48,6 +50,12 @@ REGEL = {   # händelse- och kvartalskortens effekter i spelarens ord
     "kvartal_kassa_minus": "Varje ägare av typen betalar <b>{v} Mkr</b> vid nästa marknad.",
 }
 REGEL_I_TEXTEN = {"villkorskort", "forkop", "utveckling", "riskbuffert", "natverkskort_fokus"}
+
+
+def sektion(rubrik, skede, extra=""):
+    farg = SKEDE[skede]
+    return (f'<div class="p-sektion {extra}" style="color:{farg};border-color:{farg}">'
+            f'{bricka(skede, farg)}<span>{rubrik}</span></div>')
 
 
 def e(t):
@@ -142,6 +150,7 @@ def fc_kort(k, senior=False):
 def projekt_framsida(p):
     mork, ljus = TYPFARG[p["Typ"]]
     return f'''<div class="kort k88 fram projekt" style="--bg:{ljus};--accent:{mork}">
+      <div class="p-skede">{bricka("PU", SKEDE["PU"])}</div>
       <div class="p-typ">{e(p["Typ"])}</div>
       <div class="p-namn">{e(p["Kortnamn"])}</div>
       <div class="p-hq"><span>H</span>{e(tal(p["Hållbarhetskrav H"]))}<span>Q</span>{e(tal(p["Kvalitetskrav Q"]))}</div>
@@ -162,14 +171,14 @@ def projekt_textsida(p):
     plan = [("BTA", f'{tal(p["BTA (kvm)"])} kvm'), ("Utvecklingskostnad", f'{tal(p["Utvecklingskostnad (Mkr)"])} Mkr'),
             ("Anskaffning", f'{tal(p["Anskaffning (Mkr)"])} Mkr'), ("Riskbuffert", tal(p["Riskbuffert"]) or "–"),
             ("Passera nämnden", f'&gt; {tal(p["Passera nämnden (>)"])}'), ("Hållbarhetskrav", tal(p["Hållbarhetskrav H"])),
-            ("Kvalitetskrav", tal(p["Kvalitetskrav Q"])), ("Tidspåverkan", tal(p["Tidspåverkan T"]) or "–")]
+            ("Kvalitetskrav", tal(p["Kvalitetskrav Q"]))]
     planrader = "".join(f"<tr><td>{a}</td><td>{e(b) if '&gt;' not in str(b) else b}</td></tr>" for a, b in plan)
     if p["Typ"] == "BRF":
-        forv = f'''<div class="p-sektion">Försäljning</div>
+        forv = f'''{sektion("Försäljning", "G")}
           <table class="p-tal"><tr><td>Marknadsvärde</td><td>{e(tal(p["Marknadsvärde (Mkr)"]))} Mkr</td></tr></table>
           <div class="p-regel">{e(p["Rörligt marknadsvärde"])}</div>'''
     else:
-        forv = f'''<div class="p-sektion">Förvaltning</div>
+        forv = f'''{sektion("Förvaltning", "F")}
           <table class="p-tal stor">
             <tr><td>Driftnetto</td><td>{e(tal(p["Driftnetto (Mkr/år)"]))} Mkr/år</td></tr>
             <tr><td>Räntekostnad</td><td>{e(tal(p["Räntekostnad (Mkr/år)"]))} Mkr/år</td></tr>
@@ -181,8 +190,10 @@ def projekt_textsida(p):
     return f'''<div class="kort k88 text projekt" style="--bg:{ljus};--accent:{mork}">
       <div class="p-namn vanster">{e(p["Namn"])}</div>
       <div class="p-kolumner">
-        <div><div class="p-sektion">Planering</div><table class="p-tal">{planrader}</table>
-             <div class="p-sektion liten">Nivåkrav leverantörer</div><table class="p-tal liten">{nivarader}</table></div>
+        <div>{sektion("Projektutveckling", "PU")}<table class="p-tal">{planrader}</table>
+             {sektion("Planering", "PL", "liten")}
+             <table class="p-tal"><tr><td>Tidspåverkan</td><td>{e(tal(p["Tidspåverkan T"]) or "–")}</td></tr></table>
+             <div class="p-underrubrik">Nivåkrav leverantörer</div><table class="p-tal liten">{nivarader}</table></div>
         <div>{forv}</div></div>
       <div class="fot"><span>Behåll kortet så länge ni äger projektet</span><span>{e(p["Kort-id"])}</span></div>
       <div class="list"></div></div>'''

@@ -68,7 +68,12 @@ body { font-family: var(--typsnitt); color: var(--text); -webkit-print-color-adj
 .projekt.fram .p-tal { width: 60mm; margin: 0 auto; }
 .p-kolumner { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
 .p-sektion { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 7.4pt;
-             border-bottom: .4mm solid var(--accent); margin: 0 0 1.5mm; padding-bottom: .5mm; }
+             border-bottom: .5mm solid var(--accent); margin: 0 0 1.5mm; padding-bottom: .8mm;
+             display: flex; align-items: center; gap: 1.5mm; }
+.p-sektion .bricka { width: auto; min-width: 5mm; height: 4.2mm; border-radius: 2.1mm; padding: 0 1mm; font-size: 5.6pt; }
+.p-underrubrik { margin: 2mm 0 .5mm; font-size: 6.4pt; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6b6060; }
+.p-skede { position: absolute; top: 7mm; right: 7mm; }
+.p-skede .bricka { position: static; width: auto; padding: 0 1.4mm; border-radius: 2.6mm; }
 .p-sektion.liten { margin-top: 4mm; font-size: 6.4pt; }
 .p-regel { margin-top: 3mm; font-size: 7pt; color: #4a3f3f; }
 .ek { display: inline-block; min-width: 5mm; text-align: center; background: var(--accent); color: var(--bg);
