@@ -72,6 +72,8 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
 
 - **Railway:** projektet `akepol-spel`, tjänsten `spel`, byggs från grenen med `spel/Dockerfile` (inställt på tjänsten; `railway.toml` i roten anger bara hälsokontroll och omstart)
   (webben byggs med Node, servern kör Python). Adress: https://spel-production.up.railway.app
+  Körs i EU (Amsterdam, `ams`). Tjänstens källa är låst till grenen `claude/start-claude-project-21rsd5`;
+  utan uttalad gren bygger Railway från `main` (den gamla appen) vid regionbyten o.d.
   Partierna sparas på volymen `partier` (/data) och återskapas när tjänsten startar om.
   Den gamla appen ligger kvar i sitt eget projekt, orörd.
 - **Lokalt:** `uvicorn spel.server.app:app --port 8000` (från roten, efter `npm run build` i

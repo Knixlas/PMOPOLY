@@ -33,6 +33,19 @@ Prövat i simuleringen (600 partier per variant), utan att ändra reglerna:
 | Nämnden: högst 1–2 omförsök med höjda krav | 39–40 % | 14–15 % |
 | Nämnden: +1 per projekt över 4 / över 5 | 39 % / 39 % | 14 % / 15 % |
 
+| Nya nämndsiffror efter storlek, bottarna oförändrade (t.ex. 750 kvm: 1 … 2000 kvm: 4) | 46 % | 5–10 % |
+| Samma nya siffror, bottarnas nämndgräns skalad i samma takt (rättvis jämförelse) | 37–39 % | 14–16 % |
+
+Nämndsiffrorna per projekt (2026-09-27, inför omtrycket): fyra varianter prövade — ⌈BTA/500⌉,
+BTA/250 − 2, en trappa 1–4 efter BTA och en trappa 0–4 där de minsta projekten går fritt. Höjs bara
+siffrorna för stora projekt blir *expansiv* ännu starkare, eftersom den försiktiga spelaren då får
+nästan inga projekt inom sin riskgräns. Anpassar spelarna sin riskgräns efter siffrorna (vilket
+riktiga spelare gör) blir balansen densamma som i dag. Skälet: ett misslyckat nämndförsök kostar för
+lite (ett steg högre krav och ett nytt försök med en tärning till), så nämndsumman begränsar aldrig
+storleken på riktigt. **Nya nämndsiffror ensamma räcker alltså inte**; de behöver kombineras med en
+dyrare miss i nämnden eller en kostnad som växer med storleken (se nedan). Siffrorna kan ändå
+justeras vid omtrycket av andra skäl — balansen påverkas inte åt något håll.
+
 **Slutsats:** övertaget är strukturellt. Storlek lönar sig i alla tre skedena, och små justeringar i
 nämnden eller markpriset rubbar det inte. En verklig motvikt behöver en kostnad som *växer* med
 storleken, till exempel:
