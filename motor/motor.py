@@ -96,10 +96,18 @@ class Motor:
         """Spela Skede 1 med samma slump; ett resultat per spelare (i spelarordning)."""
         from .pu import PUData, PUMotor, PUParametrar
         from .pu_strategi import PU_STRATEGIER
+        from .skede2 import S2Data, Skede2
+        from .skede2_strategi import S2_STRATEGIER
         if not hasattr(self.d, "pu"):
-            self.d.pu = PUData()                      # läses en gång per Kortdata
+            self.d.pu, self.d.s2 = PUData(), S2Data()     # läses en gång per Kortdata
         strategier = [self.s.valj(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
-        return PUMotor(strategier, PUParametrar(), self.s, self.d.pu).spela()
+        pu = PUMotor(strategier, PUParametrar(), self.s, self.d.pu).spela()
+        strategier = [self.s.valj(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
+        s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2).spela()
+        for r, r2 in zip(pu, s2):
+            r.update({"s2_strategi": r2["strategi"], "tb": r2["tb"], "TG": r2["TG"], "lan": r2["lan"],
+                      "n": r2["n"], "Mu": r2["Mu"], "riskbuffert": r2["riskbuffert"]})
+        return pu
 
     def ny_fastighet(self, projekt):
         """Fastigheten som den står på projektkortet: driftnetto efter ränta, ränta, lån, energiklass."""
@@ -278,10 +286,11 @@ class Motor:
             pool[:] = [p for p in pool if p["Namn"] not in byggda]
         for sp in s.blanda_lista(self.spel.spelare):
             sp.riskbuffert = s.rng.randint(*self.p.start_riskbuffert)
-            if pu:                                   # Skede 1 i motorn; Skede 2 (Planering, Genomförande) ännu inte
+            if pu:                                   # Skede 1 och 2 i motorn
                 r = pu[self.spel.spelare.index(sp)]
                 sp.pu = r
-                sp.riskbuffert = r["riskbuffert"]   # ANTAGANDE: oförändrat genom Skede 2
+                sp.riskbuffert = r["riskbuffert"]
+                sp.lan = r["lan"]
                 valda = r["placerade"]
                 abt = r["abt"]
             else:                                    # utan Skede 1: slumpa en portfölj
@@ -301,15 +310,22 @@ class Motor:
                                    + (s.rng.randint(1, tarning) if tarning else 0))
                 else:
                     sp.fastigheter.append(self.ny_fastighet(projekt))
-            sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
+            if pu:                                   # 8.5: TB (och moderbolagslånens 95 Mkr) följer med
+                sp.tb = r["tb"]
+                start = sp.tb + sp.lan * 95 + brf_intakt
+            else:
+                sp.tb = max(0.0, s.rng.triangular(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
+                start = sp.tb + brf_intakt
             sp.brf_intakt = brf_intakt
-            sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(sp.tb + brf_intakt)
+            sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(start)
         for sp in sorted(self.spel.spelare, key=lambda x: x.kassa):     # 9.2: minst kassa väljer först
             sp.fc = sp.strategi.valj_fc(self, sp, fc_kvar)
             fc_kvar.remove(sp.fc)
             sp.fs = sp.strategi.valj_fs(self, sp, fs_kvar)
             fs_kvar.remove(sp.fs)
         for sp in self.spel.spelare:
+            while sp.lan and len(sp.fastigheter) > 1:        # 7.2: moderbolagslån → sälj ned till en fastighet
+                self.salj_till_bank(sp, min(sp.fastigheter, key=lambda f: self.mv(f) - f.lan))
             for f in sp.fastigheter:
                 self.dra_handelse(f, sp)
             self.dra_natverkskort(sp, 3)
@@ -417,8 +433,8 @@ class Motor:
             kopt = False
             for f, kalla in utbud:
                 pris = self.mv(f) - f.lan
-                intresse = [sp for sp in self.spel.spelare
-                            if sp.kassa >= pris and sp.strategi.vill_kopa(self, sp, f, pris)]
+                intresse = [sp for sp in self.spel.spelare          # 7.2: köpstopp med moderbolagslån
+                            if not sp.lan and sp.kassa >= pris and sp.strategi.vill_kopa(self, sp, f, pris)]
                 if not intresse:
                     continue
                 forkop = [sp for sp in intresse if any(k["Effekt"] == "forkop" and k.get("Typ") == f.typ for k in sp.hand)]
@@ -513,6 +529,8 @@ class Motor:
 
     def tvangsbud(self):
         for budgivare in self.spel.spelare:
+            if budgivare.lan:                                  # 7.2: köpstopp gäller även tvångsbud
+                continue
             val = budgivare.strategi.tvangsbud(self, budgivare)
             if not val:
                 continue
@@ -769,6 +787,8 @@ class Motor:
         q = self.spel.kvartal
         for sp in self.spel.spelare:
             gratis_forsta = self.ar_fc(sp, "Tekniska experten") and sp.fc_senior
+            if sp.lan:                                        # 7.2: uppgraderingsstopp med moderbolagslån
+                continue
             for f in sp.strategi.uppgradera(self, sp, self.p.max_uppgraderingar[q - 1]):
                 if f.uppgraderingsstopp or f.ek == "A" or f not in sp.fastigheter:
                     continue
@@ -832,7 +852,7 @@ class Motor:
         """F-poäng = (eget kapital + halva kassan) ÷ 20, räknat vid slut. ~20 = tokbra.
         Beslut: prova den enklaste varianten först (inget startvärde att komma ihåg)."""
         kassa = sp.kassa + sp.vantande_kassa + sp.restkort * 0.25
-        return self.varde(sp, kassa) / self.p.f_delare
+        return (self.varde(sp, kassa) - 100 * sp.lan) / self.p.f_delare   # 10.1: −100 Mkr per moderbolagslån
 
     def slutrakning(self):
         resultat = []                               # värdering på Q4-yielden
@@ -850,5 +870,8 @@ class Motor:
                 # F-poäng: avkastning i % på viktat värde (jämför TG i Genomförandet: ~20 = tokbra)
                 "F": self.f_poang(sp),
                 "dn_ar": sum(self.eff_dn(f, sp) for f in sp.fastigheter),
+                **({"PU": sp.pu["PU"], "TG": sp.pu["TG"], "Mu": sp.pu["Mu"], "lan": sp.lan,
+                    "total": (sp.pu["PU"] + sp.pu["TG"] + self.f_poang(sp)) * sp.pu["Mu"],
+                    "pu_strategi": sp.pu["strategi"], "s2_strategi": sp.pu["s2_strategi"]} if sp.pu else {}),
             })
         return resultat

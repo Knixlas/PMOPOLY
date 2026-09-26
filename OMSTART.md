@@ -462,6 +462,25 @@ kravsumma ~24, vinnarens ABT 416 → PU-poäng ≈ 20 med tomt 10. Niklas: 5–8
 Skönhetsrådet) får bild; Stadshuset "BY" → "BYT". **F-brädet:** "betala lönekostnader" → "dra två
 nätverkskort"; yieldbanan Q2–Q4 och fokusordningen (HR, lokal, kontor, förskola) gäller som tryckt.
 
+## 5f. Skede 2 (Planering, Genomförande) i motorn — status (2026-09-26)
+
+`motor/skede2.py` + `motor/skede2_strategi.py` (bottar: balanserad, billig, kvalitet). Planeringens
+13 steg (leverantör/organisation nivå 1–4, pris efter BTA/BYA-klass, projektens nivåkrav, händelsekort
+per steg i egen hög), arbetschef (lägst BTA väljer först), Genomförandets 8 faser (FAS-kort, kulturkort,
+kompetens per kompetens, ta-tillbaka-regeln, tom kolumn = opåverkad, B-ÄTA till ABT), skedesavslut
+(konsekvens T→Q→H med slingor, garanti = konsekvenskort + leverantörer nivå 1–2), TB/TG, n → Mu,
+moderbolagslån automatiskt (−100 i F-poängen; sälj ned till en fastighet, köp- och uppgraderingsstopp).
+**Hela spelet simuleras nu:** Skede 1 → Skede 2 → Förvaltning, slutpoäng (PU + TG + F) × Mu.
+
+**Beslut (Niklas):** Q/H-utfall startar på 0 (regelboken 3.3 rättad); ta tillbaka kort innan nivån
+låses; tom FAS-kolumn = påverkas inte alls; händelsekorten gäller som tryckta; tryckt skala.
+Övriga förslag antagna: T = min(14, 12 + max projekt-T) + tid från Skede 1; erfarenhet 0–12;
+kulturkort blint, pris enligt FAS-kortet; konsekvens med omslag; garanti räknar alla valda nivå 1–2;
+kvarter utan bostäder = ÖVRIGA; CEO/CFO/COO och PC spelas som kompetenskort.
+**Simulerat (1000 hela partier):** PU-poäng median 16 (11–21), TG 9 % (−7–25), F 14 (1–26), Mu 0,8,
+slutpoäng 31 (5–55). Skede 2: billig strategi vinner 9 % (Mu ~0,5), balanserad 36 %. Skede 1: expansiv
+33 %, försiktig 15 %. Förvaltningsstrategier 23–27 %. **Att titta på:** FC Bostadsveteranen 39 %.
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.

@@ -452,5 +452,5 @@ class PUMotor:
             "bta": bta, "bya": bya, "abt": kv.abt, "PU": kv.abt / 20,
             "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid, "riskbuffert": kv.riskbuffert,
             "erfarenhet": kv.erfarenhet, "kvartertyp": kv.kvartertyp, "namndforsok": kv.namndforsok,
-            "expansioner": len(kv.expansioner), "placerade": kv.placerade,
+            "expansioner": len(kv.expansioner), "placerade": kv.placerade, "pc_kort": kv.pc,
         }
