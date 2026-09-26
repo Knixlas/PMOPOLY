@@ -27,6 +27,9 @@ på var de säger emot varandra.
   för att slippa trycka nytt. Koden och de digitala verktygen anpassas efter det tryckta spelet — inte tvärtom.
 - **Skede 3 (Förvaltning) får göras om** (jfr `FORVALTNING_DESIGN_2-1.md`) och får nytt tryck.
 - **Spelplanerna ändras med klistermärken**, inte omtryck.
+- **Allt byggs jungfruligt.** Kortdatan läses tillbaka ur tryckfilerna till **nya Excel-filer, en per korttyp**,
+  som blir den nya källan. Befintliga CSV:er, `ÅKEPOL_alla_kortdata.xlsx`, kod och dokument är bara referens.
+  Det enda som tas med från det gamla är **grafiken** (tryckfilerna).
 - Varje föreslagen ändring i Skede 1–2 måste motivera sig: *vad måste tryckas om?*
   Regeländringar som bara påverkar regelboken är billiga; ändringar på kort och brickor är dyra.
 
@@ -180,7 +183,7 @@ brickor och kortlayout — kräver omtryck, prövas ett i taget; illustrationer 
 
 ## 5. Vad vi behåller som referens
 
-Omstart betyder inte att kasta bort: nuvarande kod, data och dokument
+Allt byggs nytt; bara grafiken återanvänds. Nuvarande kod, data och dokument
 (`REGELBOK_CHECKLIST.md`, `ANALYS_RAPPORT.md`, `FUTURE_UPGRADES.md`, `FORVALTNING_DESIGN_2-1.md`,
 `PROMPT_FORSLAG.md`) är underlag och facit för vad som redan är bestämt och varför.
 
