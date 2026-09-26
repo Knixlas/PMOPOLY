@@ -63,6 +63,30 @@ class TestParti(unittest.TestCase):
         with self.assertRaises(LoggFel):
             p.spela_klart()
 
+    def test_fysiskt_spel_med_inmatad_slump(self):
+        """Läge 2: spelarna anger tärningar och dragna kort; partiet går klart och kan spelas upp."""
+        import random
+        R = random.Random(4)
+        p = Parti([{"namn": "Norr", "styrning": "människa"}, {"namn": "Söder", "styrning": "människa"}],
+                  fro=4, data=DATA, slump="inmatad")
+        slumpfragor = 0
+        while (f := p.steg()) is not None:
+            if f.kanal == "beslut":
+                p.svara(f.forslag)
+                continue
+            slumpfragor += 1
+            if f.metod in ("d20", "tarning", "heltal", "index"):
+                self.assertLessEqual(f.argument[0], f.argument[1])
+                p.svara(R.randint(f.argument[0], f.argument[1]))
+            elif f.metod == "dra":                       # [högens namn, [kort-id kvar i högen]]
+                self.assertTrue(f.argument[1])
+                p.svara(R.randrange(len(f.argument[1])))
+            else:
+                p.svara(R.randrange(len(f.argument)))
+        self.assertGreater(slumpfragor, 100)
+        uppspelad = Parti.fran_sparat(json_kopia(p.uppstart()), json_kopia(p.logg), data=DATA).spela_klart()
+        self.assertEqual(utan_strateginamn(uppspelad), utan_strateginamn(p.resultat))
+
     def test_ensam_i_partiet(self):
         self.assertEqual(len(Parti([{"namn": "Ensam"}], fro=73, data=DATA).spela_klart()), 1)
 

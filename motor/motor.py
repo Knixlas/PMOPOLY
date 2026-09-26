@@ -301,15 +301,15 @@ class Motor:
             s.blanda("yield_" + spar, [k for k in d.yieldkort if k["Spår"] == spar])
             # F-brädet: tre platser per spår (Q2–Q4); yielden flyttas vid varje kvartals start
             self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)]
-        pool = s.blanda_lista(d.projekt)
+        pool = s.blanda_lista(d.projekt, "projektpool")
         self.projektpool = pool
-        brf = s.blanda_lista(d.brf)
+        brf = s.blanda_lista(d.brf, "BRF")
         fc_kvar, fs_kvar = list(d.fc), list(d.fs)
         pu = self.projektutveckling() if self.p.projektutveckling else None
         if pu:                                       # kvarterens egna projekt finns inte på marknaden
             byggda = {p["Namn"] for r in pu for p in r["placerade"]}
             pool[:] = [p for p in pool if p["Namn"] not in byggda]
-        for sp in s.blanda_lista(self.spel.spelare):
+        for sp in s.blanda_lista(self.spel.spelare, "spelordning"):
             sp.riskbuffert = s.heltal(*self.p.start_riskbuffert)
             if pu:                                   # Skede 1 och 2 i motorn
                 r = pu[self.spel.spelare.index(sp)]
@@ -407,7 +407,7 @@ class Motor:
         # bankens disposition: sanering först, annars fynd
         for f in tagna:
             skuld = f.lan - self.mv(f)
-            for sp in self.s.blanda_lista(self.spel.spelare):
+            for sp in self.s.blanda_lista(self.spel.spelare, "spelordning"):
                 if sp.strategi.vill_sanera(self, sp, f, skuld):
                     sp.kassa += skuld
                     sp.fastigheter.append(f)

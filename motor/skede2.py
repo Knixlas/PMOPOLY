@@ -175,13 +175,13 @@ class Skede2:
 
     def pl_handelse(self, b):
         if b.handelsehog:
-            kort = b.handelsehog.pop(self.s.index(len(b.handelsehog)))
+            kort = self.s.dra_fran(b.handelsehog, "PL-händelser")
             self.slag(b, kort, ["Konsekvens 1–5", "Konsekvens 6–17", "Konsekvens 18–20", "Konsekvens 21+"],
                       [5, 17, 20], True)
 
     # ------------------------------------------------------------------ Planering
     def planering(self):
-        ledning = {r: self.s.blanda_lista([k for k in self.d.ledning if k["Roll"] == r]) for r in ("CEO", "CFO", "COO")}
+        ledning = {r: self.s.blanda_lista([k for k in self.d.ledning if k["Roll"] == r], r) for r in ("CEO", "CFO", "COO")}
         for b in self.bolag:
             r = b.pu
             b.q_krav, b.h_krav = r["q_krav"], r["h_krav"]
@@ -248,8 +248,8 @@ class Skede2:
         return valda
 
     def genomforande(self):
-        hogar = {s: self.s.blanda_lista([k for k in self.d.fas if int(tal(k["Steg"])) == s]) for s in range(1, 9)}
-        kulturhog = self.s.blanda_lista(self.d.kultur)
+        hogar = {s: self.s.blanda_lista([k for k in self.d.fas if int(tal(k["Steg"])) == s], f"FAS {s}") for s in range(1, 9)}
+        kulturhog = self.s.blanda_lista(self.d.kultur, "kultur")
         ordning = sorted(self.bolag, key=lambda b: b.pu["bta"])     # beslut: lägst BTA först
         for steg in range(1, 9):
             fas = hogar[steg].pop()
@@ -282,10 +282,10 @@ class Skede2:
 
     # ------------------------------------------------------------------ Skedesavslut
     def konsekvens(self, b, typ, kvar):
-        hog = self.s.blanda_lista([k for k in self.d.konsekvens if k["Typ"] == typ])
+        hog = self.s.blanda_lista([k for k in self.d.konsekvens if k["Typ"] == typ], f"konsekvens {typ}")
         while kvar > 0:
             if not hog:
-                hog = self.s.blanda_lista([k for k in self.d.konsekvens if k["Typ"] == typ])
+                hog = self.s.blanda_lista([k for k in self.d.konsekvens if k["Typ"] == typ], f"konsekvens {typ}")
             fore = (b.q, b.h)
             self.slag(b, hog.pop(), ["Utfall D20+ER 1-9", "Utfall D20+ER 10-17", "Utfall D20+ER 18-24",
                                      "Utfall D20+ER 25+"], [9, 17, 24], True)
@@ -312,7 +312,7 @@ class Skede2:
             hog = []
             for _ in range(antal):
                 if not hog:
-                    hog = self.s.blanda_lista(self.d.garanti)
+                    hog = self.s.blanda_lista(self.d.garanti, "garanti")
                 self.slag(b, hog.pop(), ["Utfall D20+erfarenhet 1-9", "Utfall D20+erfarenhet 10-17",
                                          "Utfall D20+erfarenhet 18-24", "Utfall D20+erfarenhet 25+"],
                           [9, 17, 24], True)

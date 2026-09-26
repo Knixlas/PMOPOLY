@@ -182,10 +182,10 @@ class PUMotor:
     def starta(self):
         s = self.s
         for typ in TYPER:
-            self.hogar[typ] = s.blanda_lista([p for p in self.d.projekt if p["Typ"] == typ])
-        self.handelsehog = s.blanda_lista(self.d.handelse + self.d.special)
-        self.markhog = s.blanda_lista(self.d.markexpansion)
-        self.ordning = s.blanda_lista(self.kvarter)          # ANTAGANDE: slumpad (regelboken: slå D6)
+            self.hogar[typ] = s.blanda_lista([p for p in self.d.projekt if p["Typ"] == typ], f"projekt {typ}")
+        self.handelsehog = s.blanda_lista(self.d.handelse + self.d.special, "PU-händelser")
+        self.markhog = s.blanda_lista(self.d.markexpansion, "markexpansion")
+        self.ordning = s.blanda_lista(self.kvarter, "spelordning")          # ANTAGANDE: slumpad (regelboken: slå D6)
         pc_kvar = list(self.d.personal)
         for kv in self.ordning:                              # beslut: PC väljs öppet i spelordning
             kv.q_krav, kv.h_krav = self.p.start_q, self.p.start_h
@@ -245,7 +245,7 @@ class PUMotor:
     # ------------------------------------------------------------------ händelsekort
     def handelse(self, kv):
         if not self.handelsehog:
-            self.handelsehog = self.s.blanda_lista(self.d.handelse + self.d.special)   # ANTAGANDE: blandas om
+            self.handelsehog = self.s.blanda_lista(self.d.handelse + self.d.special, "PU-händelser")   # ANTAGANDE: blandas om
         kort = self.handelsehog.pop()
         self.stat["handelse"] += 1
         if str(kort.get("Nr", "")).startswith(("PS", "DS")):

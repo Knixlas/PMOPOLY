@@ -86,6 +86,12 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    PU-poäng 18 i median (19,7 när bara rutor räknades). Expansiv Skede 1-bott vinner oftare (40 %),
    eftersom marken nu är den verkliga begränsningen.
 3. **Läge 2 och 3** (formulär; värde direkt vid fysiskt spel, motorn prövas mot riktiga partier).
+   *Läge 2 klart i motorn:* `Parti(..., slump="inmatad")` frågar spelarna om varje tärning ("d20",
+   "tarning": [min, max]) och varje draget kort ("dra": [högens namn, [kort-id kvar]]) — frågor med
+   kanal "slump". Högar i okänd ordning (`InmatadHog`) frågar när ett kort dras eller när det översta
+   visas. Loggen, uppspelningen och återupptagningen fungerar likadant. Ett parti ger ~110 kortfrågor
+   och ~35 tärningsfrågor per kvarter — QR-koderna blir viktiga. *Kvar:* läge 3 (bara utfall),
+   gränssnittet för båda.
 4. **Läge 1 online:** brädor, kort, tärningar, animeringar.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**

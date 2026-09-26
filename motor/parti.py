@@ -17,7 +17,7 @@ from .data import Kortdata
 from .motor import Motor, Parametrar
 from .pu_strategi import PU_STRATEGIER
 from .skede2_strategi import S2_STRATEGIER
-from .slump import DigitalSlump
+from .slump import DigitalSlump, InmatadSlump
 from .strategi import STRATEGIER
 from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
 
@@ -34,9 +34,15 @@ _AVBRYT = object()
 
 
 class Parti:
-    def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION):
+    def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION,
+                 slump="digital"):
         """kvarter: [{"namn": str, "styrning": "bott" | "människa", "bottar": {"PU": .., "S2": .., "F": ..}}]
-        logg: en tidigare logg att spela upp innan partiet fortsätter."""
+        logg: en tidigare logg att spela upp innan partiet fortsätter.
+        slump: "digital" (motorn slår och drar) eller "inmatad" (fysiskt spel: spelarna anger tärningar
+        och dragna kort; frågorna kommer som Fråga med kanal "slump")."""
+        if slump not in ("digital", "inmatad"):
+            raise ValueError("slump är 'digital' eller 'inmatad'")
+        self.slumpsatt = slump
         if not 1 <= len(kvarter) <= 4:
             raise ValueError("ett parti har 1–4 kvarter")
         self.kvarter = [{"styrning": "bott", **k, "bottar": {**STANDARDBOTT, **k.get("bottar", {})}} for k in kvarter]
@@ -55,11 +61,12 @@ class Parti:
 
     # ------------------------------------------------------------------ inställningar som kan sparas
     def uppstart(self):
-        return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter}
+        return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt}
 
     @classmethod
     def fran_sparat(cls, uppstart, logg, **kw):
-        return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"], **kw)
+        return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"],
+                   slump=uppstart.get("slump", "digital"), **kw)
 
     # ------------------------------------------------------------------ gränssnitt utåt
     def steg(self):
@@ -97,8 +104,10 @@ class Parti:
             def styrd(k, skede):
                 bott = BOTTAR[skede][k["bottar"][skede]]()
                 return Styrd(self, k["namn"], skede, bott=bott, manniska=k["styrning"] == "människa")
+            bas = (DigitalSlump(self.fro) if self.slumpsatt == "digital"
+                   else InmatadSlump(self._fraga_slump, self.fro))
             self.motor = Motor([styrd(k, "F") for k in self.kvarter], self.parametrar,
-                               StyrdSlump(self, DigitalSlump(self.fro)), self.data,
+                               StyrdSlump(self, bas), self.data,
                                pu_strategier=[styrd(k, "PU") for k in self.kvarter],
                                s2_strategier=[styrd(k, "S2") for k in self.kvarter],
                                namn=[k["namn"] for k in self.kvarter])
@@ -120,6 +129,10 @@ class Parti:
             raise Avbrutet()
         return svar
 
+    def _fraga_slump(self, metod, argument):
+        """Fysiskt spel: fråga spelarna om en tärning eller ett draget kort (svaret: tal eller index)."""
+        return self._fraga(kanal="slump", kvarter=None, skede=None, metod=metod, argument=argument)
+
     def _nasta_post(self, kanal, metod, kvarter=None):
         post = self._uppspelning.popleft()
         if post["kanal"] != kanal or post["metod"] != metod or post.get("kvarter") != kvarter:
@@ -131,9 +144,11 @@ class Parti:
         rotter = [*args, *kw.values(), subjekt, motor]
         kvarter, skede = styrd._kvarter, styrd._skede
         if self._uppspelning:
+            # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
+            # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
+            if styrd._bott is not None:
+                getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)
             post = self._nasta_post("beslut", metod, kvarter)
-            if styrd._bott is not None:     # bottens egen slump hålls i takt, så att ett återupptaget
-                getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)   # parti fortsätter likadant
             self.logg.append(post)
             return avkoda(post["svar"], rotter)
         forslag = None
@@ -157,6 +172,8 @@ class Parti:
                 egen = ss.koda(metod, args, getattr(ss.bas, metod)(*args))
                 if egen != post["varde"]:
                     raise LoggFel(f"slumpen avviker från loggen i {metod}: {egen} ≠ {post['varde']}")
+            elif hasattr(ss.bas, "notera_" + metod):      # inmatad: håll högarna i takt utan att fråga
+                getattr(ss.bas, "notera_" + metod)(*args, varde)
         else:
             varde = getattr(ss.bas, metod)(*args)
             post = {"kanal": "slump", "metod": metod, "varde": ss.koda(metod, args, varde)}

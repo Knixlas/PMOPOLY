@@ -136,7 +136,7 @@ class Styrd:
 
 
 # ---------------------------------------------------------------------------- slump
-SLUMPMETODER = ("d20", "tarning", "heltal", "slumptal", "triangel", "index", "valj", "blanda_lista", "dra")
+SLUMPMETODER = ("d20", "tarning", "heltal", "slumptal", "triangel", "index", "valj", "blanda_lista", "dra", "dra_kort")
 
 
 class StyrdSlump:
@@ -150,6 +150,18 @@ class StyrdSlump:
     def blanda(self, namn, kort):
         self.lekar[namn] = list(kort)
         self.bas.blanda(namn, kort)
+
+    def blanda_lista(self, lista, namn=None):
+        if getattr(self.bas, "inmatad", False):    # fysiskt spel: ordningen är okänd, dragen frågas
+            from .slump import InmatadHog
+            return InmatadHog(self, namn or "hög", lista)
+        return self._parti.slump(self, "blanda_lista", (lista, namn))
+
+    def dra_fran(self, lista, namn):
+        from .slump import ta_bort
+        kort = self.dra_kort(namn, list(lista))
+        ta_bort(lista, kort)
+        return kort
 
     def __getattr__(self, metod):
         if metod not in SLUMPMETODER:
@@ -172,6 +184,8 @@ class StyrdSlump:
             return ordning
         if metod == "dra":
             return next(i for i, v in enumerate(self.lekar[args[0]]) if v is varde)
+        if metod == "dra_kort":
+            return next(i for i, v in enumerate(args[1]) if v is varde)
         return varde
 
     def avkoda(self, metod, args, kod):
@@ -181,4 +195,6 @@ class StyrdSlump:
             return [args[0][i] for i in kod]
         if metod == "dra":
             return self.lekar[args[0]][kod]
+        if metod == "dra_kort":
+            return args[1][kod]
         return kod
