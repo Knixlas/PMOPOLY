@@ -370,7 +370,8 @@ för sig; de rättas bara om kortet ändå trycks om. Regelbok, Excel och kod an
 - **Kapitel 9–10 skrivna (2026-09-26)** efter Förvaltning 2.1 och motorn: fastighetskortet, setup,
   kvartalet, marknaden, tvångsbud med duell, sanering, händelser, personkort, energi, riskbuffert;
   slutformel (Projektutveckling + TG + Förvaltning) × Mu. Komponentlista, termer och snabbreferens
-  uppdaterade. Öppet: Projektutvecklingens poäng; namnkrocken "personkort" (CEO/CFO/COO i Ledningen
+  uppdaterade. Projektutvecklingens poäng (förslag): ABT-budget ÷ 20 (anskaffning ~300–500 Mkr,
+  BTA ~6 000–9 000 kvm per kvarter enligt Niklas). Öppet: namnkrocken "personkort" (CEO/CFO/COO i Ledningen
   och handkorten i Förvaltningen).
 - Saknas: regelbokens 12 bilder (hämtas när nätverket för Dropbox är öppet).
 
