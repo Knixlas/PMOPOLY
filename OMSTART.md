@@ -21,6 +21,18 @@ på var de säger emot varandra.
 
 **Omstartens kärna: en källa för varje sak, och allt annat genereras ur den.**
 
+### Slutmål: exakt rätt filer — varken mer eller mindre
+
+När omstarten är klar innehåller repot **exakt** de filer som behövs för att
+1. **trycka spelet** (kortdata, mallar, grafik, printskript),
+2. **spela det online** (motor, gränssnitt, drift),
+3. **vidareutveckla det** (regelböcker, testspelare, verktyg, dokumentation).
+
+Allt annat tas bort. `arv/` är ett **tillfälligt** referenslager under omstarten — varje fil därifrån
+förs antingen över till sin slutliga plats (och rensas/anpassas) eller lämnas, och mappen raderas när
+omstarten är klar. Samma gäller nuvarande `backend/`, `frontend/`, `data/` och rot-dokumenten: de
+ersätts, inte kompletteras. Git-historiken finns kvar som arkiv.
+
 ### Grundbeslut: det fysiska spelet är huvudprodukten
 
 - **Det tryckta materialet är facit** för Skede 1 och 2. Vi ändrar så lite som möjligt där,
