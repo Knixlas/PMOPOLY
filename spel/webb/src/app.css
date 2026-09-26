@@ -1,0 +1,28 @@
+/* ÅKEPOL — spelets värld: brädets skiffergrå kant, kortens gräddvita, brädets textfärg.
+   En medveten enda look (spelbordet), därför inget mörkt läge. */
+:root {
+  --typsnitt: "bahnschrift", "Bahnschrift", "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --bord: #aab6ba;          /* PU-brädets kant */
+  --panel: #fcf6ef;         /* kortens bakgrund */
+  --panel-mork: #f1e6d6;
+  --black: #2f3d44;         /* brädets text */
+  --dampad: #55646b;
+  --linje-stark: #8d9ca1;
+  --tomt: #e3e8dc;
+  --tomt-linje: #cfd8c6;
+  --pu: #dda063;            /* PU-skedets färg */
+  --pu-mork: #a8702f;
+  --ok: #4e9a3a;            /* H-kubens grön */
+  --fel: #c8453a;
+  color-scheme: light;
+}
+html, body { height: auto; }
+body {
+  margin: 0;
+  background: var(--bord);
+  color: var(--black);
+  font-family: var(--typsnitt);
+  font-size: 15px;
+  line-height: 1.4;
+}
+#app { max-width: 1120px; margin: 0 auto; padding-inline: 16px; }
