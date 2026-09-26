@@ -282,6 +282,48 @@ Allt byggs nytt; bara grafiken återanvänds. Nuvarande kod, data och dokument
 
 ---
 
+## 5b. Status kortdata (Ledning, Skede 1–2)
+
+Alla 16 korttyper finns i `kortdata/`, byggda av `verktyg/bygg_*_excel.py` och verifierade kort för kort
+mot tryckfilerna (utläst text i `arv/tryckt_text/`). Avvikelser mot CSV har lösts till tryckets fördel.
+
+| Korttyp | Unika kort | Ex/spel | Format |
+|---|---|---|---|
+| L_personal | 18 | 1 | 58×88 |
+| PU_projekt | 45 | 1 | 88×146 |
+| PU_personal | 10 | 1 | 58×88 |
+| PU_poldia | 40 | 1 | 58×88 |
+| PU_poldia_spec | 12 | 1 | 58×88 |
+| PU_markexpansion | 16 | 1 | 58×88 |
+| PU_BTA / PU_BYA | 4 + 4 | 4 | 58×88 |
+| PL_personal | 10 | 1 | 58×88 |
+| PL_organisation | 16 | 4 (S1–S4) | 58×88 |
+| PL_leverantörer | 36 | 4 (S1–S4) | 58×88 |
+| PL_Händelsekort | 54 (+2 tomma) | 4 (S1–S4) | 58×88 |
+| GF_faskort | 31 | 1 | 88×88 |
+| GF_Konsekvenskort | 30 (+2 tomma) | 1 | 58×88 |
+| GF_garantibesiktning | 44 | 1 | 58×88 |
+| GF_kultur | 80 | 1 | 58×88 |
+
+### Frågor om korten (att besvara, gärna med korten framför sig)
+
+Personal:
+- K1. Skepparen-kortets text nämner "Riktningsgivaren", Urmakarens "Maskinrumsmästaren" (gamla namn). Rätta vid omtryck?
+- K2. PU-personal: "MINSKAR KRAVEN ENLIGT NEDAN", PL-personal: "FÖRBÄTTRAR KRAVUPPFYLLNADEN MED" för samma Q/T/H. Avsiktligt?
+- K3. PC-6 "Hållbarhetsivraren" har bildfilen "Projektchef Hållbarhetschefen.png". Byta filnamn?
+- K4. Vad ändrades i L_personal.csv 2026-04-29 (efter tryck)? Tryckta fält är oförändrade.
+
+Faskort (GF):
+- K5. Kostnad för kulturaktiviteter: steg 1 = 2 Mkr, steg 2–8 = stegnumret. Avsiktligt?
+- K6. 7 namn och 2 stegrubriker är avkortade i trycket (fick inte plats). Rätta vid omtryck?
+- K7. Vad står B, S och K för? Kortet visar "BOSTAD + 1" / "ÖVRIGA BOSTÄDER".
+- K8. Förklaringsrutan säger "ARB Arbetsmiljö" men värdena heter ABM (samma på PL_organisation). Vilken förkortning gäller?
+
+Planering (PL):
+- K9. Erfarenhet står som "erfa" på organisations- och leverantörskorten. Avsiktligt?
+- K10. 2 blanka händelsekort per sats (8 totalt) — reservkort att ha kvar i Excel, eller bara notera?
+- K11. Leverantörs-id "STO - 1…4" används för både STOMME och STOMKOMPLETTERING. Eget prefix vid omtryck?
+
 ## 6. Öppna frågor
 
 1. **Facit** — ~~är Word-regelboken facit?~~ Besvarat: den printade versionen är baslinje.
