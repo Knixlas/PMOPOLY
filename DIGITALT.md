@@ -68,6 +68,15 @@ npm test                                 # webbens regler och lösare mot motorn
 npm run artefakt                         # publicerbar sida: dist/artefakt.html + dist/bilder/
 ```
 
+## Drift
+
+- **Railway:** projektet `akepol-spel`, tjänsten `spel`, byggs från grenen med `spel/Dockerfile` (inställt på tjänsten; `railway.toml` i roten anger bara hälsokontroll och omstart)
+  (webben byggs med Node, servern kör Python). Adress: https://spel-production.up.railway.app
+  Partierna sparas på volymen `partier` (/data) och återskapas när tjänsten startar om.
+  Den gamla appen ligger kvar i sitt eget projekt, orörd.
+- **Lokalt:** `uvicorn spel.server.app:app --port 8000` (från roten, efter `npm run build` i
+  `spel/webb`), eller `npm run dev` i `spel/webb` mot servern för utveckling.
+
 ## Steg
 
 1. **Motorn som styrbar tillståndsmaskin** — *klart:* styrning, parti, logg, uppspelning,
@@ -93,5 +102,10 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    och ~35 tärningsfrågor per kvarter — QR-koderna blir viktiga. *Kvar:* läge 3 (bara utfall),
    gränssnittet för båda.
 4. **Läge 1 online:** brädor, kort, tärningar, animeringar.
+   *Första spelbara versionen klar:* spelservern (`spel/server`: rum, WebSocket per kvarter,
+   sparning och återskapning), läsbara frågor för alla beslut (`motor/fragor.py`), spelläget per
+   skede (`motor/lage.py`) och klienten (nytt parti, en enhet per kvarter, bordet för tärningar och
+   kort, pusslet vid 4.3, slutställning). Provat med hela partier i webbläsaren i båda lägena.
+   *Kvar:* brädorna och korten som grafik i spelvyn, animeringar, tärningar på skärmen.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**

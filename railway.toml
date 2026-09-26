@@ -1,6 +1,6 @@
-[build]
-dockerfilePath = "Dockerfile"
-
+# Byggsättet anges per tjänst i Railway (inte här), så att flera tjänster kan bygga från repot:
+#   gamla appen: Dockerfile i roten (Railways standard)
+#   nya spelet:  spel/Dockerfile (inställt på tjänsten "spel" i projektet akepol-spel)
 [deploy]
 healthcheckPath = "/health"
 restartPolicyType = "ON_FAILURE"
