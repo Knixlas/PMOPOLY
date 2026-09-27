@@ -11,7 +11,7 @@ Förslaget (bottens svar) följer alltid med, så att varje fråga kan besvaras 
 """
 from .pu import markid
 from .pussel import GRUNDMARK, form_av
-from .slump import kortnamn
+from .slump import kortnamn, kortrubrik
 from .styrning import koda
 
 TYPNAMN = {"BRF": "BRF", "HYRESRÄTT": "Hyresrätt", "FÖRSKOLA": "Förskola", "LOKAL": "Lokal", "KONTOR": "Kontor"}
@@ -106,7 +106,10 @@ BESLUT = {
     "fordela_krav": ("val", lambda m, s, a: (f"{m.orsak}: " if getattr(m, "orsak", None) else "")
                      + f"{'sänk' if a[0] < 0 else 'höj'} kraven {abs(a[0])} steg. Hur fördelar ni mellan Q och H?",
                      lambda m, s, a: _fordelningar(a[0]), False),
-    "sla_om_handelse": ("janej", lambda m, s, a: "Slå om händelsen med en riskbuffert?", None, False),
+    "sla_om_handelse": ("janej", lambda m, s, a: f"Händelsekortet ”{a[0].get('Rubrik') or ''}” gav: {a[1]}. Slå om med en riskbuffert?",
+                        None, False),
+    "sla_om_kort": ("janej", lambda m, s, a: f"Kortet ”{kortrubrik(a[0]) or kortnamn(a[0])}” gav: {a[1]}. "
+                    "Slå om med en riskbuffert?", None, False),
     "byt_samma_typ": ("val", lambda m, s, a: "Byt ett projekt mot översta kortet i samma hög?",
                       lambda m, s, a: s.projekt, True),
     "samsta_projekt": ("val", lambda m, s, a: "Vilket projekt lämnar ni tillbaka?",
@@ -241,7 +244,10 @@ HJALP = {
     "sla_namnd": lambda m, s, a: (
         f"Summan av projektens nämndsiffror minus projektchefens nämndslag är {a[0]:g}. "
         f"Chansen att klara det: {100 * (1 - (min(20, max(0, a[0])) / 20) ** a[1]):.0f} %."),
-    "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
+    "sla_om_handelse": lambda m, s, a: (f"Ni har {s.riskbuffert} riskbuffertar. Ett omslag kostar en och ger ett nytt D20-slag "
+                                        "(plus erfarenhet); det nya utfallet gäller, även om det blir sämre (3.6)."),
+    "sla_om_kort": lambda m, s, a: (f"Ni har {s.riskbuffert} riskbuffertar. Ett omslag kostar en och ger ett nytt D20-slag "
+                                    "(plus erfarenhet); det nya utfallet gäller, även om det blir sämre (3.6)."),
     "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
     "namnd_miss_hoj_krav": lambda m, s, a: "Regelboken 4.1: Ja betyder att ni höjer Q- eller H-kravet med 1 (ni väljer vilket i nästa fråga) och slår igen med en tärning mer. Nej betyder att ni lämnar tillbaka ett projekt i stället.",
 }
@@ -282,6 +288,10 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["kort"] = {**kortvy(motor.orsak_kort), "lek": "omvärld"}
         vy["hjalp"] = ("Ni har dragits att välja. Valet gäller alla spelares fastigheter av typen – "
                        + ("välj en typ ni själva har mycket av." if args[0] > 0 else "välj en typ ni själva har lite av."))
+    if metod in ("sla_om_handelse", "sla_om_kort") and isinstance(args[0], dict):
+        from .parti import kortvy
+        vy["kort"] = {**kortvy(args[0]), "lek": "händelse"}
+        vy["ja"], vy["nej"] = "Ja, slå om (−1 riskbuffert)", "Nej, behåll utfallet"
     if metod == "eliminera":
         from .parti import kortvy
         vy["rubrik"] = f"Stoppa händelsen ”{args[1].get('Rubrik') or kortnamn(args[1])}” på {etikett(args[0], motor)}?"

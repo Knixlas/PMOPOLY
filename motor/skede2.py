@@ -182,7 +182,9 @@ class Skede2:
                     return kort[kol]
             return kort[kolumner[-1]]
         utfall = las(self.s.d20() + b.erfarenhet)
-        if b.riskbuffert and utfall == kort[kolumner[0]] and farlig and b.strategi.sla_om(self, b, utfall):
+        # 3.6: omslag med en riskbuffert på vilket utfall som helst, högst en gång per slag
+        samst = utfall == kort[kolumner[0]] and farlig
+        if b.riskbuffert and b.strategi.sla_om_kort(self, b, kort, utfall, samst):
             b.riskbuffert -= 1
             self.stat["omslag"] += 1
             utfall = las(self.s.d20() + b.erfarenhet)

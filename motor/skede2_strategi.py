@@ -24,6 +24,10 @@ class S2Strategi:
     def sla_om(self, m, b, utfall):
         return b.riskbuffert > self.spara_rb
 
+    def sla_om_kort(self, m, b, kort, utfall, samst):
+        """Slå om händelse-, konsekvens- eller garantikortet? Botten gör det bara på sämsta utfallet."""
+        return samst and self.sla_om(m, b, utfall)
+
     def kulturkort(self, m, b, fas, pris):
         return self.kultur if b.kvar - self.kultur * pris > 20 else 0
 

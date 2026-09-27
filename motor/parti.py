@@ -250,7 +250,7 @@ def kortvy(kort):
     """Det spelarna ser på ett draget kort: id, rubrik, text och (för projekt) bilden."""
     from .slump import kortnamn
     rubrik = next((kort[k] for k in ("Rubrik", "Namn som tryckt", "Namn", "Företag", "Rubrik (byggsteg)", "Korttyp")
-                   if kort.get(k)), "")
+                   if kort.get(k) and str(kort[k]).upper() != "HÄNDELSEKORT"), "")
     text = next((kort[k] for k in ("Text", "Beskrivning", "Effekt") if kort.get(k)), "")
     rader = [[k.replace("Utfall ", ""), str(v)] for k, v in kort.items()
              if isinstance(k, str) and k.startswith(("Utfall", "Konsekvens ")) and v not in (None, "", "-")]

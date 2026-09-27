@@ -84,7 +84,7 @@ def kortrubrik(kort):
     """Kortets namn eller rubrik (det som står stort på kortet), om det har något."""
     if isinstance(kort, dict):
         for nyckel in ("Rubrik", "Namn som tryckt", "Namn", "Företag", "Korttyp"):
-            if kort.get(nyckel) not in (None, ""):
+            if kort.get(nyckel) not in (None, "") and str(kort[nyckel]).upper() != "HÄNDELSEKORT":
                 return str(kort[nyckel])
     return ""
 
