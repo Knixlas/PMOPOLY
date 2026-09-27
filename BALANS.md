@@ -132,3 +132,7 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   | Svår | 6 (den tryckta scoreboarden) | 44 % | 2,3 | 17 |
 
   Att överaggressiva kvarter som pressar kassan får ta lån är avsiktligt (Niklas).
+- **Skölden skyddar lokal, kontor och förskola redan som junior** (förut bara lokal; senior: alla typer
+  som förut). 600 partier: Skölden väljs av 24 % av kvarteren (förut 7–8 %), vinstandel 22–23 % (förut
+  17–21 %), och andelen Skölden-ägare med moderbolagslån sjönk från 50 % till 26 %. Förhandlaren väljs
+  mer sällan (samma kontorskvarter) men vinner 23–25 %. Bostadsveteranen 35 % är nu den som sticker ut.

@@ -37,7 +37,7 @@ class Parametrar:
     ta_bort_kvartal: dict = field(default_factory=dict)
     yield_spann: dict = None                               # kalibrering: ersätter YIELD_SPANN
     bostadsveteran_duell: bool = False                     # beslut: Bostadsveteranen har ingen duellbonus
-    skold_typer: tuple = ("LOKAL",)                        # FC Skölden (junior) skyddar dessa typer
+    skold_typer: tuple = ("LOKAL", "KONTOR", "FÖRSKOLA")   # FC Skölden (junior) skyddar dessa typer (beslut 2026-09-27)
     skold_per_kvartal: int = 1                             # så många gånger per kvartal
     extra_handelse: dict = field(default_factory=lambda: {t: {"direkt_dn_minus": 2} for t in ("LOKAL", "KONTOR")})
                                                    # kalibrering: {typ: {effekt: antal}} läggs till i typleken

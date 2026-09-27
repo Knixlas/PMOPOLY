@@ -14,6 +14,7 @@ YIELD_SPANN = {"bostäder": (2.0, 6.0), "kommersiellt": (3.0, 7.0)}
 FC_TYPER = {
     "HYRESRÄTT": {"HYRESRÄTT"}, "FÖRSKOLA": {"FÖRSKOLA"}, "LOKAL": {"LOKAL"}, "KONTOR": {"KONTOR"},
     "BOSTÄDER": {"HYRESRÄTT", "FÖRSKOLA"}, "KOMMERSIELLT": {"LOKAL", "KONTOR"},
+    "LOKAL, KONTOR, FÖRSKOLA": {"LOKAL", "KONTOR", "FÖRSKOLA"},          # Skölden (beslut 2026-09-27)
 }
 
 
