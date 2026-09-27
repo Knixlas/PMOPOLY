@@ -136,3 +136,13 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   som förut). 600 partier: Skölden väljs av 24 % av kvarteren (förut 7–8 %), vinstandel 22–23 % (förut
   17–21 %), och andelen Skölden-ägare med moderbolagslån sjönk från 50 % till 26 %. Förhandlaren väljs
   mer sällan (samma kontorskvarter) men vinner 23–25 %. Bostadsveteranen 35 % är nu den som sticker ut.
+- **Bostadsveteranen är inte stark – hennes kvarter är det.** Med fastighetscheferna *slumpvis utdelade*
+  (så att bara kortets förmåga räknas; 600 partier) vinner hon 21 %, lägst av alla: Skölden 30 %,
+  Förhandlaren 27 %, Nätverkaren 27 %, Tekniska experten 24 %, Den lugna 21 % (brus ±3). Hennes 32–36 %
+  när bottarna väljer kommer av att kvarter med många hyresrätter (54 % av portföljen) väljer henne, och de
+  kvarteren är starka i hela spelet. Förmågan slår nästan aldrig till: av drygt 600 underhållsvarningar
+  på 300 partier gav bara 3 en tredje varning på samma fastighet och ingen en fjärde, och seniorns
+  "gratis att röja" gör inget sedan varningar bara tas bort med kort. Straff vid två varningar, eller
+  −1 driftnetto per varning, ändrade inte hennes vinstandel.
+- **Underhållsvarningar biter nästan aldrig.** 94 % av varningarna är den enda på fastigheten, och
+  straffet kommer först vid tre. Varningen är i praktiken utan verkan.
