@@ -295,6 +295,12 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x),
                              **({"kort": kortvy(x)} if _ar_kort(x) else {})}
                             for x in pool(motor, subjekt, args)]
+        if metod in ("valj_projekt", "komplettera"):          # var projektet kommer ifrån
+            bank = getattr(motor, "bank", [])
+            for a_, x in zip(vy["alternativ"], pool(motor, subjekt, args)):
+                if isinstance(x, dict):
+                    kalla = "Ur projektbanken" if any(x is b for b in bank) else "Översta i högen"
+                    a_["detalj"] = f"{kalla} · {a_['detalj']}" if a_.get("detalj") else kalla
         if metod == "sla_namnd":
             vy["alternativ"][0].update(text="Slå tärningen", detalj="")
             vy["forslag_text"] = "slå"
