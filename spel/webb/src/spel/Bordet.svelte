@@ -5,9 +5,10 @@
   import Kort from './Kort.svelte';
   import type { Visning } from './anslutning.svelte';
 
-  let { visningar: alla, skede = null }: { visningar: Visning[]; skede?: string | null } = $props();
-  // bara det nuvarande skedets slag och kort (yieldkorten dras t.ex. redan vid uppställningen)
-  const visningar = $derived(skede ? alla.filter(v => !v.skede || v.skede === skede) : alla);
+  let { visningar: alla, skede = null, jag = null }: { visningar: Visning[]; skede?: string | null; jag?: string | null } = $props();
+  // bara det nuvarande skedets slag och kort (yieldkorten dras t.ex. redan vid uppställningen), och bara
+  // ert kvarters – plus det som gäller alla (t.ex. omvärldskort). Bordsenheten (jag = null) ser allt.
+  const visningar = $derived(alla.filter(v => (!skede || !v.skede || v.skede === skede) && (!jag || !v.kvarter || v.kvarter === jag)));
 
   let forsta = $state<number | null>(null);          // allt t.o.m. detta nr fanns redan: ingen animering
   $effect(() => { if (forsta === null) forsta = visningar.at(-1)?.nr ?? 0; });
@@ -58,12 +59,12 @@
               <text x="50" y="58" class="d20-tal">{visat(t)}</text>
             {/if}
           </svg>
-          <figcaption>D{t.sidor}{t.kvarter ? ` · ${t.kvarter}` : ''}</figcaption>
+          <figcaption>D{t.sidor}{!jag && t.kvarter ? ` · ${t.kvarter}` : ''}</figcaption>
         </figure>
       {/each}
 
       {#each kort as v (v.nr)}
-        <Kort kort={v.kort!} lek={v.lek} skede={v.skede} kvarter={v.kvarter} ny={ny(v)} />
+        <Kort kort={v.kort!} lek={v.lek} skede={v.skede} ny={ny(v)} kvarter={jag ? null : v.kvarter} />
       {/each}
     </div>
   </section>

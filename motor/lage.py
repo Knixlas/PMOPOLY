@@ -6,6 +6,7 @@ from .fragor import TYPNAMN, _tal
 
 
 def _pu(m):
+    from .parti import kortvy
     from .pu import BRADE
     return {"skede": "PU", "namn": "Skede 1 · Projektutveckling", "handelser": list(getattr(m, "logg", []))[-40:],
             "kvarter": [{
@@ -14,7 +15,7 @@ def _pu(m):
                 "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid,
                 "riskbuffert": kv.riskbuffert, "erfarenhet": kv.erfarenhet,
                 "pc": (kv.pc or {}).get("Namn"),
-                "projekt": [{"namn": p["Namn"], "typ": p["Typ"]} for p in kv.projekt],
+                "projekt": [{"namn": p["Namn"], "typ": p["Typ"], "kort": kortvy(p)} for p in kv.projekt],
                 "markexpansioner": len(kv.expansioner), "mark": len(kv.mark),
                 **_pu_siffror(m, kv),
             } for kv in m.kvarter],

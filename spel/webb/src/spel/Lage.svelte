@@ -3,10 +3,15 @@
   import type { Bild } from './anslutning.svelte';
   import Forvaltning from './Forvaltning.svelte';
   import Handen from './Handen.svelte';
+  import Kort from './Kort.svelte';
 
   let { bild, jag, svar = [], slump = [] }: {
     bild: Bild | null; jag: string; svar?: { kvarter: string; rubrik: string; svar: string }[]; slump?: string[];
   } = $props();
+  let visat = $state<string | null>(null);
+  // ert kvarter öppet, de andra hopfällda (bordsenheten ser alla)
+  const egen = $derived(bild?.kvarter.find(k => k.namn === jag) ?? null);
+  const andra = $derived(bild ? bild.kvarter.filter(k => k.namn !== jag) : []);        // projektet vars kort visas
   const kvarter = $derived(bild ? [...bild.kvarter].sort((a, b) => (a.namn === jag ? -1 : b.namn === jag ? 1 : 0)) : []);
   const tal = (n: unknown) => (typeof n === 'number' ? n.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) : '–');
   const procent = (n: number) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) + ' %';   // yielden lagras i procent
@@ -31,7 +36,7 @@
       <Forvaltning {bild} {jag} />
     {:else}
     <div class="kort">
-      {#each kvarter as k (k.namn)}
+      {#snippet kvarterkort(k: Record<string, any>)}
         <article class:jag={k.namn === jag}>
           <h3>{k.namn}{k.namn === jag ? ' (ni)' : ''}</h3>
           {#if bild.skede === 'PU'}
@@ -49,7 +54,18 @@
               <div><dt>Mark</dt><dd>{k.mark} rutor</dd></div>
               <div><dt>Ruta · varv</dt><dd>{k.ruta?.toLowerCase()} · {k.varv}</dd></div>
             </dl>
-            {#if k.projekt?.length}<p class="lista">{k.projekt.map((p: any) => p.namn).join(' · ')}</p>{/if}
+            {#if k.projekt?.length}
+              <!-- projekten: tryck för att se kortet -->
+              <ul class="projektlista">
+                {#each k.projekt as p, i (i)}
+                  <li><button type="button" class="projektknapp" aria-expanded={visat === `${k.namn}|${p.namn}`}
+                              onclick={() => (visat = visat === `${k.namn}|${p.namn}` ? null : `${k.namn}|${p.namn}`)}>{p.namn}</button></li>
+                {/each}
+              </ul>
+              {#each k.projekt.filter((p: any) => visat === `${k.namn}|${p.namn}` && p.kort) as p (p.namn)}
+                <div class="projektkort"><Kort kort={p.kort} lek={`projekt ${p.typ.toLowerCase()}`} skede="PU" stor /></div>
+              {/each}
+            {/if}
           {:else if bild.skede === 'S2'}
             <dl>
               <div><dt>Q</dt><dd>{k.q} / {k.q_krav}</dd></div>
@@ -78,7 +94,18 @@
             {/if}
           {/if}
         </article>
-      {/each}
+      {/snippet}
+      {#if egen}
+        {@render kvarterkort(egen)}
+        {#if andra.length}
+          <details class="andra">
+            <summary>De andra kvarteren ({andra.map(k => k.namn).join(', ')})</summary>
+            <div class="kort">{#each andra as k (k.namn)}{@render kvarterkort(k)}{/each}</div>
+          </details>
+        {/if}
+      {:else}
+        {#each kvarter as k (k.namn)}{@render kvarterkort(k)}{/each}
+      {/if}
     </div>
 
     {/if}
@@ -97,7 +124,7 @@
       <details class="logg" open>
         <summary>Senaste händelserna</summary>
         <ol reversed>
-          {#each [...svar].reverse().slice(0, 8) as s}
+          {#each [...svar].filter(s => !egen || s.kvarter === jag).reverse().slice(0, 8) as s}
             <li><strong>{s.kvarter}:</strong> {s.rubrik} — {s.svar}</li>
           {/each}
           {#each [...bild.handelser].reverse().slice(0, 12) as h}
@@ -110,6 +137,14 @@
 </section>
 
 <style>
+  .andra { grid-column: 1 / -1; }
+  .andra summary { cursor: pointer; font-weight: 700; padding: 6px 2px; }
+  .projektlista { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+  .projektknapp { font: inherit; font-size: 13.5px; padding: 3px 8px; border-radius: 3px; border: 1px solid var(--linje-stark);
+                  background: #fff; color: var(--black); cursor: pointer; }
+  .projektknapp:hover, .projektknapp[aria-expanded='true'] { border-color: var(--black); background: var(--panel-mork); }
+  .projektknapp:focus-visible { outline: 3px solid var(--pu); outline-offset: 2px; }
+  .projektkort { margin-top: 8px; }
   .lage { display: grid; gap: 12px; }
   .tom { margin: 0; }
   header { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 14px; }
