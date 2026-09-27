@@ -171,3 +171,10 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   partier omräknade: vinstandel för kvarter utan hyresrätter / 1–34 % / 35 %+ blir 26 / 24 / 26 % (i dag
   12 / 24 / 34 %), F-median 12,2, Skede 1-strategierna 22–29 %. Den som startar med värdefulla
   fastigheter får inte poäng för startvärdet, bara för vad den gör av det.
+- **Brantare Mu-tabell** (10.2, beslut): 100 · 80 · 65 · 53 · 44 · 37 · 31 · 27 · 24 · 21 · 20 %
+  för 0–10 avvikelser, sedan −1 per avvikelse. 500 partier: Skede 2 *billig* 16 → 8 %, *kvalitet* 23 → 33 %,
+  *balanserad* 34 %. Slutpoäng median 27 → 19. Skede 1-strategierna 20–29 %.
+- **Hyresrätternas anskaffning prövad** (600 partier, med den brantare Mu): högre anskaffning (×1,3–1,4)
+  förstärker övertaget (anskaffningen är ABT, alltså intäkt för den som bygger); ×0,7 jämnar ut (23 / 26 / 25 %)
+  men moderbolagslånen ökar till 39 % och slutpoängen sjunker. Inte infört – F som tillväxt (ovan) jämnar ut
+  utan fler lån.

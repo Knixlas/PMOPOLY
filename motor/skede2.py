@@ -28,7 +28,7 @@ KLASS_BTA = [(5000, "A"), (7000, "B"), (9000, "C")]
 KLASS_BYA = [(4000, "A"), (4750, "B"), (5000, "C")]
 KOLUMN = {"BOSTÄDER": "B", "BOSTAD+1": "S", "ÖVRIGA": "K"}
 NIVAER = ["Negativt", "Neutralt", "Positivt", "Bonus"]
-MU = [100, 90, 82, 75, 70, 65, 61, 58, 55, 52, 50]
+MU = [100, 80, 65, 53, 44, 37, 31, 27, 24, 21, 20]   # 10.2, brantare sedan 2026-09-27 (billig ska sällan vinna)
 
 
 def klass(varde, grans):
@@ -36,7 +36,7 @@ def klass(varde, grans):
 
 
 def mu(n):
-    return (MU[n] if n <= 10 else max(0, 50 - (n - 10))) / 100
+    return (MU[n] if n <= 10 else max(0, 20 - (n - 10))) / 100
 
 
 def kompetenser(kort):
