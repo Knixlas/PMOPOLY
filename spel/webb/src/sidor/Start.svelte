@@ -1,6 +1,7 @@
 <script lang="ts">
   // Starta ett parti (1–4 kvarter, människor eller bottar, digitalt eller vid brädet) eller gå med i ett.
-  import { listaPartier, raderaParti, skapaParti } from '../spel/anslutning.svelte';
+  import { listaPartier, listaResultat, raderaParti, raderaResultat, skapaParti, skapaResultat, type ResultatData } from '../spel/anslutning.svelte';
+  import { poang, type Siffror } from '../spel/poang';
 
   const forslag = ['Norr', 'Söder', 'Öster', 'Väster'];
   let kvarter = $state([{ namn: 'Norr', styrning: 'människa' }, { namn: 'Söder', styrning: 'människa' }]);
@@ -12,6 +13,21 @@
   let kod = $state('');
 
   $effect(() => { listaPartier().then(p => (partier = p)).catch(() => {}); });
+
+  // sparade resultat (Bara resultat) med vinnaren om alla siffror är ifyllda
+  let resultat = $state<ResultatData[]>([]);
+  $effect(() => { listaResultat().then(r => (resultat = r)).catch(() => {}); });
+  function vinnare(r: ResultatData) {
+    const klara = r.kvarter.filter(n => Object.values(r.siffror[n] ?? {}).every(v => typeof v === 'number'));
+    if (klara.length !== r.kvarter.length) return 'pågår';
+    const bast = klara.map(n => ({ n, t: poang(r.siffror[n] as unknown as Siffror).total })).sort((a, b) => b.t - a.t)[0];
+    return `vann: ${bast.n} (${bast.t.toLocaleString('sv-SE', { maximumFractionDigits: 1 })})`;
+  }
+  let raderaRes = $state<string | null>(null);
+  async function raderaResNu(id: string) {
+    await raderaResultat(id).catch(() => {});
+    resultat = resultat.filter(r => r.id !== id); raderaRes = null;
+  }
 
   // radera ett parti: först en fråga på raden (webbläsarens confirm() fungerar inte överallt)
   let radera = $state<string | null>(null);
@@ -35,8 +51,11 @@
     fel = '';
     const namn = kvarter.map(k => k.namn.trim());
     if (namn.some(n => !n) || new Set(namn).size !== namn.length) { fel = 'Ge kvarteren olika namn.'; return; }
-    if (slump === 'resultat') {                      // inget parti på servern: bara poängräkningen
-      location.hash = `#/resultat/${namn.map(n => encodeURIComponent(n.replace(/,/g, ' '))).join(',')}`;
+    if (slump === 'resultat') {                      // inget parti: bara poängräkningen (sparas på servern)
+      skapar = true;
+      try { location.hash = `#/resultat/${await skapaResultat(namn)}`; }
+      catch (err) { fel = `Det gick inte: ${(err as Error).message}`; }
+      finally { skapar = false; }
       return;
     }
     skapar = true;
@@ -131,6 +150,26 @@
       </ul>
     {/if}
     <p class="lank"><a href="#/pussel">Prova kvarterspusslet</a></p>
+    {#if resultat.length}
+      <h3>Sparade resultat</h3>
+      <ul class="partier">
+        {#each resultat.slice(0, 12) as r}
+          <li class:fragar={raderaRes === r.id}>
+            <a href="#/resultat/{r.id}"><strong>{r.kvarter.join(', ')}</strong>
+              <span>Bara resultat · {vinnare(r)} · {r.id}</span></a>
+            {#if raderaRes === r.id}
+              <div class="bekrafta" role="group" aria-label="Radera resultatet">
+                <span>Radera resultatet för alla? Det går inte att ångra.</span>
+                <button type="button" class="ja" onclick={() => raderaResNu(r.id)}>Radera</button>
+                <button type="button" onclick={() => (raderaRes = null)}>Avbryt</button>
+              </div>
+            {:else}
+              <button type="button" class="radera" onclick={() => (raderaRes = r.id)} aria-label="Radera resultatet {r.id}" title="Radera resultatet">×</button>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </section>
 </div>
 

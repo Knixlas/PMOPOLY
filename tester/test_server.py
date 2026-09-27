@@ -79,6 +79,23 @@ class TestServer(unittest.TestCase):
         self.assertTrue(igen.klart)
         self.assertIsNone(igen.fel)
 
+    def test_bara_resultat_sparas(self):
+        """Bara resultat: skapa, spara siffror, läs tillbaka, lista och radera."""
+        r = KLIENT.post("/api/resultat", json={"kvarter": ["Norr", "Söder"]})
+        self.assertEqual(r.status_code, 200, r.text)
+        id_ = r.json()["id"]
+        self.assertEqual(KLIENT.post("/api/resultat", json={"kvarter": ["Norr", "Norr"]}).status_code, 400)
+        r = KLIENT.put(f"/api/resultat/{id_}", json={"siffror": {"Norr": {"abt": 310, "okänt": 5}, "Väster": {"abt": 1}}})
+        self.assertEqual(r.status_code, 200, r.text)
+        d = KLIENT.get(f"/api/resultat/{id_}").json()
+        self.assertEqual(d["siffror"]["Norr"]["abt"], 310)
+        self.assertNotIn("okänt", d["siffror"]["Norr"])
+        self.assertEqual(set(d["siffror"]), {"Norr", "Söder"})
+        self.assertIn(id_, [x["id"] for x in KLIENT.get("/api/resultat").json()])
+        self.assertEqual(KLIENT.delete(f"/api/resultat/{id_}").status_code, 200)
+        self.assertEqual(KLIENT.get(f"/api/resultat/{id_}").status_code, 404)
+        self.assertEqual(KLIENT.get("/api/resultat/a.b").status_code, 404)          # bara id-tecken släpps igenom
+
     def test_fel_enhet_och_gammal_fraga(self):
         id_ = skapa()
         f = KLIENT.get(f"/api/rum/{id_}").json()["fraga"]

@@ -11,10 +11,18 @@ WebSocket
   /ws/{id}/{kvarter}       servern skickar {"typ": "lage", ...} vid varje ändring;
                            enheten skickar {"typ": "svar", "nr", "svar": {"val": i} | {"flera": [i]} |
                            {"svar": true/12} | {"placering": [...]} | {"forslag": true}}
+Bara resultat (spelat helt på brädet, bara slutsiffrorna förs in)
+  POST   /api/resultat           {"kvarter": [namn, ...]}  → {"id"}
+  GET    /api/resultat           alla (senaste först)
+  GET    /api/resultat/{id}      {"id", "skapad", "andrad", "kvarter", "siffror": {namn: {fält: tal|null}}}
+  PUT    /api/resultat/{id}      {"siffror": {...}}
+  DELETE /api/resultat/{id}
 Partierna sparas i SPEL_DATA (standard spel/server/data/partier) och återskapas vid start.
 """
 import asyncio
+import json
 import os
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -88,6 +96,85 @@ async def skapa(r: RumIn):
     rum = await run_in_threadpool(Rum, id_, uppstart, [], KATALOG, DATA)
     RUM[id_] = rum
     return {"id": id_, "lage": rum.lage()}
+
+
+# ---------------------------------------------------------------------------- bara resultat
+RESULTAT = KATALOG / "resultat"                      # egen mapp: laddas inte som partier vid start
+RESULTATFALT = ("abt", "qKrav", "hKrav", "tPaverkan", "tb", "q", "h", "t", "egetKapital", "kassa", "lan")
+
+
+class ResultatIn(BaseModel):
+    kvarter: list[str] = Field(min_length=1, max_length=4)
+
+
+class SiffrorIn(BaseModel):
+    siffror: dict[str, dict[str, float | None]]
+
+
+def _resultatfil(id_):
+    fil = RESULTAT / f"{id_}.json"
+    if not id_.replace("x", "").replace("y", "").isalnum() or not fil.exists():
+        raise HTTPException(404, "resultatet finns inte")
+    return fil
+
+
+def _las_resultat(fil):
+    return json.loads(fil.read_text(encoding="utf-8"))
+
+
+def _spara_resultat(d):
+    RESULTAT.mkdir(parents=True, exist_ok=True)
+    tmp = RESULTAT / f"{d['id']}.json.tmp"
+    tmp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(RESULTAT / f"{d['id']}.json")
+
+
+@app.post("/api/resultat")
+def skapa_resultat(r: ResultatIn):
+    namn = [n.strip()[:30] for n in r.kvarter]
+    if not all(namn) or len(set(namn)) != len(namn):
+        raise HTTPException(400, "kvarteren behöver olika namn")
+    tom = {"abt": None, "qKrav": None, "hKrav": None, "tPaverkan": 0, "tb": None, "q": None, "h": None, "t": 12,
+           "egetKapital": None, "kassa": None, "lan": 0}
+    d = {"id": nytt_id(), "skapad": time.time(), "andrad": time.time(), "kvarter": namn,
+         "siffror": {n: dict(tom) for n in namn}}
+    _spara_resultat(d)
+    return {"id": d["id"]}
+
+
+@app.get("/api/resultat")
+def lista_resultat():
+    if not RESULTAT.exists():
+        return []
+    ut = []
+    for fil in RESULTAT.glob("*.json"):
+        try:
+            ut.append(_las_resultat(fil))
+        except Exception:                              # noqa: BLE001 — en trasig fil ska inte stoppa listan
+            continue
+    return sorted(ut, key=lambda d: -d["skapad"])
+
+
+@app.get("/api/resultat/{id_}")
+def hamta_resultat(id_: str):
+    return _las_resultat(_resultatfil(id_))
+
+
+@app.put("/api/resultat/{id_}")
+def spara_resultat(id_: str, s: SiffrorIn):
+    d = _las_resultat(_resultatfil(id_))
+    for namn, falt in s.siffror.items():
+        if namn in d["siffror"]:
+            d["siffror"][namn].update({k: v for k, v in falt.items() if k in RESULTATFALT})
+    d["andrad"] = time.time()
+    _spara_resultat(d)
+    return d
+
+
+@app.delete("/api/resultat/{id_}")
+def radera_resultat(id_: str):
+    _resultatfil(id_).unlink()
+    return {"raderat": id_}
 
 
 @app.get("/api/rum")

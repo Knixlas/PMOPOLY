@@ -100,6 +100,29 @@ export async function latDatorn(id: string, kvarter: string): Promise<void> {
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Servern svarade ${r.status}`);
 }
 
+// ---------------------------------------------------------------- bara resultat (sparas på servern)
+export type Siffror = Record<string, number | null>;
+export interface ResultatData { id: string; skapad: number; andrad: number; kvarter: string[]; siffror: Record<string, Siffror> }
+
+async function json<T>(r: Response): Promise<T> {
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Servern svarade ${r.status}`);
+  return r.json();
+}
+export const skapaResultat = async (kvarter: string[]) =>
+  (await json<{ id: string }>(await fetch(`${bas()}/api/resultat`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kvarter }) }))).id;
+export const hamtaResultat = async (id: string) => json<ResultatData>(await fetch(`${bas()}/api/resultat/${encodeURIComponent(id)}`));
+export const sparaResultat = async (id: string, siffror: Record<string, Siffror>) =>
+  json<ResultatData>(await fetch(`${bas()}/api/resultat/${encodeURIComponent(id)}`, {
+    method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ siffror }) }));
+export const listaResultat = async (): Promise<ResultatData[]> => {
+  const r = await fetch(`${bas()}/api/resultat`);
+  return r.ok ? r.json() : [];
+};
+export const raderaResultat = async (id: string) => {
+  await fetch(`${bas()}/api/resultat/${encodeURIComponent(id)}`, { method: 'DELETE' });
+};
+
 export async function hamtaLage(id: string): Promise<Lage | null> {
   const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`);
   return r.ok ? r.json() : null;
