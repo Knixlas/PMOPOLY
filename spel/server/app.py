@@ -122,6 +122,20 @@ async def svara(id_: str, s: SvarIn):
     return rum.lage(s.kvarter)
 
 
+@app.delete("/api/rum/{id_}")
+async def radera(id_: str):
+    rum = _rum(id_)
+    RUM.pop(id_, None)
+    await run_in_threadpool(rum.radera)
+    for ws, _ in list(ANSLUTNA.pop(id_, set())):      # de som är med i partiet får veta det
+        try:
+            await ws.send_json({"typ": "raderat"})
+            await ws.close()
+        except Exception:                             # noqa: BLE001
+            pass
+    return {"raderat": id_}
+
+
 async def _sand_alla(rum):
     for ws, kvarter in list(ANSLUTNA.get(rum.id, set())):
         try:

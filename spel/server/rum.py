@@ -53,6 +53,14 @@ class Rum:
             self.fraga = None
         self.spara()
 
+    def radera(self):
+        """Avsluta partiet och ta bort det sparade. Går inte att ångra."""
+        with self.las:
+            self.parti.avbryt()
+            self.katalog, fil = None, (self.katalog / f"{self.id}.json") if self.katalog else None
+        if fil and fil.exists():
+            fil.unlink()
+
     def spara(self):
         if not self.katalog:
             return

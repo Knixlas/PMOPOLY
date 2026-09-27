@@ -1,6 +1,6 @@
 <script lang="ts">
   // Starta ett parti (1–4 kvarter, människor eller bottar, digitalt eller vid brädet) eller gå med i ett.
-  import { listaPartier, skapaParti } from '../spel/anslutning.svelte';
+  import { listaPartier, raderaParti, skapaParti } from '../spel/anslutning.svelte';
 
   const forslag = ['Norr', 'Söder', 'Öster', 'Väster'];
   let kvarter = $state([{ namn: 'Norr', styrning: 'människa' }, { namn: 'Söder', styrning: 'människa' }]);
@@ -11,6 +11,17 @@
   let kod = $state('');
 
   $effect(() => { listaPartier().then(p => (partier = p)).catch(() => {}); });
+
+  // radera ett parti: först en fråga på raden (webbläsarens confirm() fungerar inte överallt)
+  let radera = $state<string | null>(null);
+  let raderar = $state(false);
+  async function raderaNu(id: string) {
+    raderar = true;
+    try { await raderaParti(id); partier = partier.filter(p => p.id !== id); }
+    catch { /* listan hämtas om nedan */ }
+    raderar = false; radera = null;
+    listaPartier().then(p => (partier = p)).catch(() => {});
+  }
 
   function laggTill() {
     if (kvarter.length >= 4) return;
@@ -84,8 +95,19 @@
       <h3>Partier på servern</h3>
       <ul class="partier">
         {#each partier.slice(0, 12) as p}
-          <li><a href="#/parti/{p.id}"><strong>{p.kvarter.join(', ')}</strong>
-            <span>{p.klart ? 'Klart' : p.skede ?? ''} · {p.slump === 'inmatad' ? 'vid brädet' : 'i appen'} · {p.id}</span></a></li>
+          <li class:fragar={radera === p.id}>
+            <a href="#/parti/{p.id}"><strong>{p.kvarter.join(', ')}</strong>
+              <span>{[p.klart ? 'Klart' : p.skede, p.slump === 'inmatad' ? 'vid brädet' : 'i appen', p.id].filter(Boolean).join(' · ')}</span></a>
+            {#if radera === p.id}
+              <div class="bekrafta" role="group" aria-label="Radera partiet">
+                <span>Radera partiet för alla? Det går inte att ångra.</span>
+                <button type="button" class="ja" disabled={raderar} onclick={() => raderaNu(p.id)}>Radera</button>
+                <button type="button" disabled={raderar} onclick={() => (radera = null)}>Avbryt</button>
+              </div>
+            {:else}
+              <button type="button" class="radera" onclick={() => (radera = p.id)} aria-label="Radera partiet {p.id}" title="Radera partiet">×</button>
+            {/if}
+          </li>
         {/each}
       </ul>
     {/if}
@@ -119,6 +141,17 @@
   .rad { display: flex; gap: 8px; }
   .rad input { flex: 1; }
   .partier { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .partier li { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+  .partier li > a { flex: 1 1 200px; }
+  .radera { flex: none; width: 40px; font: inherit; font-weight: 700; font-size: 18px; border-radius: 4px;
+            border: 1px solid var(--linje-stark); background: #fff; color: var(--dampad); cursor: pointer; }
+  .radera:hover { color: var(--fel); border-color: var(--fel); }
+  .bekrafta { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px;
+              background: #fff; border: 1px solid var(--fel); border-radius: 4px; padding: 6px 10px; }
+  .bekrafta span { flex: 1 1 180px; }
+  .bekrafta button { font: inherit; font-weight: 700; padding: 5px 12px; border-radius: 4px; border: 1px solid var(--black);
+                     background: #fff; color: var(--black); cursor: pointer; }
+  .bekrafta .ja { background: var(--fel); border-color: var(--fel); color: #fff; }
   .partier a { display: grid; gap: 2px; padding: 8px 10px; border-radius: 4px; background: #fff; color: var(--black); text-decoration: none; border: 1px solid transparent; }
   .partier a:hover { border-color: var(--black); }
   .partier span { font-size: 13px; color: var(--dampad); }

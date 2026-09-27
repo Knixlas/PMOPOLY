@@ -119,6 +119,16 @@ class TestServer(unittest.TestCase):
         self.assertEqual(r.status_code, 200, r.text)
         self.assertIsNone(r.json()["fel"])
 
+    def test_radera(self):
+        id_ = skapa()
+        fil = os.path.join(os.environ["SPEL_DATA"], f"{id_}.json")
+        self.assertTrue(os.path.exists(fil))
+        self.assertEqual(KLIENT.delete(f"/api/rum/{id_}").status_code, 200)
+        self.assertFalse(os.path.exists(fil))
+        self.assertEqual(KLIENT.get(f"/api/rum/{id_}").status_code, 404)
+        self.assertNotIn(id_, [r["id"] for r in KLIENT.get("/api/rum").json()])
+        self.assertEqual(KLIENT.delete(f"/api/rum/{id_}").status_code, 404)
+
     def test_aterskapas_efter_omstart(self):
         id_ = skapa()
         for _ in range(60):

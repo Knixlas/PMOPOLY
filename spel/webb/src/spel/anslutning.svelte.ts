@@ -77,6 +77,11 @@ export async function listaPartier(): Promise<{ id: string; kvarter: string[]; s
   return r.ok ? r.json() : [];
 }
 
+export async function raderaParti(id: string): Promise<void> {
+  const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!r.ok && r.status !== 404) throw new Error(`Servern svarade ${r.status}`);
+}
+
 export async function hamtaLage(id: string): Promise<Lage | null> {
   const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`);
   return r.ok ? r.json() : null;
@@ -86,6 +91,7 @@ export async function hamtaLage(id: string): Promise<Lage | null> {
 export class Anslutning {
   lage = $state<Lage | null>(null);
   status = $state<'ansluter' | 'ansluten' | 'borta'>('ansluter');
+  raderat = $state(false);
   fel = $state('');
   skickar = $state(false);
   #ws: WebSocket | null = null;
@@ -106,6 +112,7 @@ export class Anslutning {
       const msg = JSON.parse(e.data);
       if (msg.typ === 'lage') { this.lage = msg; this.skickar = false; this.fel = ''; }
       else if (msg.typ === 'fel') { this.fel = msg.text; this.skickar = false; }
+      else if (msg.typ === 'raderat') { this.raderat = true; this.stang(); }
     };
     ws.onclose = () => {
       this.status = 'borta';

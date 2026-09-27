@@ -74,7 +74,9 @@
     <span class="status status-{anslutning?.status}">{anslutning?.status === 'ansluten' ? 'Ansluten' : anslutning?.status === 'ansluter' ? 'Ansluter …' : 'Förbindelsen bruten, försöker igen'}</span>
   </header>
 
-  {#if lage?.fel}
+  {#if anslutning?.raderat}
+    <p class="panel">Partiet har raderats. <a href="#/">Till startsidan</a></p>
+  {:else if lage?.fel}
     <p class="panel fel" role="alert">Partiet stannade: {lage.fel}</p>
   {:else if lage?.klart}
     <section class="panel">
