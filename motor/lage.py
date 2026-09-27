@@ -34,6 +34,19 @@ def _s2(m):
     return {"skede": "S2", "namn": "Skede 2 · Planering och genomförande", "handelser": [], "kvarter": ut}
 
 
+# Förvaltningens kvartal steg för steg, med en mening om vad som händer (visas i spelvyn).
+F_FASER = [
+    ["uppstart", "Uppstart", "Kvarteren blir fastigheter, ni väljer fastighetschef och förvaltningsstöd och får startkassan."],
+    ["marknad", "Marknad", "Yielden flyttar sig, nya fastigheter kommer till projektbanken och ni kan köpa och sälja."],
+    ["omvarld", "Omvärld", "Ett omvärldskort vänds: räntor, konjunktur eller regler som påverkar alla."],
+    ["driftnetto", "Driftnetto", "Fastigheterna betalar sitt driftnetto (en fjärdedel av årets) till kassan."],
+    ["personal", "Nätverk", "Ni drar nätverkskort och kan spela kort från handen. Fastighetschef och förvaltningsstöd gör sitt."],
+    ["handelser", "Händelser", "Ett händelsekort dras för varje fastighet. Negativa kan stoppas med en riskbuffert."],
+    ["kvartalskort", "Kvartalskort", "Ett kvartalskort per fastighetstyp påverkar alla fastigheter av den typen."],
+    ["energi", "Energi", "Ni kan energiuppgradera fastigheter för bättre energiklass och högre driftnetto."],
+]
+
+
 def _f(m):
     spel = m.spel
 
@@ -44,7 +57,8 @@ def _f(m):
             mv = None
         return {"namn": f.namn, "typ": TYPNAMN.get(f.typ, f.typ), "dn": m.eff_dn(f), "mv": mv, "lan": f.lan,
                 "ek": f.ek, "varningar": len(f.varningar)}
-    return {"skede": "F", "namn": "Förvaltning", "kvartal": spel.kvartal,
+    return {"skede": "F", "namn": "Förvaltning", "kvartal": spel.kvartal, "fas": getattr(spel, "fas", None),
+            "faser": F_FASER,
             "yield": {k: _tal(v) for k, v in spel.yieldniva.items()},
             "handelser": list(spel.logg)[-40:],
             "kvarter": [{
@@ -67,8 +81,11 @@ def bild(parti):
             return _pu(m)
         if namn == "Skede2":
             return _s2(m)
-        if hasattr(m, "spel") and m.spel.kvartal:
-            return _f(m)
+        if hasattr(m, "spel") and (m.spel.kvartal or m.spel.spelare and any(sp.fastigheter for sp in m.spel.spelare)):
+            b = _f(m)
+            if not m.spel.kvartal:
+                b["namn"] = "Förvaltning · uppstart"
+            return b
         return {"skede": "start", "namn": "Förbereder", "handelser": [], "kvarter": []}
     except Exception as e:                                 # noqa: BLE001 — en bild får aldrig stoppa spelet
         return {"skede": "okänt", "namn": f"Läget kunde inte läsas ({e})", "handelser": [], "kvarter": []}

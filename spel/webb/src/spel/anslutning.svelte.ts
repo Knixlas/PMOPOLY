@@ -19,13 +19,17 @@ export interface Vy {
   id?: string;                          // den nya markexpansionens id
   valda?: number[];                     // förvalda alternativ (flerval)
   hjalp?: string;
+  kort?: Kortvy;                        // kortet frågan gäller
+  ja?: string;
+  nej?: string;
   markbitar?: { id: string; form: [number, number][]; celler: [number, number][] }[];
 }
 export interface Visning {
   nr: number; typ: 'tarning' | 'kort'; kvarter: string | null; skede: string | null;
   sidor?: number; varde?: number; lek?: string;
-  kort?: { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string };
+  kort?: Kortvy;
 }
+export interface Kortvy { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string; lek?: string }
 export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
 export interface Lage {
   rum: string;
@@ -44,6 +48,8 @@ export interface Bild {
   skede: string;
   namn: string;
   kvartal?: number;
+  fas?: string | null;
+  faser?: string[][];
   yield?: Record<string, number>;
   handelser: string[];
   kvarter: Record<string, any>[];

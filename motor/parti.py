@@ -171,7 +171,7 @@ class Parti:
                 svar = [n for n, _, _ in svar]
             forslag = koda(svar, rotter)
         if styrd._manniska and not (self.analog and metod in ANALOGT_AV_BOTTEN):
-            vy = beskriv_beslut(metod, motor, subjekt, args, rotter, svar, analog=self.analog)
+            vy = beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
             kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
             svar = avkoda(kod, rotter)
             av = "människa"

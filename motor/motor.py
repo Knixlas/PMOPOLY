@@ -288,6 +288,7 @@ class Motor:
 
     # ------------------------------------------------------------------ uppställning (Kvartal 0)
     def starta(self):
+        self.spel.fas = "uppstart"
         d, s = self.d, self.s
         for typ in TYPER:
             extra = [{"ID": f"X-{typ}-{e}-{i}", "Typ": typ, "Effekt": e, "Värde": None}
@@ -693,6 +694,8 @@ class Motor:
             kvartal = max(0.0, ar / 4)
             hela = math.floor(kvartal)
             sp.kassa += hela
+            if sp.fastigheter:
+                self.logg(f"{sp.namn} får {hela} Mkr i driftnetto ({ar:g} Mkr/år från {len(sp.fastigheter)} fastigheter)")
             sp.restkort += round((kvartal - hela) * 4)
             while sp.restkort >= 4:
                 sp.restkort -= 4
@@ -856,13 +859,11 @@ class Motor:
 
     # ------------------------------------------------------------------ hela spelet
     def kvartalet(self):
-        self.marknad()
-        self.omvarld()
-        self.driftnetto()
-        self.personal()
-        self.handelser()
-        self.kvartalskort()
-        self.energiuppgraderingar()
+        for fas, steg in (("marknad", self.marknad), ("omvarld", self.omvarld), ("driftnetto", self.driftnetto),
+                          ("personal", self.personal), ("handelser", self.handelser),
+                          ("kvartalskort", self.kvartalskort), ("energi", self.energiuppgraderingar)):
+            self.spel.fas = fas                        # för gränssnittet (motor/lage.py)
+            steg()
 
     def spela(self):
         self.starta()

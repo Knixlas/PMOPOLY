@@ -212,7 +212,7 @@
     grepp.lyfter = false;
     if (tryck) {                                   // ett tryck: lyft upp biten så den svävar
       if (!grepp.fran) svava(grepp);
-      meddelande = 'Vrid och spegla med knapparna, flytta med pilarna eller tryck på tomten. Lägg när den är grön.';
+      meddelande = 'Vrid och spegla med knapparna överst. Flytta genom att dra biten eller trycka på tomten. Tryck Lägg när den är grön.';
       return;
     }
     if (!grepp.overBrade) { tillbaka(); return; }
@@ -227,6 +227,13 @@
     gr.overBrade = true;
     if (plats) { gr.lage = plats.lage; gr.rad = plats.rad; gr.kol = plats.kol; }
     else flyttaTill(gr, [7, 7]);
+    visaTomten();
+  }
+  /** På mobilen ligger handen ovanför tomten: rulla så att tomten syns när man tagit upp en bit. */
+  function visaTomten() {
+    if (!svg) return;
+    const r = svg.getBoundingClientRect();
+    if (r.top < 60 || r.bottom > innerHeight) svg.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
   function valjMedTangent(d: Del) {
     mattSkarm();
@@ -355,12 +362,13 @@
 <div class="pussel" class:haller={!!grepp}>
   <section class="bord" aria-label="Tomten">
     <div class="verktyg" role="toolbar" aria-label="Biten du håller">
+      <!-- knapparna för biten man håller finns alltid, så att man ser att man kan vrida och spegla -->
+      <button type="button" onclick={vrid} disabled={!grepp} title="Vrid (R)">⟳ Vrid</button>
+      <button type="button" onclick={spegelvand} disabled={!grepp} title="Spegla (F)">⇋ Spegla</button>
       {#if grepp}
-        <span class="haller-namn">{hallerText}</span>
-        <button type="button" onclick={vrid} title="Vrid (R)">⟳ Vrid</button>
-        <button type="button" onclick={spegelvand} title="Spegla (F)">⇋ Spegla</button>
         <button type="button" class="lagg" onclick={lagg} disabled={!prov || prov.lager === null} title="Lägg (Enter)">Lägg</button>
         <button type="button" onclick={tillbaka} title="Tillbaka till handen">Till handen</button>
+        <span class="haller-namn">{hallerText}</span>
       {:else}
         <button type="button" onclick={angra} disabled={!historik.length} title="Ångra (Ctrl+Z)">Ångra</button>
         <button type="button" onclick={gorOm} disabled={!framtid.length} title="Gör om (Ctrl+Shift+Z)">Gör om</button>
@@ -462,7 +470,9 @@
       {/if}
     </svg>
 
-    <p class="meddelande" role="status" aria-live="polite">{meddelande}</p>
+    <p class="meddelande" role="status" aria-live="polite">{meddelande || (grepp ? '' : iHanden.length
+      ? 'Tryck på en bit i handen för att ta upp den. Då kan du vrida, spegla och flytta den.'
+      : 'Tryck på en bit på tomten för att flytta, vrida eller spegla den.')}</p>
   </section>
 
   <aside class="hand" aria-label="Handen">
@@ -545,7 +555,7 @@
   .verktyg button.lamna { background: var(--pu); border-color: var(--pu-mork); }
   .verktyg button.lamna:not(:disabled):hover { background: var(--pu-mork); color: #fff; }
   .verktyg button:focus-visible, .kort:focus-visible { outline: 3px solid var(--pu); outline-offset: 2px; }
-  .haller-namn { font-weight: 600; margin-right: 4px; color: var(--black); }
+  .haller-namn { font-weight: 600; margin-left: 4px; color: var(--black); flex-basis: 100%; }
 
   .tomt { width: 100%; max-width: 680px; height: auto; display: block; touch-action: none; user-select: none; }
   .tomtyta { fill: var(--tomt); }

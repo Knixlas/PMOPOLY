@@ -20,6 +20,19 @@
       {#if bild.yield}<span>Yield bostäder {procent(bild.yield['bostäder'] ?? 0)} · kommersiellt {procent(bild.yield['kommersiellt'] ?? 0)}</span>{/if}
     </header>
 
+    {#if bild.skede === 'F' && bild.faser}
+      {@const nu = bild.faser.findIndex((f: string[]) => f[0] === bild.fas)}
+      <section class="faser" aria-label="Kvartalets steg">
+        <p class="kvartal">{bild.kvartal ? `Kvartal ${bild.kvartal} av 4` : 'Innan första kvartalet'}</p>
+        <ol>
+          {#each bild.faser.slice(1) as [id, namn], i}
+            <li class:nu={id === bild.fas} class:klar={nu > i + 1}>{namn}</li>
+          {/each}
+        </ol>
+        {#if nu >= 0}<p class="forklaring"><strong>{bild.faser[nu][1]}:</strong> {bild.faser[nu][2]}</p>{/if}
+      </section>
+    {/if}
+
     <div class="kort">
       {#each kvarter as k (k.namn)}
         <article class:jag={k.namn === jag}>
@@ -93,6 +106,14 @@
 
 <style>
   .lage { display: grid; gap: 12px; }
+  .faser { background: var(--panel); border-radius: 6px; padding: 10px 12px; display: grid; gap: 6px; }
+  .faser .kvartal { margin: 0; font-weight: 700; }
+  .faser ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; counter-reset: steg; }
+  .faser li { counter-increment: steg; font-size: 13px; padding: 3px 8px; border-radius: 3px; background: var(--panel-mork); color: var(--dampad); }
+  .faser li::before { content: counter(steg) ". "; }
+  .faser li.klar { color: var(--black); }
+  .faser li.nu { background: #ef5656; color: #fff; font-weight: 700; }
+  .faser .forklaring { margin: 0; font-size: 14px; max-width: 70ch; }
   .tom { margin: 0; }
   header { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 14px; }
   .skede { font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--black); color: var(--panel); }

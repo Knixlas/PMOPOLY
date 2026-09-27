@@ -151,6 +151,68 @@ BESLUT = {
     "energikort": ("flerval", lambda m, s, a: "Spela energikort?", lambda m, s, a: s.hand, False),
     "fortsatt_uppgradera": ("janej", lambda m, s, a: f"Fortsätta uppgradera {etikett(a[0], m)}?", None, False),
 }
+# ---------------------------------------------------------------------------- förklaringar
+# Vad beslutet betyder och vad som händer, med spelets ord. metod -> text(m, s, a).
+EFFEKT = {
+    "dolt_plus_dn": "en dold plusbricka på fastigheten (+1 i driftnetto)",
+    "dolt_minus_dn": "en dold minusbricka på fastigheten (−1 i driftnetto)",
+    "energi_plus": "en energibricka plus (kan ge bättre energiklass)",
+    "energi_minus": "en energibricka minus (kan ge sämre energiklass)",
+    "direkt_dn_plus": "+1 i driftnetto direkt",
+    "direkt_dn_minus": "−1 i driftnetto direkt",
+    "direkt_ek_plus": "ett steg bättre energiklass",
+    "direkt_ek_minus": "ett steg sämre energiklass",
+    "underhallsvarning": "en underhållsvarning (tre varningar ger −1 i driftnetto tills de röjs)",
+    "villkorskort": "ett villkor som följer fastigheten",
+    "engangskassa_plus": "pengar in i kassan nästa kvartal",
+    "engangskassa_minus": "en kostnad som dras från kassan nästa kvartal",
+}
+
+
+def _effekt(kort):
+    e = EFFEKT.get(kort.get("Effekt"), "")
+    v = kort.get("Värde")
+    if v not in (None, "", "-") and kort.get("Effekt", "").startswith("engangskassa"):
+        e += f" ({_tal(v):g} Mkr)"
+    return e
+
+
+def _eliminera(m, s, a):
+    f, kort, gratis = a[0], a[1], bool(a[2]) if len(a) > 2 else False
+    rad = f"Kortet ger {_effekt(kort)}." if _effekt(kort) else ""
+    if gratis:
+        return f"{rad} Er fastighetschef Skölden kan stoppa det gratis (en gång per kvartal)."
+    return (f"{rad} Ni kan stoppa det genom att lämna en riskbuffert (ni har {s.riskbuffert}). "
+            "Svarar ni nej händer det som står på kortet.")
+
+
+HJALP = {
+    "eliminera": _eliminera,
+    "valj_fc": lambda m, s, a: "Fastighetschefen ger en styrka hela Förvaltningen. Efter några kvartal blir hen senior och blir starkare.",
+    "valj_fs": lambda m, s, a: "Förvaltningsstödet är en specialist med en egen förmåga, t.ex. bättre due diligence eller energiarbete.",
+    "vill_kopa": lambda m, s, a: "Köper ni får ni fastigheten med dess driftnetto varje kvartal. Priset betalas ur kassan, resten lånas.",
+    "forhandlingskort": lambda m, s, a: "Förhandlingskort förbättrar ert slag i förhandlingen om priset.",
+    "vill_sanera": lambda m, s, a: "En fastighet med för stor skuld säljs ut. Tar ni uppdraget köper ni den billigt men tar över skulden.",
+    "tvangsbud": lambda m, s, a: "Ett tvångsbud är ett fientligt köp av en annan spelares fastighet. Budet kostar en avgift oavsett utfall, och ägaren kan försöka stoppa det.",
+    "stoppa": lambda m, s, a: "Någon vill tvångsköpa er fastighet. Ni kan stoppa det med ett motbud, ett kort eller riskbuffertar, eller låta det gå till duell.",
+    "duellkort": lambda m, s, a: "I duellen slår båda; kort ni spelar här lägger till på ert slag.",
+    "motbudsmal": lambda m, s, a: "Ett motbud: i stället för att förlora fastigheten tar ni en av budgivarens.",
+    "salj": lambda m, s, a: "Banken köper till marknadsvärdet minus lånet. Sälj om ni behöver kassa eller vill bli av med en svag fastighet.",
+    "salj_for_likviditet": lambda m, s, a: "Kassan får inte vara negativ. En fastighet måste säljas till banken.",
+    "roj": lambda m, s, a: "Att röja en underhållsvarning kostar pengar nu men tar bort risken för sänkt driftnetto.",
+    "visa_plus": lambda m, s, a: "En dold plusbricka höjer värdet när den visas. Visar ni den nu syns den för alla.",
+    "valj_dd": lambda m, s, a: "Due diligence: ni får titta på flera kort om fastigheten innan köpet och behålla det bästa.",
+    "slang": lambda m, s, a: "Ni får bara ha ett visst antal kort på handen. Välj vilket som ska bort.",
+    "spela_nu": lambda m, s, a: "Nätverkskort kan spelas nu eller sparas till senare.",
+    "uppgradera": lambda m, s, a: "Energiuppgradering kostar pengar och kräver ett lyckat slag, men bättre energiklass höjer driftnettot.",
+    "fortsatt_uppgradera": lambda m, s, a: "Försöket misslyckades. Ni kan betala för ett nytt försök.",
+    "vill_expandera": lambda m, s, a: "En markexpansion kostar 5 Mkr och ger mer mark att bygga på i 4.3.",
+    "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
+    "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
+    "namnd_miss_hoj_krav": lambda m, s, a: "Ja: kraven på kvalitet och hållbarhet höjs ett steg och ni försöker igen med en tärning till. Nej: ni lämnar tillbaka ett projekt.",
+}
+
+
 MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kulturkort": lambda m, s, a: 5}
 MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0]}
 
@@ -170,6 +232,18 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
     vy = {"typ": typ, "rubrik": rubrik(motor, subjekt, args), "kvarter": getattr(subjekt, "namn", None),
           "forslag_text": etikett(forslag, motor) if not isinstance(forslag, list)
           else (", ".join(etikett(x, motor) for x in forslag) or "Inga")}
+    if metod in HJALP:
+        try:
+            vy["hjalp"] = HJALP[metod](motor, subjekt, args).strip()
+        except Exception:                                    # noqa: BLE001 — bara presentation
+            pass
+    if metod == "eliminera":
+        from .parti import kortvy
+        vy["rubrik"] = f"Stoppa händelsen ”{args[1].get('Rubrik') or kortnamn(args[1])}” på {etikett(args[0], motor)}?"
+        gratis = len(args) > 2 and bool(args[2])
+        vy["ja"] = "Ja, stoppa den (gratis med Skölden)" if gratis else "Ja, stoppa den (−1 riskbuffert)"
+        vy["nej"] = "Nej, låt den gälla"
+        vy["kort"] = {**kortvy(args[1]), "lek": f"händelse {args[0].typ.lower()}"}
     if pool:
         text = (lambda x: f"Q {x[0]:+d} · H {x[1]:+d}") if metod == "fordela_krav" else (lambda x: etikett(x, motor))
         vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x)}

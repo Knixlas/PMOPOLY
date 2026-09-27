@@ -3,6 +3,7 @@
   // "Gör som förslaget" finns alltid (bottens val), så att ingen fråga kan fastna.
   import data from '../data/pussel.json';
   import Pussel from '../pussel/Pussel.svelte';
+  import Kort from './Kort.svelte';
   import { cellerFor, lagdFran, type Del, type Lagd } from '../pussel/kvarter';
   import { type Form, type Ruta } from '../pussel/regler';
   import type { Fraga, Svar } from './anslutning.svelte';
@@ -68,12 +69,13 @@
 
 <section class="fraga" aria-live="polite">
   <h2>{vy.rubrik}</h2>
+  {#if vy.kort}<Kort kort={vy.kort} lek={vy.kort.lek ?? ''} skede="F" stor />{/if}
   {#if vy.hjalp}<p class="hjalp">{vy.hjalp}</p>{/if}
 
   {#if vy.typ === 'janej'}
     <div class="knappar">
-      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: true })}>Ja</button>
-      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: false })}>Nej</button>
+      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: true })}>{vy.ja ?? 'Ja'}</button>
+      <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: false })}>{vy.nej ?? 'Nej'}</button>
     </div>
   {:else if vy.typ === 'tal'}
     {#if (vy.max ?? 0) - (vy.min ?? 0) <= 20}

@@ -86,4 +86,5 @@ class Spel:
     bankfynd: list = field(default_factory=list)
     tvang_faktor: float = None                      # omvärld "köparnas marknad": tvångsbud till lägre faktor vid nästa marknad
     logg: list = field(default_factory=list)
+    fas: str = None                                 # steget i kvartalet (för gränssnittet)
     statistik: dict = field(default_factory=dict)
