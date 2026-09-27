@@ -129,6 +129,8 @@ BESLUT = {
     "sla_om": ("janej", lambda m, s, a: "Slå om med en riskbuffert?", None, False),
     "kulturkort": ("tal", lambda m, s, a: f"Hur många kulturkort köper ni ({_tal(a[1]):g} Mkr styck)?", None, False),
     "spela_niva": ("janej", lambda m, s, a: f"Spela korten och nå nivå {a[0]}?", None, False),
+    "spela_fas": ("fasspel", lambda m, s, a: f"Fas {getattr(m, 'steg_nr', '')}: lägg kompetenskort på bordet",
+                  lambda m, s, a: s.hand, False),
     # Förvaltning
     "valj_fc": ("val", lambda m, s, a: "Välj fastighetschef (FC)", lambda m, s, a: a[0], False),
     "valj_fs": ("val", lambda m, s, a: "Välj förvaltningsstöd (FS)", lambda m, s, a: a[0], False),
@@ -309,6 +311,18 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["min"], vy["max"] = 0, int(MAX_TAL.get(metod, lambda m, s, a: 10)(motor, subjekt, args))
     if typ == "flerval" and metod in MAX_FLERVAL:
         vy["max"] = int(MAX_FLERVAL[metod](motor, subjekt, args))
+    if typ == "fasspel":                                    # Genomförandet: korten, nivåerna och kraven
+        from .parti import kortvy
+        from .skede2 import kompetenser
+        fas, nivaer = args[0], args[1]
+        vy["fas_kort"] = {**kortvy(fas), "lek": f"FAS {getattr(motor, 'steg_nr', '')}"}
+        vy["nivaer"] = [[n, kr, str(fas.get(f"Effekt {n.lower()}") or "")] for n, kr in nivaer]
+        for a_, k in zip(vy["alternativ"], subjekt.hand):
+            a_["komp"] = kompetenser(k)
+            a_["kort"] = kortvy(k)
+        vy["forslag_text"] = ", ".join(etikett(k, motor) for k in forslag) if forslag else "Inga kort"
+        vy["hjalp"] = ("Tryck på korten ni vill spela så läggs de på bordet. Summan visar vilken nivå ni når. "
+                       "Når ni ingen nivå över Negativt går korten tillbaka till handen (7.5).")
     if typ in ("pussel", "markexpansion"):
         vy["mark"] = sorted(list(c) for c in subjekt.mark)
         vy["grundmark"] = sorted(list(c) for c in GRUNDMARK)

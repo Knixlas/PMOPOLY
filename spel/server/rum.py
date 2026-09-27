@@ -100,7 +100,7 @@ class Rum:
             if not isinstance(i, int) or not 0 <= i < len(alt):
                 raise SvarsFel("välj ett av alternativen")
             return alt[i]["kod"]
-        if typ == "flerval":
+        if typ in ("flerval", "fasspel"):
             valda = svar.get("flera", [])
             alt = vy.get("alternativ", [])
             if not all(isinstance(i, int) and 0 <= i < len(alt) for i in valda) or len(set(valda)) != len(valda):

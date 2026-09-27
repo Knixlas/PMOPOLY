@@ -3,6 +3,7 @@
   // "Gör som förslaget" finns alltid (bottens val), så att ingen fråga kan fastna.
   import data from '../data/pussel.json';
   import Pussel from '../pussel/Pussel.svelte';
+  import FasSpel from './FasSpel.svelte';
   import Kort from './Kort.svelte';
   import { cellerFor, lagdFran, type Del, type Lagd } from '../pussel/kvarter';
   import { type Form, type Ruta } from '../pussel/regler';
@@ -72,7 +73,9 @@
   {#if vy.kort}<Kort kort={vy.kort} lek={vy.kort.lek ?? ''} skede="F" stor />{/if}
   {#if vy.hjalp}<p class="hjalp">{vy.hjalp}</p>{/if}
 
-  {#if vy.typ === 'janej'}
+  {#if vy.typ === 'fasspel'}
+    <FasSpel {fraga} {svara} {skickar} />
+  {:else if vy.typ === 'janej'}
     <div class="knappar">
       <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: true })}>{vy.ja ?? 'Ja'}</button>
       <button type="button" class="stor" disabled={skickar} onclick={() => svara({ svar: false })}>{vy.nej ?? 'Nej'}</button>
@@ -151,7 +154,8 @@
 </section>
 
 <style>
-  .fraga { background: var(--panel); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
+  .fraga { background: var(--panel); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+  .fraga > :global(*) { min-width: 0; }
   h2 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
   .kortval { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px;
              grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }

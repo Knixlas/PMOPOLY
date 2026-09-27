@@ -3,7 +3,7 @@
 
 export interface Alternativ { text: string; detalj?: string; kod: unknown; bild?: string; typ?: string; kort?: Kortvy }
 export interface Vy {
-  typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag';
+  typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag' | 'fasspel';
   rubrik: string;
   kvarter?: string | null;
   forslag_text?: string;

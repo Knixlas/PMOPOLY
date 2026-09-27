@@ -50,6 +50,19 @@ def kompetenser(kort):
     return ut
 
 
+def nada_niva(nivaer, kort):
+    """Högsta nivån vars krav korten tillsammans når ('Negativt' om ingen)."""
+    summa = {}
+    for k in kort:
+        for c, n in kompetenser(k).items():
+            summa[c] = summa.get(c, 0) + n
+    bast = "Negativt"
+    for n, kr in nivaer:
+        if all(summa.get(c, 0) >= v for c, v in kr.items()):  # tomt krav ('—') nås utan kort
+            bast = n
+    return bast
+
+
 def krav(text):
     """'KOM 2, SAM 5' -> {'KOM': 2, 'SAM': 5}; '—' -> {}; tomt -> None (nivån finns inte för typen)."""
     if text in (None, ""):
@@ -274,17 +287,18 @@ class Skede2:
                 if all(krav(fas[f"{n} {kol}"]) is None for n in NIVAER[1:]):
                     self.stat["fas_opaverkad"] += 1               # beslut: tom kolumn = påverkas inte alls
                 else:
-                    niva = "Negativt"
-                    for n in reversed(NIVAER):
-                        kr = krav(fas[f"{n} {kol}"])
-                        if kr is None:
-                            continue
-                        kort = self.losning(kr, b.hand) if kr else []
-                        if kort is not None and b.strategi.spela_niva(self, b, n, kort):
-                            for k in kort:
-                                b.hand.remove(k)
-                            niva = n
-                            break
+                    # 7.5: kvarteret lägger kompetenskort på bordet; summan avgör nivån. Når korten ingen nivå
+                    # över Negativt tas de tillbaka till handen (inget förbrukas).
+                    nivaer = [(n, krav(fas[f"{n} {kol}"])) for n in NIVAER if krav(fas[f"{n} {kol}"]) is not None]
+                    valda = b.strategi.spela_fas(self, b, fas, nivaer)
+                    kort = []
+                    for k in valda or []:
+                        if any(k is h for h in b.hand) and not any(k is x for x in kort):
+                            kort.append(k)
+                    niva = nada_niva(nivaer, kort)
+                    if niva != "Negativt":
+                        for k in kort:
+                            b.hand.remove(k)
                     self.stat["fas_nivå_" + niva] += 1
                     b.fas_utfall.append(niva)
                     self.effekt(b, fas[f"Effekt {niva.lower()}"])

@@ -30,6 +30,14 @@ class S2Strategi:
     def spela_niva(self, m, b, niva, kort):
         return True
 
+    def spela_fas(self, m, b, fas, nivaer):
+        """Vilka kompetenskort läggs på bordet? Högsta nivån som handen når, med så få kort som möjligt."""
+        for n, kr in reversed(nivaer):
+            kort = m.losning(kr, b.hand) if kr else []
+            if kort is not None and self.spela_niva(m, b, n, kort):
+                return kort
+        return []
+
 
 class S2Billig(S2Strategi):
     namn = "billig"
