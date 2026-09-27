@@ -56,6 +56,36 @@ class TestMotor(unittest.TestCase):
             self.assertEqual(p["Räntekostnad (Mkr/år)"], max(1, int(0.02 * p["Lån (Mkr)"] + 0.5)), p["Namn"])
             self.assertGreaterEqual(p["Driftnetto (Mkr/år)"], 0, p["Namn"])
 
+    def test_uppgradering_flera_steg_tarningarna_borjar_om(self):
+        """9.11: D → C lyckas på andra försöket (2 D20); nästa steg C → B slås ändå med 1 D20."""
+        fragor = []
+
+        class EttSteg(Strategi):
+            def uppgradera(self, m, sp, antal):
+                return [sp.fastigheter[0]]
+
+            def fortsatt_uppgradera(self, m, sp, f, tarningar):
+                fragor.append((f.ek, tarningar))
+                return f.ek != "B"                           # sluta när B är nådd
+
+        m = Motor([EttSteg(), Strategi()], Parametrar(), DigitalSlump(1), DATA)
+        m.starta()
+        m.spel.kvartal = 1
+        sp = m.spel.spelare[0]
+        f = sp.fastigheter[0]
+        f.ek, f.uppgraderingsstopp, sp.kassa, sp.lan, sp.riskbuffert, sp.fc, sp.fs = "D", False, 100, 0, 0, None, None
+        sp.hand = []
+        m.spel.spelare[1].fastigheter = []
+        slag = iter([2, 3, 15, 11, 1])                       # miss (1 D20), träff (2 D20), träff C → B (1 D20)
+        m.s.d20 = lambda: next(slag)
+        kast = []
+        m.kast = lambda sp_, syfte, grupp=None: kast.append(syfte)
+        m.energiuppgraderingar()
+        self.assertEqual(f.ek, "B")
+        self.assertEqual(fragor, [("D", 2), ("C", 1), ("B", 1)])
+        self.assertIn("1 D20", kast[-1])
+        self.assertEqual(sp.kassa, 100 - 3 * m.p.uppgradering_kostnad)
+
     def test_alla_effektkoder_hanteras(self):
         """Varje effekt i lekarna ska motorn känna till (annars tyst ignorerad)."""
         import re

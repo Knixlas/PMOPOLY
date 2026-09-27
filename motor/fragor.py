@@ -176,7 +176,8 @@ BESLUT = {
     "uppgradera": ("flerval", lambda m, s, a: f"Energiuppgradera (högst {a[0]} fastigheter)?",
                    lambda m, s, a: s.fastigheter, False),
     "energikort": ("flerval", lambda m, s, a: "Spela energikort?", lambda m, s, a: _med_effekt(s.hand, "energi_mod"), False),
-    "fortsatt_uppgradera": ("janej", lambda m, s, a: f"Fortsätta uppgradera {etikett(a[0], m)}?", None, False),
+    "fortsatt_uppgradera": ("janej", lambda m, s, a: (f"Ta nästa steg för {etikett(a[0], m)}?" if a[1] == 1 else
+                                                     f"Fortsätta uppgradera {etikett(a[0], m)}?"), None, False),
 }
 # ---------------------------------------------------------------------------- förklaringar
 # Vad beslutet betyder och vad som händer, med spelets ord. metod -> text(m, s, a).
@@ -310,9 +311,12 @@ HJALP = {
                                    "ger +1 Mkr/år i driftnetto."),
     "energikort": lambda m, s, a: (f"Slaget räckte inte: det fattas {a[0]:g} för att komma över tröskeln. Energikort "
                                    "från handen läggs till slaget (spelas efter slaget)."),
-    "fortsatt_uppgradera": lambda m, s, a: (f"Försöket misslyckades. Betalar ni {m.p.uppgradering_kostnad} Mkr igen slår ni "
-                                            f"{a[1]} D20, och det räcker att en kommer över tröskeln "
-                                            f"({m.p.uppgradering_troskel.get(a[0].ek, '–')} för energiklass {a[0].ek})."),
+    "fortsatt_uppgradera": lambda m, s, a: (
+        f"Lyckades – fastigheten har nu energiklass {a[0].ek}. Ni får ta nästa steg direkt: {m.p.uppgradering_kostnad} Mkr "
+        f"och 1 D20 (tärningarna börjar om), över {m.p.uppgradering_troskel.get(a[0].ek, '–')}." if a[1] == 1 else
+        f"Försöket misslyckades. Betalar ni {m.p.uppgradering_kostnad} Mkr igen slår ni "
+        f"{a[1]} D20, och det räcker att en kommer över tröskeln "
+        f"({m.p.uppgradering_troskel.get(a[0].ek, '–')} för energiklass {a[0].ek})."),
     "vill_expandera": lambda m, s, a: "En markexpansion kostar 5 Mkr och ger mer mark att bygga på i 4.3.",
     "fordela_krav": lambda m, s, a: (
         f"Kraven sänks – det är bra för er. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; ju lägre krav, desto "

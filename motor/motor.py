@@ -32,7 +32,8 @@ class Parametrar:
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA")   # som tryckt på F-brädet (Kvartal 1–4)
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
-    max_uppgraderingar: tuple = (3, 2, 1, 0)
+    max_uppgraderingar: tuple = (3, 2, 1, 0)       # fastigheter per kvartal (varje fastighet så många steg man vill)
+    uppgradering_flera_steg: bool = True           # 9.11 (beslut 2026-09-27): efter lyckat steg får man ta nästa, tärningarna börjar om
     uppgradering_kostnad: int = 3                  # 9.11 (beslut 2026-09-27): per slag(omgång)
     # 9.11: slaget måste vara över tröskeln för fastighetens nuvarande energiklass – svårare ju bättre klassen är
     uppgradering_troskel: dict = field(default_factory=lambda: {"E": 6, "D": 8, "C": 10, "B": 13})
@@ -959,6 +960,11 @@ class Motor:
                     if bast > grans:
                         self.andra_ek(f, 1)
                         self.stat["uppgradering"] += 1
+                        # 9.11: nästa steg får tas direkt, men tärningarna börjar om på 1 D20
+                        if (self.p.uppgradering_flera_steg and f.ek != "A" and not f.uppgraderingsstopp
+                                and sp.strategi.fortsatt_uppgradera(self, sp, f, 1)):
+                            tarningar = 1
+                            continue
                         break
                     if not sp.strategi.fortsatt_uppgradera(self, sp, f, tarningar + 1):
                         break

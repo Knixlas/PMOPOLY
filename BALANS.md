@@ -183,3 +183,6 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   17 uppgraderingar per parti (förut 11), energiklass A 18 % vid slut (förut 11 %), F-median 13,4,
   förvaltningsstrategierna 24–27 %. Prövat också 8/10/12/14 och 5/7/9/12: samma bild.
   Q4 frågar inte längre om uppgradering, och energikortsfrågan kommer bara om man har energikort.
+- **Energiuppgradering i flera steg (9.11, beslut):** en fastighet får höjas så många steg man vill, ett i taget;
+  efter lyckat steg börjar tärningarna om på 1 D20. 600 partier: 25 uppgraderingar per parti (förut 17),
+  F-median 14,5 (förut 13,0), förvaltningsstrategierna 23–26 %. Regelversion 2026-09-27b.
