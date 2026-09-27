@@ -214,6 +214,7 @@ class PUMotor:
     # ------------------------------------------------------------------ uppställning
     def starta(self):
         self.fas, self.i_tur = "uppstallning", None           # för spelledaren (motor/spelledare.py)
+        self.orsak = None                                      # varför kraven ändras (visas i frågan)
         s = self.s
         for typ in TYPER:
             self.hogar[typ] = s.blanda_lista([p for p in self.d.projekt if p["Typ"] == typ], f"projekt {typ}")
@@ -241,9 +242,11 @@ class PUMotor:
     # ------------------------------------------------------------------ brädet
     def flytta(self, kv):
         steg = self.s.tarning(6)
+        start = kv.position
         for i in range(1, steg + 1):
-            pos = (kv.position + i) % len(BRADE)
+            pos = (start + i) % len(BRADE)
             ruta = BRADE[pos]
+            kv.position = pos                                 # pjäsen står på rutan när dess effekt sker
             if pos == 0:
                 kv.varv += 1
                 if kv.varv >= self.p.varv:
@@ -251,7 +254,7 @@ class PUMotor:
                     return True                               # klar; stannar på start
             if ruta in HORN and (i == steg or self.p.horn_vid_passering):
                 self.horn(kv, ruta, passerar=i != steg)
-        kv.position = (kv.position + steg) % len(BRADE)
+        kv.position = (start + steg) % len(BRADE)
         ruta = BRADE[kv.position]
         if ruta in TYPER:
             self.projektval(kv, [ruta])
@@ -270,9 +273,11 @@ class PUMotor:
                 if p:
                     self.lamna_projekt(kv, p)
         elif ruta == "LÄNSSTYRELSEN":
+            self.orsak = f"Länsstyrelsen ({'ni passerar' if passerar else 'ni stannar på'} hörnrutan)"
             q, h = kv.strategi.fordela_krav(self, kv, -2)
             self.andra_krav(kv, q, h)
         elif ruta == "SKÖNHETSRÅDET":                        # tryckt bräde: ÖKA kraven med 2
+            self.orsak = f"Skönhetsrådet ({'ni passerar' if passerar else 'ni stannar på'} hörnrutan)"
             q, h = kv.strategi.fordela_krav(self, kv, +2)
             self.andra_krav(kv, q, h)
 
@@ -283,6 +288,7 @@ class PUMotor:
         kort = self.handelsehog.pop()
         self.stat["handelse"] += 1
         if str(kort.get("Nr", "")).startswith(("PS", "DS")):
+            self.orsak = f"Händelsekortet ”{kort.get('Rubrik') or kort.get('Nr')}”"
             self.specialkort(kv, kort)
             return
         slag = self.s.d20() + kv.erfarenhet
@@ -432,6 +438,7 @@ class PUMotor:
             if max(slag) > summa:
                 return projekt, forsok
             if forsok <= self.p.namnd_hoj_max and kv.strategi.namnd_miss_hoj_krav(self, kv, summa, forsok):
+                self.orsak = "Nämnden sa nej (4.1)"
                 q, h = kv.strategi.fordela_krav(self, kv, +1)
                 self.andra_krav(kv, q, h)
                 self.stat["namnd_hojt_krav"] += 1
@@ -504,6 +511,7 @@ class PUMotor:
         # 5.2 riskbuffert får sänka krav
         for _ in range(kv.strategi.rb_sank_krav(self, kv)):
             kv.riskbuffert -= 1
+            self.orsak = "En riskbuffert sänker kraven (5.2)"
             q, h = kv.strategi.fordela_krav(self, kv, -1)
             self.andra_krav(kv, q, h)
 

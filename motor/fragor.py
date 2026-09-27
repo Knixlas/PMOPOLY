@@ -93,7 +93,8 @@ BESLUT = {
     "dra_anda": ("janej", lambda m, s, a: f"Dra översta {etikett(a[0]).lower()}-kortet till projektbanken?", None, False),
     "vill_expandera": ("janej", lambda m, s, a: "Ta en markexpansion?", None, False),
     "stadshuset": ("val", lambda m, s, a: "Stadshuset: lämna tillbaka ett projekt?", lambda m, s, a: s.projekt, True),
-    "fordela_krav": ("val", lambda m, s, a: f"Fördela {abs(a[0])} steg mellan kvalitet (Q) och hållbarhet (H)",
+    "fordela_krav": ("val", lambda m, s, a: (f"{m.orsak}: " if getattr(m, "orsak", None) else "")
+                     + f"{'sänk' if a[0] < 0 else 'höj'} kraven {abs(a[0])} steg. Hur fördelar ni mellan Q och H?",
                      lambda m, s, a: _fordelningar(a[0]), False),
     "sla_om_handelse": ("janej", lambda m, s, a: "Slå om händelsen med en riskbuffert?", None, False),
     "byt_samma_typ": ("val", lambda m, s, a: "Byt ett projekt mot översta kortet i samma hög?",
@@ -209,6 +210,10 @@ HJALP = {
     "uppgradera": lambda m, s, a: "Energiuppgradering kostar pengar och kräver ett lyckat slag, men bättre energiklass höjer driftnettot.",
     "fortsatt_uppgradera": lambda m, s, a: "Försöket misslyckades. Ni kan betala för ett nytt försök.",
     "vill_expandera": lambda m, s, a: "En markexpansion kostar 5 Mkr och ger mer mark att bygga på i 4.3.",
+    "fordela_krav": lambda m, s, a: (
+        f"Kraven sänks – det är bra för er. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; ju lägre krav, desto "
+        "lättare att nå dem i Skede 2." if a[0] < 0 else
+        f"Kraven höjs. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; lägg höjningen där ni har lättast att nå kravet."),
     "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
     "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
     "namnd_miss_hoj_krav": lambda m, s, a: "Regelboken 4.1: Ja betyder att ni höjer Q- eller H-kravet med 1 (ni väljer vilket i nästa fråga) och slår igen med en tärning mer. Nej betyder att ni lämnar tillbaka ett projekt i stället.",
@@ -236,7 +241,8 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
                 "valda": list(range(len(projekt))),
                 "hjalp": "Det som inte fick plats går till projektbanken och tar med sig sina krav."}
     typ, rubrik, pool, inget = BESLUT.get(metod, ("forslag", lambda m, s, a: metod.replace("_", " ").capitalize(), None, False))
-    vy = {"typ": typ, "rubrik": rubrik(motor, subjekt, args), "kvarter": getattr(subjekt, "namn", None),
+    rub = rubrik(motor, subjekt, args)
+    vy = {"typ": typ, "rubrik": rub[:1].upper() + rub[1:], "kvarter": getattr(subjekt, "namn", None),
           "forslag_text": etikett(forslag, motor) if not isinstance(forslag, list)
           else (", ".join(etikett(x, motor) for x in forslag) or "Inga")}
     if metod in HJALP:
@@ -259,6 +265,9 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
                             for x in pool(motor, subjekt, args)]
         if metod == "fordela_krav":
             vy["forslag_text"] = text(forslag)
+            for a_, x in zip(vy["alternativ"], pool(motor, subjekt, args)):   # vad kraven blir
+                a_["detalj"] = (f"Q-krav {subjekt.q_krav} → {subjekt.q_krav + x[0]} · "
+                                f"H-krav {subjekt.h_krav} → {subjekt.h_krav + x[1]}")
         if inget:
             vy["alternativ"].append({"text": "Inget", "detalj": "", "kod": None})
     if typ == "tal":
