@@ -352,6 +352,10 @@ def kortvy(kort):
                        ["Utveckling", f"{kort['Utvecklingskostnad (Mkr)']} Mkr"]]
     if kort.get("Korttyp") == "MARKEXPANSION":
         vy["rubrik"], vy["text"] = "Markexpansion", f"{kort.get('BYA (kvm)')} kvm BYA"
+    from .fragor import kortregel
+    effekt = kortregel(kort)                             # Förvaltningens händelse- och kvartalskort
+    if effekt:
+        vy["effekt"] = effekt
     return vy
 
 

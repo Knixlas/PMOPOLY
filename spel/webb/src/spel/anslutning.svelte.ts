@@ -31,7 +31,7 @@ export interface Visning {
   sidor?: number; varde?: number; lek?: string; grupp?: string | null;
   kort?: Kortvy;
 }
-export interface Kortvy { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string; lek?: string }
+export interface Kortvy { id: string; rubrik: string; text: string; effekt?: string; typ: string; rader: [string, string][]; bild?: string; lek?: string }
 export interface Ledare {
   skede: string; steg: { id: string; namn: string }[]; nu: string; plats: string; gor: string; regler: string[]; tur?: string;
 }

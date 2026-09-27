@@ -197,6 +197,41 @@ EFFEKT = {
 }
 
 
+# Vad händelse- och kvartalskorten gör, i spelarens ord (samma som effektrutan på det tryckta kortet,
+# tryck/kortmallar.py REGEL). "{typ}" = kortets fastighetstyp i plural, "{v}" = kortets värde.
+KORTREGEL = {
+    "dolt_plus_dn": "Lägg en dold plusbricka på fastigheten.",
+    "dolt_minus_dn": "Lägg en dold minusbricka på fastigheten.",
+    "energi_plus": "Lägg en dold energibricka + på fastigheten.",
+    "energi_minus": "Lägg en dold energibricka − på fastigheten.",
+    "direkt_dn_plus": "+1 driftnetto direkt och permanent.",
+    "direkt_dn_minus": "−1 driftnetto direkt och permanent.",
+    "underhallsvarning": "Underhållsvarning på fastigheten. Den tas bort med kort. Tre varningar: −1 driftnetto och "
+                         "uppgraderingsstopp.",
+    "inget": "Ingen effekt.",
+    "typbred_dn_plus": "+1 driftnetto på allas {typ}.",
+    "typbred_dn_minus": "−1 driftnetto på allas {typ}.",
+    "typbred_ek_plus": "+1 energiklass på allas {typ}.",
+    "typbred_ek_minus": "−1 energiklass på allas {typ}.",
+    "spotlight": "Alla drar ett extra händelsekort per {typ_sing}.",
+    "resurs": "Alla som äger {typ} drar ett nätverkskort.",
+    "villkorat": "{Typ} med energiklass D eller sämre: −1 driftnetto.",
+    "kvartal_dd": "Alla som äger {typ} drar ett DD-kort dolt på en av dem.",
+    "typbred_dolt_minus": "Lägg en dold minusbricka på allas {typ}.",
+}
+TYP_PLURAL = {"HYRESRÄTT": ("hyresrätter", "hyresrätt"), "KONTOR": ("kontor", "kontor"),
+              "LOKAL": ("lokaler", "lokal"), "FÖRSKOLA": ("förskolor", "förskola")}
+
+
+def kortregel(kort):
+    """Kortets effekt i klartext, eller '' om effekten redan står i kortets text."""
+    mall = KORTREGEL.get(kort.get("Effekt"))
+    if not mall:
+        return ""
+    plural, sing = TYP_PLURAL.get(str(kort.get("Typ") or ""), ("fastigheter av typen", "fastighet av typen"))
+    return mall.format(typ=plural, Typ=plural.capitalize(), typ_sing=sing, v=kort.get("Värde"))
+
+
 def _effekt(kort):
     e = EFFEKT.get(kort.get("Effekt"), "")
     v = kort.get("Värde")

@@ -26,6 +26,7 @@
   {#if kort.bild}<img src={kort.bild} alt="" />{/if}
   <h3>{kort.rubrik}</h3>
   {#if kort.text}<p>{kort.text}</p>{/if}
+  {#if kort.effekt}<p class="effekt">{kort.effekt}</p>{/if}
   {#if kort.rader?.length}
     <dl>{#each kort.rader as [k, t]}<div><dt>{k}</dt><dd>{t}</dd></div>{/each}</dl>
   {/if}
@@ -37,6 +38,8 @@
           display: grid; align-content: start; box-shadow: 0 5px 10px rgba(0, 0, 0, .3); color: var(--black); }
   .kort.stor { width: min(100%, 260px); min-height: 0; box-shadow: 0 3px 8px rgba(0, 0, 0, .2); border: 1px solid var(--panel-mork); }
   .stor h3 { font-size: 17px; }
+  p.effekt { margin: 0 10px 10px; padding: 6px 8px; border-left: 4px solid var(--farg); background: rgba(255, 255, 255, .7);
+             font-weight: 700; font-size: 13.5px; line-height: 1.3; display: block; -webkit-line-clamp: unset; line-clamp: unset; }
   .stor p { font-size: 14px; -webkit-line-clamp: 10; line-clamp: 10; }
   header { background: var(--farg); color: #fff; display: flex; justify-content: space-between; gap: 6px;
            padding: 5px 8px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
