@@ -56,6 +56,8 @@ export interface Bild {
   fas?: string | null;
   faser?: string[][];
   yield?: Record<string, number>;
+  yieldbana?: Record<string, number[]>;
+  startyield?: Record<string, number>;
   handelser: string[];
   kvarter: Record<string, any>[];
   projektbank?: string[];

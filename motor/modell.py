@@ -71,6 +71,7 @@ class Spelare:
     lan: int = 0                                    # moderbolagslån (7.2): köp- och uppgraderingsstopp
     tb: float = 0.0                                 # täckningsbidrag från Genomförandet
     brf_intakt: float = 0.0                         # sålda BRF
+    brf_salda: list = field(default_factory=list)   # [{namn, mv, anskaffning, tarning, intakt}] (8.6)
     start_ek: float = 0.0                           # fastigheternas nettovärde vid start
     start_kassa: float = 0.0
 

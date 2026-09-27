@@ -25,6 +25,10 @@
   const q = $derived(bild.kvartal ?? 0);
   const passerad = (kv: number, i: number) => kv < q || (kv === q && i < nuIndex);
 
+  // yieldbanan (9.10): ändringen på platserna Q2–Q4, öppet för alla; yielden flyttas i början av kvartalet
+  const SPAR = [['bostäder', 'Bostäder'], ['kommersiellt', 'Kommersiellt']] as const;
+  const andring = (v: number) => (v > 0 ? `+${tal(v)}` : v < 0 ? `−${tal(-v)}` : '±0');
+
   const egen = $derived(bild.kvarter.find(k => k.namn === jag));
   const andra = $derived(bild.kvarter.filter(k => k.namn !== jag));
   const brickor = (f: any) => [
@@ -56,13 +60,36 @@
         <text x={160 + 146 * Math.cos(v)} y={160 + 146 * Math.sin(v) + 4} class="etikett" class:nu={id === bild.fas}>{namn}</text>
       {/each}
     </svg>
+    {#if bild.yieldbana}
+      <table class="yieldbana">
+        <caption>Yieldbanan</caption>
+        <thead><tr><th>Spår</th><th>Start</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Nu</th></tr></thead>
+        <tbody>
+          {#each SPAR as [id, namn]}
+            <tr>
+              <th scope="row">{namn}</th>
+              <td>{tal(bild.startyield?.[id])} %</td>
+              {#each bild.yieldbana[id] ?? [] as v, i}
+                <td class:gjord={q >= i + 2} class:nasta={q === i + 1}>{andring(v)}</td>
+              {/each}
+              <td class="nu">{tal(bild.yield?.[id])} %</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/if}
     <figcaption>{q ? `Kvartal ${q} av 4` : 'Innan första kvartalet'}{nuIndex >= 0 ? ` · ${STATIONER[nuIndex][1]}` : ''}
-      {#if bild.yield}<br />Yield bostäder {tal(bild.yield['bostäder'])} % · kommersiellt {tal(bild.yield['kommersiellt'])} %{/if}</figcaption>
+      </figcaption>
   </figure>
 
   {#if egen}
     <div class="egen">
       <h3>Ert kvarter · kassa {tal(egen.kassa)} Mkr · riskbuffert {egen.riskbuffert}</h3>
+      {#if egen.start}
+        <p class="personal">Startkassa {tal(egen.start.kassa)} Mkr = {[`TB ${tal(egen.start.tb)}`,
+          ...(egen.start.brf ?? []).map((b: any) => `${b.namn} såld ${tal(b.intakt)}`),
+          ...(egen.start.lan ? [`moderbolagslån ${egen.start.lan} × 95`] : [])].join(' + ')}</p>
+      {/if}
       <p class="personal">FC {egen.fc ?? '–'}{egen.fc_senior ? ' (senior)' : ''} · FS {egen.fs ?? '–'}{egen.fs_senior ? ' (senior)' : ''}
         {#if egen.vantande_kassa}· {tal(egen.vantande_kassa)} Mkr väntar till nästa marknad{/if}</p>
       <div class="fastigheter">
@@ -79,7 +106,7 @@
               <ul class="brickor">
                 {#each brickor(f) as b}<li>{b}</li>{/each}
                 {#if f.varningar}<li class="varning">⚠ {f.varningar} underhållsvarning{f.varningar > 1 ? 'ar' : ''} {f.varningar >= 3 ? '– driftnettot −1 tills de tas bort med kort' : ''}</li>{/if}
-                {#each f.villkor as v}<li class="villkor">Villkor: {v}</li>{/each}
+                {#each f.villkor as v}<li class="villkor">Villkor: {v.replace(/^villkor:\s*/i, '')}</li>{/each}
               </ul>
             {/if}
           </article>
@@ -114,7 +141,7 @@
       <ul>
         {#each k.fastigheter as f, i (i)}
           <li><span class="prick" style="background:{fargar[f.typkod]?.fyllning ?? '#888'}"></span>{f.namn} · DN {tal(f.dn)} · MV {tal(f.mv)} · {f.ek}
-            {#if f.varningar} · ⚠ {f.varningar}{/if}{#each f.villkor as v} · villkor: {v}{/each}</li>
+            {#if f.varningar} · ⚠ {f.varningar}{/if}{#each f.villkor as v} · villkor: {v.replace(/^villkor:\s*/i, '')}{/each}</li>
         {:else}<li>Inga fastigheter.</li>{/each}
       </ul>
     </div>
@@ -126,6 +153,13 @@
   .spiral { margin: 0; background: var(--panel); border-radius: 6px; padding: 10px; display: grid; justify-items: center; gap: 4px; }
   .spiral svg { width: min(100%, 320px); height: auto; }
   .spiral figcaption { font-weight: 700; text-align: center; font-size: 14px; }
+  .yieldbana { border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .yieldbana caption { font-weight: 700; padding-bottom: 4px; }
+  .yieldbana th, .yieldbana td { padding: 3px 7px; text-align: center; border-bottom: 1px solid var(--panel-mork); }
+  .yieldbana th[scope="row"] { text-align: left; }
+  .yieldbana .gjord { color: var(--dampad); text-decoration: line-through; }
+  .yieldbana .nasta { font-weight: 700; background: #f0c7c2; }
+  .yieldbana .nu { font-weight: 700; }
   .varv { fill: none; stroke: #f0c7c2; stroke-width: 10; }
   .varv.aktivt { stroke: #ef9c93; }
   .station { fill: #fff; stroke: #c9776d; stroke-width: 2; }

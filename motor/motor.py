@@ -74,7 +74,7 @@ class Motor:
         return FC_TYPER.get(fc["Typ"], set())
 
     def logg(self, text):
-        self.spel.logg.append(f"Q{self.spel.kvartal}: {text}")
+        self.spel.logg.append(f"Q{self.spel.kvartal}: {text}" if self.spel.kvartal else f"Uppstart: {text}")
 
     def agare(self, f):
         return next((sp for sp in self.spel.spelare if f in sp.fastigheter), None)
@@ -363,12 +363,18 @@ class Motor:
                 # ANTAGANDE: ABT-budget ≈ anskaffning − utvecklingskostnad
                 abt = sum(tal(p["Anskaffning (Mkr)"]) - tal(p["Utvecklingskostnad (Mkr)"]) for p in valda)
             brf_intakt = 0.0
+            self.aktiv = sp                          # BRF-tärningen hör till kvarteret (bordet på skärmen)
             for projekt in valda:
                 ar_brf = projekt["Typ"] == "BRF"
                 if ar_brf:   # 8.6: intäkt = marknadsvärde − anskaffning + rörlig intäkt (kortets tärning)
                     tarning = int(re.search(r"D(\d+)", projekt["Rörligt marknadsvärde"] or "D0").group(1))
-                    brf_intakt += (tal(projekt["Marknadsvärde (Mkr)"]) - tal(projekt["Anskaffning (Mkr)"])
-                                   + (s.tarning(tarning) if tarning else 0))
+                    mv, ansk = tal(projekt["Marknadsvärde (Mkr)"]), tal(projekt["Anskaffning (Mkr)"])
+                    slag = s.tarning(tarning) if tarning else 0
+                    brf_intakt += mv - ansk + slag
+                    sp.brf_salda.append({"namn": projekt["Namn"], "mv": mv, "anskaffning": ansk,
+                                         "tarning": tarning, "slag": slag, "intakt": mv - ansk + slag})
+                    self.logg(f"{sp.namn} säljer {projekt['Namn']}: marknadsvärde {mv:g} − anskaffning {ansk:g}"
+                              + (f" + D{tarning} {slag}" if tarning else "") + f" = {mv - ansk + slag:g} Mkr")
                 else:
                     sp.fastigheter.append(self.ny_fastighet(projekt))
             if pu:                                   # 8.5: TB (och moderbolagslånens 95 Mkr) följer med

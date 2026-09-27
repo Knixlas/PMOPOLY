@@ -73,6 +73,7 @@ def _kompetens(hand):
 
 def _f(m):
     from .parti import kortvy
+    from .modell import START_YIELD
     spel = m.spel
 
     def fastighet(f, sp=None):
@@ -91,6 +92,9 @@ def _f(m):
                 "dn_brickor": f.dn_brickor, "ek_brickor": f.ek_brickor, "plus_att_visa": f.plus_att_visa}
     return {"skede": "F", "namn": "Förvaltning", "kvartal": spel.kvartal, "fas": getattr(spel, "fas", None),
             "yield": {k: _tal(v) for k, v in spel.yieldniva.items()},
+            # 9.10: yieldbanan ligger öppet – ändringen på platserna Q2, Q3 och Q4 per spår
+            "yieldbana": {k: [_tal(v) for v in bana] for k, bana in spel.yieldbana.items()},
+            "startyield": dict(START_YIELD),
             "handelser": list(spel.logg)[-40:],
             "kvarter": [{
                 "namn": sp.namn, "kassa": round(sp.kassa, 1), "riskbuffert": sp.riskbuffert,
@@ -99,6 +103,7 @@ def _f(m):
                 "fc": (sp.fc or {}).get("Namn") if isinstance(sp.fc, dict) else None, "fc_senior": sp.fc_senior,
                 "fs": (sp.fs or {}).get("Namn") if isinstance(sp.fs, dict) else None, "fs_senior": sp.fs_senior,
                 "fastigheter": [fastighet(f, sp) for f in sp.fastigheter],
+                "start": {"tb": round(sp.tb, 1), "lan": sp.lan, "brf": sp.brf_salda, "kassa": round(sp.start_kassa, 1)},
             } for sp in spel.spelare],
             "projektbank": [f.namn for f in spel.projektbank],
             "marknad": [fastighet(f) for f in spel.projektbank]}
