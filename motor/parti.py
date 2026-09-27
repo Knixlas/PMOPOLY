@@ -1,0 +1,373 @@
+"""Ett parti: hela spelet (Skede 1 → Skede 2 → Förvaltning) för 1–4 kvarter, styrt utifrån.
+
+Motorn körs i en egen tråd. När den behöver ett beslut av en människa stannar tråden och partiet
+lämnar ut en Fråga; när svaret kommer fortsätter motorn. Bottar svarar direkt. Allt loggas, och ett
+parti kan återskapas ur sin logg (t.ex. efter omstart av servern) och sedan spelas vidare.
+
+    p = Parti([{"namn": "Norr", "styrning": "människa"}, {"namn": "Söder"}], fro=7)
+    while (fraga := p.steg()) is not None:
+        p.svara(fraga.forslag)            # här svarar en människa via gränssnittet
+    p.resultat
+"""
+import queue
+import threading
+from collections import deque
+
+from .data import Kortdata
+from .motor import Motor, Parametrar
+from .pu_strategi import PU_STRATEGIER
+from .skede2_strategi import S2_STRATEGIER
+from .slump import DigitalSlump, InmatadSlump
+from .strategi import STRATEGIER
+from .fragor import beskriv_beslut, beskriv_slump
+
+# Vid brädet (analogt) frågas inte om det som bara finns på riktigt: markexpansionen läggs på den
+# fysiska tomten, så appen lägger sin egen kopia där botten vill. 4.3 blir "vilka fick plats?".
+ANALOGT_AV_BOTTEN = {"placera_markexpansion"}
+from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
+
+# Svårighetsgrad = Detaljplanens startkrav för Q och H (3.1). Högre krav, tuffare att klara skedet.
+SVARIGHET = {"lätt": 3, "normal": 4, "svår": 6}
+
+REGELVERSION = "2026-09-27"      # 2026-09-27: handkort när som helst (beslut "handkort" vid varje station)      # höjs när reglerna i motorn ändras; loggen bär versionen
+BOTTAR = {"PU": PU_STRATEGIER, "S2": S2_STRATEGIER, "F": STRATEGIER}
+STANDARDBOTT = {"PU": "balanserad", "S2": "balanserad", "F": "balanserad"}
+
+
+class Avbrutet(Exception):
+    pass
+
+
+_AVBRYT = object()
+
+
+class Parti:
+    def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION,
+                 slump="digital", svarighet="normal", overtagna=None):
+        """kvarter: [{"namn": str, "styrning": "bott" | "människa", "bottar": {"PU": .., "S2": .., "F": ..}}]
+        logg: en tidigare logg att spela upp innan partiet fortsätter.
+        slump: "digital" (motorn slår och drar) eller "inmatad" (fysiskt spel: spelarna anger tärningar
+        och dragna kort; frågorna kommer som Fråga med kanal "slump")."""
+        if slump not in ("digital", "inmatad"):
+            raise ValueError("slump är 'digital' eller 'inmatad'")
+        self.slumpsatt = slump
+        if svarighet not in SVARIGHET:
+            raise ValueError(f"svårighet är en av {', '.join(SVARIGHET)}")
+        self.svarighet = svarighet
+        # kvarter som datorn tagit över mitt i partiet: namn -> loggens längd då (besluten efter det är bottens)
+        self.overtagna = dict(overtagna or {})
+        self.analog = slump != "digital"                 # spel vid brädet: pusslet läggs på riktigt, inte i appen
+        self.visningar = []                              # tärningsslag och dragna kort, för bordet på skärmen
+        self._visnr = 0
+        self._sammanhang = (None, None)                  # (kvarter, skede) för senaste beslutet
+        if not 1 <= len(kvarter) <= 4:
+            raise ValueError("ett parti har 1–4 kvarter")
+        self.kvarter = [{"styrning": "bott", **k, "bottar": {**STANDARDBOTT, **k.get("bottar", {})}} for k in kvarter]
+        self.fro = fro
+        self.regelversion = regelversion
+        self.parametrar = parametrar or Parametrar()
+        self.parametrar.start_krav = SVARIGHET[svarighet]
+        self.parametrar.handkort_nar_som_helst = regelversion >= "2026-09-27"
+        self.onskade = {}                                # kvarter -> kort-id som spelaren tryckt på i handen
+        self.data = data or Kortdata()
+        self.logg = []
+        self._uppspelning = deque(logg or [])
+        self._fragor, self._svar = queue.Queue(), queue.Queue()
+        self._senast_kast = None                        # slaggruppen som senast slogs av en människa
+        self._nr = 0
+        self.motor = None
+        self.aktuell_motor = None
+        self.resultat = None
+        self.aktuell = None           # frågan som väntar på svar
+        self._trad = None
+
+    # ------------------------------------------------------------------ inställningar som kan sparas
+    def uppstart(self):
+        return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt,
+                "svarighet": self.svarighet, **({"overtagna": self.overtagna} if self.overtagna else {})}
+
+    @classmethod
+    def fran_sparat(cls, uppstart, logg, **kw):
+        return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"],
+                   slump=uppstart.get("slump", "digital"), svarighet=uppstart.get("svarighet", "normal"),
+                   overtagna=uppstart.get("overtagna"), **kw)
+
+    # ------------------------------------------------------------------ gränssnitt utåt
+    def steg(self):
+        """Kör tills en människa behöver svara (returnerar Frågan) eller partiet är slut (None)."""
+        if self._trad is None:
+            self._trad = threading.Thread(target=self._kor, daemon=True)
+            self._trad.start()
+        typ, varde = self._fragor.get()
+        if typ == "fel":
+            raise varde
+        self.aktuell = varde if typ == "fraga" else None
+        return self.aktuell
+
+    def svara(self, kod):
+        """Svara på den aktuella frågan med ett kodat värde (se styrning.koda)."""
+        if self.aktuell is None:
+            raise RuntimeError("ingen fråga väntar på svar")
+        self.aktuell = None
+        self._svar.put(kod)
+
+    def lat_datorn(self, namn):
+        """Datorn spelar kvarteret från och med nästa beslut (t.ex. när ingen anslöt som det)."""
+        if not self.spelas_av_manniska(namn):
+            raise ValueError(f"{namn} spelas inte av en människa")
+        self.overtagna[namn] = len(self.logg)
+
+    def spelas_av_manniska(self, namn):
+        return (any(k["namn"] == namn and k["styrning"] == "människa" for k in self.kvarter)
+                and namn not in self.overtagna)
+
+    def _manniska(self, styrd, kvarter):
+        # beslutet som väntade när datorn tog över är fortfarande människans (dess vy byggdes då)
+        return styrd._manniska and not (kvarter in self.overtagna and len(self.logg) > self.overtagna[kvarter])
+
+    def avbryt(self):
+        if self.aktuell is not None:
+            self.aktuell = None
+            self._svar.put(_AVBRYT)
+
+    def spela_klart(self, svara=None):
+        """Kör partiet till slut. `svara(fraga)` svarar för människorna (standard: bottens förslag)."""
+        while (f := self.steg()) is not None:
+            self.svara(svara(f) if svara else f.forslag)
+        return self.resultat
+
+    # ------------------------------------------------------------------ motorn (egen tråd)
+    def _kor(self):
+        try:
+            def styrd(k, skede):
+                bott = BOTTAR[skede][k["bottar"][skede]]()
+                return Styrd(self, k["namn"], skede, bott=bott, manniska=k["styrning"] == "människa")
+            bas = (DigitalSlump(self.fro) if self.slumpsatt == "digital"
+                   else InmatadSlump(self._fraga_slump, self.fro))
+            self.motor = Motor([styrd(k, "F") for k in self.kvarter], self.parametrar,
+                               StyrdSlump(self, bas), self.data,
+                               pu_strategier=[styrd(k, "PU") for k in self.kvarter],
+                               s2_strategier=[styrd(k, "S2") for k in self.kvarter],
+                               namn=[k["namn"] for k in self.kvarter])
+            self.resultat = self.motor.spela()
+            if self._uppspelning:
+                raise LoggFel(f"partiet tog slut med {len(self._uppspelning)} loggposter kvar")
+            self._fragor.put(("klar", None))
+        except Avbrutet:
+            self._fragor.put(("klar", None))
+        except BaseException as e:           # noqa: BLE001 — skickas vidare till den som väntar
+            self._fragor.put(("fel", e))
+
+    def _fraga(self, **kw):
+        self._nr += 1
+        f = Fraga(nr=self._nr, **kw)
+        self._fragor.put(("fraga", f))
+        svar = self._svar.get()
+        if svar is _AVBRYT:
+            raise Avbrutet()
+        return svar
+
+    def _fraga_slump(self, metod, argument):
+        """Fysiskt spel: fråga spelarna om en tärning eller ett draget kort (svaret: tal eller index)."""
+        return self._fraga(kanal="slump", kvarter=None, skede=None, metod=metod, argument=argument,
+                           vy=beskriv_slump(metod, argument))
+
+    def _kasta_sjalv(self, metod, args):
+        """Helt digitalt: spelaren vars slag det är trycker själv på "Slå" (tärningen slås först då).
+        Frågan loggas inte – slaget blir detsamma – så uppspelningen påverkas inte."""
+        m = self.aktuell_motor or self.motor
+        syfte = m.__dict__.pop("kastsyfte", None) if m is not None else None
+        namn = getattr(getattr(m, "aktiv", None), "namn", None)
+        if not namn or not self.spelas_av_manniska(namn):
+            return
+        grupp = getattr(m, "slaggrupp", None)
+        if m.__dict__.pop("kast_klar", False):          # spelaren har redan tryckt (t.ex. "Slå för nämnden")
+            self._senast_kast = grupp
+            return
+        if grupp is not None and grupp == self._senast_kast:
+            return                                      # tärningarna i samma slag slås med ett tryck
+        self._senast_kast = grupp
+        tarning = "D20" if metod == "d20" else f"D{args[0]}"
+        rubrik = f"Slå {tarning}" + (f": {syfte}" if syfte else "")
+        self._fraga(kanal="kast", kvarter=namn, skede=None, metod=metod, forslag=True,
+                    vy={"typ": "kast", "rubrik": rubrik, "tarning": tarning})
+
+    def _nasta_post(self, kanal, metod, kvarter=None):
+        post = self._uppspelning.popleft()
+        if post["kanal"] != kanal or post["metod"] != metod or post.get("kvarter") != kvarter:
+            raise LoggFel(f"loggen säger {post['kanal']}/{post['metod']}/{post.get('kvarter')}, "
+                          f"motorn vill ha {kanal}/{metod}/{kvarter} (post {len(self.logg)})")
+        return post
+
+    def onska_kort(self, kvarter, kort_id):
+        """Spelaren tryckte på ett handkort: det spelas när nästa station börjar (Motor.handkort_nu)."""
+        if not self.spelas_av_manniska(kvarter):
+            raise ValueError(f"{kvarter} spelas inte av en människa")
+        self.onskade.setdefault(kvarter, set()).add(str(kort_id))
+
+    def beslut(self, styrd, metod, motor, subjekt, args, kw):
+        rotter = [*args, *kw.values(), subjekt, motor]
+        kvarter, skede = styrd._kvarter, styrd._skede
+        if metod == "handkort" and not self._uppspelning:  # ingen fråga: korten spelaren tryckt på
+            from .fragor import SPELBARA_NU
+            from .slump import kortnamn
+            onskade = self.onskade.pop(kvarter, set())
+            svar = [k for k in subjekt.hand if kortnamn(k) in onskade and k.get("Effekt") in SPELBARA_NU]
+            self.logg.append({"kanal": "beslut", "kvarter": kvarter, "skede": skede, "metod": metod,
+                              "svar": koda(svar, rotter), "av": "människa"})
+            return svar
+        self._sammanhang = (kvarter, skede)
+        self.aktuell_motor = motor                     # för spellägesbilden (motor/lage.py)
+        if self._uppspelning:
+            # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
+            # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
+            svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw) if styrd._bott is not None else None
+            if self._manniska(styrd, kvarter) and metod != "handkort" and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+                # frågan kan titta i högarna (t.ex. översta kortet), vilket vid brädet frågar vilket kort det är
+                if self.analog and metod == "placering" and svar is not None:
+                    svar = [n for n, _, _ in svar]
+                beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
+            post = self._nasta_post("beslut", metod, kvarter)
+            self.logg.append(post)
+            return avkoda(post["svar"], rotter)
+        forslag = svar = None
+        if styrd._bott is not None:
+            svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)
+            if self.analog and metod == "placering":      # vid brädet: bara vilka projekt som fick plats
+                svar = [n for n, _, _ in svar]
+            forslag = koda(svar, rotter)
+        if self._manniska(styrd, kvarter) and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+            vy = beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
+            kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
+            svar = avkoda(kod, rotter)
+            av = "människa"
+        else:
+            kod, av = forslag, "bott"
+        self.logg.append({"kanal": "beslut", "kvarter": kvarter, "skede": skede, "metod": metod, "svar": kod, "av": av})
+        return svar
+
+    def slump(self, ss, metod, args):
+        if self._uppspelning:
+            post = self._nasta_post("slump", metod)
+            varde = ss.avkoda(metod, args, post["varde"])
+            if getattr(ss.bas, "digital", False):       # håll den digitala slumpen i takt och kontrollera
+                egen = ss.koda(metod, args, getattr(ss.bas, metod)(*args))
+                if egen != post["varde"]:
+                    raise LoggFel(f"slumpen avviker från loggen i {metod}: {egen} ≠ {post['varde']}")
+            elif hasattr(ss.bas, "notera_" + metod):      # inmatad: håll högarna i takt utan att fråga
+                getattr(ss.bas, "notera_" + metod)(*args, varde)
+        else:
+            if metod in ("d20", "tarning") and not self.analog:
+                self._kasta_sjalv(metod, args)
+            varde = getattr(ss.bas, metod)(*args)
+            post = {"kanal": "slump", "metod": metod, "varde": ss.koda(metod, args, varde)}
+            if metod == "dra":
+                post["lek"] = args[0]
+            self._visning(metod, args, varde)
+            visa = _visa(metod, args, varde)
+            if visa:
+                post["visa"] = visa                    # läsbart för händelseflödet (påverkar inte uppspelning)
+        self.logg.append(post)
+        return varde
+
+
+    # ------------------------------------------------------------------ bordet på skärmen
+    def _ny_visning(self, **v):
+        self._visnr += 1
+        m = self.aktuell_motor
+        aktiv = getattr(m, "aktiv", None)
+        skede = LEK_SKEDE(v.get("lek")) or {"PUMotor": "PU", "Skede2": "S2"}.get(type(m).__name__, "F" if m else None)
+        self.visningar.append({"nr": self._visnr, "kvarter": getattr(aktiv, "namn", None), "skede": skede,
+                               "grupp": getattr(m, "slaggrupp", None), **v})
+        del self.visningar[:-60]
+
+    def _visning(self, metod, args, varde):
+        if metod == "d20":
+            self._ny_visning(typ="tarning", sidor=20, varde=varde)
+        elif metod == "tarning":
+            self._ny_visning(typ="tarning", sidor=args[0], varde=varde)
+        elif metod in ("dra", "dra_kort") and isinstance(varde, dict):
+            self.visa_kort(args[0], varde)
+
+    def visa_kort(self, lek, kort):
+        self._ny_visning(typ="kort", lek=lek, kort=kortvy(kort))
+
+
+def LEK_SKEDE(lek):
+    """Vilket skede en hög hör till (för bordet på skärmen): yieldkorten dras t.ex. vid uppställningen."""
+    if not lek:
+        return None
+    if lek.startswith(("handelse_", "kvartal_", "yield_")) or lek in ("natverk", "omvarld", "dd", "projektpool", "BRF"):
+        return "F"
+    if lek.startswith("projekt ") or lek in ("PU-händelser", "markexpansion"):
+        return "PU"
+    return "S2"
+
+
+KORTRADER = [
+    ("Nivå", "Nivå"), ("Fast kostnad (Mkr)", "Kostnad"), ("Kostnaden beror av", "Kostnad efter"),
+    ("Q", "Q"), ("H", "H"), ("T (mån)", "T"), ("Erfarenhet", "Erfarenhet"), ("Riskbuffert", "Riskbuffert"),
+    ("Nämndslag", "Nämndslag"),
+    ("Minskar krav: kvalitet (Q)", "Q-krav −"), ("Minskar krav: hållbarhet (H)", "H-krav −"), ("Minskar krav: tid (T)", "T −"),
+    ("Förbättrar krav: kvalitet (Q)", "Q +"), ("Förbättrar krav: hållbarhet (H)", "H +"), ("Förbättrar krav: tid (T)", "T −"),
+    ("Kostnad kulturaktiviteter (Mkr)", "Kulturkort"),
+]
+
+
+def kortvy(kort):
+    """Det spelarna ser på ett draget kort: id, rubrik, text och (för projekt) bilden."""
+    from .slump import kortnamn
+    rubrik = next((kort[k] for k in ("Rubrik", "Namn som tryckt", "Namn", "Företag", "Rubrik (byggsteg)", "Korttyp")
+                   if kort.get(k) and str(kort[k]).upper() != "HÄNDELSEKORT"), "")
+    text = next((kort[k] for k in ("Text", "Beskrivning", "Effekt") if kort.get(k)), "")
+    rader = [[k.replace("Utfall ", ""), str(v)] for k, v in kort.items()
+             if isinstance(k, str) and k.startswith(("Utfall", "Konsekvens ")) and v not in (None, "", "-")]
+    vy = {"id": kortnamn(kort), "rubrik": str(rubrik), "text": str(text or ""), "rader": rader[:5],
+          "typ": str(kort.get("Typ") or kort.get("Korttyp") or kort.get("Kategori") or kort.get("Rubrik (byggsteg)") or "")}
+    if not rader:                                        # personal, leverantörer, organisation, kultur, FAS …
+        for k, etikett in KORTRADER:
+            v = kort.get(k)
+            if v in (None, "", "-", 0, "0"):
+                continue
+            vy["rader"].append([etikett, str(v)])
+        from .skede2 import kompetenser
+        komp = kompetenser(kort)
+        if komp:
+            vy["rader"].append(["Kompetens", " · ".join(f"{k} {n}" for k, n in komp.items())])
+        vy["rader"] = vy["rader"][:7]
+    if kort.get("Junior_styrka") or kort.get("Junior"):   # FC och FS: förmågorna, inte berättelsen
+        styrka = kort.get("Junior_styrka") or kort.get("Junior")
+        vy["text"] = f"{styrka}." + (f" Svaghet: {kort['Junior_svaghet']}." if kort.get("Junior_svaghet") else "")
+        vy["text"] = vy["text"].replace("..", ".")
+        vy["rader"] = [["Som senior", str(kort.get("Senior") or "")]]
+    if kort.get("Företag"):
+        vy["rubrik"] = str(kort["Företag"])
+        vy["typ"] = str(kort.get("Kategori") or vy["typ"])
+    if kort.get("Roll") and kort.get("Namn"):
+        vy["rubrik"] = f"{kort['Roll']} {kort['Namn']}"
+    if "Anskaffning (Mkr)" in kort:                       # projektkort: bilden och siffrorna
+        vy["rubrik"] = kort["Namn"]
+        vy["bild"] = f"bilder/{kort['Kort-id']}.jpg"
+        vy["rader"] = [["BTA", f"{kort['BTA (kvm)']} kvm"], ["Anskaffning", f"{kort['Anskaffning (Mkr)']} Mkr"],
+                       ["Utveckling", f"{kort['Utvecklingskostnad (Mkr)']} Mkr"]]
+    if kort.get("Korttyp") == "MARKEXPANSION":
+        vy["rubrik"], vy["text"] = "Markexpansion", f"{kort.get('BYA (kvm)')} kvm BYA"
+    from .fragor import kortregel
+    effekt = kortregel(kort)                             # Förvaltningens händelse- och kvartalskort
+    if effekt:
+        vy["effekt"] = effekt
+    return vy
+
+
+def _visa(metod, args, varde):
+    """Tärningsslag och dragna kort som text för spelarna."""
+    from .slump import kortnamn
+    if metod == "d20":
+        return f"Tärning D20: {varde}"
+    if metod == "tarning":
+        return f"Tärning D{args[0]}: {varde}"
+    if metod in ("dra", "dra_kort"):
+        namn = varde.get("Rubrik") or varde.get("Namn") if isinstance(varde, dict) else None
+        id_ = kortnamn(varde)
+        return f"Drog {id_}{f' {namn}' if namn and namn != id_ else ''} ({args[0]})"
+    return None

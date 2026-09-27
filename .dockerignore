@@ -1,8 +1,6 @@
-__pycache__
-*.pyc
+**/node_modules
+**/dist
+spel/server/data
+tryck/ut
+**/__pycache__
 .git
-.gitignore
-*.bat
-test_*.py
-tools/
-.env

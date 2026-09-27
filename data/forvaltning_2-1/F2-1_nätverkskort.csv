@@ -1,0 +1,84 @@
+ID;Effekt;Timing;Värde;Rubrik;Stämning;Beskrivning
+PK-01;forhandling_mod;fore_slag;+1;God kontakt;Du vet vem som fattar besluten och vilken dag de har tid för lunch.;+1 på ett förhandlingsslag. Spelas före slaget.
+PK-02;forhandling_mod;fore_slag;+1;Väl förberedd;Kalkylen är genomräknad två gånger. Motparten har inte ens läst bilagorna.;+1 på ett förhandlingsslag. Spelas före slaget.
+PK-03;forhandling_mod;fore_slag;+1;Lokal känsla;Du vet vilken sida av gatan som får eftermiddagssol, och vad det är värt.;+1 på ett förhandlingsslag. Spelas före slaget.
+PK-04;forhandling_mod;fore_slag;+1;Rätt tajming;Budet landar samma dag som säljarens bokslut. Slumpen, förstås.;+1 på ett förhandlingsslag. Spelas före slaget.
+PK-05;forhandling_mod;fore_slag;+2;Skicklig förhandlare;Ler, nickar och flyttar fram positionerna en halv procent i taget.;+2 på ett förhandlingsslag. Spelas före slaget.
+PK-06;forhandling_mod;fore_slag;+2;Inhyrd jurist;Timpriset får ekonomichefen att svettas. Motparten svettas mer.;+2 på ett förhandlingsslag. Spelas före slaget.
+PK-07;forhandling_mod;fore_slag;+3;Branschens bäste;Har förhandlat fram fler hyresavtal än de flesta har läst.;+3 på ett förhandlingsslag. Spelas före slaget.
+PK-08;forhandling_auto;fore_slag;;Signerat på plats;Pennan ligger redan på bordet när motparten kommer in i rummet.;Vinn en förhandling automatiskt.
+PK-09;forhandling_auto;fore_slag;;Oemotståndligt bud;Ibland är det enklaste argumentet en siffra som ingen kan säga nej till.;Vinn en förhandling automatiskt.
+PK-10;forhandling_auto;fore_slag;;Fast handslag;I den här branschen håller ett handslag fortfarande. Oftast.;Vinn en förhandling automatiskt.
+PK-11;energi_mod;efter_slag;+1;Bättre isolering;Tio centimeter extra på vinden. Ingen ser det, alla märker det.;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-12;energi_mod;efter_slag;+1;Injusterat system;En eftermiddag med ventilerna och huset slutar låta som en fabrik.;+1 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-13;energi_mod;efter_slag;+2;Energikonsult inhyrd;Kommer med mätare, grafer och en faktura som faktiskt är värd det.;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-14;energi_mod;efter_slag;+2;Erfaren installatör;Har dragit mer rör än de flesta har sett, och vet var de brukar läcka.;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-15;energi_mod;efter_slag;+2;Statligt stöd hittat;Någon läste det finstilta i Boverkets utlysning. Det lönade sig.;+2 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-16;energi_mod;efter_slag;+3;Certifierad expert;Certifikatet sitter på väggen. Resultatet sitter i elräkningen.;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-17;energi_mod;efter_slag;+3;Helhetslösning levererad;Från förstudie till injustering i ett paket, och ingen pekar på någon annan.;+3 på ett energiuppgraderingsslag. Spelas efter slaget.
+PK-18;lagg_dn_plus_egen;nar_som_helst;;Dold förbättring;Små saker som ingen ser, men som hyresgästerna slutar klaga på.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-19;lagg_dn_plus_egen;nar_som_helst;;Tyst uppgradering;Fastighetsskötaren byter packningar innan någon hunnit felanmäla.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-20;lagg_dn_plus_egen;nar_som_helst;;Extra underhåll;Taket tvättas innan mossan hunnit bli ett problem.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-21;lagg_dn_plus_egen;nar_som_helst;;Kvalitetshöjning;Nya dörrar i trapphuset. Plötsligt vill alla bo just här.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-22;lagg_dn_plus_egen;nar_som_helst;;Diskret investering;Budgeten tålde det. Protokollet behöver inte veta detaljerna.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-23;lagg_dn_plus_egen;nar_som_helst;;Renoverat i tysthet;Tre lägenheter renoverade mellan två hyresgäster. Ingen märkte bullret.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-24;lagg_dn_plus_egen;nar_som_helst;;Fastighetsskötarens tips;Den som har skött huset i tjugo år vet precis var pengarna läcker.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-25;lagg_dn_plus_egen;nar_som_helst;;Väl skött förvaltning;Ingen dramatik, inga överraskningar. Bara ett hus som sköts.;Lägg en dold +1 DN på en av dina fastigheter.
+PK-26;stada;nar_som_helst;;Problemet är löst;Ett samtal till rätt person och ärendet försvann ur listan.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-27;stada;nar_som_helst;;Snabb insats;Jouren var på plats innan vattnet hann nå källaren.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-28;stada;nar_som_helst;;Städat upp;Någon tog tag i det som alla har gått förbi i ett halvår.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-29;stada;nar_som_helst;;Åtgärdat i tid;Åtgärden var beställd innan revisorn hann skriva sin anmärkning.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-30;stada;nar_som_helst;;Krisen avvärjd;Pressmeddelandet skrevs aldrig. Det behövdes inte.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-31;stada;nar_som_helst;;Rent bord igen;Pärmen med anmärkningar är tom. För första gången på länge.;Ta bort ett minus- eller varningskort från en av dina fastigheter.
+PK-32;stopp;reaktivt;;Hembudsrätt använd;Det stod i avtalet hela tiden. Någon hade bara glömt att läsa det.;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-33;stopp;reaktivt;;Motbud i sista minuten;Budgivaren fick ett bättre erbjudande att tänka på. Från dig.;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-34;stopp;reaktivt;;Låst avtal;Avtalet är bundet i tio år, och nyckeln ligger hos er.;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-35;stopp;reaktivt;;Styrelsen säger nej;Styrelsen har sammanträtt. Svaret är nej, och det är enhälligt.;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-36;stopp;reaktivt;;Juridiskt hinder;Servitutet från 1962 visade sig vara viktigare än någon trott.;Avvärj ett fientligt bud på en av dina fastigheter.
+PK-37;kika;nar_som_helst;;Tips från branschen;Någon i branschen pratar för mycket på mingel. Tur att du lyssnade.;Titta på ett dolt kort hos en motståndare.
+PK-38;kika;nar_som_helst;;Insyn i affären;Du har läst deras årsredovisning. Noggrannare än de själva.;Titta på ett dolt kort hos en motståndare.
+PK-39;kika;nar_som_helst;;Bra rykte i huset;Hyresgästerna pratar i tvättstugan. Du har vänner i tvättstugan.;Titta på ett dolt kort hos en motståndare.
+PK-40;kika;nar_som_helst;;Läckt information;Ett mejl skickades till fel mottagare. Det var inte ditt fel.;Titta på ett dolt kort hos en motståndare.
+PK-41;hyresgastvarvning;nar_som_helst;;Bättre villkor lockar över hyresgästen;Lite lägre hyra, lite bättre service, och flyttlasset går åt ert håll.;En hyresgäst hos en konkurrent flyttar till er efter ett bättre erbjudande. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-42;hyresgastvarvning;nar_som_helst;;Vi tar ankarhyresgästen;Butikskedjan behöver ett nytt hem. Ni hade ett.;Er uthyrare vinner en stor hyresgäst som konkurrenten räknat med. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-43;hyresgastvarvning;nar_som_helst;;Flytterbjudande med hyresrabatt;Tre månader hyresfritt och flytthjälp. Svårt att säga nej till.;Tre månaders rabatt räcker för att hyresgästen byter hyresvärd. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-44;hyresgastvarvning;nar_som_helst;;Snabbare felanmälan vinner;"Fixat samma dag slår ""vi återkommer"" varje gång.";Hyresgästen tröttnar på konkurrentens service och flyttar till er. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-45;hyresgastvarvning;nar_som_helst;;Bättre läge, samma hyra;Samma pris, men utsikt mot vattnet i stället för mot parkeringen.;Er fastighet erbjuder mer för pengarna och hyresgästen byter. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-46;hyresgastvarvning;nar_som_helst;;Förnyelse med nya ytor;Nya ytor, ny planlösning och en hyresgäst som gärna byter adress.;Ni erbjuder en anpassad yta som konkurrenten inte kan matcha. Kräver att du äger en fastighet av samma typ som motspelarens. Lägg en dold plusbricka på din och en dold minusbricka på motspelarens.
+PK-47;headhunting;nar_som_helst;;Ni värvar deras bästa förvaltare;Ett bättre erbjudande, en tjänstebil och ett hörnrum. Svaret blev ja.;En nyckelperson hos en konkurrent tackar ja till ert erbjudande. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-48;headhunting;nar_som_helst;;Konsulten byter uppdragsgivare;Konsulten har bytt uppdragsgivare och tog med sig anteckningarna.;Konkurrentens konsult går över till er mitt i uppdraget. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-49;headhunting;nar_som_helst;;Rekryteringsfirman hittar rätt;Headhuntern hittade rätt person. Hos konkurrenten, förstås.;Headhuntern hittar exakt den person ni behöver — hos en konkurrent. Ta ett slumpvis nätverkskort från en motspelares hand.
+PK-50;dra_natverkskort;nar_som_helst;;Ny kontakt knuten;Visitkortet från mässan visade sig vara värt mer än mässan.;Dra ett nätverkskort.
+PK-51;dra_natverkskort;nar_som_helst;;Rekommendation från kollega;"""Ring henne, säg att jag skickade dig."" Det räckte.";Dra ett nätverkskort.
+PK-52;dra_natverkskort;nar_som_helst;;Nätverksträff;Vin, mingel och en affärsidé skriven på en servett.;Dra ett nätverkskort.
+PK-53;dra_natverkskort;nar_som_helst;;Gammal bekant hör av sig;Ni gick samma utbildning för femton år sedan. Nu har hen ett förslag.;Dra ett nätverkskort.
+PK-54;dra_natverkskort;nar_som_helst;;Tips vid kaffeautomaten;Det bästa tipset den här veckan kom med en pappmugg i handen.;Dra ett nätverkskort.
+PK-55;riskbuffert;nar_som_helst;;Extra marginal budgeterad;"Kalkylen har en rad som heter ""oförutsett"". Den är inte tom.";Ta en riskbuffert.
+PK-56;riskbuffert;nar_som_helst;;Buffert i god tid;Pengarna sattes av innan någon behövde dem. Det är hela poängen.;Ta en riskbuffert.
+PK-57;riskbuffert;nar_som_helst;;Försiktig planering;Pessimisten i styrelsen fick rätt, och ni var förberedda.;Ta en riskbuffert.
+PK-58;riskbuffert;nar_som_helst;;Extra kapital avsatt;Ägarna sköt till, med en tydlig förväntan om att slippa göra om det.;Ta en riskbuffert.
+PK-59;utveckling;nar_som_helst;;Intern ledarutbildning;Tre dagar på kursgård. Förvaltarna kom tillbaka med en plan.;FC eller FS går en intern ledarutbildning. Lägg en utvecklingsbricka på din FC eller FS.
+PK-60;utveckling;nar_som_helst;;Branschcertifiering;Diplomet hänger i receptionen och hyresgästerna har lagt märke till det.;Er förvaltningschef tar en eftertraktad certifiering. Lägg en utvecklingsbricka på din FC eller FS.
+PK-61;utveckling;nar_som_helst;;Mentorprogram;Den erfarna delar med sig, så att den nya slipper göra samma misstag.;Erfaren kollega delar med sig av sina knep. Lägg en utvecklingsbricka på din FC eller FS.
+PK-62;lagg_energi_plus_egen;nar_som_helst;;Injustering av värmesystemet;Radiatorerna är varma i hela huset. Samtidigt. För första gången.;Värmen balanseras om och radiatorerna slutar gå för fullt. Lägg en dold energiplusbricka på en egen fastighet.
+PK-63;lagg_energi_plus_egen;nar_som_helst;;Solceller på taket;Taket ger el i stället för bara skugga.;Taket får solceller som täcker en del av fastighetselen. Lägg en dold energiplusbricka på en egen fastighet.
+PK-64;lagg_energi_plus_egen;nar_som_helst;;Tilläggsisolering av vinden;Trettio centimeter lösull och vinden slutar vara husets största läcka.;Vindsbjälklaget isoleras och värmeförlusten minskar. Lägg en dold energiplusbricka på en egen fastighet.
+PK-65;lagg_energi_plus_egen;nar_som_helst;;Byte till LED i allmänna ytor;Trapphusen lyser upp när någon kommer och släcks när de går.;Trapphus och garage får ny belysning med närvarostyrning. Lägg en dold energiplusbricka på en egen fastighet.
+PK-66;lagg_energi_plus_egen;nar_som_helst;;Frånluftsvärmepump installeras;Värmen i frånluften går inte längre rakt ut genom taket.;Värmen i frånluften tas tillvara i stället för att blåsa ut. Lägg en dold energiplusbricka på en egen fastighet.
+PK-67;direkt_dn_plus_egen;nar_som_helst;;Genombrott i hyresförhandlingen;Hyresgästföreningen och bolaget blev överens. Före lunch.;Ett nytt avtal höjer hyresnivån på en hel fastighet. +1 DN direkt och permanent på en egen fastighet.
+PK-68;budstrid;vid_bud;1,1;Säljaren behöver likviditet;Kvartalsrapporten var inte vacker. De tar det ni bjuder.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-69;budstrid;vid_bud;1,1;Kall kalkyl;Siffrorna säger vad fastigheten är värd. Känslor kostar extra.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-70;budstrid;vid_bud;1,1;Pressat läge hos motparten;Banken ringer dem varje dag. Ni ringer en gång, med ett bud.;Ditt tvångsbud kostar 1,1 × MV i stället för 1,2 × MV. Spelas när du lägger budet.
+PK-71;overtagande;vid_bud;;Juridiskt vattentätt;Tre advokater, två ombud och en ursäktande notis i Dagens Industri.;Ditt tvångsbud kan inte stoppas och ingen duell slås: köpet går igenom. Spelas när du lägger budet.
+PK-72;overtagande;vid_bud;;Majoriteten i styrelsen;Rösterna var räknade innan stämman ens började.;Ditt tvångsbud kan inte stoppas och ingen duell slås: köpet går igenom. Spelas när du lägger budet.
+PK-73;gratis_uppgradering;nar_som_helst;;Totalentreprenad klar;Totalentreprenören lämnade över nycklarna och en garanti på fem år.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-74;gratis_uppgradering;nar_som_helst;;Fjärrvärmen konverteras;Oljepannan åker ut, fjärrvärmen kommer in. Energibolaget står för det mesta.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-75;gratis_uppgradering;nar_som_helst;;Energibolaget bjuder på åtgärden;Energibolaget behöver ett referensprojekt. Ni har ett hus.;Höj energiklassen ett steg på en egen fastighet — utan slag och utan kostnad.
+PK-76;omforhandlat_lan;nar_som_helst;1;Ny bank lockar;Den nya banken ville ha affären. Mer än den gamla ville behålla den.;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-77;omforhandlat_lan;nar_som_helst;1;Grön obligation;Hållbarhetsrapporten gav en grön stämpel, och stämpeln gav lägre ränta.;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-78;omforhandlat_lan;nar_som_helst;1;Räntebindning i rätt läge;Någon band räntan dagen innan Riksbanken höjde. Ingen minns vem.;Sänk räntan på en egen fastighet med 1 Mkr/år för resten av spelet (DN +1, marknadsvärdet oförändrat).
+PK-79;dd_val;vid_kop;;Grundlig besiktning;Besiktningsmannen tittade under golvmattan. Det gör inte alla.;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
+PK-80;dd_val;vid_kop;;Due diligence-team;Ett helt team gick igenom handlingarna. Ni vet vad ni köper.;När du köper en fastighet (även tvångsköp): dra två DD-kort och välj vilket som gäller.
+PK-81;konvertering;nar_som_helst;5;Kontor blir bostäder;Kontoret stod halvtomt. Nu står det kö till lägenheterna.;Betala 5 Mkr: en egen lokal eller ett eget kontor byggs om till hyresrätt och följer bostadsspåret i yieldbanan. DN och energiklass behålls.
+PK-82;motbud;reaktivt;;Motbud — vi köper er i stället;Ni ville köpa oss? Då köper vi er först.;Stoppa ett tvångsbud mot dig. Du får dessutom köpa en av budgivarens fastigheter till 1,0 × MV (valfritt).
+PK-83;motbud;reaktivt;;Pac-Man-försvaret;Det bästa försvaret är ett anfall, gärna mot budgivarens bästa hus.;Stoppa ett tvångsbud mot dig. Du får dessutom köpa en av budgivarens fastigheter till 1,0 × MV (valfritt).

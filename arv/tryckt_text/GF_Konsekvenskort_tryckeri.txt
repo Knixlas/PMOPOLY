@@ -1,0 +1,64 @@
+KONSEKVENSKORT  TID  GF
+TID  Förseningsavdrag i entreprenadavtalet  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -2 Q 1-9  -2 Mkr 25+  -10 Mkr, -1 Q 10-17  -4 Mkr, -1 Q 18-24  LÄS   -   SLÅ   -   KASTA   T1
+KONSEKVENSKORT  TID  GF
+TID  Förlängd etablering med extra hyror  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -2 Q, -1 H 1-9  -2 Mkr 25+  -8 Mkr, -1 Q 10-17  -4 Mkr, -1 Q 18-24  LÄS   -   SLÅ   -   KASTA   T2
+KONSEKVENSKORT  TID  GF
+TID  Vinterarbete med tält och värme  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -20 Mkr, -1 Q, -1 H 1-9  -2 Mkr 25+  -12 Mkr, -1 H 10-17  -5 Mkr, -1 H 18-24  LÄS   -   SLÅ   -   KASTA   T3
+KONSEKVENSKORT  TID  GF
+TID  Beställarens skadeståndskrav för sen leverans  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -2 Q 1-9  -2 Mkr 25+  -10 Mkr, -1 Q 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   T4
+KONSEKVENSKORT  TID  GF
+TID  Parallella arbeten skapar kaos  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -14 Mkr, -2 Q, -1 H 1-9  -1 Mkr 25+  -8 Mkr, -1 Q 10-17  -3 Mkr, -1 Q 18-24  LÄS   -   SLÅ   -   KASTA   T5
+KONSEKVENSKORT  TID  GF
+TID  Övertid och helgarbete kostar mer  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -16 Mkr, -1 H 1-9  -2 Mkr 25+  -10 Mkr, -1 H 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   T6
+KONSEKVENSKORT  TID  GF
+TID  Tillfälliga installationer behövs längre  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -12 Mkr, -2 H 1-9  -1 Mkr 25+  -6 Mkr, -1 H 10-17  -3 Mkr, -1 H 18-24  LÄS   -   SLÅ   -   KASTA   T7
+KONSEKVENSKORT  TID  GF
+TID  Försenad inflyttning ger badwill  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -1 Q 1-9  -1 Mkr 25+  -8 Mkr, -1 Q 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   T8
+KONSEKVENSKORT  TID  GF
+TID  Underentreprenörer höjer pris  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -1 Q, -1 H 1-9  -2 Mkr 25+  -10 Mkr, -1 Q 10-17  -4 Mkr, -1 Q 18-24  LÄS   -   SLÅ   -   KASTA   T9
+KONSEKVENSKORT  TID  GF
+TID  Försenad slutbesiktning skapar omtag  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -14 Mkr, -2 Q, -2 H 1-9  -1 Mkr 25+  -8 Mkr, -1 Q, -1 H 10-17  -3 Mkr, -1 Q 18-24  LÄS   -   SLÅ   -   KASTA   T10
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Besiktningsanmärkningar på målning och fog  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -2 Q 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q1
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Tätskikt i badrum underkänns  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -2 Q 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q2
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Golvavvikelser kräver omläggning  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -20 Mkr, -2 Q, -1 H 1-9  -2 Mkr 25+  -12 Mkr 10-17  -5 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q3
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Dörrar och fönster justeras om  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -16 Mkr, -2 Q 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q4
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Fasadskador kräver ommålning  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -14 Mkr, -1 Q, -1 H 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q5
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Ventilationssystem ej injusterat  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -2 Q, -1 H 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q6
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  El-installationer underkänns vid revision  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -1 Q 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q7
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Hiss underkänd vid slutkontroll  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -2 Q, -1 H 1-9  -2 Mkr 25+  -12 Mkr 10-17  -5 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q8
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  Golvmattor lossnar  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -12 Mkr, -2 Q 1-9  -1 Mkr 25+  -6 Mkr 10-17  -2 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q9
+KONSEKVENSKORT  KVALITET  GF
+KVALITET  F i slutbesiktning  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -20 Mkr, -2 Q, -2 H 1-9  -2 Mkr 25+  -12 Mkr 10-17  -5 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   Q10
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Energiklass sämre än projekterat  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -2 H 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H1
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Radonhalt över gränsvärde  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -1 Q, -2 H 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H2
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Fukt i konstruktion kräver uttorkning  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -16 Mkr, -2 H 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H3
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Miljöcertifiering hotas av materialval  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -12 Mkr, -1 Q, -1 H 1-9  -1 Mkr 25+  -6 Mkr 10-17  -2 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H4
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Dagvattenhantering underdimensionerad  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -15 Mkr, -2 H 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H5
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Bullervillkor överskrids mot grannar  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -1 H 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H6
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Kemikalier i byggmaterial ifrågasätts  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -10 Mkr, -2 H 1-9  -1 Mkr 25+  -5 Mkr 10-17  -2 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H7
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Avfallssortering underkänns vid revision  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -16 Mkr, -2 Q, -2 H 1-9  -1 Mkr 25+  -8 Mkr 10-17  -3 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H8
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Materialval bryter mot miljöplan  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -18 Mkr, -1 Q, -2 H 1-9  -2 Mkr 25+  -10 Mkr 10-17  -4 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H9
+KONSEKVENSKORT  HÅLLBARHET  GF
+HÅLLBARHET  Kommunen kräver kompensation  KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  -20 Mkr, -2 Q, -2 H 1-9  -2 Mkr 25+  -12 Mkr 10-17  -5 Mkr 18-24  LÄS   -   SLÅ   -   KASTA   H10
+KONSEKVENSKORT  GF
+KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  1-9  25+  10-17  18-24  LÄS   -   SLÅ   -   KASTA
+KONSEKVENSKORT  GF
+KONSEKVENSKORT  GF   GENOMFÖRANDE  KONSEKVENSEN BLIR  Slå D20 + ER   erfarenhet  1-9  25+  10-17  18-24  LÄS   -   SLÅ   -   KASTA

@@ -1,0 +1,4 @@
+# Byggda filer (provark och tryckfiler) — genereras med tryck/bygg_tryck.py
+ut/
+# Bahnschrift (Windows-typsnitt) får inte distribueras
+typsnitt/bahnschrift*.ttf
