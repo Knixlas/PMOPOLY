@@ -86,6 +86,37 @@ class TestMotor(unittest.TestCase):
         self.assertIn("1 D20", kast[-1])
         self.assertEqual(sp.kassa, 100 - 3 * m.p.uppgradering_kostnad)
 
+    def test_konsekvenskort_blir_varningar_storst_forst(self):
+        """9.2: varje konsekvenskort från Skede 2 blir en varning, störst driftnetto först, varvet runt."""
+        traffar = {}
+        orig = Motor.varning
+
+        def varning(self_, f, sp, kostnad):
+            if sp.fc is None:                                # uppstarten, före personalvalet
+                if sp.namn not in traffar:                   # första varningen: på den med störst driftnetto
+                    self.assertEqual(f.eff_dn(), max(x.eff_dn() for x in sp.fastigheter))
+                traffar.setdefault(sp.namn, []).append(f)
+            orig(self_, f, sp, kostnad)
+
+        Motor.varning = varning
+        try:
+            prov = 0
+            for fro in range(12):
+                traffar.clear()
+                m = Motor([k() for k in STRATEGIER.values()][:4], Parametrar(), DigitalSlump(fro), DATA)
+                m.starta()
+                for sp in m.spel.spelare:
+                    k = sp.pu["konsekvenskort"] if sp.fastigheter else 0
+                    lista = traffar.get(sp.namn, [])
+                    self.assertEqual(len(lista), k, sp.namn)
+                    if k:
+                        prov += 1
+                        n = len(sp.fastigheter)
+                        self.assertEqual(len(set(map(id, lista[:n]))), min(k, n))     # en per fastighet först
+            self.assertGreater(prov, 0)
+        finally:
+            Motor.varning = orig
+
     def test_alla_effektkoder_hanteras(self):
         """Varje effekt i lekarna ska motorn känna till (annars tyst ignorerad)."""
         import re

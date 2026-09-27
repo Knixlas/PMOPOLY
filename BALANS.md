@@ -186,3 +186,10 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
 - **Energiuppgradering i flera steg (9.11, beslut):** en fastighet får höjas så många steg man vill, ett i taget;
   efter lyckat steg börjar tärningarna om på 1 D20. 600 partier: 25 uppgraderingar per parti (förut 17),
   F-median 14,5 (förut 13,0), förvaltningsstrategierna 23–26 %. Regelversion 2026-09-27b.
+- **Konsekvenskort blir underhållsvarningar (9.2, beslut):** korten verkar som förut i Skede 2 och följer dessutom
+  med till Förvaltningen som 1/3-varningar, störst driftnetto först (lika: BTA), varvet runt. 800 partier:
+  konsekvenskort per kvarter – kvalitet 0,9 (61 % inga), balanserad 2,6, billig 10,2 (81 % sex eller fler).
+  Den som klarar TQH märker inget; den som slarvar börjar Förvaltningen med −1 DN på största fastigheten.
+  F-median 13,6, förvaltningsstrategierna 21–27 %. Bostadsveteranen vinner ~30 % även helt utan förmågor
+  (grans 3 och ingen omvandling: 29,5 %) – det är urvalet (hyresrättskvarter väljer honom), inte korten.
+  Därför orörd; hör till hyresrättsövertaget. Regelversion 2026-09-27c.

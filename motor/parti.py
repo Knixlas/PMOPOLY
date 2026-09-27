@@ -32,7 +32,8 @@ SVARIGHET = {"lätt": 3, "normal": 4, "svår": 6}
 # höjs när reglerna i motorn ändras; loggen bär versionen
 #   2026-09-27:  handkort när som helst (beslut "handkort" vid varje station)
 #   2026-09-27b: energiuppgradering flera steg per fastighet (fråga efter lyckat steg)
-REGELVERSION = "2026-09-27b"
+#   2026-09-27c: konsekvenskorten från Skede 2 blir underhållsvarningar i Förvaltningen
+REGELVERSION = "2026-09-27c"
 BOTTAR = {"PU": PU_STRATEGIER, "S2": S2_STRATEGIER, "F": STRATEGIER}
 STANDARDBOTT = {"PU": "balanserad", "S2": "balanserad", "F": "balanserad"}
 
@@ -72,6 +73,7 @@ class Parti:
         self.parametrar.start_krav = SVARIGHET[svarighet]
         self.parametrar.handkort_nar_som_helst = regelversion >= "2026-09-27"
         self.parametrar.uppgradering_flera_steg = regelversion >= "2026-09-27b"
+        self.parametrar.konsekvens_som_varning = regelversion >= "2026-09-27c"
         self.onskade = {}                                # kvarter -> kort-id som spelaren tryckt på i handen
         self.data = data or Kortdata()
         self.logg = []

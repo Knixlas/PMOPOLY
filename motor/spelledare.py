@@ -39,14 +39,16 @@ S2_STEG = [
      "når ni ingen blir det Negativt. Dra sedan ett händelsekort.",
      ["k7-2", "k7-3", "k7-4", "k7-5", "k7-6", "k7-7"]),
     ("avslut", "Skedesavslut",
-     "Dra konsekvenskort för tid, kvalitet och hållbarhet som inte nåtts. Sedan garantibesiktning, "
+     "Dra konsekvenskort för tid, kvalitet och hållbarhet som inte nåtts – CFO antecknar antalet, de blir "
+     "underhållsvarningar i Förvaltningen. Sedan garantibesiktning, "
      "ekonomisk uppgörelse och BRF-försäljning.", ["k8-1", "k8-2", "k8-3", "k8-4", "k8-5", "k8-6"]),
 ]
 
 F_STEG = [
     ("uppstart", "Uppstart",
      "Kvarteren blir fastigheter och BRF:erna säljs (marknadsvärde − anskaffning + kortets tärning) till "
-     "startkassan. Välj fastighetschef (FC) och förvaltningsstöd (FS); den med minst kassa väljer "
+     "startkassan. Varje konsekvenskort från Genomförandet blir en underhållsvarning: störst driftnetto först, "
+     "en per fastighet, sedan varvet runt. Välj fastighetschef (FC) och förvaltningsstöd (FS); den med minst kassa väljer "
      "först. Varje kvarter drar tre nätverkskort och sedan ett händelsekort per fastighet.",
      ["k9-1", "k9-2", "k9-3"]),
     ("marknad", "Marknad",
@@ -63,7 +65,7 @@ F_STEG = [
     ("energi", "Energi",
      "Energiuppgradera om ni vill: högst 3 fastigheter i kvartal 1, 2 i kvartal 2 och 1 i kvartal 3. 3 Mkr per "
      "slag; slå D20 över tröskeln för energiklassen (E 6, D 8, C 10, B 13). Miss: betala igen och slå en tärning "
-     "till – det räcker att en klarar.",
+     "till – det räcker att en klarar. Lyckat steg: ta gärna nästa, tärningarna börjar om på en.",
      ["k9-11"]),
 ]
 
