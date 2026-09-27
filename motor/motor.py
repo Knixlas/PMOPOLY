@@ -61,7 +61,7 @@ class Motor:
         self.d = data or Kortdata()
         self.spel = Spel(spelare=[Spelare(namn=namn[i] if namn else f"Spelare {i + 1}", strategi=st)
                                   for i, st in enumerate(strategier)])
-        self.stat = {k: 0 for k in ("bank_tar", "sanering_tagen", "sanering_raddad", "sanering_forlorad", "fynd_salt",
+        self.stat = {k: 0 for k in ("bv_varning", "bank_tar", "sanering_tagen", "sanering_raddad", "sanering_forlorad", "fynd_salt",
                                     "kop", "tvangsbud", "tvangsbud_stoppat", "salj", "konkurs", "uppgradering",
                                     "uppgradering_forsok", "eliminerat", "senior", "tvangskop", "budstrid",
                                     "overtagande", "affarskort", "stopp_motbud", "stopp_kort", "stopp_rb",
@@ -198,8 +198,6 @@ class Motor:
             self.andra_ek(f, 1)
 
     def varning(self, f, sp, kostnad):
-        if self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT":
-            kostnad = 0 if sp.fc_senior else max(0, kostnad - 1)   # senior: gratis att röja
         f.varningar.append(kostnad)
         grans = 4 if self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT" else 3
         if len(f.varningar) >= grans and not f.varningsstraff_tagit:
@@ -274,6 +272,15 @@ class Motor:
                 self.stat["eliminerat"] += 1
                 if sp.fc_senior:
                     sp.riskbuffert += 1
+                return
+            # FC Bostadsveteranen (beslut 2026-09-27): en gång per kvartal (senior två) blir en negativ händelse
+            # på en hyresrätt en underhållsvarning i stället – hon vet vad som väntar bakom kaklet
+            if (self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT" and kort["Effekt"] != "underhallsvarning"
+                    and sp.bv_anvand < (2 if sp.fc_senior else 1) and sp.strategi.till_varning(self, sp, f, kort)):
+                sp.bv_anvand += 1
+                self.stat["bv_varning"] += 1
+                self.logg(f"{sp.namn}: Bostadsveteranen gör händelsen på {f.namn} till en underhållsvarning")
+                self.varning(f, sp, 0)
                 return
             if sp.riskbuffert >= 1 and sp.strategi.eliminera(self, sp, f, kort, gratis=False):
                 sp.riskbuffert -= 1
@@ -730,7 +737,7 @@ class Motor:
         q = self.spel.kvartal
         for sp in self.spel.spelare:
             self.aktiv = sp
-            sp.skold_anvand = 0
+            sp.skold_anvand = sp.bv_anvand = 0
             if self.ar_fc(sp, "Den lugna"):
                 sp.riskbuffert += 1
             self.dra_natverkskort(sp, 3 if self.ar_fc(sp, "Nätverkaren") else 2)

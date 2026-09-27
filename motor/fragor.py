@@ -154,6 +154,8 @@ BESLUT = {
     "roj": ("flerval", lambda m, s, a: "Röja underhållsvarningar?",
             lambda m, s, a: [(f, i) for f in s.fastigheter for i in range(len(f.varningar))], False),
     "visa_plus": ("janej", lambda m, s, a: f"Visa plusbrickan på {etikett(a[0], m)}?", None, False),
+    "till_varning": ("janej", lambda m, s, a: f"Göra händelsen {etikett(a[1], m)} på {etikett(a[0], m)} till en underhållsvarning?",
+                     None, False),
     "eliminera": ("janej", lambda m, s, a: f"Stoppa händelsen {etikett(a[1], m)} på {etikett(a[0], m)}?", None, False),
     "valj_dd": ("val", lambda m, s, a: f"Due diligence för {etikett(a[0], m)}: två DD-kort – vilket gäller?",
                 lambda m, s, a: a[1], False),
@@ -244,6 +246,9 @@ def _eliminera(m, s, a):
 
 HJALP = {
     "eliminera": _eliminera,
+    "till_varning": lambda m, s, a: ("Er fastighetschef Bostadsveteranen kan göra en negativ händelse på en hyresrätt till en "
+                                     f"underhållsvarning i stället (en gång per kvartal, två som senior). Fastigheten har "
+                                     f"{len(a[0].varningar)} varning(ar); straffet (−1 driftnetto) kommer vid fyra."),
     "valj_fc": lambda m, s, a: "Fastighetschefen ger en styrka hela Förvaltningen. Efter några kvartal blir hen senior och blir starkare.",
     "valj_fs": lambda m, s, a: "Förvaltningsstödet är en specialist med en egen förmåga, t.ex. bättre due diligence eller energiarbete.",
     "vill_kopa": lambda m, s, a: (f"Köpeskillingen är marknadsvärdet, {m.mv(a[0]):g} Mkr. Ni lånar 70 % ({m.kopelan(a[0]):g} Mkr, 2 % ränta) och "
@@ -327,6 +332,11 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         from .parti import kortvy
         vy["kort"] = {**kortvy(args[0]), "lek": "händelse"}
         vy["ja"], vy["nej"] = "Ja, slå om (−1 riskbuffert)", "Nej, behåll utfallet"
+    if metod == "till_varning":
+        from .parti import kortvy
+        vy["ja"], vy["nej"] = "Ja, gör den till en varning", "Nej, låt händelsen gälla"
+        vy["kort"] = {**kortvy(args[1]), "lek": f"händelse {args[0].typ.lower()}"}
+        vy["konsekvens"] = konsekvens(motor, args[0], args[1])
     if metod == "eliminera":
         from .parti import kortvy
         vy["rubrik"] = f"Stoppa händelsen ”{args[1].get('Rubrik') or kortnamn(args[1])}” på {etikett(args[0], motor)}?"

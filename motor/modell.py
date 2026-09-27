@@ -66,6 +66,7 @@ class Spelare:
     vantande_kassa: float = 0.0                     # engångsbelopp som realiseras vid nästa marknad
     sanering: list = field(default_factory=list)    # [(fastighet, skuld)] åtaganden sedan förra marknaden
     skold_anvand: int = 0                           # FC Skölden: använd antal gånger i kvartalet
+    bv_anvand: int = 0                              # FC Bostadsveteranen: händelser gjorda till varning i kvartalet
     pu: dict = None                                 # resultatet från Skede 1–2
     lan: int = 0                                    # moderbolagslån (7.2): köp- och uppgraderingsstopp
     tb: float = 0.0                                 # täckningsbidrag från Genomförandet

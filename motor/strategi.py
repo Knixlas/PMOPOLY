@@ -118,6 +118,10 @@ class Strategi:
         return self.rb_eliminera and kort["Effekt"] in ("direkt_dn_minus", "underhallsvarning", "engangskassa_minus") \
             and sp.riskbuffert >= 2
 
+    def till_varning(self, m, sp, f, kort):
+        """Bostadsveteranen: göra händelsen till en varning? Inte om varningen själv ger straffet."""
+        return len(f.varningar) + 1 < 4 or f.varningsstraff_tagit
+
     def valj_dd(self, m, sp, f, kort):
         ordning = ["direkt_dn_plus", "direkt_ek_plus", "engangskassa_plus", "dolt_plus_dn", "energi_plus"]
         return min(kort, key=lambda k: ordning.index(k["Effekt"]) if k["Effekt"] in ordning else 99)

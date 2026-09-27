@@ -146,3 +146,8 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   −1 driftnetto per varning, ändrade inte hennes vinstandel.
 - **Underhållsvarningar biter nästan aldrig.** 94 % av varningarna är den enda på fastigheten, och
   straffet kommer först vid tre. Varningen är i praktiken utan verkan.
+- **Bostadsveteranens nya förmåga** (beslut): en gång per kvartal (senior två) blir ett negativt
+  händelsekort på en hyresrätt en underhållsvarning i stället; straffet på hyresrätter kommer vid fyra
+  som förut. Seniorns döda "gratis att röja" utgår. 800 partier med slumpvis utdelade FC: alla sex
+  23–27 % (Bostadsveteranen 24 %, förut 21–22 %); förmågan används 0,9 gånger per parti. När bottarna
+  väljer vinner hon fortfarande 36 % – det är hyresrättskvarterens styrka, inte kortets.
