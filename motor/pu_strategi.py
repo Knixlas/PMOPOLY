@@ -107,6 +107,9 @@ class PUStrategi:
         return kv.kravsumma + okning > self.max_kravsumma
 
     # --- nämnd och avslut
+    def sla_namnd(self, m, kv, summa, forsok):
+        return True                                          # bara ett steg: kvarteret slår själv
+
     def sla_om_namnd(self, m, kv, summa, forsok):
         return kv.riskbuffert > self.spara_rb or summa >= 12
 

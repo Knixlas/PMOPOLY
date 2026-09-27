@@ -50,6 +50,8 @@ class PUParametrar:
     start_t: int = 12
     namnd_hoj_max: int = 99              # hur många gånger kraven får höjas för ett nytt nämndförsök (99 = obegränsat)
     namnd_stor_mix: int = 99             # varje projekt utöver så här många höjer nämndsumman med 1 (99 = av)
+    handelse_vid_nej: bool = True        # regeländring: tar man inte ett draget projekt, eller lämnar tillbaka
+                                         # ett vid Stadshuset, drar man ett händelsekort
 
 
 @dataclass
@@ -168,6 +170,8 @@ class PUMotor:
             if len(typer) == 1 and toppar:
                 self.bank.append(self.dra_hog(typer[0]))
                 self.stat["banken_in"] += 1
+                if self.p.handelse_vid_nej:                   # regeländring 2026-09: nej = ett händelsekort
+                    self.handelse(kv)
             return None
         if val in kandidater:
             self.bank.remove(val)
@@ -280,6 +284,8 @@ class PUMotor:
                 p = kv.strategi.stadshuset(self, kv)
                 if p:
                     self.lamna_projekt(kv, p)
+                    if self.p.handelse_vid_nej:               # regeländring 2026-09: lämna tillbaka = händelsekort
+                        self.handelse(kv)
         elif ruta == "LÄNSSTYRELSEN":
             self.orsak = f"Länsstyrelsen ({'ni passerar' if passerar else 'ni stannar på'} hörnrutan)"
             q, h = kv.strategi.fordela_krav(self, kv, -2)
@@ -438,7 +444,10 @@ class PUMotor:
                          + max(0, len(projekt) - self.p.namnd_stor_mix))
             forsok += 1
             self.stat["namnd_forsok"] += 1
+            kv.strategi.sla_namnd(self, kv, summa, forsok)   # frågan "slå för nämnden" (ett synligt steg)
             slag = [self.s.d20() for _ in range(forsok)]
+            self.logga(f"{kv.namn}: nämnden, summa {summa:g}, slog {', '.join(map(str, slag))} – "
+                       f"{'godkänt' if max(slag) > summa else 'inte godkänt'}")
             if max(slag) <= summa and kv.riskbuffert and kv.strategi.sla_om_namnd(self, kv, summa, forsok):
                 kv.riskbuffert -= 1                          # beslut: omslag med riskbuffert tillåtet
                 self.stat["omslag"] += 1

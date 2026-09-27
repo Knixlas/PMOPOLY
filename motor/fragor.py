@@ -103,6 +103,8 @@ BESLUT = {
                        lambda m, s, a: a[0] if a and a[0] is not None else s.projekt, False),
     "ta_tva_projekt": ("janej", lambda m, s, a: "Ta två projekt?", None, False),
     "hellre_lamna_an_krav": ("janej", lambda m, s, a: f"Lämna tillbaka ett projekt i stället för att höja kraven {a[0]} steg?", None, False),
+    "sla_namnd": ("val", lambda m, s, a: f"Nämnden (4.1): nämndsumman är {a[0]:g}. Slå {a[1]} D20 – över {a[0]:g} är mixen godkänd",
+                  lambda m, s, a: [True], False),
     "sla_om_namnd": ("janej", lambda m, s, a: f"Nämnden: {a[0]:g} räckte inte. Slå om med en riskbuffert?", None, False),
     "namnd_miss_hoj_krav": ("janej", lambda m, s, a: "Nämnden sa nej. Höj kraven och försök igen?", None, False),
     "komplettera": ("val", lambda m, s, a: "Komplettera med ett projekt (3 × utvecklingskostnaden)?",
@@ -219,6 +221,9 @@ HJALP = {
         "kortet i projektbanken (3.3)." if len(getattr(m, "projektval_typer", [])) == 1 else
         "Ni får ta det översta kortet i valfri hög eller ett projekt ur projektbanken. Tar ni inget händer inget"
         + (" – vid Stadshuset kan ni i stället lämna tillbaka ett projekt (3.7)." if "Stadshuset" in str(getattr(m, "orsak", "")) else ".")),
+    "sla_namnd": lambda m, s, a: (
+        f"Summan av projektens nämndsiffror minus projektchefens nämndslag är {a[0]:g}. "
+        f"Chansen att klara det: {100 * (1 - (min(20, max(0, a[0])) / 20) ** a[1]):.0f} %."),
     "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
     "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
     "namnd_miss_hoj_krav": lambda m, s, a: "Regelboken 4.1: Ja betyder att ni höjer Q- eller H-kravet med 1 (ni väljer vilket i nästa fråga) och slår igen med en tärning mer. Nej betyder att ni lämnar tillbaka ett projekt i stället.",
@@ -268,6 +273,9 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x),
                              **({"kort": kortvy(x)} if _ar_kort(x) else {})}
                             for x in pool(motor, subjekt, args)]
+        if metod == "sla_namnd":
+            vy["alternativ"][0].update(text="Slå tärningen", detalj="")
+            vy["forslag_text"] = "slå"
         if metod == "fordela_krav":
             vy["forslag_text"] = text(forslag)
             for a_, x in zip(vy["alternativ"], pool(motor, subjekt, args)):   # vad kraven blir
