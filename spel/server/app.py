@@ -123,6 +123,23 @@ async def svara(id_: str, s: SvarIn):
     return rum.lage(s.kvarter)
 
 
+class KortIn(BaseModel):
+    kvarter: str
+    kort: str
+
+
+@app.post("/api/rum/{id_}/kort")
+async def spela_kort(id_: str, k: KortIn):
+    """Spelaren trycker på ett handkort: det spelas när nästa station på spiralen börjar."""
+    rum = _rum(id_)
+    try:
+        await run_in_threadpool(rum.spela_kort, k.kvarter, k.kort)
+    except SvarsFel as e:
+        raise HTTPException(409, str(e)) from None
+    await _sand_alla(rum)
+    return rum.lage(k.kvarter)
+
+
 class DatornIn(BaseModel):
     kvarter: str
 

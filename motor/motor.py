@@ -19,6 +19,7 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 @dataclass
 class Parametrar:
     projektutveckling: bool = True                 # spela Skede 1 först (annars slumpad portfölj)
+    handkort_nar_som_helst: bool = False           # människors handkort spelas vid varje station (Parti sätter)
     start_krav: int = 4                            # 3.1: Q- och H-kravet från Detaljplanen = svårighetsgraden
     roj_med_pengar: bool = False                   # regeländring (Niklas): varningar röjs bara med kort, inte köps bort
     startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
@@ -343,6 +344,9 @@ class Motor:
         brf = s.blanda_lista(d.brf, "BRF")
         fc_kvar, fs_kvar = list(d.fc), list(d.fs)
         pu = self.projektutveckling() if self.p.projektutveckling else None
+        parti = getattr(self.s, "_parti", None)
+        if parti is not None:                        # Förvaltningen är nu motorn som slår (bordet, "Slå")
+            parti.aktuell_motor = self
         if pu:                                       # kvarterens egna projekt finns inte på marknaden
             byggda = {p["Namn"] for r in pu for p in r["placerade"]}
             pool[:] = [p for p in pool if p["Namn"] not in byggda]
@@ -370,6 +374,7 @@ class Motor:
                 if ar_brf:   # 8.6: intäkt = marknadsvärde − anskaffning + rörlig intäkt (kortets tärning)
                     tarning = int(re.search(r"D(\d+)", projekt["Rörligt marknadsvärde"] or "D0").group(1))
                     mv, ansk = tal(projekt["Marknadsvärde (Mkr)"]), tal(projekt["Anskaffning (Mkr)"])
+                    self.kastsyfte = f"{projekt['Namn']} säljs – rörligt marknadsvärde"
                     slag = s.tarning(tarning) if tarning else 0
                     brf_intakt += mv - ansk + slag
                     sp.brf_salda.append({"namn": projekt["Namn"], "mv": mv, "anskaffning": ansk,
@@ -478,7 +483,12 @@ class Motor:
         self.spel.bankfynd.append(f)
         self.stat["salj"] += 1
 
+    def kast(self, sp, syfte, grupp=None):
+        """Nästa tärningsslag är sp:s (helt digitalt trycker spelaren själv på Slå, se Parti._kasta_sjalv)."""
+        self.aktiv, self.kastsyfte, self.slaggrupp = sp, syfte, grupp
+
     def forhandlingsslag(self, sp, f):
+        self.kast(sp, f"förhandling om {f.namn}")
         slag = self.s.d20()
         if sp.fc:
             namn = sp.fc["Namn"]
@@ -562,14 +572,18 @@ class Motor:
 
     def duell(self, budgivare, offer, f):
         """Tvångsbudsduell. Returnerar True om budgivaren vinner."""
+        self.kast(budgivare, f"tvångsbud på {f.namn} – budgivarens slag")
         a = self.s.d20() + self.duell_fc(budgivare, f, True)
+        self.kast(offer, f"tvångsbud på {f.namn} – ert försvar (budgivaren fick {a})")
         b = self.s.d20() + self.duell_fc(offer, f, False)
         # den som ligger under får slå om med en riskbuffert (en gång)
         if a <= b and budgivare.riskbuffert and budgivare.strategi.sla_om(self, budgivare):
             budgivare.riskbuffert -= 1
+            self.kast(budgivare, f"tvångsbud på {f.namn} – omslag (−1 riskbuffert)")
             a = self.s.d20() + self.duell_fc(budgivare, f, True)
         elif a > b and offer.riskbuffert and offer.strategi.sla_om(self, offer):
             offer.riskbuffert -= 1
+            self.kast(offer, f"tvångsbud på {f.namn} – omslag av försvaret (−1 riskbuffert)")
             b = self.s.d20() + self.duell_fc(offer, f, False)
         # förhandlingskort: först budgivaren om den ligger under, sedan ägaren
         for sp, eget, mot, maste_over in ((budgivare, "a", "b", True), (offer, "b", "a", False)):
@@ -759,8 +773,18 @@ class Motor:
                 self.dn_bricka(sp.strategi.valj_plusfastighet(self, sp), 1)
             self.spela_hand(sp)
 
-    def spela_hand(self, sp):
-        for kort in sp.strategi.spela_nu(self, sp):
+    def handkort_nu(self):
+        """Kort som en spelare tryckt på i handen spelas när nästa station börjar (loggas som ett beslut)."""
+        if not self.p.handkort_nar_som_helst:
+            return
+        for sp in self.spel.spelare:
+            if sp.hand and getattr(sp.strategi, "_manniska", False):
+                kort = sp.strategi.handkort(self, sp)
+                if kort:
+                    self.spela_hand(sp, kort)
+
+    def spela_hand(self, sp, valda=None):
+        for kort in (sp.strategi.spela_nu(self, sp) if valda is None else valda):
             if kort not in sp.hand:
                 continue
             sp.hand.remove(kort)
@@ -876,7 +900,10 @@ class Motor:
                     if sp.kassa < kostnad:
                         break
                     self.stat["uppgradering_forsok"] += 1
+                    self.kast(sp, f"energiuppgradering av {f.namn} med {tarningar} D20, över "
+                                  f"{self.p.uppgradering_troskel[f.ek]} ({kostnad} Mkr)", ("energi", sp.namn, f.namn, tarningar, q))
                     slag = [self.s.d20() for _ in range(tarningar)]
+                    self.slaggrupp = None
                     if 20 in slag:
                         kostnad = 0
                     sp.kassa -= kostnad
@@ -895,7 +922,9 @@ class Motor:
                             bast += tal(kort["Värde"])
                     if bast <= grans and sp.riskbuffert and sp.strategi.sla_om(self, sp):
                         sp.riskbuffert -= 1
+                        self.kast(sp, f"omslag för {f.namn} (−1 riskbuffert)", ("energi omslag", sp.namn, f.namn, tarningar, q))
                         bast = max(self.s.d20() for _ in range(tarningar)) + mod
+                        self.slaggrupp = None
                     if bast > grans:
                         self.andra_ek(f, 1)
                         self.stat["uppgradering"] += 1
@@ -912,6 +941,7 @@ class Motor:
                           ("omgivning", self.kvartalskort), ("energi", self.energiuppgraderingar)):
             self.spel.fas = fas                        # för gränssnittet (motor/lage.py)
             self.aktiv = None
+            self.handkort_nu()
             steg()
 
     def spela(self):

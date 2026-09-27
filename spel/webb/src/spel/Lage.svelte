@@ -5,8 +5,9 @@
   import Handen from './Handen.svelte';
   import Kort from './Kort.svelte';
 
-  let { bild, jag, svar = [], slump = [] }: {
+  let { bild, jag, svar = [], slump = [], spelaKort, onskade = [] }: {
     bild: Bild | null; jag: string; svar?: { kvarter: string; rubrik: string; svar: string }[]; slump?: string[];
+    spelaKort?: (id: string) => Promise<void>; onskade?: string[];
   } = $props();
   let visat = $state<string | null>(null);
   // ert kvarter öppet, de andra hopfällda (bordsenheten ser alla)
@@ -33,7 +34,7 @@
     {/if}
 
     {#if bild.skede === 'F'}
-      <Forvaltning {bild} {jag} />
+      <Forvaltning {bild} {jag} {spelaKort} {onskade} />
     {:else}
     <div class="kort">
       {#snippet kvarterkort(k: Record<string, any>)}

@@ -73,6 +73,7 @@ def _kompetens(hand):
 
 def _f(m):
     from .parti import kortvy
+    from .fragor import SPELBARA_NU
     from .modell import START_YIELD
     spel = m.spel
 
@@ -99,7 +100,7 @@ def _f(m):
             "kvarter": [{
                 "namn": sp.namn, "kassa": round(sp.kassa, 1), "riskbuffert": sp.riskbuffert,
                 "restkort": sp.restkort, "vantande_kassa": round(sp.vantande_kassa, 1),
-                "hand": len(sp.hand), "handkort": [kortvy(k) for k in sp.hand if isinstance(k, dict)],
+                "hand": len(sp.hand), "handkort": [dict(kortvy(k), spelbar=k.get("Effekt") in SPELBARA_NU) for k in sp.hand if isinstance(k, dict)],
                 "fc": (sp.fc or {}).get("Namn") if isinstance(sp.fc, dict) else None, "fc_senior": sp.fc_senior,
                 "fs": (sp.fs or {}).get("Namn") if isinstance(sp.fs, dict) else None, "fs_senior": sp.fs_senior,
                 "fastigheter": [fastighet(f, sp) for f in sp.fastigheter],

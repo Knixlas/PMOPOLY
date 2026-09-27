@@ -253,6 +253,7 @@ class PUMotor:
 
     # ------------------------------------------------------------------ brädet
     def flytta(self, kv):
+        self.kastsyfte = "flytta pjäsen"
         steg = self.s.tarning(6)
         start = kv.position
         for i in range(1, steg + 1):
@@ -306,11 +307,14 @@ class PUMotor:
             self.orsak = f"Händelsekortet ”{kort.get('Rubrik') or kort.get('Nr')}”"
             self.specialkort(kv, kort)
             return
+        rubrik = kort.get("Rubrik") or kort.get("Nr") or "händelsekortet"
+        self.kastsyfte = f"”{rubrik}” (+{kv.erfarenhet} erfarenhet)"
         slag = self.s.d20() + kv.erfarenhet
         utfall = self.utfall(kort, slag)
         if kv.riskbuffert and kv.strategi.sla_om_handelse(self, kv, kort, utfall):
             kv.riskbuffert -= 1
             self.stat["omslag"] += 1
+            self.kastsyfte = f"omslag för ”{rubrik}” (−1 riskbuffert)"
             utfall = self.utfall(kort, self.s.d20() + kv.erfarenhet)
         self.effekt(kv, utfall)
 
@@ -447,6 +451,7 @@ class PUMotor:
             self.stat["namnd_forsok"] += 1
             kv.strategi.sla_namnd(self, kv, summa, forsok)   # frågan "slå för nämnden" (ett synligt steg)
             self.slaggrupp = f"nämnd {kv.namn} {forsok}"          # tärningarna slås tillsammans (bordet)
+            self.kast_klar = True                            # frågan ovan var slaget; ingen extra Slå-knapp
             slag = [self.s.d20() for _ in range(forsok)]
             self.slaggrupp = None
             self.logga(f"{kv.namn}: nämnden, summa {summa:g}, slog {', '.join(map(str, slag))} – "
@@ -454,7 +459,10 @@ class PUMotor:
             if max(slag) <= summa and kv.riskbuffert and kv.strategi.sla_om_namnd(self, kv, summa, forsok):
                 kv.riskbuffert -= 1                          # beslut: omslag med riskbuffert tillåtet
                 self.stat["omslag"] += 1
+                self.slaggrupp = f"nämnd omslag {kv.namn} {forsok}"
+                self.kastsyfte = f"omslag i nämnden med {forsok} D20 (−1 riskbuffert)"
                 slag = [self.s.d20() for _ in range(forsok)]
+                self.slaggrupp = None
             if max(slag) > summa:
                 return projekt, forsok
             if forsok <= self.p.namnd_hoj_max and kv.strategi.namnd_miss_hoj_krav(self, kv, summa, forsok):

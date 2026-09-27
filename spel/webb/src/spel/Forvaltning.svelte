@@ -5,7 +5,22 @@
   import Kort from './Kort.svelte';
   import type { Bild } from './anslutning.svelte';
 
-  let { bild, jag }: { bild: Bild; jag: string } = $props();
+  let { bild, jag, spelaKort, onskade = [] }: {
+    bild: Bild; jag: string; spelaKort?: (id: string) => Promise<void>; onskade?: string[];
+  } = $props();
+
+  // handkort: tryck för att spela. Spelbara kort spelas när nästa station på spiralen börjar; övriga kort
+  // spelas när tillfället kommer (förhandling, tvångsbud, energiuppgradering …) – då frågar spelet.
+  let valt = $state<number | null>(null);
+  let skickar = $state(false);
+  let kortFel = $state('');
+  async function spela(id: string) {
+    if (!spelaKort) return;
+    skickar = true; kortFel = '';
+    try { await spelaKort(id); valt = null; }
+    catch (e) { kortFel = `Det gick inte: ${(e as Error).message}`; }
+    finally { skickar = false; }
+  }
 
   const fargar = data.fargar as Record<string, { fyllning: string; ljus: string }>;
   const tal = (n: unknown) => (typeof n === 'number' ? n.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) : '–');
@@ -118,8 +133,31 @@
       {#if egen.handkort?.length}
         <h3>Er hand · {egen.handkort.length} kort</h3>
         <div class="rad">
-          {#each egen.handkort as k, i (i)}<Kort kort={k} lek="nätverk" skede="F" />{/each}
+          {#each egen.handkort as k, i (i)}
+            <button type="button" class="handkort" class:valt={valt === i} class:onskat={onskade.includes(k.id)}
+                    aria-pressed={valt === i} onclick={() => (valt = valt === i ? null : i)} disabled={!spelaKort}>
+              <Kort kort={k} lek="nätverk" skede="F" />
+              {#if onskade.includes(k.id)}<span class="etikett">Spelas i nästa steg</span>{/if}
+            </button>
+          {/each}
         </div>
+        {#if valt !== null && egen.handkort[valt]}
+          {@const k = egen.handkort[valt]}
+          <div class="spelpanel" role="group" aria-label="Spela kortet">
+            {#if onskade.includes(k.id)}
+              <p>”{k.rubrik}” spelas när nästa steg på spiralen börjar.</p>
+            {:else if k.spelbar}
+              <p>Spela ”{k.rubrik}”? Det spelas när nästa steg på spiralen börjar. Behöver kortet ett mål frågar spelet er då.</p>
+              <div class="knappar">
+                <button type="button" class="spela" disabled={skickar} onclick={() => spela(k.id)}>{skickar ? 'Skickar …' : 'Spela kortet'}</button>
+                <button type="button" class="avbryt" disabled={skickar} onclick={() => (valt = null)}>Avbryt</button>
+              </div>
+            {:else}
+              <p>”{k.rubrik}” spelas när tillfället kommer – vid förhandling, tvångsbud, energiuppgradering eller köp. Då frågar spelet er om ni vill använda det.</p>
+            {/if}
+            {#if kortFel}<p class="fel" role="alert">{kortFel}</p>{/if}
+          </div>
+        {/if}
       {/if}
     </div>
   {/if}
@@ -186,6 +224,19 @@
   .brickor { list-style: none; margin: 0 8px 8px; padding: 0; display: grid; gap: 3px; font-size: 12.5px; }
   .brickor li { background: rgba(255, 255, 255, .7); border-radius: 3px; padding: 2px 6px; }
   .brickor .varning { color: var(--fel); font-weight: 700; }
+  .handkort { position: relative; flex: none; padding: 0; border: 3px solid transparent; border-radius: 12px; background: none; text-align: left;
+              cursor: pointer; font: inherit; color: inherit; }
+  .handkort:disabled { cursor: default; }
+  .handkort.valt { border-color: var(--black); }
+  .handkort.onskat { border-color: var(--ok); }
+  .handkort .etikett { position: absolute; left: 8px; right: 8px; bottom: 8px; background: var(--ok); color: #fff;
+                       font-size: 12.5px; font-weight: 700; border-radius: 4px; padding: 3px 6px; }
+  .spelpanel { background: #fff; border: 1px solid var(--linje-stark); border-radius: 6px; padding: 10px 12px; display: grid; gap: 8px; }
+  .spelpanel p { margin: 0; }
+  .spelpanel .knappar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .spelpanel .spela { font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 4px; border: 0; background: var(--f, #ef5656); color: #fff; cursor: pointer; }
+  .spelpanel .avbryt { font: inherit; padding: 8px 12px; border-radius: 4px; border: 1px solid var(--linje-stark); background: #fff; cursor: pointer; }
+  .spelpanel .fel { color: var(--fel); }
   .rad { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; }
   .marknad ul, .annan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 14px; }
   .prick { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }

@@ -1,7 +1,7 @@
 <script lang="ts">
   // En enhet i ett parti: välj vilket kvarter ni är, svara på era frågor, följ läget.
   import { onDestroy } from 'svelte';
-  import { Anslutning, hamtaLage, latDatorn, type Lage as LageT } from '../spel/anslutning.svelte';
+  import { Anslutning, hamtaLage, latDatorn, spelaKort, type Lage as LageT } from '../spel/anslutning.svelte';
   import Bordet from '../spel/Bordet.svelte';
   import Brade from '../spel/Brade.svelte';
   import Spelledare from '../spel/Spelledare.svelte';
@@ -39,7 +39,7 @@
   }
 
   // väntar partiet på ett kvarter som ingen spelar på den här enheten? Då kan datorn ta över det.
-  const vantarPa = $derived(fraga && !minTur && fraga.kanal === 'beslut' && fraga.kvarter
+  const vantarPa = $derived(fraga && !minTur && (fraga.kanal === 'beslut' || fraga.kanal === 'kast') && fraga.kvarter
     && lage?.kvarter.some(k => k.namn === fraga.kvarter && k.styrning === 'människa') ? fraga.kvarter : null);
   let tarOver = $state(false);
   let fragaTaOver = $state(false);
@@ -147,7 +147,8 @@
   {#if anslutning?.fel}<p class="panel fel" role="alert">{anslutning.fel}</p>{/if}
 
   {#if lage}
-    <Lage bild={lage.bild} jag={kvarter} svar={lage.svar} slump={lage.drag ?? []} />
+    <Lage bild={lage.bild} jag={kvarter} svar={lage.svar} slump={lage.drag ?? []} onskade={(lage as any).onskade_kort ?? []}
+          spelaKort={kvarter && kvarter !== 'bordet' && !lage.klart ? (k: string) => spelaKort(id, kvarter!, k) : undefined} />
   {/if}
 {/if}
 

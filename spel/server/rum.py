@@ -149,10 +149,18 @@ class Rum:
             if not self.far_svara(kvarter):
                 raise SvarsFel("det är inte er fråga")
             kod = self.oversatt(svar)
-            self.svar.append({"nr": nr, "kvarter": self.fraga.kvarter or kvarter, "rubrik": self.fraga.vy.get("rubrik"),
-                              "svar": _lasbart(self.fraga.vy, svar), "tid": time.time()})
+            if self.fraga.kanal != "kast":                  # "Slå" syns på bordet, inte i svarshistoriken
+                self.svar.append({"nr": nr, "kvarter": self.fraga.kvarter or kvarter, "rubrik": self.fraga.vy.get("rubrik"),
+                                  "svar": _lasbart(self.fraga.vy, svar), "tid": time.time()})
             self.parti.svara(kod)
             self._ga_vidare()
+
+    def spela_kort(self, kvarter, kort_id):
+        with self.las:
+            try:
+                self.parti.onska_kort(kvarter, kort_id)
+            except ValueError as e:
+                raise SvarsFel(str(e)) from None
 
     def lat_datorn(self, namn):
         """Datorn tar över ett kvarter som spelas av en människa; väntar partiet på det, svarar datorn direkt."""
@@ -163,7 +171,7 @@ class Rum:
                 raise SvarsFel(str(e)) from None
             self.uppstart["overtagna"] = dict(self.parti.overtagna)
             f = self.fraga
-            if f is not None and f.kanal == "beslut" and f.kvarter == namn:
+            if f is not None and f.kanal in ("beslut", "kast") and f.kvarter == namn:
                 self.svar.append({"nr": f.nr, "kvarter": namn, "rubrik": f.vy.get("rubrik"),
                                   "svar": "Datorn tog över och gjorde som förslaget", "tid": time.time()})
                 self.parti.svara(f.forslag)
@@ -178,6 +186,7 @@ class Rum:
             "rum": self.id,
             "slump": self.uppstart.get("slump", "digital"),
             "svarighet": self.uppstart.get("svarighet", "normal"),
+            "onskade_kort": sorted(self.parti.onskade.get(kvarter, ())) if kvarter else [],
             "kvarter": [{"namn": k["namn"], "styrning": "människa" if self.parti.spelas_av_manniska(k["namn"]) else "bott"}
                         for k in self.uppstart["kvarter"]],
             "bild": self.bild,

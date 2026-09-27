@@ -74,6 +74,28 @@ class TestParti(unittest.TestCase):
         self.assertEqual(utan_strateginamn(Parti.fran_sparat(json_kopia(p.uppstart()), json_kopia(p.logg), data=DATA)
                                            .spela_klart()), utan_strateginamn(p.resultat))
 
+    def test_handkort_nar_som_helst(self):
+        """Ett handkort som spelaren tryckt på spelas när nästa station börjar, och partiet spelas upp likadant."""
+        from motor.fragor import SPELBARA_NU
+        from motor.slump import kortnamn
+        p = Parti([{"namn": "Norr", "styrning": "människa"}, {"namn": "Söder"}], fro=5, data=DATA)
+        onskat = None
+        while (f := p.steg()) is not None:
+            m = p.motor
+            if onskat is None and m and m.spel.kvartal:
+                norr = m.spel.spelare[[sp.namn for sp in m.spel.spelare].index("Norr")]
+                kort = next((k for k in norr.hand if k.get("Effekt") in SPELBARA_NU), None)
+                if kort:
+                    onskat = (kort, norr)
+                    p.onska_kort("Norr", kortnamn(kort))
+            p.svara(f.forslag)
+        self.assertIsNotNone(onskat)
+        kort, norr = onskat
+        self.assertNotIn(kort, norr.hand)
+        self.assertTrue(any(e["metod"] == "handkort" and e["svar"] != {"lista": []} for e in p.logg if e["kanal"] == "beslut"))
+        igen = Parti.fran_sparat(json_kopia(p.uppstart()), json_kopia(p.logg), data=DATA).spela_klart()
+        self.assertEqual(utan_strateginamn(igen), utan_strateginamn(p.resultat))
+
     def test_fysiskt_spel_med_inmatad_slump(self):
         """Läge 2: spelarna anger tärningar och dragna kort; partiet går klart och kan spelas upp."""
         import random

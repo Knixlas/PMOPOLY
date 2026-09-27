@@ -74,7 +74,11 @@
   {#if vy.konsekvens}<p class="konsekvens"><strong>Om den gäller:</strong> {vy.konsekvens}</p>{/if}
   {#if vy.hjalp}<p class="hjalp">{vy.hjalp}</p>{/if}
 
-  {#if vy.typ === 'fasspel'}
+  {#if vy.typ === 'kast'}
+    <button type="button" class="kasta" disabled={skickar} onclick={() => svara({ forslag: true })}>
+      <span aria-hidden="true">🎲</span> Slå {vy.tarning ?? 'tärningen'}
+    </button>
+  {:else if vy.typ === 'fasspel'}
     <FasSpel {fraga} {svara} {skickar} />
   {:else if vy.typ === 'janej'}
     <div class="knappar">
@@ -166,6 +170,9 @@
   .kortknapp .detalj { text-align: center; }
   .konsekvens { margin: 0; padding: 10px 12px; border-left: 5px solid var(--fel); background: #fbe7e4; border-radius: 4px;
                 font-size: 16px; line-height: 1.4; max-width: 62ch; }
+  .kasta { justify-self: start; font: inherit; font-weight: 700; font-size: 22px; padding: 14px 28px; border-radius: 8px;
+           border: 0; background: var(--pu); color: var(--black); box-shadow: 0 3px 0 rgba(0, 0, 0, .25); cursor: pointer; }
+  .kasta:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
   .hjalp { margin: -4px 0 0; color: var(--dampad); font-size: 14.5px; }
   .knappar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   button { font: inherit; cursor: pointer; }

@@ -130,6 +130,10 @@ class Strategi:
         varde = {"stopp": 9, "forhandling_auto": 8, "direkt_dn_plus_egen": 8, "forkop": 6}
         return min(sp.hand, key=lambda k: varde.get(k["Effekt"], 3) + tal(k.get("Värde")))
 
+    def handkort(self, m, sp):
+        """Kort som spelaren tryckt på (bottarna spelar sina i Ekonomi via spela_nu)."""
+        return []
+
     def spela_nu(self, m, sp):
         ut = [k for k in list(sp.hand) if k["Effekt"] in POSITIVA_HANDKORT]
         for k in sp.hand:

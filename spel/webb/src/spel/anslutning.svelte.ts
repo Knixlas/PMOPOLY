@@ -3,7 +3,8 @@
 
 export interface Alternativ { text: string; detalj?: string; kod: unknown; bild?: string; typ?: string; kort?: Kortvy }
 export interface Vy {
-  typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag' | 'fasspel';
+  typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag' | 'fasspel' | 'kast';
+  tarning?: string;
   rubrik: string;
   kvarter?: string | null;
   forslag_text?: string;
@@ -34,7 +35,7 @@ export interface Kortvy { id: string; rubrik: string; text: string; typ: string;
 export interface Ledare {
   skede: string; steg: { id: string; namn: string }[]; nu: string; plats: string; gor: string; regler: string[]; tur?: string;
 }
-export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
+export interface Fraga { nr: number; kanal: 'beslut' | 'slump' | 'kast'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
 export interface Lage {
   rum: string;
   slump: 'digital' | 'inmatad';
@@ -83,6 +84,13 @@ export async function listaPartier(): Promise<{ id: string; kvarter: string[]; s
 export async function raderaParti(id: string): Promise<void> {
   const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!r.ok && r.status !== 404) throw new Error(`Servern svarade ${r.status}`);
+}
+
+/** Spela ett handkort: det spelas när nästa station på spiralen börjar. */
+export async function spelaKort(id: string, kvarter: string, kort: string): Promise<void> {
+  const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}/kort`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kvarter, kort }) });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Servern svarade ${r.status}`);
 }
 
 /** Datorn spelar kvarteret från och med nu (om ingen anslöt som det). */

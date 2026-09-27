@@ -181,12 +181,15 @@ class Skede2:
                 if v <= g:
                     return kort[kol]
             return kort[kolumner[-1]]
+        namn = kort.get("Namn") or kort.get("Rubrik") or "kortet"
+        self.kastsyfte = f"”{namn}” (+{b.erfarenhet} erfarenhet)"
         utfall = las(self.s.d20() + b.erfarenhet)
         # 3.6: omslag med en riskbuffert på vilket utfall som helst, högst en gång per slag
         samst = utfall == kort[kolumner[0]] and farlig
         if b.riskbuffert and b.strategi.sla_om_kort(self, b, kort, utfall, samst):
             b.riskbuffert -= 1
             self.stat["omslag"] += 1
+            self.kastsyfte = f"omslag för ”{namn}” (−1 riskbuffert)"
             utfall = las(self.s.d20() + b.erfarenhet)
         self.effekt(b, utfall)
 
