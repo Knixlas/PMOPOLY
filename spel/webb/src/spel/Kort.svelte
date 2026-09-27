@@ -18,7 +18,7 @@
     return SKEDEFARG.PU;
   });
   const leknamn = (l: string) => l.replace(/_/g, ' ').replace(/^handelse/, 'händelse').replace(/^natverk$/, 'nätverk')
-    .replace(/^omvarld$/, 'omvärld').replace(/^dd$/, 'DD');
+    .replace(/^omvarld$/, 'omvärld').replace(/^dd$/, 'DD').replace(/^projektpool$/, 'ny på marknaden');
 </script>
 
 <article class="kort" class:ny class:stor style="--farg:{farg}">
