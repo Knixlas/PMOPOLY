@@ -1,7 +1,7 @@
 // Förbindelsen med servern: REST för att skapa och lista partier, en WebSocket per enhet i ett parti.
 // Läget (vad servern skickar) är reaktivt, så sidorna ritas om när något händer.
 
-export interface Alternativ { text: string; detalj?: string; kod: unknown; bild?: string; typ?: string }
+export interface Alternativ { text: string; detalj?: string; kod: unknown; bild?: string; typ?: string; kort?: Kortvy }
 export interface Vy {
   typ: 'janej' | 'val' | 'flerval' | 'tal' | 'pussel' | 'markexpansion' | 'forslag';
   rubrik: string;
@@ -30,6 +30,9 @@ export interface Visning {
   kort?: Kortvy;
 }
 export interface Kortvy { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string; lek?: string }
+export interface Ledare {
+  skede: string; steg: { id: string; namn: string }[]; nu: string; plats: string; gor: string; regler: string[]; tur?: string;
+}
 export interface Fraga { nr: number; kanal: 'beslut' | 'slump'; kvarter: string | null; skede: string | null; vy: Vy; min: boolean }
 export interface Lage {
   rum: string;
@@ -39,7 +42,8 @@ export interface Lage {
   fraga: Fraga | null;
   svar: { nr: number; kvarter: string; rubrik: string; svar: string }[];
   drag: string[];                       // senaste tärningsslag och dragna kort
-  bordet?: Visning[];                   // samma, med kortens innehåll (för bordet på skärmen)
+  bordet?: Visning[];
+  ledare?: Ledare | null;                // spelledaren: steg, vad som görs nu, regler                   // samma, med kortens innehåll (för bordet på skärmen)
   klart: boolean;
   resultat: Record<string, unknown>[] | null;
   fel: string | null;
@@ -54,6 +58,8 @@ export interface Bild {
   handelser: string[];
   kvarter: Record<string, any>[];
   projektbank?: string[];
+  fas_kort?: Kortvy;
+  marknad?: Record<string, any>[];
 }
 
 export type Svar = { val: number } | { flera: number[] } | { svar: boolean | number } | { placering: unknown[]; mark?: unknown[] } | { mark: unknown[] } | { forslag: true };

@@ -4,6 +4,7 @@
   import { Anslutning, hamtaLage, type Lage as LageT } from '../spel/anslutning.svelte';
   import Bordet from '../spel/Bordet.svelte';
   import Brade from '../spel/Brade.svelte';
+  import Spelledare from '../spel/Spelledare.svelte';
   import Fraga from '../spel/Fraga.svelte';
   import Lage from '../spel/Lage.svelte';
 
@@ -91,6 +92,7 @@
       <p class="not">Slutpoäng = (PU + TG + F) × Mu. <a href="#/">Nytt parti</a></p>
     </section>
   {:else}
+  {#if lage?.ledare}<Spelledare ledare={lage.ledare} jag={kvarter} />{/if}
   <div class="spelyta" class:med-brade={visaBrade}>
   <div class="huvud">
   {#if fraga && minTur}

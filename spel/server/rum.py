@@ -13,6 +13,7 @@ from pathlib import Path
 
 from motor.lage import bild
 from motor.pussel import las_marklayout
+from motor.spelledare import ledare
 from motor.parti import Parti
 from motor.styrning import koda
 
@@ -37,7 +38,7 @@ class Rum:
         self.klart = False
         self.fel = None
         self.svar = []                      # läsbar historik: vem svarade vad
-        self.bild = None
+        self.bild = self.ledare = None
         self._ga_vidare()
 
     # ------------------------------------------------------------------ partiet
@@ -46,6 +47,7 @@ class Rum:
             self.fraga = self.parti.steg()
             self.klart = self.fraga is None
             self.bild = bild(self.parti)             # läses medan motorn står still
+            self.ledare = ledare(self.parti, self.fraga)
         except Exception as e:              # noqa: BLE001 — visas i rummet i stället för att krascha servern
             self.fel = f"{type(e).__name__}: {e}"
             self.fraga = None
@@ -152,6 +154,7 @@ class Rum:
             "slump": self.uppstart.get("slump", "digital"),
             "kvarter": [{"namn": k["namn"], "styrning": k["styrning"]} for k in self.uppstart["kvarter"]],
             "bild": self.bild,
+            "ledare": self.ledare,
             "fraga": None if f is None else {"nr": f.nr, "kanal": f.kanal, "kvarter": f.kvarter, "skede": f.skede,
                                              "vy": f.vy, "min": self.far_svara(kvarter) if kvarter else False},
             "svar": self.svar[-30:],

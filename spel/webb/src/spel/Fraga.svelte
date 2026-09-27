@@ -95,6 +95,20 @@
     {#if (vy.alternativ?.length ?? 0) > 8}
       <input class="sok" type="search" placeholder="Sök kort eller namn" bind:value={sok} aria-label="Sök bland alternativen" />
     {/if}
+    {#if vy.typ === 'val' && synliga.length && synliga.every(a => a.kort)}
+      <!-- korten att välja mellan, som de ser ut på bordet -->
+      <ul class="kortval">
+        {#each synliga as a (a.i)}
+          <li>
+            <button type="button" class="kortknapp" disabled={skickar} onclick={() => svara({ val: a.i })}
+                    aria-label={a.text}>
+              <Kort kort={a.kort!} lek={a.kort!.typ?.toLowerCase() ?? ''} skede={fraga.skede} stor />
+              {#if a.detalj && a.detalj !== a.kort!.text}<span class="detalj">{a.detalj}</span>{/if}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    {:else}
     <ul class="alternativ">
       {#each synliga as a (a.i)}
         <li>
@@ -115,6 +129,7 @@
         </li>
       {/each}
     </ul>
+    {/if}
     {#if vy.typ === 'flerval'}
       <div class="knappar">
         <button type="button" class="stor" disabled={skickar} onclick={() => svara({ flera: valda })}>
@@ -138,6 +153,12 @@
 <style>
   .fraga { background: var(--panel); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
   h2 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+  .kortval { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px;
+             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .kortknapp { width: 100%; height: 100%; display: grid; gap: 6px; align-content: start; justify-items: center; padding: 6px;
+               border-radius: 8px; border: 2px solid transparent; background: transparent; color: var(--black); }
+  .kortknapp:hover:not(:disabled) { border-color: var(--black); background: var(--panel-mork); }
+  .kortknapp .detalj { text-align: center; }
   .hjalp { margin: -4px 0 0; color: var(--dampad); font-size: 14.5px; }
   .knappar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   button { font: inherit; cursor: pointer; }

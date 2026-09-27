@@ -121,6 +121,7 @@ class Skede2:
         self.s = slump or DigitalSlump()
         self.d = data or S2Data()
         self.bolag = [Bolag(namn=r["kvarter"], strategi=st, pu=r) for r, st in zip(pu_resultat, strategier)]
+        self.fas, self.steg_nr, self.steg_namn, self.fas_kort = "uppstallning", 0, None, None   # för spelledaren
         self.stat = {k: 0 for k in ("lan", "kultur_kopt", "fas_nivå_Negativt", "fas_nivå_Neutralt",
                                     "fas_nivå_Positivt", "fas_nivå_Bonus", "fas_opaverkad", "omslag")}
 
@@ -204,7 +205,9 @@ class Skede2:
                        h=int(tal(b.ac["Förbättrar krav: hållbarhet (H)"])),
                        t=-int(tal(b.ac["Förbättrar krav: tid (T)"])), erf=int(tal(b.ac["Erfarenhet"])))
             b.hand.append(b.ac)
-        for kategori, sort, kravkol in STEG:
+        self.fas = "planering"
+        for nr, (kategori, sort, kravkol) in enumerate(STEG, 1):
+            self.steg_nr, self.steg_namn = nr, kategori
             for b in self.bolag:
                 b.handelsehog += [k for k in self.d.handelse
                                   if HANDELSE_STEG.get(k["Kategori"], k["Kategori"]) == kategori]
@@ -251,8 +254,11 @@ class Skede2:
         hogar = {s: self.s.blanda_lista([k for k in self.d.fas if int(tal(k["Steg"])) == s], f"FAS {s}") for s in range(1, 9)}
         kulturhog = self.s.blanda_lista(self.d.kultur, "kultur")
         ordning = sorted(self.bolag, key=lambda b: b.pu["bta"])     # beslut: lägst BTA först
+        self.fas = "genomforande"
         for steg in range(1, 9):
+            self.steg_nr, self.fas_kort = steg, None
             fas = hogar[steg].pop()
+            self.fas_kort = fas
             pris = tal(fas["Kostnad kulturaktiviteter (Mkr)"])
             for b in ordning:
                 for _ in range(b.strategi.kulturkort(self, b, fas, pris)):
@@ -301,6 +307,7 @@ class Skede2:
                     break
 
     def skedesavslut(self):
+        self.fas, self.fas_kort = "avslut", None
         for b in self.bolag:                                  # 8.1–8.3: T, sedan Q, sedan H
             self.konsekvens(b, "TID", max(0, b.t - 12))
             if b.q > 0:

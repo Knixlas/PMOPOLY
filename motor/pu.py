@@ -213,6 +213,7 @@ class PUMotor:
 
     # ------------------------------------------------------------------ uppställning
     def starta(self):
+        self.fas, self.i_tur = "uppstallning", None           # för spelledaren (motor/spelledare.py)
         s = self.s
         for typ in TYPER:
             self.hogar[typ] = s.blanda_lista([p for p in self.d.projekt if p["Typ"] == typ], f"projekt {typ}")
@@ -442,7 +443,9 @@ class PUMotor:
         return projekt, forsok
 
     def avsluta(self, kv):
+        self.fas, self.i_tur = "namnd", kv
         godkanda, kv.namndforsok = self.namnd(kv, list(kv.projekt))
+        self.fas = "komplettering"
         kv.godkanda = list(godkanda)
         # 4.2 komplettering (3 × utvecklingskostnad, egen nämnd)
         nya = []
@@ -459,6 +462,7 @@ class PUMotor:
             kv.godkanda += nya
             self.stat["kompletterat"] += len(nya)
         # 4.3 placering: kvarteret lägger pusslet; det som inte ligger enligt reglerna placeras inte
+        self.fas = "placering"
         svar = kv.strategi.placering(self, kv, list(kv.godkanda))
         namn = {p["Namn"]: p for p in kv.godkanda}
         if all(isinstance(x, str) for x in svar):            # vid brädet: bara vilka som fick plats
@@ -507,6 +511,7 @@ class PUMotor:
     def spela(self):
         self.starta()
         klara = set()
+        self.fas = "bradet"
         while not klara:                                     # beslut: när någon gått klart spelas rundan klart
             for kv in self.ordning:
                 if kv.namn not in klara and self.flytta(kv):

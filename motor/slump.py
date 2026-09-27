@@ -80,6 +80,15 @@ def ta_bort(lista, kort):
     raise ValueError("kortet finns inte i högen")
 
 
+def kortrubrik(kort):
+    """Kortets namn eller rubrik (det som står stort på kortet), om det har något."""
+    if isinstance(kort, dict):
+        for nyckel in ("Rubrik", "Namn som tryckt", "Namn", "Företag", "Korttyp"):
+            if kort.get(nyckel) not in (None, ""):
+                return str(kort[nyckel])
+    return ""
+
+
 def kortnamn(kort):
     """Kortets id som spelarna ser det (tryckt på kortet)."""
     if isinstance(kort, dict):
@@ -156,7 +165,7 @@ class InmatadSlump:
         lek = self.lekar[namn]
         if not lek["kvar"]:
             lek["kvar"] = list(lek["alla"])        # blandas om
-        kort = lek["kvar"][int(self.fraga("dra", [namn, [kortnamn(k) for k in lek["kvar"]]]))]
+        kort = lek["kvar"][int(self.fraga("dra", [namn, [kortnamn(k) for k in lek["kvar"]], [kortrubrik(k) for k in lek["kvar"]]]))]
         ta_bort(lek["kvar"], kort)
         return kort
 
@@ -168,7 +177,7 @@ class InmatadSlump:
         ta_bort(lek["kvar"], kort)
 
     def dra_kort(self, namn, kandidater):
-        return kandidater[int(self.fraga("dra", [namn, [kortnamn(k) for k in kandidater]]))]
+        return kandidater[int(self.fraga("dra", [namn, [kortnamn(k) for k in kandidater], [kortrubrik(k) for k in kandidater]]))]
 
     def valj(self, lista):
         return lista[int(self.fraga("valj", [kortnamn(k) for k in lista]))]

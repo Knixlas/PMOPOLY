@@ -12,7 +12,7 @@
   const G_LEKAR = /^(FAS|kultur|konsekvens|garanti)/;
   const farg = $derived.by(() => {
     if (kort.bild && fargar[kort.typ]) return fargar[kort.typ].fyllning;
-    if (G_LEKAR.test(lek)) return SKEDEFARG.G;
+    if (skede === 'G' || G_LEKAR.test(lek)) return SKEDEFARG.G;
     if (skede === 'S2') return SKEDEFARG.PL;
     if (skede === 'F' || /^(händelse|handelse|kvartal|dd|natverk|omvarld|yield)/.test(lek)) return SKEDEFARG.F;
     return SKEDEFARG.PU;

@@ -37,6 +37,8 @@ def etikett(obj, m=None):
     if isinstance(obj, dict):
         if "Anskaffning (Mkr)" in obj:                       # projektkort
             return f'{obj["Namn"]} ({TYPNAMN.get(obj["Typ"], obj["Typ"])})'
+        if obj.get("Företag"):                                # leverantör eller organisation (Skede 2.1)
+            return f'{obj["Företag"]} (nivå {obj.get("Nivå")})'
         rubrik = obj.get("Rubrik") or obj.get("Namn") or ""
         id_ = kortnamn(obj)
         return f"{rubrik} ({id_})" if rubrik and rubrik != id_ else id_
@@ -209,12 +211,17 @@ HJALP = {
     "vill_expandera": lambda m, s, a: "En markexpansion kostar 5 Mkr och ger mer mark att bygga på i 4.3.",
     "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
     "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
-    "namnd_miss_hoj_krav": lambda m, s, a: "Ja: kraven på kvalitet och hållbarhet höjs ett steg och ni försöker igen med en tärning till. Nej: ni lämnar tillbaka ett projekt.",
+    "namnd_miss_hoj_krav": lambda m, s, a: "Regelboken 4.1: Ja betyder att ni höjer Q- eller H-kravet med 1 (ni väljer vilket i nästa fråga) och slår igen med en tärning mer. Nej betyder att ni lämnar tillbaka ett projekt i stället.",
 }
 
 
 MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kulturkort": lambda m, s, a: 5}
 MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0]}
+
+
+def _ar_kort(x):
+    """Ett kort ur en lek (inte en fastighet, ett projekt på brädet eller ett tal)."""
+    return isinstance(x, dict) and any(k in x for k in ("Kort-id", "ID", "Id")) and "Anskaffning (Mkr)" not in x
 
 
 def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
@@ -246,7 +253,9 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["kort"] = {**kortvy(args[1]), "lek": f"händelse {args[0].typ.lower()}"}
     if pool:
         text = (lambda x: f"Q {x[0]:+d} · H {x[1]:+d}") if metod == "fordela_krav" else (lambda x: etikett(x, motor))
-        vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x)}
+        from .parti import kortvy
+        vy["alternativ"] = [{"text": text(x), "detalj": detalj(x, motor), "kod": koda(x, rotter), **bild(x),
+                             **({"kort": kortvy(x)} if _ar_kort(x) else {})}
                             for x in pool(motor, subjekt, args)]
         if metod == "fordela_krav":
             vy["forslag_text"] = text(forslag)
@@ -274,6 +283,14 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
 
 
 # ---------------------------------------------------------------------------- slumpens frågor
+def _hognamn(hog):
+    """'handelse_HYRESRÄTT' -> 'händelsekort hyresrätt' — högens namn som spelarna säger det."""
+    s = str(hog).replace("handelse_", "händelsekort ").replace("kvartal_", "kvartalskort ").replace("yield_", "yieldkort ")
+    s = {"natverk": "nätverkskort", "omvarld": "omvärldskort", "dd": "DD-kort"}.get(s, s)
+    return s.replace("_", " ").replace("HYRESRÄTT", "hyresrätt").replace("FÖRSKOLA", "förskola") \
+        .replace("LOKAL", "lokal").replace("KONTOR", "kontor")
+
+
 def beskriv_slump(metod, argument):
     """Vy för en slumpfråga i fysiskt spel (läge 2). Svaret är ett tal eller ett index i alternativen."""
     if metod in ("d20", "tarning", "heltal", "index"):
@@ -282,8 +299,10 @@ def beskriv_slump(metod, argument):
             metod, f"Ange ett tal mellan {lag} och {hog}")
         return {"typ": "tal", "rubrik": rubrik, "min": lag, "max": hog}
     if metod == "dra":
-        hog, kort = argument
-        return {"typ": "val", "rubrik": f"Dra ett kort ur högen {hog}: vilket fick ni?",
-                "alternativ": [{"text": k, "detalj": "", "kod": i} for i, k in enumerate(kort)], "sok": True}
+        hog, kort = argument[0], argument[1]
+        rubriker = argument[2] if len(argument) > 2 else [""] * len(kort)
+        return {"typ": "val", "rubrik": f"Dra ett kort ur högen {_hognamn(hog)}: vilket fick ni?",
+                "alternativ": [{"text": k, "detalj": r if r != k else "", "kod": i}
+                               for i, (k, r) in enumerate(zip(kort, rubriker))], "sok": True}
     return {"typ": "val", "rubrik": "Välj blint: vilket blev det?",
             "alternativ": [{"text": k, "detalj": "", "kod": i} for i, k in enumerate(argument)]}

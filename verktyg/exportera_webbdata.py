@@ -4,6 +4,7 @@
                                    ur kortdata/*.xlsx (källan)
 - spel/webb/public/bilder/*.jpg    projektens bilder, nedskalade (ur tryck/bilder)
 - spel/webb/public/brade/pu.jpg     PU-brädet med klistermärkena (ur tryck/ut, byggs av tryck/bygg_klistermarken.py)
+- spel/webb/src/data/regler.json   regelbokens avsnitt (k3-1 …) för spelledaren, ur regler/regelbok.html
 - tester/pussel_fall.json          gemensamma testfall: webbklientens regler och lösare ska ge
                                    samma svar som motor/pussel.py
 
@@ -84,6 +85,28 @@ def exportera_brade():
     return ut
 
 
+def exportera_regler():
+    """Regelbokens numrerade avsnitt (<h2 id="k…">) som {id: {rubrik, html}}; bilder och figurer tas bort."""
+    import re
+    kalla = (ROT / "regler" / "regelbok.html").read_text(encoding="utf-8")
+    kropp = kalla[kalla.index("<body"):]
+    delar = re.split(r'(?=<h[12] id="k)', kropp)
+    ut = {}
+    for d in delar:
+        m = re.match(r'<h2 id="(k\d+-\d+)"[^>]*>(.*?)</h2>', d, re.S)
+        if not m:
+            continue
+        html = d[m.end():]
+        html = re.split(r"<h1|<footer|</main", html)[0]
+        html = re.sub(r"<figure.*?</figure>|<img[^>]*>", "", html, flags=re.S)
+        rubrik = re.sub(r"<[^>]+>", "", m.group(2))
+        rubrik = re.sub(r"(Ändrat|Nytt) i \d+(\.\d+)*", "", rubrik).strip()
+        ut[m.group(1)] = {"rubrik": re.sub(r"\s+", " ", rubrik), "html": html.strip()}
+    mal = WEBB / "src" / "data" / "regler.json"
+    mal.write_text(json.dumps(ut, ensure_ascii=False), encoding="utf-8")
+    return ut
+
+
 def testfall(data, antal=40):
     """Slumpade kvarter med facit från motor/pussel.py."""
     R = random.Random(2026)
@@ -140,5 +163,6 @@ if __name__ == "__main__":
     d = exportera_data()
     f = testfall(d)
     print("brädet →", exportera_brade())
+    print(f"{len(exportera_regler())} regelavsnitt → spel/webb/src/data/regler.json")
     print(f"{len(d['projekt'])} projekt, {len(d['markexpansioner'])} markexpansioner → spel/webb/src/data/pussel.json")
     print(f"{len(f['granska'])} granskningsfall, {len(f['losa'])} lösarfall → tester/pussel_fall.json")

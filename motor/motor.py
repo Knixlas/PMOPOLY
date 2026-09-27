@@ -859,9 +859,10 @@ class Motor:
 
     # ------------------------------------------------------------------ hela spelet
     def kvartalet(self):
-        for fas, steg in (("marknad", self.marknad), ("omvarld", self.omvarld), ("driftnetto", self.driftnetto),
-                          ("personal", self.personal), ("handelser", self.handelser),
-                          ("kvartalskort", self.kvartalskort), ("energi", self.energiuppgraderingar)):
+        # stationerna på Förvaltningsbrädets spiral (Ekonomi = driftnetto + nätverkskort)
+        for fas, steg in (("marknad", self.marknad), ("omvarld", self.omvarld), ("ekonomi", self.driftnetto),
+                          ("ekonomi", self.personal), ("fastigheter", self.handelser),
+                          ("omgivning", self.kvartalskort), ("energi", self.energiuppgraderingar)):
             self.spel.fas = fas                        # för gränssnittet (motor/lage.py)
             steg()
 

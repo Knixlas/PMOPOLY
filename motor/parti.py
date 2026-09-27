@@ -222,15 +222,47 @@ class Parti:
         self._ny_visning(typ="kort", lek=lek, kort=kortvy(kort))
 
 
+KORTRADER = [
+    ("Nivå", "Nivå"), ("Fast kostnad (Mkr)", "Kostnad"), ("Kostnaden beror av", "Kostnad efter"),
+    ("Q", "Q"), ("H", "H"), ("T (mån)", "T"), ("Erfarenhet", "Erfarenhet"), ("Riskbuffert", "Riskbuffert"),
+    ("Nämndslag", "Nämndslag"),
+    ("Minskar krav: kvalitet (Q)", "Q-krav −"), ("Minskar krav: hållbarhet (H)", "H-krav −"), ("Minskar krav: tid (T)", "T −"),
+    ("Förbättrar krav: kvalitet (Q)", "Q +"), ("Förbättrar krav: hållbarhet (H)", "H +"), ("Förbättrar krav: tid (T)", "T −"),
+    ("Kostnad kulturaktiviteter (Mkr)", "Kulturkort"),
+]
+
+
 def kortvy(kort):
     """Det spelarna ser på ett draget kort: id, rubrik, text och (för projekt) bilden."""
     from .slump import kortnamn
-    rubrik = next((kort[k] for k in ("Rubrik", "Namn", "Företag", "Rubrik (byggsteg)", "Korttyp") if kort.get(k)), "")
+    rubrik = next((kort[k] for k in ("Rubrik", "Namn som tryckt", "Namn", "Företag", "Rubrik (byggsteg)", "Korttyp")
+                   if kort.get(k)), "")
     text = next((kort[k] for k in ("Text", "Beskrivning", "Effekt") if kort.get(k)), "")
     rader = [[k.replace("Utfall ", ""), str(v)] for k, v in kort.items()
              if isinstance(k, str) and k.startswith(("Utfall", "Konsekvens ")) and v not in (None, "", "-")]
     vy = {"id": kortnamn(kort), "rubrik": str(rubrik), "text": str(text or ""), "rader": rader[:5],
-          "typ": str(kort.get("Typ") or kort.get("Korttyp") or kort.get("Kategori") or "")}
+          "typ": str(kort.get("Typ") or kort.get("Korttyp") or kort.get("Kategori") or kort.get("Rubrik (byggsteg)") or "")}
+    if not rader:                                        # personal, leverantörer, organisation, kultur, FAS …
+        for k, etikett in KORTRADER:
+            v = kort.get(k)
+            if v in (None, "", "-", 0, "0"):
+                continue
+            vy["rader"].append([etikett, str(v)])
+        from .skede2 import kompetenser
+        komp = kompetenser(kort)
+        if komp:
+            vy["rader"].append(["Kompetens", " · ".join(f"{k} {n}" for k, n in komp.items())])
+        vy["rader"] = vy["rader"][:7]
+    if kort.get("Junior_styrka") or kort.get("Junior"):   # FC och FS: förmågorna, inte berättelsen
+        styrka = kort.get("Junior_styrka") or kort.get("Junior")
+        vy["text"] = f"{styrka}." + (f" Svaghet: {kort['Junior_svaghet']}." if kort.get("Junior_svaghet") else "")
+        vy["text"] = vy["text"].replace("..", ".")
+        vy["rader"] = [["Som senior", str(kort.get("Senior") or "")]]
+    if kort.get("Företag"):
+        vy["rubrik"] = str(kort["Företag"])
+        vy["typ"] = str(kort.get("Kategori") or vy["typ"])
+    if kort.get("Roll") and kort.get("Namn"):
+        vy["rubrik"] = f"{kort['Roll']} {kort['Namn']}"
     if "Anskaffning (Mkr)" in kort:                       # projektkort: bilden och siffrorna
         vy["rubrik"] = kort["Namn"]
         vy["bild"] = f"bilder/{kort['Kort-id']}.jpg"

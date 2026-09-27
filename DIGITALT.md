@@ -118,8 +118,15 @@ npm run artefakt                         # publicerbar sida: dist/artefakt.html 
    säger till när ett kort dras). Vid brädet (läge 2) visas varken bordet eller pusslet:
    markexpansionen läggs på den riktiga tomten och 4.3 frågar bara vilka projekt som fick plats
    (BYA räknas då som allt som ryms på marken).
-   *Kvar:* brädorna för Skede 2 och Förvaltningen, kortens riktiga layout, ljud. QR-skanning väntar
-   till nästa kortomtryck.
+   *Spelledaren (2026-09-27):* överst i spelvyn står skedet, stegen (regelbokens och brädenas),
+   var ni är, vems tur det är och vad ni gör vid bordet nu (`motor/spelledare.py`). "Visa reglerna"
+   visar regelbokens avsnitt för steget (`regler/regelbok.html` → `spel/webb/src/data/regler.json`
+   via `verktyg/exportera_webbdata.py`); valet sparas på enheten. Skede 2.1 visar korten att välja
+   mellan som kort; Skede 2.2 visar fasens kort med nivåerna för kvarterets typ och handen med
+   summerad kompetens; Förvaltningen visar spiralen (4 varv × 6 stationer som på brädet), era
+   fastigheter med brickor, varningar och villkor, handen, marknaden och de andras synliga läge.
+   Kortfrågor vid brädet visar kortens namn, inte bara id.
+   *Kvar:* kortens riktiga layout, ljud. QR-skanning väntar till nästa kortomtryck.
 5. **Ljud, röster (ElevenLabs) och putsning.**
 6. **Stadsdelar, topplistor, prognoser.**
 7. **Balans** — se `BALANS.md` (nattens mätningar och förslag).
