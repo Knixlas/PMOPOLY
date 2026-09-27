@@ -20,6 +20,7 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 class Parametrar:
     projektutveckling: bool = True                 # spela Skede 1 först (annars slumpad portfölj)
     handkort_nar_som_helst: bool = False           # människors handkort spelas vid varje station (Parti sätter)
+    konsekvens_som_varning: str = ""               # prov: "" | "tillagg" | "ersatt" – konsekvenskort blir varningar
     start_krav: int = 4                            # 3.1: Q- och H-kravet från Detaljplanen = svårighetsgraden
     roj_med_pengar: bool = False                   # regeländring (Niklas): varningar röjs bara med kort, inte köps bort
     startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
@@ -147,10 +148,13 @@ class Motor:
         strategier = self.pu_strategier or [self.s.bott.choice(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
         pu = PUMotor(strategier, PUParametrar(start_q=self.p.start_krav, start_h=self.p.start_krav), self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
         strategier = self.s2_strategier or [self.s.bott.choice(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
-        s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2).spela()
+        s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2)
+        s2.konsekvens_utan_effekt = self.p.konsekvens_som_varning == "ersatt"
+        s2 = s2.spela()
         for r, r2 in zip(pu, s2):
             r.update({"s2_strategi": r2["strategi"], "tb": r2["tb"], "TG": r2["TG"], "lan": r2["lan"],
-                      "n": r2["n"], "Mu": r2["Mu"], "riskbuffert": r2["riskbuffert"]})
+                      "n": r2["n"], "Mu": r2["Mu"], "riskbuffert": r2["riskbuffert"],
+                      "konsekvenskort": r2["konsekvenskort"]})
         return pu
 
     def ny_fastighet(self, projekt):
@@ -158,7 +162,8 @@ class Motor:
         ek = projekt["Energiklass"] or "C"
         noi = int(tal(projekt["Driftnetto (Mkr/år)"]) + tal(projekt["Räntekostnad (Mkr/år)"]))
         return Fastighet(namn=projekt["Namn"], typ=projekt["Typ"], bas_dn=noi - EK_MOD[ek], ek=ek,
-                         lan=int(tal(projekt["Lån (Mkr)"])), ranta=int(tal(projekt["Räntekostnad (Mkr/år)"])))
+                         lan=int(tal(projekt["Lån (Mkr)"])), ranta=int(tal(projekt["Räntekostnad (Mkr/år)"])),
+                         bta=int(tal(projekt.get("BTA (kvm)"))))
 
     # ------------------------------------------------------------------ brickor, trösklar, utveckling
     def dn_bricka(self, f, n):
@@ -406,6 +411,11 @@ class Motor:
                 sp.tb = max(0.0, s.triangel(self.p.tg[0], self.p.tg[1], self.p.tg[2]) * abt)
                 start = sp.tb + brf_intakt
             sp.brf_intakt = brf_intakt
+            if pu and self.p.konsekvens_som_varning and sp.fastigheter:
+                # konsekvenskorten blir underhållsvarningar: störst först (driftnetto, sedan BTA), varvet runt
+                ordning = sorted(sp.fastigheter, key=lambda f: (-self.eff_noi(f), -f.bta))
+                for i in range(r.get("konsekvenskort", 0)):
+                    self.varning(ordning[i % len(ordning)], sp, 0)
             sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(start)
         for sp in sorted(self.spel.spelare, key=lambda x: x.kassa):     # 9.2: minst kassa väljer först
             sp.fc = sp.strategi.valj_fc(self, sp, fc_kvar)

@@ -316,8 +316,11 @@ class Skede2:
             if not hog:
                 hog = self.s.blanda_lista([k for k in self.d.konsekvens if k["Typ"] == typ], f"konsekvens {typ}")
             fore = (b.q, b.h)
-            self.slag(b, hog.pop(), ["Utfall D20+ER 1-9", "Utfall D20+ER 10-17", "Utfall D20+ER 18-24",
-                                     "Utfall D20+ER 25+"], [9, 17, 24], True)
+            if getattr(self, "konsekvens_utan_effekt", False):   # prov: kortet blir bara en varning i Förvaltningen
+                hog.pop()
+            else:
+                self.slag(b, hog.pop(), ["Utfall D20+ER 1-9", "Utfall D20+ER 10-17", "Utfall D20+ER 18-24",
+                                         "Utfall D20+ER 25+"], [9, 17, 24], True)
             b.konsekvenskort += 1
             kvar -= 1
             if typ == "KVALITET":                             # sänker kortet Q ytterligare: dra fler (8.2)
