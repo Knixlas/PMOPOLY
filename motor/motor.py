@@ -264,12 +264,16 @@ class Motor:
         self.fastighetseffekt(kort, f, sp)
 
     def dra_dd(self, f, sp):
+        # 9.9: ett DD-kort dras och gäller. Undantag: FS Besiktningsgeniet och nätverkskorten "dd_val"
+        # låter kvarteret dra två och välja.
         val = self.ar_fs(sp, "Besiktningsgeniet")
+        self.orsak_dd = "Ert förvaltningsstöd Besiktningsgeniet" if val else None
         if not val:
             kort = next((k for k in sp.hand if k["Effekt"] == "dd_val"), None)
             if kort:
                 sp.hand.remove(kort)
                 val = True
+                self.orsak_dd = f"Nätverkskortet ”{kort.get('Rubrik', '')}”"
         if val:
             a, b = self.s.dra("dd"), self.s.dra("dd")
             kort = sp.strategi.valj_dd(self, sp, f, [a, b])

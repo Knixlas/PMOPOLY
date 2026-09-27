@@ -155,7 +155,7 @@ BESLUT = {
             lambda m, s, a: [(f, i) for f in s.fastigheter for i in range(len(f.varningar))], False),
     "visa_plus": ("janej", lambda m, s, a: f"Visa plusbrickan på {etikett(a[0], m)}?", None, False),
     "eliminera": ("janej", lambda m, s, a: f"Stoppa händelsen {etikett(a[1], m)} på {etikett(a[0], m)}?", None, False),
-    "valj_dd": ("val", lambda m, s, a: f"Due diligence för {etikett(a[0], m)}: vilket kort behåller ni?",
+    "valj_dd": ("val", lambda m, s, a: f"Due diligence för {etikett(a[0], m)}: två DD-kort – vilket gäller?",
                 lambda m, s, a: a[1], False),
     "slang": ("val", lambda m, s, a: "Handen är full: vilket kort slänger ni?", lambda m, s, a: s.hand, False),
     "spela_nu": ("flerval", lambda m, s, a: "Spela nätverkskort nu?",
@@ -257,7 +257,8 @@ HJALP = {
     "salj_for_likviditet": lambda m, s, a: "Kassan får inte vara negativ. En fastighet måste säljas till banken.",
     "roj": lambda m, s, a: "Att röja en underhållsvarning kostar pengar nu men tar bort risken för sänkt driftnetto.",
     "visa_plus": lambda m, s, a: "En dold plusbricka höjer värdet när den visas. Visar ni den nu syns den för alla.",
-    "valj_dd": lambda m, s, a: "Due diligence: ni får titta på flera kort om fastigheten innan köpet och behålla det bästa.",
+    "valj_dd": lambda m, s, a: (f"Normalt dras ett DD-kort som gäller direkt. {getattr(m, 'orsak_dd', None) or 'Ett kort ni har'} "
+                               "låter er dra två och välja vilket som gäller (9.9)."),
     "slang": lambda m, s, a: "Ni får bara ha ett visst antal kort på handen. Välj vilket som ska bort.",
     "spela_nu": lambda m, s, a: "Nätverkskort kan spelas nu eller sparas till senare.",
     "uppgradera": lambda m, s, a: "Energiuppgradering kostar pengar och kräver ett lyckat slag, men bättre energiklass höjer driftnettot.",
