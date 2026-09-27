@@ -700,7 +700,12 @@ class Motor:
         e, v, pav = kort["Effekt"], tal(kort.get("Värde")), kort.get("Påverkar") or ""
         q = self.spel.kvartal                       # påverkar plats q+1 = index q-1 (Q2..Q4)
         spar = ["bostäder", "kommersiellt"] if pav in ("båda", "alla") else [pav]
-        if e.startswith("yield") and q >= 4:        # ingen plats efter Q4: slutvärderingen sker på Q4-yielden
+        if e.startswith("yield") and e != "yield_nu" and q >= 4:        # ingen plats efter Q4: slutvärderingen sker på Q4-yielden
+            return
+        if e == "yield_nu":                          # beslut 2026-09-27: yielden flyttas direkt, banan ändras inte
+            for sp_ in spar:
+                lo, hi = (self.p.yield_spann or YIELD_SPANN)[sp_]
+                self.spel.yieldniva[sp_] = min(max(self.spel.yieldniva[sp_] + v, lo), hi)
             return
         if e == "yield_ersatt":
             for sp_ in spar:
