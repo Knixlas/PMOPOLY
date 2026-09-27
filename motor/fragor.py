@@ -280,6 +280,8 @@ def _eliminera(m, s, a):
 
 
 HJALP = {
+    "sla_om": lambda m, s, a: ((getattr(m, "omslag_info", None) or (f"Utfallet blev: {a[0]}." if a and isinstance(a[0], str) else ""))
+                               + f" Ett omslag kostar en riskbuffert (ni har {s.riskbuffert})."),
     "eliminera": _eliminera,
     "till_varning": lambda m, s, a: ("Er fastighetschef Bostadsveteranen kan göra en negativ händelse på en hyresrätt till en "
                                      f"underhållsvarning i stället (en gång per kvartal, två som senior). Fastigheten har "

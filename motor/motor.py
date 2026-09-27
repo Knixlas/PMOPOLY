@@ -577,6 +577,9 @@ class Motor:
         self.kast(offer, f"tvångsbud på {f.namn} – ert försvar (budgivaren fick {a})")
         b = self.s.d20() + self.duell_fc(offer, f, False)
         # den som ligger under får slå om med en riskbuffert (en gång)
+        self.omslag_info = (f"Tvångsbudet på {f.namn}: ni fick {a}, försvaret {b}. Ni behöver slå högre än försvaret."
+                            if a <= b else f"Tvångsbudet på {f.namn}: budgivaren fick {a}, ni {b}. Får ni minst {a} "
+                            f"(lika vinner ägaren) behåller ni fastigheten.")
         if a <= b and budgivare.riskbuffert and budgivare.strategi.sla_om(self, budgivare):
             budgivare.riskbuffert -= 1
             self.kast(budgivare, f"tvångsbud på {f.namn} – omslag (−1 riskbuffert)")
@@ -920,6 +923,8 @@ class Motor:
                         for kort in sp.strategi.energikort(self, sp, grans + 1 - bast):
                             sp.hand.remove(kort)
                             bast += tal(kort["Värde"])
+                    self.omslag_info = (f"Energiuppgradering av {f.namn}: bästa slaget blev {bast} med plus, det "
+                                        f"behövde bli över {grans}.")
                     if bast <= grans and sp.riskbuffert and sp.strategi.sla_om(self, sp):
                         sp.riskbuffert -= 1
                         self.kast(sp, f"omslag för {f.namn} (−1 riskbuffert)", ("energi omslag", sp.namn, f.namn, tarningar, q))
