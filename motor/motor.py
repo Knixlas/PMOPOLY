@@ -337,8 +337,6 @@ class Motor:
         s.blanda("dd", d.dd)
         for spar in ("bostäder", "kommersiellt"):
             s.blanda("yield_" + spar, [k for k in d.yieldkort if k["Spår"] == spar])
-            # F-brädet: tre platser per spår (Q2–Q4); yielden flyttas vid varje kvartals start
-            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)]
         pool = s.blanda_lista(d.projekt, "projektpool")
         self.projektpool = pool
         brf = s.blanda_lista(d.brf, "BRF")
@@ -347,6 +345,9 @@ class Motor:
         parti = getattr(self.s, "_parti", None)
         if parti is not None:                        # Förvaltningen är nu motorn som slår (bordet, "Slå")
             parti.aktuell_motor = self
+        for spar in ("bostäder", "kommersiellt"):    # 9.2: yieldbanan läggs när Förvaltningen ställs upp
+            # F-brädet: tre platser per spår (Q2–Q4); yielden flyttas vid varje kvartals start
+            self.spel.yieldbana[spar] = [tal(s.dra("yield_" + spar)["Ändring"]) for _ in range(3)]
         if pu:                                       # kvarterens egna projekt finns inte på marknaden
             byggda = {p["Namn"] for r in pu for p in r["placerade"]}
             pool[:] = [p for p in pool if p["Namn"] not in byggda]
