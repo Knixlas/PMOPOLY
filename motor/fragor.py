@@ -244,6 +244,8 @@ HJALP = {
     "sla_namnd": lambda m, s, a: (
         f"Summan av projektens nämndsiffror minus projektchefens nämndslag är {a[0]:g}. "
         f"Chansen att klara det: {100 * (1 - (min(20, max(0, a[0])) / 20) ** a[1]):.0f} %."),
+    "kulturkort": lambda m, s, a: (f"Kulturkort ger kompetens att spela i fasen. {len(getattr(m, 'kulturhog', []))} kort finns kvar i högen; "
+                                   f"ni har {s.kvar:.0f} Mkr kvar av ABT-budgeten."),
     "sla_om_handelse": lambda m, s, a: (f"Ni har {s.riskbuffert} riskbuffertar. Ett omslag kostar en och ger ett nytt D20-slag "
                                         "(plus erfarenhet); det nya utfallet gäller, även om det blir sämre (3.6)."),
     "sla_om_kort": lambda m, s, a: (f"Ni har {s.riskbuffert} riskbuffertar. Ett omslag kostar en och ger ett nytt D20-slag "
@@ -253,7 +255,7 @@ HJALP = {
 }
 
 
-MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kulturkort": lambda m, s, a: 5}
+MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kulturkort": lambda m, s, a: max(0, len(getattr(m, "kulturhog", [])) or 5)}
 MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0]}
 
 

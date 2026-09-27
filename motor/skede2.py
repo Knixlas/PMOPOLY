@@ -270,7 +270,7 @@ class Skede2:
 
     def genomforande(self):
         hogar = {s: self.s.blanda_lista([k for k in self.d.fas if int(tal(k["Steg"])) == s], f"FAS {s}") for s in range(1, 9)}
-        kulturhog = self.s.blanda_lista(self.d.kultur, "kultur")
+        kulturhog = self.kulturhog = self.s.blanda_lista(self.d.kultur, "kultur")   # (frågan visar hur många som finns)
         ordning = sorted(self.bolag, key=lambda b: b.pu["bta"])     # beslut: lägst BTA först
         self.fas = "genomforande"
         for steg in range(1, 9):
