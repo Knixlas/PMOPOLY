@@ -48,7 +48,7 @@ body { font-family: var(--typsnitt); color: var(--text); -webkit-print-color-adj
 .fc-huvud .t-rubrik { margin: 0 0 1mm; }
 .k58 .stamning { font-size: 6.9pt; }
 .etikett { font-size: 6.5pt; font-weight: 700; color: #fff; background: var(--accent); padding: .3mm 1.5mm;
-           border-radius: 1mm; vertical-align: middle; text-transform: uppercase; }
+           border-radius: 1mm; vertical-align: middle; text-transform: uppercase; display: inline-block; line-height: 1.3; }
 .egenskap { border: .3mm solid var(--accent); border-radius: 1.5mm; padding: 1.4mm 2mm; margin-bottom: 1.5mm; background: #fff; }
 .egenskap span { display: block; color: var(--accent); font-weight: 700; font-size: 6pt; text-transform: uppercase; }
 
