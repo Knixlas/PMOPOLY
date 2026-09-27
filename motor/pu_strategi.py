@@ -36,7 +36,11 @@ class PUStrategi:
                    + tal(pc["Minskar krav: kvalitet (Q)"]) + tal(pc["Minskar krav: hållbarhet (H)"]) + m.s.bott.random())
 
     def starttyp(self, m, kv):
-        return max((t for t in TYPER if m.hogar[t]), key=lambda t: self.projektvarde(m, kv, m.hogar[t][-1]))
+        # helst ett projekt som får plats på startmarken (t.ex. Lokalen Kungen är fem rutor lång och kräver
+        # en markexpansion på 4 × 4)
+        typer = [t for t in TYPER if m.hogar[t]]
+        ryms = [t for t in typer if self.ryms_i_pusslet(m, kv, [m.hogar[t][-1]])] or typer
+        return max(ryms, key=lambda t: self.projektvarde(m, kv, m.hogar[t][-1]))
 
     # --- brädet
     def valj_projekt(self, m, kv, kandidater):
@@ -45,7 +49,7 @@ class PUStrategi:
 
     def vill_expandera(self, m, kv):
         mark, bostad = kv.upptaget()
-        return max(mark, bostad) >= kv.markceller - 4
+        return max(mark, bostad) >= kv.markceller - 4 or not self.ryms_i_pusslet(m, kv, kv.projekt)
 
     def stadshuset(self, m, kv):
         """Inget projekt togs: vilket projekt lämnas tillbaka (None = inget)? Det sämsta om kraven är för höga."""

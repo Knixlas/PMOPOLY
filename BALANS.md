@@ -151,3 +151,15 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   som förut. Seniorns döda "gratis att röja" utgår. 800 partier med slumpvis utdelade FC: alla sex
   23–27 % (Bostadsveteranen 24 %, förut 21–22 %); förmågan används 0,9 gånger per parti. När bottarna
   väljer vinner hon fortfarande 36 % – det är hyresrättskvarterens styrka, inte kortets.
+- **Bottbugg i Skede 1 rättad:** 6 % av kvarteren gick ur Skede 1 utan projekt. Botten tog Lokalen Kungen
+  (fem rutor lång) som första projekt, men den ryms inte på 4 × 4 utan markexpansion, och botten expanderade
+  inte – sedan fick inget annat heller plats. Nu väljer botten ett startprojekt som ryms och expanderar när
+  projekten inte får plats. Efter rättningen: *expansiv* 28–33 %, *försiktig* 18–19 %, moderbolagslån 22 %.
+- **Hyresrättskvarteren** (1 200 partier): kvarter där minst 35 % av projekten är hyresrätter vinner 31–33 %,
+  kvarter utan hyresrätter 11–15 %. Rena bostadskvarter bygger bottarna nästan aldrig (4 av 4 000), så
+  "is i magen"-vägen går inte att mäta med dem. Övertaget sitter i två delar:
+  - *Förvaltningen* (mätt med slumpade portföljer, samma startkassa): F per fastighet hyresrätt +3,1,
+    förskola +2,3, kontor +2,1, lokal +1,4. Marknadsvärdesfaktor hyresrätt −0,3 och lokal +0,3 jämnar ut
+    till +2,2–2,5 för alla (inte infört – väntar på beslut; sänker hyresrätternas DN till 1–6).
+  - *Genomförandet*: TG 10 mot 7 för hyresrättsrika kvarter. Inte förklarat av byggnadsytan (BYA/BTA är
+    lika). Nästa steg: mät Skede 2 med påtvingade portföljer.
