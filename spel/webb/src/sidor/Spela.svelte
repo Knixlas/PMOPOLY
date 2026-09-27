@@ -1,7 +1,7 @@
 <script lang="ts">
   // En enhet i ett parti: välj vilket kvarter ni är, svara på era frågor, följ läget.
   import { onDestroy } from 'svelte';
-  import { Anslutning, hamtaLage, latDatorn, spelaKort, type Lage as LageT } from '../spel/anslutning.svelte';
+  import { Anslutning, hamtaLage, latDatorn, skapaParti, spelaKort, type Lage as LageT } from '../spel/anslutning.svelte';
   import Bordet from '../spel/Bordet.svelte';
   import Brade from '../spel/Brade.svelte';
   import Spelledare from '../spel/Spelledare.svelte';
@@ -51,6 +51,20 @@
   }
   let alertFel = $state('');
 
+  // ett sparat parti från före en regeländring kan inte spelas upp med de nya reglerna (LoggFel)
+  const gammaltParti = $derived(!!lage?.fel && /LoggFel|slumpen avviker/.test(lage.fel));
+  let startar = $state(false);
+  async function nyttLikadant() {
+    if (!lage) return;
+    startar = true;
+    try {
+      const nytt = await skapaParti({ kvarter: lage.kvarter.map(k => ({ namn: k.namn, styrning: k.styrning })),
+                                      slump: lage.slump, svarighet: (lage as any).svarighet ?? 'normal' });
+      location.hash = `#/parti/${nytt}/${encodeURIComponent(kvarter ?? '')}`;
+    } catch (e) { alertFel = `Det gick inte: ${(e as Error).message}`; }
+    finally { startar = false; }
+  }
+
   const resultat = $derived(lage?.resultat
     ? [...lage.resultat].sort((a: any, b: any) => (b.total ?? b.F) - (a.total ?? a.F)) as any[]
     : []);
@@ -89,6 +103,15 @@
 
   {#if anslutning?.raderat}
     <p class="panel">Partiet har raderats. <a href="#/">Till startsidan</a></p>
+  {:else if gammaltParti}
+    <section class="panel">
+      <h2>Partiet kan inte fortsätta</h2>
+      <p>Spelet har uppdaterats med nya regler sedan partiet startade, och ett parti som redan pågår kan inte räknas om
+        med dem. Starta ett nytt parti med samma kvarter och inställningar.</p>
+      <button type="button" class="primar" disabled={startar} onclick={nyttLikadant}>{startar ? 'Startar …' : 'Nytt parti, samma kvarter'}</button>
+      {#if alertFel}<p class="fel" role="alert">{alertFel}</p>{/if}
+      <details><summary>Teknisk orsak</summary><p class="not">{lage?.fel}</p></details>
+    </section>
   {:else if lage?.fel}
     <p class="panel fel" role="alert">Partiet stannade: {lage.fel}</p>
   {:else if lage?.klart}
@@ -163,6 +186,9 @@
   @media (max-width: 820px) { .spelyta.med-brade { grid-template-columns: minmax(0, 1fr); } }
   .huvud { min-width: 0; }
   .panel { background: var(--panel); border-radius: 6px; padding: 14px 16px; margin: 0 0 12px; }
+  .primar { font: inherit; font-weight: 700; font-size: 17px; padding: 10px 20px; border-radius: 4px; border: 0; background: var(--pu); color: var(--black); cursor: pointer; }
+  section.panel { display: grid; gap: 10px; justify-items: start; }
+  section.panel h2, section.panel p { margin: 0; }
   .val { display: grid; gap: 8px; max-width: 520px; }
   .kvarterknapp { display: block; padding: 14px 16px; border-radius: 6px; background: var(--black); color: var(--panel); font-weight: 700; font-size: 18px; text-decoration: none; }
   .kvarterknapp:hover { background: var(--pu-mork); }
