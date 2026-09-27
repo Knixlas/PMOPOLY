@@ -71,6 +71,7 @@
 <section class="fraga" aria-live="polite">
   <h2>{vy.rubrik}</h2>
   {#if vy.kort}<Kort kort={vy.kort} lek={vy.kort.lek ?? ''} skede="F" stor />{/if}
+  {#if vy.konsekvens}<p class="konsekvens"><strong>Om den gäller:</strong> {vy.konsekvens}</p>{/if}
   {#if vy.hjalp}<p class="hjalp">{vy.hjalp}</p>{/if}
 
   {#if vy.typ === 'fasspel'}
@@ -163,6 +164,8 @@
                border-radius: 8px; border: 2px solid transparent; background: transparent; color: var(--black); }
   .kortknapp:hover:not(:disabled) { border-color: var(--black); background: var(--panel-mork); }
   .kortknapp .detalj { text-align: center; }
+  .konsekvens { margin: 0; padding: 10px 12px; border-left: 5px solid var(--fel); background: #fbe7e4; border-radius: 4px;
+                font-size: 16px; line-height: 1.4; max-width: 62ch; }
   .hjalp { margin: -4px 0 0; color: var(--dampad); font-size: 14.5px; }
   .knappar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   button { font: inherit; cursor: pointer; }

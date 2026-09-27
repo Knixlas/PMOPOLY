@@ -19,6 +19,7 @@ export interface Vy {
   id?: string;                          // den nya markexpansionens id
   valda?: number[];                     // förvalda alternativ (flerval)
   hjalp?: string;
+  konsekvens?: string;                  // vad som händer om man svarar nej (händelsekort)
   kort?: Kortvy;                        // kortet frågan gäller
   ja?: string;
   nej?: string;

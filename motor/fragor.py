@@ -202,13 +202,43 @@ def _effekt(kort):
     return e
 
 
+def konsekvens(m, f, kort):
+    """Vad ett händelsekort gör med just den här fastigheten, i klartext (för frågan)."""
+    e, v = kort.get("Effekt"), kort.get("Värde")
+    namn = f.namn
+    try:
+        dn = m.eff_dn(f)
+    except Exception:                                        # noqa: BLE001
+        dn = None
+    if e == "underhallsvarning":
+        n = len(f.varningar) + 1
+        try:                                                  # Bostadsveteranen: straff först vid fyra på hyresrätter
+            grans = 4 if m.ar_fc(m.agare(f), "Bostadsveteranen") and f.typ == "HYRESRÄTT" else 3
+        except Exception:                                    # noqa: BLE001
+            grans = 3
+        return (f"{namn} får en underhållsvarning – {n} av {grans}. "
+                + (f"Vid {grans} sjunker driftnettot med 1 Mkr/år och energiuppgraderingar stoppas." if n < grans
+                   else "Då sjunker driftnettot med 1 Mkr/år och energiuppgraderingar stoppas."))
+    if e == "direkt_dn_minus":
+        return f"Driftnettot på {namn} sjunker med 1 Mkr/år" + (f" (från {dn:g} till {max(0, dn - 1):g})." if dn is not None else ".")
+    if e == "dolt_minus_dn":
+        return (f"En dold minusbricka läggs på {namn} (nettot blir {f.dn_brickor - 1:+d}). "
+                "När nettot når −3 sjunker driftnettot med 1 Mkr/år.")
+    if e == "energi_minus":
+        return (f"En energibricka minus läggs på {namn} (nettot blir {f.ek_brickor - 1:+d}); "
+                f"vid −3 blir energiklassen ett steg sämre (nu {f.ek}).")
+    if e == "engangskassa_minus":
+        return f"Ni betalar {_tal(v):g} Mkr, som dras från kassan vid nästa marknad."
+    if e == "villkorskort":
+        return f"Villkoret följer {namn}: {kort.get('Beskrivning') or ''}"
+    return _effekt(kort)
+
+
 def _eliminera(m, s, a):
     f, kort, gratis = a[0], a[1], bool(a[2]) if len(a) > 2 else False
-    rad = f"Kortet ger {_effekt(kort)}." if _effekt(kort) else ""
     if gratis:
-        return f"{rad} Er fastighetschef Skölden kan stoppa det gratis (en gång per kvartal)."
-    return (f"{rad} Ni kan stoppa det genom att lämna en riskbuffert (ni har {s.riskbuffert}). "
-            "Svarar ni nej händer det som står på kortet.")
+        return "Er fastighetschef Skölden kan stoppa det gratis (en gång per kvartal)."
+    return f"Ni kan stoppa det genom att lämna en riskbuffert (ni har {s.riskbuffert})."
 
 
 HJALP = {
@@ -301,6 +331,8 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
         vy["ja"] = "Ja, stoppa den (gratis med Skölden)" if gratis else "Ja, stoppa den (−1 riskbuffert)"
         vy["nej"] = "Nej, låt den gälla"
         vy["kort"] = {**kortvy(args[1]), "lek": f"händelse {args[0].typ.lower()}"}
+        vy["konsekvens"] = konsekvens(motor, args[0], args[1])
+        vy["kort"]["rader"] = vy["kort"]["rader"] + [["Effekt", _effekt(args[1]) or "–"]]
     if pool:
         text = (lambda x: f"Q {x[0]:+d} · H {x[1]:+d}") if metod == "fordela_krav" else (lambda x: etikett(x, motor))
         from .parti import kortvy
