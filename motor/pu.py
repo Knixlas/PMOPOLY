@@ -26,6 +26,7 @@ def markid(kort):
     return f"Markexpansion {kort['Kort-id']}"
 
 
+TYPER_NAMN = {"BRF": "BRF-", "HYRESRÄTT": "Hyresrätts", "FÖRSKOLA": "Förskole", "LOKAL": "Lokal", "KONTOR": "Kontors"}
 CELL_KVM = 250          # en ruta = 250 kvm (markexpansionskortens BYA / 250)
 MARK_CELLER = 16        # 4 × 4
 
@@ -153,8 +154,11 @@ class PUMotor:
         hog = self.hogar[typ]
         return hog.pop() if hog else None
 
-    def projektval(self, kv, typer, bara_banken=False):
-        """Ta ett projekt av någon av typerna: översta i högen eller ur banken. Avböjt översta kort → banken."""
+    def projektval(self, kv, typer, bara_banken=False, orsak=None):
+        """Ta ett projekt av någon av typerna: översta i högen eller ur banken. Avböjt översta kort → banken.
+        `orsak` visas i frågan (projektruta, Stadshuset, händelsekort …)."""
+        self.orsak = orsak or (f"{TYPER_NAMN.get(typer[0], typer[0])}rutan" if len(typer) == 1 else None)
+        self.projektval_typer = list(typer)
         kandidater = [p for p in self.bank if p["Typ"] in typer]
         toppar = {} if bara_banken else {t: self.hogar[t][-1] for t in typer if self.hogar[t]}
         val = kv.strategi.valj_projekt(self, kv, list(toppar.values()) + kandidater)
@@ -258,7 +262,7 @@ class PUMotor:
         kv.position = (start + steg) % len(BRADE)
         ruta = BRADE[kv.position]
         if ruta in TYPER:
-            self.projektval(kv, [ruta])
+            self.projektval(kv, [ruta])                      # orsak: projektrutan
         elif ruta == "HÄNDELSE":
             self.handelse(kv)
         elif ruta == "RISKBUFFERT":
@@ -269,7 +273,7 @@ class PUMotor:
         if ruta == "STADSBYGGNADSKONTORET":
             self.markexpansion(kv)
         elif ruta == "STADSHUSET":                           # ta ett projekt, annars ev. lämna tillbaka ett
-            if not self.projektval(kv, TYPER):
+            if not self.projektval(kv, TYPER, orsak="Stadshuset (hörnruta)"):
                 p = kv.strategi.stadshuset(self, kv)
                 if p:
                     self.lamna_projekt(kv, p)
@@ -341,7 +345,7 @@ class PUMotor:
                 hog.insert(0, p)                             # längst ned i högen
                 self.ta_projekt(kv, hog.pop())
         elif t.startswith("ta projekt från valfri hög"):
-            self.projektval(kv, TYPER)
+            self.projektval(kv, TYPER, orsak="Händelsekortet")
         elif t.startswith("dra markanvisning"):
             self.markexpansion(kv)                           # beslut: markanvisning = markexpansion (5 Mkr)
         else:
@@ -367,8 +371,8 @@ class PUMotor:
         elif nr == "PS4":
             for k in lagst(ks):
                 if k.strategi.ta_tva_projekt(self, k):
-                    self.projektval(k, TYPER)
-                    self.projektval(k, TYPER)
+                    self.projektval(k, TYPER, orsak=self.orsak)
+                    self.projektval(k, TYPER, orsak=self.orsak)
                 else:
                     q, h = k.strategi.fordela_krav(self, k, +3)
                     self.andra_krav(k, q, h)
@@ -399,7 +403,7 @@ class PUMotor:
                 if k.strategi.vill_expandera(self, k):
                     self.markexpansion(k)
                 else:
-                    self.projektval(k, TYPER)
+                    self.projektval(k, TYPER, orsak=self.orsak)
         elif nr == "DS4":
             for k in alla:
                 q, h = k.strategi.fordela_krav(self, k, -1)

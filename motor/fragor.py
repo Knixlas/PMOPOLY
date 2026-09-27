@@ -89,7 +89,8 @@ BESLUT = {
     "valj_pc": ("val", lambda m, s, a: "Välj projektchef (PC)", lambda m, s, a: a[0], False),
     "starttyp": ("val", lambda m, s, a: "Vilken projekttyp börjar ni med?",
                  lambda m, s, a: [t for t in m.hogar if m.hogar[t]], False),
-    "valj_projekt": ("val", lambda m, s, a: "Vilket projekt tar ni?", lambda m, s, a: a[0], True),
+    "valj_projekt": ("val", lambda m, s, a: (f"{m.orsak}: " if getattr(m, "orsak", None) else "") + "vilket projekt tar ni?",
+                     lambda m, s, a: a[0], True),
     "vill_expandera": ("janej", lambda m, s, a: "Ta en markexpansion?", None, False),
     "stadshuset": ("val", lambda m, s, a: "Stadshuset: lämna tillbaka ett projekt?", lambda m, s, a: s.projekt, True),
     "fordela_krav": ("val", lambda m, s, a: (f"{m.orsak}: " if getattr(m, "orsak", None) else "")
@@ -213,6 +214,11 @@ HJALP = {
         f"Kraven sänks – det är bra för er. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; ju lägre krav, desto "
         "lättare att nå dem i Skede 2." if a[0] < 0 else
         f"Kraven höjs. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; lägg höjningen där ni har lättast att nå kravet."),
+    "valj_projekt": lambda m, s, a: (
+        "Ta det översta kortet eller ett projekt av samma typ ur projektbanken. Tar ni inget läggs det dragna "
+        "kortet i projektbanken (3.3)." if len(getattr(m, "projektval_typer", [])) == 1 else
+        "Ni får ta det översta kortet i valfri hög eller ett projekt ur projektbanken. Tar ni inget händer inget"
+        + (" – vid Stadshuset kan ni i stället lämna tillbaka ett projekt (3.7)." if "Stadshuset" in str(getattr(m, "orsak", "")) else ".")),
     "sla_om_handelse": lambda m, s, a: "En riskbuffert låter er slå om tärningen på händelsekortet.",
     "sla_om_namnd": lambda m, s, a: "Nämnden kräver att tärningen visar mer än summan av projektens nämndsiffror.",
     "namnd_miss_hoj_krav": lambda m, s, a: "Regelboken 4.1: Ja betyder att ni höjer Q- eller H-kravet med 1 (ni väljer vilket i nästa fråga) och slår igen med en tärning mer. Nej betyder att ni lämnar tillbaka ett projekt i stället.",
@@ -269,7 +275,8 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
                                 f"H-krav {subjekt.h_krav} → {subjekt.h_krav + x[1]}")
         if inget:
             vy["alternativ"].append({"text": "Inget", "kod": None,
-                                     "detalj": "Det dragna kortet läggs i projektbanken (3.3)" if metod == "valj_projekt" else ""})
+                                     "detalj": "Det dragna kortet läggs i projektbanken (3.3)"
+                                     if metod == "valj_projekt" and len(getattr(motor, "projektval_typer", [])) == 1 else ""})
     if typ == "tal":
         vy["min"], vy["max"] = 0, int(MAX_TAL.get(metod, lambda m, s, a: 10)(motor, subjekt, args))
     if typ == "flerval" and metod in MAX_FLERVAL:
