@@ -86,3 +86,8 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   Rivaren). 400 partier: Förvaltningsstrategierna 23–29 %; FC *Den lugna* 31 % och *Bostadsveteranen*
   30 % (något starkare än förut), *Nätverkaren* 19 %. Bostadsveteranens rabatt på röjning har ingen
   verkan längre; hens tröskel (varningsstraff först vid 4 på hyresrätter) gäller fortfarande.
+- **Inga kort ger kostnader eller pengar, bara påverkan på driftnettot.** 26 kort i `kortdata/`
+  (händelsekort 13, DD-kort 9, kvartalskort 4) har fått dolda plus- eller minusbrickor i stället för
+  engångsbelopp; korttexterna med belopp är omskrivna. 400 partier: Förvaltningsstrategierna 22–27 %;
+  FC *Bostadsveteranen* 34 % är nu starkast (nästa kandidat för justering), *Nätverkaren* 20 %.
+  Tryckfilerna (tryck/ut) behöver byggas om innan korten trycks.

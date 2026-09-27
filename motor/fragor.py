@@ -190,6 +190,7 @@ EFFEKT = {
     "underhallsvarning": "en underhållsvarning (tre varningar ger −1 i driftnetto tills de tas bort med kort)",
     "villkorskort": "ett villkor som följer fastigheten",
     "engangskassa_plus": "pengar in i kassan nästa kvartal",
+    "typbred_dolt_minus": "en dold minusbricka på alla fastigheter av typen",
     "engangskassa_minus": "en kostnad som dras från kassan nästa kvartal",
 }
 

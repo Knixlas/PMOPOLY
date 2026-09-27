@@ -36,8 +36,8 @@ REGEL = {   # händelse- och kvartalskortens effekter i spelarens ord
     "energi_minus": "Lägg en <b>dold energibricka −</b> på fastigheten.",
     "direkt_dn_plus": "<b>+1 driftnetto</b> direkt och permanent.",
     "direkt_dn_minus": "<b>−1 driftnetto</b> direkt och permanent.",
-    "underhallsvarning": "<b>Underhållsvarning.</b> Lägg kortet öppet på fastigheten och röj den i marknaden för "
-                         "<b>{v} Mkr</b>. Tre oröjda: −1 driftnetto och uppgraderingsstopp.",
+    "underhallsvarning": "<b>Underhållsvarning.</b> Lägg kortet öppet på fastigheten. Den tas bort med kort, "
+                         "inte med pengar. Tre varningar: −1 driftnetto och uppgraderingsstopp.",
     "engangskassa_plus": "<b>+{v} Mkr</b> vid nästa marknad.",
     "engangskassa_minus": "<b>−{v} Mkr</b> vid nästa marknad.",
     "inget": "Ingen effekt.",
@@ -50,6 +50,7 @@ REGEL = {   # händelse- och kvartalskortens effekter i spelarens ord
     "villkorat": "Fastigheter av typen med energiklass D eller sämre: <b>−1 driftnetto</b>.",
     "kvartal_dd": "Alla med typen drar <b>ett DD-kort</b> dolt på en fastighet av typen.",
     "kvartal_kassa_minus": "Varje ägare av typen betalar <b>{v} Mkr</b> vid nästa marknad.",
+    "typbred_dolt_minus": "Lägg en <b>dold minusbricka</b> på allas fastigheter av typen.",
 }
 REGEL_I_TEXTEN = {"villkorskort", "forkop", "utveckling", "riskbuffert", "natverkskort_fokus"}
 

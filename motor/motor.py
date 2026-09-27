@@ -813,8 +813,11 @@ class Motor:
                         self.andra_bas(f, -1)
             elif e == "kvartal_dd":
                 self.dra_dd(egna[0], sp)
-            elif e == "kvartal_kassa_minus":
+            elif e == "kvartal_kassa_minus":                 # äldre kort (kort ger inte längre kostnader)
                 sp.vantande_kassa -= v
+            elif e == "typbred_dolt_minus":                  # en dold minusbricka på varje fastighet av typen
+                for f in egna:
+                    self.dn_bricka(f, -1)
             elif e == "inget":
                 pass
 
