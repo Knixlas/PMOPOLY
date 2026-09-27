@@ -16,8 +16,21 @@ def _pu(m):
                 "pc": (kv.pc or {}).get("Namn"),
                 "projekt": [{"namn": p["Namn"], "typ": p["Typ"]} for p in kv.projekt],
                 "markexpansioner": len(kv.expansioner), "mark": len(kv.mark),
+                **_pu_siffror(m, kv),
             } for kv in m.kvarter],
             "projektbank": [p["Namn"] for p in getattr(m, "bank", [])]}
+
+
+def _pu_siffror(m, kv):
+    """Nuläget för ett kvarter i Skede 1: projekten, BTA, anskaffning, marknadsvärde och ABT just nu (5.1)."""
+    from .pu import tal
+    p = kv.projekt
+    anskaffning = sum(tal(x["Anskaffning (Mkr)"]) for x in p)
+    utveckling = sum(tal(x["Utvecklingskostnad (Mkr)"]) for x in p)
+    kostnad = m.p.tomtkostnad + m.p.markexpansion_kostnad * len(kv.expansioner) + utveckling
+    return {"antal": len(p), "bta": sum(tal(x["BTA (kvm)"]) for x in p), "anskaffning": anskaffning,
+            "marknadsvarde": sum(tal(x["Marknadsvärde (Mkr)"]) for x in p), "utveckling": utveckling,
+            "abt_kostnad": kostnad, "abt": anskaffning - kostnad, "namndsumma": kv.namndsumma()}
 
 
 def _s2(m):

@@ -36,12 +36,18 @@
           <h3>{k.namn}{k.namn === jag ? ' (ni)' : ''}</h3>
           {#if bild.skede === 'PU'}
             <dl>
-              <div><dt>Ruta</dt><dd>{k.ruta?.toLowerCase()}</dd></div>
-              <div><dt>Varv</dt><dd>{k.varv}</dd></div>
+              <div><dt>Projekt</dt><dd>{k.antal ?? k.projekt?.length ?? 0}</dd></div>
+              <div><dt>BTA</dt><dd>{tal(k.bta)} kvm</dd></div>
+              <div><dt>Anskaffning</dt><dd>{tal(k.anskaffning)} Mkr</dd></div>
+              <div><dt>Marknadsvärde</dt><dd>{tal(k.marknadsvarde)} Mkr</dd></div>
+              <div title="Tomten + markexpansioner + projektens utvecklingskostnad (5.1)"><dt>ABT-kostnad</dt><dd>{tal(k.abt_kostnad)} Mkr</dd></div>
+              <div title="Anskaffning minus ABT-kostnad: vad kvarteret har att bygga för i Skede 2"><dt>ABT-budget nu</dt><dd>{tal(k.abt)} Mkr</dd></div>
               <div><dt>Q-krav</dt><dd>{k.q_krav}</dd></div>
               <div><dt>H-krav</dt><dd>{k.h_krav}</dd></div>
+              <div><dt>Nämndsumma</dt><dd>{k.namndsumma}</dd></div>
               <div><dt>Riskbuffert</dt><dd>{k.riskbuffert}</dd></div>
               <div><dt>Mark</dt><dd>{k.mark} rutor</dd></div>
+              <div><dt>Ruta · varv</dt><dd>{k.ruta?.toLowerCase()} · {k.varv}</dd></div>
             </dl>
             {#if k.projekt?.length}<p class="lista">{k.projekt.map((p: any) => p.namn).join(' · ')}</p>{/if}
           {:else if bild.skede === 'S2'}

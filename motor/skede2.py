@@ -122,6 +122,7 @@ class Skede2:
         self.d = data or S2Data()
         self.bolag = [Bolag(namn=r["kvarter"], strategi=st, pu=r) for r, st in zip(pu_resultat, strategier)]
         self.fas, self.steg_nr, self.steg_namn, self.fas_kort = "uppstallning", 0, None, None   # för spelledaren
+        self.aktiv = None                                                                        # vems tur
         self.stat = {k: 0 for k in ("lan", "kultur_kopt", "fas_nivå_Negativt", "fas_nivå_Neutralt",
                                     "fas_nivå_Positivt", "fas_nivå_Bonus", "fas_opaverkad", "omslag")}
 
@@ -198,6 +199,7 @@ class Skede2:
             b.hand = [r["pc_kort"]] + b.ledning
         ac_kvar = list(self.d.arbetschef)
         for b in sorted(self.bolag, key=lambda b: b.pu["bta"]):     # 6.1: lägst BTA väljer först
+            self.aktiv = b
             b.ac = b.strategi.valj_ac(self, b, ac_kvar)
             ac_kvar.remove(b.ac)
             b.riskbuffert += int(tal(b.ac["Riskbuffert"]))
@@ -209,6 +211,7 @@ class Skede2:
         for nr, (kategori, sort, kravkol) in enumerate(STEG, 1):
             self.steg_nr, self.steg_namn = nr, kategori
             for b in self.bolag:
+                self.aktiv = b
                 b.handelsehog += [k for k in self.d.handelse
                                   if HANDELSE_STEG.get(k["Kategori"], k["Kategori"]) == kategori]
                 lek = self.d.leverantorer if sort == "lev" else self.d.organisation
@@ -261,6 +264,7 @@ class Skede2:
             self.fas_kort = fas
             pris = tal(fas["Kostnad kulturaktiviteter (Mkr)"])
             for b in ordning:
+                self.aktiv = b
                 for _ in range(b.strategi.kulturkort(self, b, fas, pris)):
                     if kulturhog:
                         b.hand.append(kulturhog.pop())
@@ -309,6 +313,7 @@ class Skede2:
     def skedesavslut(self):
         self.fas, self.fas_kort = "avslut", None
         for b in self.bolag:                                  # 8.1–8.3: T, sedan Q, sedan H
+            self.aktiv = b
             self.konsekvens(b, "TID", max(0, b.t - 12))
             if b.q > 0:
                 self.konsekvens(b, "KVALITET", max(0, b.q_krav - b.q))

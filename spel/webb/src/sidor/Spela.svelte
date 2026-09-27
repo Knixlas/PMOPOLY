@@ -108,7 +108,7 @@
     <p class="panel">Ansluter till partiet …</p>
   {/if}
   {#if lage?.slump === 'digital'}
-    <Bordet visningar={lage.bordet ?? []} />
+    <Bordet visningar={lage.bordet ?? []} skede={lage.bild?.skede ?? null} />
   {/if}
   </div>
   {#if visaBrade && lage?.bild}

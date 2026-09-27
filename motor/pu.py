@@ -220,6 +220,7 @@ class PUMotor:
     def starta(self):
         self.fas, self.i_tur = "uppstallning", None           # för spelledaren (motor/spelledare.py)
         self.orsak = None                                      # varför kraven ändras (visas i frågan)
+        self.aktiv = None
         s = self.s
         for typ in TYPER:
             self.hogar[typ] = s.blanda_lista([p for p in self.d.projekt if p["Typ"] == typ], f"projekt {typ}")
@@ -228,6 +229,7 @@ class PUMotor:
         self.ordning = s.blanda_lista(self.kvarter, "spelordning")          # ANTAGANDE: slumpad (regelboken: slå D6)
         pc_kvar = list(self.d.personal)
         for kv in self.ordning:                              # beslut: PC väljs öppet i spelordning
+            self.aktiv = kv                                  # vems tur (för bordet på skärmen)
             kv.q_krav, kv.h_krav = self.p.start_q, self.p.start_h
             pc = kv.strategi.valj_pc(self, kv, pc_kvar)
             pc_kvar.remove(pc)
@@ -239,6 +241,7 @@ class PUMotor:
             self.andra_krav(kv, -int(tal(pc["Minskar krav: kvalitet (Q)"])), -int(tal(pc["Minskar krav: hållbarhet (H)"])))
             kv.tid -= int(tal(pc["Minskar krav: tid (T)"]))
         for kv in self.ordning:                              # brädet: "Vid start: ta markruta och valfritt projekt"
+            self.aktiv = kv
             typ = kv.strategi.starttyp(self, kv)
             p = self.dra_hog(typ)
             if p:
@@ -456,6 +459,7 @@ class PUMotor:
 
     def avsluta(self, kv):
         self.fas, self.i_tur = "namnd", kv
+        self.aktiv = kv
         godkanda, kv.namndforsok = self.namnd(kv, list(kv.projekt))
         self.fas = "komplettering"
         kv.godkanda = list(godkanda)
@@ -527,6 +531,7 @@ class PUMotor:
         self.fas = "bradet"
         while not klara:                                     # beslut: när någon gått klart spelas rundan klart
             for kv in self.ordning:
+                self.aktiv = kv
                 if kv.namn not in klara and self.flytta(kv):
                     klara.add(kv.namn)
         for kv in self.ordning:                              # 4.2 sker i spelordning

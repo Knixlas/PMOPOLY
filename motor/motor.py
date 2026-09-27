@@ -705,6 +705,7 @@ class Motor:
     def personal(self):
         q = self.spel.kvartal
         for sp in self.spel.spelare:
+            self.aktiv = sp
             sp.skold_anvand = 0
             if self.ar_fc(sp, "Den lugna"):
                 sp.riskbuffert += 1
@@ -777,6 +778,7 @@ class Motor:
     # ------------------------------------------------------------------ 5–6. händelser, kvartalskort
     def handelser(self):
         for sp in self.spel.spelare:
+            self.aktiv = sp
             for f in list(sp.fastigheter):
                 self.dra_handelse(f, sp)
 
@@ -864,6 +866,7 @@ class Motor:
                           ("ekonomi", self.personal), ("fastigheter", self.handelser),
                           ("omgivning", self.kvartalskort), ("energi", self.energiuppgraderingar)):
             self.spel.fas = fas                        # för gränssnittet (motor/lage.py)
+            self.aktiv = None
             steg()
 
     def spela(self):

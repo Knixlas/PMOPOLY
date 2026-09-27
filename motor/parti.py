@@ -206,8 +206,10 @@ class Parti:
     # ------------------------------------------------------------------ bordet på skärmen
     def _ny_visning(self, **v):
         self._visnr += 1
-        kvarter, skede = self._sammanhang
-        self.visningar.append({"nr": self._visnr, "kvarter": kvarter, "skede": skede, **v})
+        m = self.aktuell_motor
+        aktiv = getattr(m, "aktiv", None)
+        skede = LEK_SKEDE(v.get("lek")) or {"PUMotor": "PU", "Skede2": "S2"}.get(type(m).__name__, "F" if m else None)
+        self.visningar.append({"nr": self._visnr, "kvarter": getattr(aktiv, "namn", None), "skede": skede, **v})
         del self.visningar[:-60]
 
     def _visning(self, metod, args, varde):
@@ -220,6 +222,17 @@ class Parti:
 
     def visa_kort(self, lek, kort):
         self._ny_visning(typ="kort", lek=lek, kort=kortvy(kort))
+
+
+def LEK_SKEDE(lek):
+    """Vilket skede en hög hör till (för bordet på skärmen): yieldkorten dras t.ex. vid uppställningen."""
+    if not lek:
+        return None
+    if lek.startswith(("handelse_", "kvartal_", "yield_")) or lek in ("natverk", "omvarld", "dd", "projektpool", "BRF"):
+        return "F"
+    if lek.startswith("projekt ") or lek in ("PU-händelser", "markexpansion"):
+        return "PU"
+    return "S2"
 
 
 KORTRADER = [
