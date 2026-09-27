@@ -105,7 +105,7 @@
           ...(egen.start.brf ?? []).map((b: any) => `${b.namn} såld ${tal(b.intakt)}`),
           ...(egen.start.lan ? [`moderbolagslån ${egen.start.lan} × 95`] : [])].join(' + ')}</p>
       {/if}
-      <p class="personal">FC {egen.fc ?? '–'}{egen.fc_senior ? ' (senior)' : ''} · FS {egen.fs ?? '–'}{egen.fs_senior ? ' (senior)' : ''}
+      <p class="personal">FC {egen.fc ?? '–'}{egen.fc_senior ? ' (senior)' : ''}{egen.fc_anvand ? ' – förmågan använd detta kvartal (kortet vridet)' : ''} · FS {egen.fs ?? '–'}{egen.fs_senior ? ' (senior)' : ''}
         {#if egen.vantande_kassa}· {tal(egen.vantande_kassa)} Mkr väntar till nästa marknad{/if}</p>
       <div class="fastigheter">
         {#each egen.fastigheter as f, i (i)}

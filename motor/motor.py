@@ -252,7 +252,20 @@ class Motor:
         elif e == "underhallsvarning":
             self.varning(f, sp, int(v or 3))
         elif e == "villkorskort":
-            f.villkor.append(kort.get("Beskrivning") or "")
+            # beslut 2026-09-27: villkoret prövas när kortet dras och ger en direkt, permanent ändring (inget att
+            # komma ihåg): energiklass D/E, "3 eller fler" av typen, eller en underhållsvarning på fastigheten
+            t = (kort.get("Beskrivning") or "").lower()
+            if "3 eller fler" in t:
+                egna = [x for x in sp.fastigheter if x.typ == f.typ]
+                if len(egna) >= 3:
+                    for x in egna:
+                        self.andra_bas(x, -1)
+            elif "underhållsvarning" in t:
+                if f.varningar:
+                    self.andra_bas(f, -1)
+            elif "d eller sämre" in t:
+                if f.ek in ("D", "E"):
+                    self.andra_bas(f, -1)
         elif e == "engangskassa_plus":
             sp.vantande_kassa += v
         elif e == "engangskassa_minus":
@@ -275,11 +288,13 @@ class Motor:
                 if sp.fc_senior:
                     sp.riskbuffert += 1
                 return
-            # FC Bostadsveteranen (beslut 2026-09-27): en gång per kvartal (senior två) blir en negativ händelse
-            # på en hyresrätt en underhållsvarning i stället – hon vet vad som väntar bakom kaklet
+            # FC Bostadsveteranen (beslut 2026-09-27): en gång per kvartal (vrid kortet) blir en negativ händelse
+            # på en hyresrätt en underhållsvarning i stället; som senior tar kvarteret dessutom en riskbuffert
             if (self.ar_fc(sp, "Bostadsveteranen") and f.typ == "HYRESRÄTT" and kort["Effekt"] != "underhallsvarning"
-                    and sp.bv_anvand < (2 if sp.fc_senior else 1) and sp.strategi.till_varning(self, sp, f, kort)):
+                    and sp.bv_anvand < 1 and sp.strategi.till_varning(self, sp, f, kort)):
                 sp.bv_anvand += 1
+                if sp.fc_senior:
+                    sp.riskbuffert += 1
                 self.stat["bv_varning"] += 1
                 self.logg(f"{sp.namn}: Bostadsveteranen gör händelsen på {f.namn} till en underhållsvarning")
                 self.varning(f, sp, 0)
@@ -302,8 +317,8 @@ class Motor:
                 val = True
                 self.orsak_dd = f"Nätverkskortet ”{kort.get('Rubrik', '')}”"
         if val:
-            a, b = self.s.dra("dd"), self.s.dra("dd")
-            kort = sp.strategi.valj_dd(self, sp, f, [a, b])
+            antal = 3 if self.ar_fs(sp, "Besiktningsgeniet") and sp.fs_senior else 2   # senior: tre kort
+            kort = sp.strategi.valj_dd(self, sp, f, [self.s.dra("dd") for _ in range(antal)])
         else:
             kort = self.s.dra("dd")
         self.fastighetseffekt(kort, f, sp)
@@ -494,7 +509,7 @@ class Motor:
         if sp.fc:
             namn = sp.fc["Namn"]
             if namn == "Förhandlaren":
-                slag += 3 if f.typ == "KONTOR" else 1
+                slag += (5 if sp.fc_senior else 3) if f.typ == "KONTOR" else 1
             elif namn == "Tekniska experten" and not sp.fc_senior:
                 slag -= 1
             elif namn == "Nätverkaren" and not sp.fc_senior and SPAR[f.typ] == "bostäder":
@@ -891,7 +906,8 @@ class Motor:
         if not self.p.max_uppgraderingar[q - 1]:              # Q4: inga uppgraderingar (fråga inte)
             return
         for sp in self.spel.spelare:
-            gratis_forsta = self.ar_fc(sp, "Tekniska experten") and sp.fc_senior
+            # FC Tekniska experten som senior: försöken kostar 2 Mkr i stället för 3
+            forsokskostnad = self.p.uppgradering_kostnad - (1 if self.ar_fc(sp, "Tekniska experten") and sp.fc_senior else 0)
             if sp.lan:                                        # 7.2: uppgraderingsstopp med moderbolagslån
                 continue
             for f in sp.strategi.uppgradera(self, sp, self.p.max_uppgraderingar[q - 1]):
@@ -899,8 +915,7 @@ class Motor:
                     continue
                 tarningar = 1
                 while True:
-                    kostnad = 0 if gratis_forsta else self.p.uppgradering_kostnad
-                    gratis_forsta = False
+                    kostnad = forsokskostnad
                     if sp.kassa < kostnad:
                         break
                     self.stat["uppgradering_forsok"] += 1

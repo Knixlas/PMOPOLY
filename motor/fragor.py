@@ -190,7 +190,7 @@ EFFEKT = {
     "direkt_ek_plus": "ett steg bättre energiklass",
     "direkt_ek_minus": "ett steg sämre energiklass",
     "underhallsvarning": "en underhållsvarning (tre varningar ger −1 i driftnetto tills de tas bort med kort)",
-    "villkorskort": "ett villkor som följer fastigheten",
+    "villkorskort": "ett villkor som prövas direkt (−1 i driftnetto om det uppfylls)",
     "engangskassa_plus": "pengar in i kassan nästa kvartal",
     "typbred_dolt_minus": "en dold minusbricka på alla fastigheter av typen",
     "engangskassa_minus": "en kostnad som dras från kassan nästa kvartal",
@@ -268,7 +268,7 @@ def konsekvens(m, f, kort):
     if e == "engangskassa_minus":
         return f"Ni betalar {_tal(v):g} Mkr, som dras från kassan vid nästa marknad."
     if e == "villkorskort":
-        return f"Villkoret följer {namn}: {kort.get('Beskrivning') or ''}"
+        return f"{namn}: {kort.get('Beskrivning') or ''}"
     return _effekt(kort)
 
 
@@ -284,7 +284,7 @@ HJALP = {
                                + f" Ett omslag kostar en riskbuffert (ni har {s.riskbuffert})."),
     "eliminera": _eliminera,
     "till_varning": lambda m, s, a: ("Er fastighetschef Bostadsveteranen kan göra en negativ händelse på en hyresrätt till en "
-                                     f"underhållsvarning i stället (en gång per kvartal, två som senior). Fastigheten har "
+                                     f"underhållsvarning i stället (en gång per kvartal; som senior får ni också en riskbuffert). Fastigheten har "
                                      f"{len(a[0].varningar)} varning(ar); straffet (−1 driftnetto) kommer vid fyra."),
     "valj_fc": lambda m, s, a: "Fastighetschefen ger en styrka hela Förvaltningen. Efter några kvartal blir hen senior och blir starkare.",
     "valj_fs": lambda m, s, a: "Förvaltningsstödet är en specialist med en egen förmåga, t.ex. bättre due diligence eller energiarbete.",

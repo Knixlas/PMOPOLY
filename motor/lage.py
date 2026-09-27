@@ -102,6 +102,7 @@ def _f(m):
                 "restkort": sp.restkort, "vantande_kassa": round(sp.vantande_kassa, 1),
                 "hand": len(sp.hand), "handkort": [dict(kortvy(k), spelbar=k.get("Effekt") in SPELBARA_NU) for k in sp.hand if isinstance(k, dict)],
                 "fc": (sp.fc or {}).get("Namn") if isinstance(sp.fc, dict) else None, "fc_senior": sp.fc_senior,
+                "fc_anvand": bool(getattr(sp, "skold_anvand", 0) or getattr(sp, "bv_anvand", 0)),
                 "fs": (sp.fs or {}).get("Namn") if isinstance(sp.fs, dict) else None, "fs_senior": sp.fs_senior,
                 "fastigheter": [fastighet(f, sp) for f in sp.fastigheter],
                 "start": {"tb": round(sp.tb, 1), "lan": sp.lan, "brf": sp.brf_salda, "kassa": round(sp.start_kassa, 1)},
