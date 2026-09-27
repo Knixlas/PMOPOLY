@@ -39,16 +39,16 @@ S2_STEG = [
      "når ni ingen blir det Negativt. Dra sedan ett händelsekort.",
      ["k7-2", "k7-3", "k7-4", "k7-5", "k7-6", "k7-7"]),
     ("avslut", "Skedesavslut",
-     "Dra konsekvenskort för tid, kvalitet och hållbarhet som inte nåtts – CFO antecknar antalet, de blir "
-     "underhållsvarningar i Förvaltningen. Sedan garantibesiktning, "
+     "Dra konsekvenskort för tid, kvalitet och hållbarhet som inte nåtts. Behåll korten – de blir "
+     "underhållsvarningar (1/3) i Förvaltningen. Sedan garantibesiktning, "
      "ekonomisk uppgörelse och BRF-försäljning.", ["k8-1", "k8-2", "k8-3", "k8-4", "k8-5", "k8-6"]),
 ]
 
 F_STEG = [
     ("uppstart", "Uppstart",
      "Kvarteren blir fastigheter och BRF:erna säljs (marknadsvärde − anskaffning + kortets tärning) till "
-     "startkassan. Varje konsekvenskort från Genomförandet blir en underhållsvarning: störst driftnetto först, "
-     "en per fastighet, sedan varvet runt. Välj fastighetschef (FC) och förvaltningsstöd (FS); den med minst kassa väljer "
+     "startkassan. Lägg konsekvenskorten från Genomförandet på fastigheterna – varje kort är en underhållsvarning "
+     "(1/3): störst driftnetto först, en per fastighet, sedan varvet runt. Välj fastighetschef (FC) och förvaltningsstöd (FS); den med minst kassa väljer "
      "först. Varje kvarter drar tre nätverkskort och sedan ett händelsekort per fastighet.",
      ["k9-1", "k9-2", "k9-3"]),
     ("marknad", "Marknad",

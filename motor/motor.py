@@ -411,13 +411,13 @@ class Motor:
                 start = sp.tb + brf_intakt
             sp.brf_intakt = brf_intakt
             if pu and self.p.konsekvens_som_varning and sp.fastigheter and r.get("konsekvenskort"):
-                # 9.2: varje konsekvenskort från Skede 2 blir en underhållsvarning (1/3-kort). Störst driftnetto
+                # 9.2: konsekvenskorten från Skede 2 läggs på fastigheterna, varje kort är en underhållsvarning (1/3). Störst driftnetto
                 # först (som på kortet; lika: störst BTA), en per fastighet, sedan varvet runt tills korten är slut
                 ordning = sorted(sp.fastigheter, key=lambda f: (-f.eff_dn(), -f.bta))
                 traffade = [ordning[i % len(ordning)] for i in range(r["konsekvenskort"])]
                 for f in traffade:
                     self.varning(f, sp, 0)
-                self.logg(f"{sp.namn}: {r['konsekvenskort']} konsekvenskort från Genomförandet blir underhållsvarningar – "
+                self.logg(f"{sp.namn}: {r['konsekvenskort']} konsekvenskort från Genomförandet läggs på fastigheterna som underhållsvarningar (1/3) – "
                           + ", ".join(f"{f.namn} {len(f.varningar)}" + (" (−1 driftnetto)" if f.varningsstraff_tagit else "")
                                       for f in ordning[:len(traffade)]))
             sp.kassa = self.p.startkassa if self.p.startkassa is not None else round(start)
