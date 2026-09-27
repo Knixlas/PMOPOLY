@@ -5,6 +5,7 @@
   const forslag = ['Norr', 'Söder', 'Öster', 'Väster'];
   let kvarter = $state([{ namn: 'Norr', styrning: 'människa' }, { namn: 'Söder', styrning: 'människa' }]);
   let slump = $state<'digital' | 'inmatad'>('digital');
+  let svarighet = $state<'lätt' | 'normal' | 'svår'>('normal');
   let fel = $state('');
   let skapar = $state(false);
   let partier = $state<Awaited<ReturnType<typeof listaPartier>>>([]);
@@ -36,7 +37,7 @@
     if (namn.some(n => !n) || new Set(namn).size !== namn.length) { fel = 'Ge kvarteren olika namn.'; return; }
     skapar = true;
     try {
-      const id = await skapaParti({ kvarter: kvarter.map(k => ({ ...k, namn: k.namn.trim() })), slump });
+      const id = await skapaParti({ kvarter: kvarter.map(k => ({ ...k, namn: k.namn.trim() })), slump, svarighet });
       location.hash = `#/parti/${id}`;
     } catch (err) {
       fel = `Partiet gick inte att skapa: ${(err as Error).message}`;
@@ -80,6 +81,17 @@
         <span><strong>Vid brädet</strong><br />Ni spelar med det fysiska spelet och anger tärningar och dragna kort. Appen håller ordning på regler och poäng.</span></label>
     </fieldset>
 
+    <fieldset>
+      <legend>Svårighetsgrad</legend>
+      <p class="hjalp">Detaljplanens startkrav för kvalitet (Q) och hållbarhet (H). Ju högre krav, desto tuffare att klara Genomförandet.</p>
+      <label class="val"><input type="radio" name="svarighet" value="lätt" bind:group={svarighet} />
+        <span><strong>Lätt</strong> · Q- och H-krav 3</span></label>
+      <label class="val"><input type="radio" name="svarighet" value="normal" bind:group={svarighet} />
+        <span><strong>Normal</strong> · Q- och H-krav 4</span></label>
+      <label class="val"><input type="radio" name="svarighet" value="svår" bind:group={svarighet} />
+        <span><strong>Svår</strong> · Q- och H-krav 6, som på den tryckta scoreboarden</span></label>
+    </fieldset>
+
     {#if fel}<p class="fel" role="alert">{fel}</p>{/if}
     <button type="submit" class="primar" disabled={skapar}>{skapar ? 'Startar …' : 'Starta partiet'}</button>
   </form>
@@ -97,7 +109,7 @@
         {#each partier.slice(0, 12) as p}
           <li class:fragar={radera === p.id}>
             <a href="#/parti/{p.id}"><strong>{p.kvarter.join(', ')}</strong>
-              <span>{[p.klart ? 'Klart' : p.skede, p.slump === 'inmatad' ? 'vid brädet' : 'i appen', p.id].filter(Boolean).join(' · ')}</span></a>
+              <span>{[p.klart ? 'Klart' : p.skede, p.slump === 'inmatad' ? 'vid brädet' : 'i appen', p.svarighet && p.svarighet !== 'normal' ? p.svarighet : '', p.id].filter(Boolean).join(' · ')}</span></a>
             {#if radera === p.id}
               <div class="bekrafta" role="group" aria-label="Radera partiet">
                 <span>Radera partiet för alla? Det går inte att ångra.</span>
@@ -132,6 +144,7 @@
   .ta-bort { font: inherit; font-size: 20px; line-height: 1; width: 36px; height: 36px; border-radius: 4px; border: 1px solid var(--linje-stark); background: #fff; cursor: pointer; }
   fieldset { border: none; padding: 0; margin: 0; display: grid; gap: 8px; }
   legend { font-weight: 700; margin-bottom: 6px; }
+  .hjalp { margin: 0; font-size: 14px; color: var(--dampad); }
   .val { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid var(--linje-stark); border-radius: 4px; background: #fff; cursor: pointer; font-size: 14.5px; }
   .val input { margin-top: 3px; }
   .val:has(input:checked) { border-color: var(--black); box-shadow: inset 0 0 0 1px var(--black); }

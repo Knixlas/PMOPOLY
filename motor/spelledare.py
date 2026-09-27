@@ -8,7 +8,8 @@ Stegen följer regelboken och brädena; motorn märker ut var den är (`fas` på
 # (id, namn, vad man gör, regelbokens avsnitt)
 PU_STEG = [
     ("uppstallning", "Uppställning",
-     "Välj projektchef (PC). Blanda projekthögarna, händelsekorten och markexpansionerna.", ["k3-1", "k3-8"]),
+     "Välj projektchef (PC). Sätt Q-kravet och H-kravet på {start_krav} ({svarighet}). Blanda projekthögarna, "
+     "händelsekorten och markexpansionerna.", ["k3-1", "k3-8"]),
     ("bradet", "Brädet",
      "Slå D6 och flytta pjäsen medsols. Projektruta: ta projektet eller lägg det i projektbanken. "
      "Händelseruta: dra ett händelsekort och slå D20. Hörnen är institutioner. Passerar ni start får ni "
@@ -104,7 +105,9 @@ def ledare(parti, fraga=None):
     except Exception:                                  # noqa: BLE001 — spelledaren får aldrig stoppa spelet
         return None
     rad = next((s for s in steg if s[0] == nu), steg[0])
-    ut = {"skede": skede, "steg": _lista(steg), "nu": rad[0], "plats": plats, "gor": rad[2], "regler": rad[3]}
+    gor = rad[2].format(start_krav=parti.parametrar.start_krav, svarighet=f"svårighet {parti.svarighet}") \
+        if hasattr(parti, "svarighet") else rad[2]
+    ut = {"skede": skede, "steg": _lista(steg), "nu": rad[0], "plats": plats, "gor": gor, "regler": rad[3]}
     if fraga is not None and fraga.kvarter:
         ut["tur"] = fraga.kvarter
     return ut

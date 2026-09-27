@@ -26,6 +26,9 @@ from .fragor import beskriv_beslut, beskriv_slump
 ANALOGT_AV_BOTTEN = {"placera_markexpansion"}
 from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
 
+# Svårighetsgrad = Detaljplanens startkrav för Q och H (3.1). Högre krav, tuffare att klara skedet.
+SVARIGHET = {"lätt": 3, "normal": 4, "svår": 6}
+
 REGELVERSION = "2026-09-26"      # höjs när reglerna i motorn ändras; loggen bär versionen
 BOTTAR = {"PU": PU_STRATEGIER, "S2": S2_STRATEGIER, "F": STRATEGIER}
 STANDARDBOTT = {"PU": "balanserad", "S2": "balanserad", "F": "balanserad"}
@@ -40,7 +43,7 @@ _AVBRYT = object()
 
 class Parti:
     def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION,
-                 slump="digital"):
+                 slump="digital", svarighet="normal"):
         """kvarter: [{"namn": str, "styrning": "bott" | "människa", "bottar": {"PU": .., "S2": .., "F": ..}}]
         logg: en tidigare logg att spela upp innan partiet fortsätter.
         slump: "digital" (motorn slår och drar) eller "inmatad" (fysiskt spel: spelarna anger tärningar
@@ -48,6 +51,9 @@ class Parti:
         if slump not in ("digital", "inmatad"):
             raise ValueError("slump är 'digital' eller 'inmatad'")
         self.slumpsatt = slump
+        if svarighet not in SVARIGHET:
+            raise ValueError(f"svårighet är en av {', '.join(SVARIGHET)}")
+        self.svarighet = svarighet
         self.analog = slump != "digital"                 # spel vid brädet: pusslet läggs på riktigt, inte i appen
         self.visningar = []                              # tärningsslag och dragna kort, för bordet på skärmen
         self._visnr = 0
@@ -58,6 +64,7 @@ class Parti:
         self.fro = fro
         self.regelversion = regelversion
         self.parametrar = parametrar or Parametrar()
+        self.parametrar.start_krav = SVARIGHET[svarighet]
         self.data = data or Kortdata()
         self.logg = []
         self._uppspelning = deque(logg or [])
@@ -71,12 +78,13 @@ class Parti:
 
     # ------------------------------------------------------------------ inställningar som kan sparas
     def uppstart(self):
-        return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt}
+        return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt,
+                "svarighet": self.svarighet}
 
     @classmethod
     def fran_sparat(cls, uppstart, logg, **kw):
         return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"],
-                   slump=uppstart.get("slump", "digital"), **kw)
+                   slump=uppstart.get("slump", "digital"), svarighet=uppstart.get("svarighet", "normal"), **kw)
 
     # ------------------------------------------------------------------ gränssnitt utåt
     def steg(self):

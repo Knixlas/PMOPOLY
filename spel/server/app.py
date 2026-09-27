@@ -3,7 +3,7 @@
     uvicorn spel.server.app:app --port 8000        (från repots rot)
 
 REST
-  POST /api/rum            {"kvarter": [{"namn", "styrning": "människa"|"bott", "bottar"?}], "slump": "digital"|"inmatad"}
+  POST /api/rum            {"kvarter": [{"namn", "styrning": "människa"|"bott", "bottar"?}], "slump": "digital"|"inmatad", "svarighet": "lätt"|"normal"|"svår"}
   GET  /api/rum            alla rum (senaste först)
   GET  /api/rum/{id}       läget
   POST /api/rum/{id}/svar  {"kvarter", "nr", "svar": {...}} (samma som över WebSocket)
@@ -24,7 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from motor.data import Kortdata
-from motor.parti import REGELVERSION
+from motor.parti import REGELVERSION, SVARIGHET
 
 from .rum import Rum, SvarsFel, nytt_id
 
@@ -47,6 +47,7 @@ class KvarterIn(BaseModel):
 class RumIn(BaseModel):
     kvarter: list[KvarterIn] = Field(min_length=1, max_length=4)
     slump: str = "digital"
+    svarighet: str = "normal"
     fro: int | None = None
 
 
@@ -77,10 +78,10 @@ async def skapa(r: RumIn):
     namn = [k.namn.strip() for k in r.kvarter]
     if len(set(namn)) != len(namn) or "bordet" in namn:
         raise HTTPException(400, "kvarteren behöver olika namn")
-    if r.slump not in ("digital", "inmatad") or any(k.styrning not in ("människa", "bott") for k in r.kvarter):
+    if r.slump not in ("digital", "inmatad") or r.svarighet not in SVARIGHET or any(k.styrning not in ("människa", "bott") for k in r.kvarter):
         raise HTTPException(400, "okänt spelsätt")
     uppstart = {"regelversion": REGELVERSION, "fro": r.fro if r.fro is not None else int.from_bytes(os.urandom(4), "big"),
-                "slump": r.slump,
+                "slump": r.slump, "svarighet": r.svarighet,
                 "kvarter": [{"namn": k.namn.strip(), "styrning": k.styrning, **({"bottar": k.bottar} if k.bottar else {})}
                             for k in r.kvarter]}
     id_ = nytt_id()
@@ -92,7 +93,7 @@ async def skapa(r: RumIn):
 @app.get("/api/rum")
 def lista():
     return [{"id": r.id, "skapad": r.skapad, "kvarter": [k["namn"] for k in r.uppstart["kvarter"]],
-             "slump": r.uppstart.get("slump"), "klart": r.klart,
+             "slump": r.uppstart.get("slump"), "svarighet": r.uppstart.get("svarighet", "normal"), "klart": r.klart,
              "skede": (r.bild or {}).get("namn")} for r in sorted(RUM.values(), key=lambda r: -r.skapad)]
 
 

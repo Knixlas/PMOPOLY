@@ -19,6 +19,7 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 @dataclass
 class Parametrar:
     projektutveckling: bool = True                 # spela Skede 1 först (annars slumpad portfölj)
+    start_krav: int = 4                            # 3.1: Q- och H-kravet från Detaljplanen = svårighetsgraden
     roj_med_pengar: bool = False                   # regeländring (Niklas): varningar röjs bara med kort, inte köps bort
     startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
@@ -142,7 +143,7 @@ class Motor:
         if not hasattr(self.d, "pu"):
             self.d.pu, self.d.s2 = PUData(), S2Data()     # läses en gång per Kortdata
         strategier = self.pu_strategier or [self.s.bott.choice(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
-        pu = PUMotor(strategier, PUParametrar(), self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
+        pu = PUMotor(strategier, PUParametrar(start_q=self.p.start_krav, start_h=self.p.start_krav), self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
         strategier = self.s2_strategier or [self.s.bott.choice(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
         s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2).spela()
         for r, r2 in zip(pu, s2):

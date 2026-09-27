@@ -160,6 +160,7 @@ class Rum:
         return {
             "rum": self.id,
             "slump": self.uppstart.get("slump", "digital"),
+            "svarighet": self.uppstart.get("svarighet", "normal"),
             "kvarter": [{"namn": k["namn"], "styrning": k["styrning"]} for k in self.uppstart["kvarter"]],
             "bild": self.bild,
             "ledare": self.ledare,

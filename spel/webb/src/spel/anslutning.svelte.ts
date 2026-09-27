@@ -73,7 +73,7 @@ export async function skapaParti(kropp: unknown): Promise<string> {
   return (await r.json()).id;
 }
 
-export async function listaPartier(): Promise<{ id: string; kvarter: string[]; slump: string; klart: boolean; skede?: string; skapad: number }[]> {
+export async function listaPartier(): Promise<{ id: string; kvarter: string[]; slump: string; svarighet?: string; klart: boolean; skede?: string; skapad: number }[]> {
   const r = await fetch(`${bas()}/api/rum`);
   return r.ok ? r.json() : [];
 }

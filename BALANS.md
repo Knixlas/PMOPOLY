@@ -123,3 +123,12 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   600 partier med allt ovan: Skede 1 *expansiv* 32 %, *försiktig* 19 % (jämnare än förut). Skede 2
   *balanserad* 38 %, *billig* 11 %. Förvaltningsstrategierna 23–28 %. FC *Bostadsveteranen* 35 %,
   övriga 21–27 %. FS 22–29 %. Slutpoäng median 25 (PU 15, TG 6, F 11).
+- **Svårighetsgrader** (väljs när partiet startas): Detaljplanens startkrav för Q och H. 400 partier per nivå:
+
+  | Nivå | Startkrav | Moderbolagslån | TG-median | Slutpoäng, median |
+  |---|---|---|---|---|
+  | Lätt | 3 | 23 % | 7,7 | 29 |
+  | Normal | 4 | 31 % | 6,1 | 25 |
+  | Svår | 6 (den tryckta scoreboarden) | 44 % | 2,3 | 17 |
+
+  Att överaggressiva kvarter som pressar kassan får ta lån är avsiktligt (Niklas).

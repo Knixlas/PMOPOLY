@@ -63,6 +63,17 @@ class TestParti(unittest.TestCase):
         with self.assertRaises(LoggFel):
             p.spela_klart()
 
+    def test_svarighet_satter_startkraven(self):
+        """Svårighetsgraden är Detaljplanens startkrav (3.1) och följer med när partiet sparas."""
+        p = Parti([{"namn": "Norr"}, {"namn": "Söder"}], fro=3, data=DATA, svarighet="svår")
+        self.assertEqual(p.parametrar.start_krav, 6)
+        self.assertEqual(p.uppstart()["svarighet"], "svår")
+        with self.assertRaises(ValueError):
+            Parti([{"namn": "Norr"}], data=DATA, svarighet="omöjlig")
+        p.spela_klart()
+        self.assertEqual(utan_strateginamn(Parti.fran_sparat(json_kopia(p.uppstart()), json_kopia(p.logg), data=DATA)
+                                           .spela_klart()), utan_strateginamn(p.resultat))
+
     def test_fysiskt_spel_med_inmatad_slump(self):
         """Läge 2: spelarna anger tärningar och dragna kort; partiet går klart och kan spelas upp."""
         import random
