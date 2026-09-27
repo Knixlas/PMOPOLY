@@ -19,6 +19,7 @@ NEGATIVA = {"dolt_minus_dn", "energi_minus", "direkt_dn_minus", "underhallsvarni
 @dataclass
 class Parametrar:
     projektutveckling: bool = True                 # spela Skede 1 först (annars slumpad portfölj)
+    roj_med_pengar: bool = False                   # regeländring (Niklas): varningar röjs bara med kort, inte köps bort
     startkassa: float = None                       # None = TB + sålda BRF (beslut); tal = fast kassa (test)
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
@@ -378,7 +379,7 @@ class Motor:
                 for f in sp.fastigheter:
                     if sp.strategi.visa_plus(self, sp, f):
                         self.visa_plus(f)
-            for f, i in sp.strategi.roj(self, sp):
+            for f, i in (sp.strategi.roj(self, sp) if self.p.roj_med_pengar else []):
                 if i < len(f.varningar) and sp.kassa >= f.varningar[i]:
                     sp.kassa -= f.varningar.pop(i)
                     f.uppgraderingsstopp = False
@@ -645,6 +646,7 @@ class Motor:
         elif e == "bords_dn":
             n = 1 if "+1" in (kort.get("Beskrivning") or "") else -1
             valjare = self.s.valj(self.spel.spelare)
+            self.orsak_kort = kort                    # frågan visar omvärldskortet
             typ = valjare.strategi.valj_typ(self, valjare, n)
             for sp in self.spel.spelare:
                 for f in sp.fastigheter:
@@ -739,6 +741,8 @@ class Motor:
                     f.dn_brickor += 1
                 elif f.varningar:
                     f.varningar.pop()
+                    if len(f.varningar) < 3:
+                        f.uppgraderingsstopp = False
             elif e == "dra_natverkskort":
                 self.dra_natverkskort(sp)
             elif e == "riskbuffert":

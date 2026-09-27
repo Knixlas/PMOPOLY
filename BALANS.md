@@ -77,3 +77,12 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
 
 - `python -m motor.simulera` visar nu också hur ofta vinnaren ledde i PU/TG/F och vinstmarginalen.
 - `motor.pu.PUParametrar.namnd_hoj_max` begränsar omförsöken i nämnden (standard: obegränsat = som idag).
+
+## Regeländringar 2026-09-27 (Niklas) och deras effekt
+
+- **Händelsekort när man tackar nej till ett draget projekt eller lämnar tillbaka ett vid Stadshuset.**
+  Skede 1 i stort sett oförändrat (500 partier: expansiv 36 %, försiktig 16 %).
+- **Underhållsvarningar går inte att köpa bort, bara ta bort med kort** (städning, förvaltningsstödet
+  Rivaren). 400 partier: Förvaltningsstrategierna 23–29 %; FC *Den lugna* 31 % och *Bostadsveteranen*
+  30 % (något starkare än förut), *Nätverkaren* 19 %. Bostadsveteranens rabatt på röjning har ingen
+  verkan längre; hens tröskel (varningsstraff först vid 4 på hyresrätter) gäller fortfarande.

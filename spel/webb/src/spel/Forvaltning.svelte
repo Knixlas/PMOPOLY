@@ -78,7 +78,7 @@
             {#if brickor(f).length || f.varningar || f.villkor?.length}
               <ul class="brickor">
                 {#each brickor(f) as b}<li>{b}</li>{/each}
-                {#if f.varningar}<li class="varning">⚠ {f.varningar} underhållsvarning{f.varningar > 1 ? 'ar' : ''} (röj för {f.varningskostnad.join(' + ')} Mkr)</li>{/if}
+                {#if f.varningar}<li class="varning">⚠ {f.varningar} underhållsvarning{f.varningar > 1 ? 'ar' : ''} {f.varningar >= 3 ? '– driftnettot −1 tills de tas bort med kort' : ''}</li>{/if}
                 {#each f.villkor as v}<li class="villkor">Villkor: {v}</li>{/each}
               </ul>
             {/if}

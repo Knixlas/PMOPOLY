@@ -84,6 +84,16 @@ def _fordelningar(n):
     return [(tecken * q, tecken * (steg - q)) for q in range(steg, -1, -1)]
 
 
+# nätverkskort som spelas i Ekonomi (motor.spela_hand); övriga väntar på sitt tillfälle (bud, duell, energi …)
+SPELBARA_NU = ("lagg_dn_plus_egen", "lagg_energi_plus_egen", "direkt_dn_plus_egen", "stada", "dra_natverkskort",
+               "riskbuffert", "utveckling", "headhunting", "hyresgastvarvning", "gratis_uppgradering", "omforhandlat_lan", "konvertering")
+
+
+def _med_effekt(hand, *effekter):
+    """Bara de kort på handen som går att spela här (frågan visar inte resten)."""
+    return [k for k in hand if isinstance(k, dict) and k.get("Effekt") in effekter]
+
+
 BESLUT = {
     # Skede 1 — projektutveckling
     "valj_pc": ("val", lambda m, s, a: "Välj projektchef (PC)", lambda m, s, a: a[0], False),
@@ -123,12 +133,14 @@ BESLUT = {
     "valj_fc": ("val", lambda m, s, a: "Välj fastighetschef (FC)", lambda m, s, a: a[0], False),
     "valj_fs": ("val", lambda m, s, a: "Välj förvaltningsstöd (FS)", lambda m, s, a: a[0], False),
     "vill_kopa": ("janej", lambda m, s, a: f"Köpa {etikett(a[0], m)} för {a[1]:g} Mkr?", None, False),
-    "forhandlingskort": ("flerval", lambda m, s, a: "Spela förhandlingskort?", lambda m, s, a: s.hand, False),
+    "forhandlingskort": ("flerval", lambda m, s, a: "Spela förhandlingskort?",
+                         lambda m, s, a: _med_effekt(s.hand, "forhandling_mod", "forhandling_auto"), False),
     "vill_sanera": ("janej", lambda m, s, a: f"Ta saneringsuppdraget för {etikett(a[0], m)} (skuld {a[1]:g} Mkr)?", None, False),
     "tvangsbud": ("val", lambda m, s, a: "Lägga ett tvångsbud?",
                   lambda m, s, a: [(o, f) for o in _andra(m, s) for f in o.fastigheter if m.kan_tvangsbudas(f)], True),
     "stoppa": ("val", lambda m, s, a: f"Stoppa tvångsbudet på {etikett(a[0], m)}?", lambda m, s, a: a[1], True),
-    "duellkort": ("flerval", lambda m, s, a: "Spela kort i duellen?", lambda m, s, a: s.hand, False),
+    "duellkort": ("flerval", lambda m, s, a: "Spela kort i duellen?",
+                  lambda m, s, a: _med_effekt(s.hand, "forhandling_mod"), False),
     "motbudsmal": ("val", lambda m, s, a: "Motbud: vilken av budgivarens fastigheter vill ni ha?",
                    lambda m, s, a: a[0].fastigheter, True),
     "salj": ("flerval", lambda m, s, a: "Sälja fastigheter till banken?", lambda m, s, a: s.fastigheter, False),
@@ -141,7 +153,8 @@ BESLUT = {
     "valj_dd": ("val", lambda m, s, a: f"Due diligence för {etikett(a[0], m)}: vilket kort behåller ni?",
                 lambda m, s, a: a[1], False),
     "slang": ("val", lambda m, s, a: "Handen är full: vilket kort slänger ni?", lambda m, s, a: s.hand, False),
-    "spela_nu": ("flerval", lambda m, s, a: "Spela nätverkskort nu?", lambda m, s, a: s.hand, False),
+    "spela_nu": ("flerval", lambda m, s, a: "Spela nätverkskort nu?",
+                 lambda m, s, a: _med_effekt(s.hand, *SPELBARA_NU), False),
     "konverteringsmal": ("val", lambda m, s, a: "Vilken fastighet konverterar ni till hyresrätt?",
                          lambda m, s, a: s.fastigheter, True),
     "valj_plusfastighet": ("val", lambda m, s, a: "Vilken fastighet får plusbrickan?", lambda m, s, a: s.fastigheter, False),
@@ -149,11 +162,13 @@ BESLUT = {
                              lambda m, s, a: s.fastigheter, True),
     "varvningsmal": ("val", lambda m, s, a: "Hyresgästvärvning: från vilken fastighet till vilken?",
                      lambda m, s, a: [(e, f) for e in s.fastigheter for o in _andra(m, s) for f in o.fastigheter], True),
-    "valj_typ": ("val", lambda m, s, a: "Vilken fastighetstyp väljer ni?",
+    "valj_typ": ("val", lambda m, s, a: (f"Omvärldskortet ”{getattr(m, 'orsak_kort', {}).get('Rubrik', '')}”: vilken fastighetstyp "
+                                        f"får {'+1' if a[0] > 0 else '−1'} i driftnetto hos alla spelare?")
+                 if getattr(m, "orsak_kort", None) else "Vilken fastighetstyp väljer ni?",
                  lambda m, s, a: ["HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA"], False),
     "uppgradera": ("flerval", lambda m, s, a: f"Energiuppgradera (högst {a[0]} fastigheter)?",
                    lambda m, s, a: s.fastigheter, False),
-    "energikort": ("flerval", lambda m, s, a: "Spela energikort?", lambda m, s, a: s.hand, False),
+    "energikort": ("flerval", lambda m, s, a: "Spela energikort?", lambda m, s, a: _med_effekt(s.hand, "energi_mod"), False),
     "fortsatt_uppgradera": ("janej", lambda m, s, a: f"Fortsätta uppgradera {etikett(a[0], m)}?", None, False),
 }
 # ---------------------------------------------------------------------------- förklaringar
@@ -167,7 +182,7 @@ EFFEKT = {
     "direkt_dn_minus": "−1 i driftnetto direkt",
     "direkt_ek_plus": "ett steg bättre energiklass",
     "direkt_ek_minus": "ett steg sämre energiklass",
-    "underhallsvarning": "en underhållsvarning (tre varningar ger −1 i driftnetto tills de röjs)",
+    "underhallsvarning": "en underhållsvarning (tre varningar ger −1 i driftnetto tills de tas bort med kort)",
     "villkorskort": "ett villkor som följer fastigheten",
     "engangskassa_plus": "pengar in i kassan nästa kvartal",
     "engangskassa_minus": "en kostnad som dras från kassan nästa kvartal",
@@ -260,6 +275,11 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
             vy["hjalp"] = HJALP[metod](motor, subjekt, args).strip()
         except Exception:                                    # noqa: BLE001 — bara presentation
             pass
+    if metod == "valj_typ" and getattr(motor, "orsak_kort", None):
+        from .parti import kortvy
+        vy["kort"] = {**kortvy(motor.orsak_kort), "lek": "omvärld"}
+        vy["hjalp"] = ("Ni har dragits att välja. Valet gäller alla spelares fastigheter av typen – "
+                       + ("välj en typ ni själva har mycket av." if args[0] > 0 else "välj en typ ni själva har lite av."))
     if metod == "eliminera":
         from .parti import kortvy
         vy["rubrik"] = f"Stoppa händelsen ”{args[1].get('Rubrik') or kortnamn(args[1])}” på {etikett(args[0], motor)}?"
