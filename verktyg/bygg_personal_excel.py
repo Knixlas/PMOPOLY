@@ -79,8 +79,6 @@ TYPER = {
             ("Projekt 3", "Projekt3", False, "Ej tryckt — meritlista"),
             ("Projekt 4", "Projekt4", False, "Ej tryckt — meritlista"),
             ("Riskbuffert (Rb)", "Rb", False, "Ej tryckt — '-' på alla ledningskort"),
-            ("Lindring", "Lindring", False, "Ej tryckt — '-' på alla ledningskort"),
-            ("Händelsemotstånd", "Händelsemotstand", False, "Ej tryckt — '-' på alla ledningskort"),
             ("Nämnd", "Nämnd", False, "Ej tryckt — '-' på alla ledningskort"),
             ("Kvalitet Q", "Q", False, "Ej tryckt — '-' på alla ledningskort"),
             ("Hållbarhet H", "H", False, "Ej tryckt — '-' på alla ledningskort"),
@@ -122,9 +120,6 @@ TYPER = {
         ],
         "ej_tryckta": [
             ("Specialisering", "Specialisering", False, "Ej tryckt — t.ex. 'Politik', 'Nämnd'"),
-            ("Lindring", "Lindring", False, "Ej tryckt — speldata"),
-            ("Händelsemotstånd", "Händelsemotstand", False, "Ej tryckt — kortslag som lindras "
-                                                            "(Politikkort, Dialogkort, Nämnd)"),
         ],
         "malltext": [
             ("Framsida", "Skedesmärke", "PU"),
@@ -165,9 +160,6 @@ TYPER = {
         ],
         "ej_tryckta": [
             ("Specialisering", "Specialisering", False, "Ej tryckt — t.ex. 'Samordning', 'Produktion'"),
-            ("Lindring", "Lindring", False, "Ej tryckt — speldata"),
-            ("Händelsemotstånd", "Händelsemotstand", False, "Ej tryckt — kortslag som lindras "
-                                                            "(Politikkort, Dialogkort, Nämnd)"),
             ("Nämnd", "Nämnd", False, "Ej tryckt — tom på alla arbetschefskort"),
         ],
         "malltext": [
