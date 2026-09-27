@@ -45,7 +45,8 @@
               <div><dt>BTA</dt><dd>{tal(k.bta)} kvm</dd></div>
               <div><dt>Anskaffning</dt><dd>{tal(k.anskaffning)} Mkr</dd></div>
               <div><dt>Marknadsvärde</dt><dd>{tal(k.marknadsvarde)} Mkr</dd></div>
-              <div title="Tomten + markexpansioner + projektens utvecklingskostnad (5.1)"><dt>ABT-kostnad</dt><dd>{tal(k.abt_kostnad)} Mkr</dd></div>
+              <div><dt>ABT-kostnad</dt><dd>{tal(k.abt_kostnad)} Mkr
+                <small class="del">tomt {tal(k.tomt ?? 10)}{k.markexp ? ` · mark ${tal(k.markexp)}` : ''} · utveckling {tal(k.utveckling ?? 0)}</small></dd></div>
               <div title="Anskaffning minus ABT-kostnad: vad kvarteret har att bygga för i Skede 2"><dt>ABT-budget nu</dt><dd>{tal(k.abt)} Mkr</dd></div>
               <div><dt>Q-krav</dt><dd>{k.q_krav}</dd></div>
               <div><dt>H-krav</dt><dd>{k.h_krav}</dd></div>
@@ -159,6 +160,7 @@
   dl { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--dampad); }
   dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .del { display: block; font-weight: 400; font-size: 12.5px; color: var(--dampad); }
   .lista { margin: 0; font-size: 13px; color: var(--dampad); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; display: block; overflow-x: auto; }
   th, td { text-align: right; padding: 2px 6px; border-bottom: 1px solid var(--panel-mork); }

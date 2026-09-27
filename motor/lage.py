@@ -31,7 +31,8 @@ def _pu_siffror(m, kv):
     kostnad = m.p.tomtkostnad + m.p.markexpansion_kostnad * len(kv.expansioner) + utveckling
     return {"antal": len(p), "bta": sum(tal(x["BTA (kvm)"]) for x in p), "anskaffning": anskaffning,
             "marknadsvarde": sum(tal(x["Marknadsvärde (Mkr)"]) for x in p), "utveckling": utveckling,
-            "abt_kostnad": kostnad, "abt": anskaffning - kostnad, "namndsumma": kv.namndsumma()}
+            "abt_kostnad": kostnad, "tomt": m.p.tomtkostnad, "markexp": m.p.markexpansion_kostnad * len(kv.expansioner),
+            "abt": anskaffning - kostnad, "namndsumma": kv.namndsumma()}
 
 
 def _s2(m):
