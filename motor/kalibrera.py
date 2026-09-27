@@ -23,7 +23,7 @@ def main(partier=1200, fro=3):
     print("kostnad tröskel extra-minus | bank sanering köp tvång uppgr | strategispridning (bäst) | S3")
     for kost, grans, extra in itertools.product((3, 5, 8), (10, 12), (0, 2, 4)):
         ex = {t: {"direkt_dn_minus": extra} for t in VOLATIL} if extra else {}
-        r = matt(Parametrar(uppgradering_kostnad=kost, uppgradering_troskel=grans, extra_handelse=ex), partier, fro)
+        r = matt(Parametrar(uppgradering_kostnad=kost, uppgradering_troskel={k: grans for k in "EDCB"}, extra_handelse=ex), partier, fro)
         print(f"{kost:5} {grans:6} {extra:6}      | {r['bank']:4.2f} {r['sanering']:5.2f} {r['kop']:5.2f} {r['tvang']:4.2f} "
               f"{r['uppgr']:5.1f} | {100 * r['spridning']:4.1f} pp ({r['bast']}) | {r['s3']:.0f}")
 

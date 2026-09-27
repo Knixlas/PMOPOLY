@@ -61,7 +61,9 @@ F_STEG = [
     ("omgivning", "Omgivning", "Dra kvartalets omgivningskort. Det påverkar fastighetstypen på kortet.",
      ["k9-10"]),
     ("energi", "Energi",
-     "Energiuppgradera om ni vill: högst 3 fastigheter i kvartal 1, 2 i kvartal 2 och 1 i kvartal 3.",
+     "Energiuppgradera om ni vill: högst 3 fastigheter i kvartal 1, 2 i kvartal 2 och 1 i kvartal 3. 3 Mkr per "
+     "slag; slå D20 över tröskeln för energiklassen (E 6, D 8, C 10, B 13). Miss: betala igen och slå en tärning "
+     "till – det räcker att en klarar.",
      ["k9-11"]),
 ]
 

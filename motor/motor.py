@@ -31,8 +31,9 @@ class Parametrar:
     fokustyp: tuple = ("HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA")   # som tryckt på F-brädet (Kvartal 1–4)
     pafyllning: tuple = (3, 2, 1, 0)               # nya projekt i projektbanken per kvartal
     max_uppgraderingar: tuple = (3, 2, 1, 0)
-    uppgradering_kostnad: int = 8                  # kalibrerat (varv 3, startkassa enligt 8.6)
-    uppgradering_troskel: int = 10                 # slaget måste vara över detta
+    uppgradering_kostnad: int = 3                  # 9.11 (beslut 2026-09-27): per slag(omgång)
+    # 9.11: slaget måste vara över tröskeln för fastighetens nuvarande energiklass – svårare ju bättre klassen är
+    uppgradering_troskel: dict = field(default_factory=lambda: {"E": 6, "D": 8, "C": 10, "B": 13})
     ta_bort_handelse: dict = field(default_factory=dict)  # kalibrering: {typ: {effekt: antal}} tas ur typleken
     ta_bort_kvartal: dict = field(default_factory=dict)
     yield_spann: dict = None                               # kalibrering: ersätter YIELD_SPANN
@@ -859,6 +860,8 @@ class Motor:
     # ------------------------------------------------------------------ 7. energiuppgradering
     def energiuppgraderingar(self):
         q = self.spel.kvartal
+        if not self.p.max_uppgraderingar[q - 1]:              # Q4: inga uppgraderingar (fråga inte)
+            return
         for sp in self.spel.spelare:
             gratis_forsta = self.ar_fc(sp, "Tekniska experten") and sp.fc_senior
             if sp.lan:                                        # 7.2: uppgraderingsstopp med moderbolagslån
@@ -885,8 +888,8 @@ class Motor:
                     if self.ar_fs(sp, "Energicoachen") and sp.fs_senior:
                         mod += 1
                     bast = max(slag) + mod
-                    grans = self.p.uppgradering_troskel
-                    if bast <= grans:
+                    grans = self.p.uppgradering_troskel[f.ek]
+                    if bast <= grans and any(k["Effekt"] == "energi_mod" for k in sp.hand):
                         for kort in sp.strategi.energikort(self, sp, grans + 1 - bast):
                             sp.hand.remove(kort)
                             bast += tal(kort["Värde"])

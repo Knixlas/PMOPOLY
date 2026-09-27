@@ -267,8 +267,15 @@ HJALP = {
                                "låter er dra två och välja vilket som gäller (9.9)."),
     "slang": lambda m, s, a: "Ni får bara ha ett visst antal kort på handen. Välj vilket som ska bort.",
     "spela_nu": lambda m, s, a: "Nätverkskort kan spelas nu eller sparas till senare.",
-    "uppgradera": lambda m, s, a: "Energiuppgradering kostar pengar och kräver ett lyckat slag, men bättre energiklass höjer driftnettot.",
-    "fortsatt_uppgradera": lambda m, s, a: "Försöket misslyckades. Ni kan betala för ett nytt försök.",
+    "uppgradera": lambda m, s, a: (f"Varje försök kostar {m.p.uppgradering_kostnad} Mkr: slå D20 och kom över tröskeln för "
+                                   "fastighetens energiklass – " + ", ".join(f"{k} → {chr(ord(k) - 1)} över {v}" for k, v in
+                                   m.p.uppgradering_troskel.items()) + ". FC, FS och energikort ger plus. En klass bättre "
+                                   "ger +1 Mkr/år i driftnetto."),
+    "energikort": lambda m, s, a: (f"Slaget räckte inte: det fattas {a[0]:g} för att komma över tröskeln. Energikort "
+                                   "från handen läggs till slaget (spelas efter slaget)."),
+    "fortsatt_uppgradera": lambda m, s, a: (f"Försöket misslyckades. Betalar ni {m.p.uppgradering_kostnad} Mkr igen slår ni "
+                                            f"{a[1]} D20, och det räcker att en kommer över tröskeln "
+                                            f"({m.p.uppgradering_troskel.get(a[0].ek, '–')} för energiklass {a[0].ek})."),
     "vill_expandera": lambda m, s, a: "En markexpansion kostar 5 Mkr och ger mer mark att bygga på i 4.3.",
     "fordela_krav": lambda m, s, a: (
         f"Kraven sänks – det är bra för er. Ni har nu Q-krav {s.q_krav} och H-krav {s.h_krav}; ju lägre krav, desto "

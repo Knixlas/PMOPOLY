@@ -178,3 +178,8 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   förstärker övertaget (anskaffningen är ABT, alltså intäkt för den som bygger); ×0,7 jämnar ut (23 / 26 / 25 %)
   men moderbolagslånen ökar till 39 % och slutpoängen sjunker. Inte infört – F som tillväxt (ovan) jämnar ut
   utan fler lån.
+- **Energiuppgradering (9.11, beslut):** 3 Mkr per slag, tröskel efter nuvarande energiklass (E → D över 6,
+  D → C över 8, C → B över 10, B → A över 13), miss = betala igen och slå en D20 till (en räcker). 400 partier:
+  17 uppgraderingar per parti (förut 11), energiklass A 18 % vid slut (förut 11 %), F-median 13,4,
+  förvaltningsstrategierna 24–27 %. Prövat också 8/10/12/14 och 5/7/9/12: samma bild.
+  Q4 frågar inte längre om uppgradering, och energikortsfrågan kommer bara om man har energikort.
