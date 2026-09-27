@@ -26,8 +26,8 @@ class TestSkede2(unittest.TestCase):
         self.assertEqual(krav("—"), {})
         self.assertIsNone(krav(None))
         self.assertEqual(mu(0), 1.0)
-        self.assertEqual(mu(4), 0.70)
-        self.assertEqual(mu(15), 0.45)
+        self.assertEqual(mu(4), 0.44)                     # 10.2: brantare tabell sedan 2026-09-27
+        self.assertEqual(mu(15), 0.15)
         for k in S2.leverantorer + S2.organisation + S2.kultur:
             self.assertTrue(set(kompetenser(k)) <= set(KOMPETENSER))
 
