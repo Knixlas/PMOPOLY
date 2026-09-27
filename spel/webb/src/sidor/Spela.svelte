@@ -1,7 +1,7 @@
 <script lang="ts">
   // En enhet i ett parti: välj vilket kvarter ni är, svara på era frågor, följ läget.
   import { onDestroy } from 'svelte';
-  import { Anslutning, hamtaLage, type Lage as LageT } from '../spel/anslutning.svelte';
+  import { Anslutning, hamtaLage, latDatorn, type Lage as LageT } from '../spel/anslutning.svelte';
   import Bordet from '../spel/Bordet.svelte';
   import Brade from '../spel/Brade.svelte';
   import Spelledare from '../spel/Spelledare.svelte';
@@ -37,6 +37,19 @@
     try { await navigator.clipboard.writeText(lank); kopierat = true; setTimeout(() => (kopierat = false), 2000); }
     catch { kopierat = false; }
   }
+
+  // väntar partiet på ett kvarter som ingen spelar på den här enheten? Då kan datorn ta över det.
+  const vantarPa = $derived(fraga && !minTur && fraga.kanal === 'beslut' && fraga.kvarter
+    && lage?.kvarter.some(k => k.namn === fraga.kvarter && k.styrning === 'människa') ? fraga.kvarter : null);
+  let tarOver = $state(false);
+  let fragaTaOver = $state(false);
+  async function taOver(namn: string) {
+    tarOver = true;
+    try { await latDatorn(id, namn); fragaTaOver = false; }
+    catch (e) { alertFel = `Det gick inte: ${(e as Error).message}`; }
+    finally { tarOver = false; }
+  }
+  let alertFel = $state('');
 
   const resultat = $derived(lage?.resultat
     ? [...lage.resultat].sort((a: any, b: any) => (b.total ?? b.F) - (a.total ?? a.F)) as any[]
@@ -103,6 +116,21 @@
     <p class="panel vantar">
       {#if fraga.kanal === 'slump'}Väntar på bordet: {fraga.vy.rubrik}
       {:else}Väntar på <strong>{fraga.kvarter}</strong> ({skedenamn[fraga.skede ?? ''] ?? ''}): {fraga.vy.rubrik}{/if}
+      {#if vantarPa}
+        <span class="taover">
+          {vantarPa} spelas av en människa på en annan enhet. Har ingen anslutit som {vantarPa}? Dela länken
+          <button type="button" class="lank" onclick={kopiera}>{kopierat ? 'kopierad' : 'kopiera'}</button>
+          – eller låt datorn spela {vantarPa}.
+          {#if fragaTaOver}
+            <span class="bekrafta">Datorn spelar {vantarPa} resten av partiet.
+              <button type="button" class="ja" disabled={tarOver} onclick={() => taOver(vantarPa!)}>{tarOver ? 'Tar över …' : 'Ja, låt datorn spela'}</button>
+              <button type="button" disabled={tarOver} onclick={() => (fragaTaOver = false)}>Avbryt</button></span>
+          {:else}
+            <button type="button" class="knapp" onclick={() => (fragaTaOver = true)}>Låt datorn spela {vantarPa}</button>
+          {/if}
+          {#if alertFel}<span class="fel" role="alert">{alertFel}</span>{/if}
+        </span>
+      {/if}
     </p>
   {:else}
     <p class="panel">Ansluter till partiet …</p>
@@ -145,6 +173,12 @@
   .status-ansluten { color: var(--ok); }
   .status-borta { color: var(--fel); }
   .vantar { font-size: 16px; }
+  .taover { display: grid; gap: 8px; margin-top: 10px; font-size: 14.5px; color: var(--dampad); justify-items: start; }
+  .taover .knapp, .taover .ja { font: inherit; font-weight: 700; padding: 8px 14px; border-radius: 4px; border: 0; background: var(--pu); color: var(--black); cursor: pointer; }
+  .taover .lank { font: inherit; background: none; border: 0; padding: 0; color: var(--pu-mork); font-weight: 700; text-decoration: underline; cursor: pointer; }
+  .taover .bekrafta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--black); }
+  .taover .bekrafta button:not(.ja) { font: inherit; padding: 8px 12px; border-radius: 4px; border: 1px solid var(--linje-stark); background: #fff; cursor: pointer; }
+  .taover .fel { color: var(--fel); }
   .fel { color: var(--fel); font-weight: 700; }
   .tabell { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }

@@ -52,6 +52,33 @@ class TestServer(unittest.TestCase):
         self.assertTrue(lage["klart"])
         self.assertEqual({r["spelare"] for r in lage["resultat"]}, {"Norr", "Söder"})
 
+    def test_datorn_tar_over_ett_kvarter(self):
+        """Ingen anslöt som Söder: datorn tar över, partiet går vidare och spelas upp likadant efter omstart."""
+        id_ = skapa()
+        for _ in range(3000):
+            lage = KLIENT.get(f"/api/rum/{id_}").json()
+            f = lage["fraga"]
+            if lage["klart"] or f["kvarter"] == "Söder":
+                break
+            KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": f["kvarter"], "nr": f["nr"], "svar": {"forslag": True}})
+        self.assertEqual(f["kvarter"], "Söder")
+        r = KLIENT.post(f"/api/rum/{id_}/datorn", json={"kvarter": "Söder"})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(KLIENT.post(f"/api/rum/{id_}/datorn", json={"kvarter": "Söder"}).status_code, 409)
+        for _ in range(3000):
+            lage = KLIENT.get(f"/api/rum/{id_}").json()
+            self.assertIsNone(lage["fel"])
+            self.assertEqual([k["styrning"] for k in lage["kvarter"]], ["människa", "bott"])
+            if lage["klart"]:
+                break
+            f = lage["fraga"]
+            self.assertEqual(f["kvarter"], "Norr")                 # bara Norr tillfrågas nu
+            KLIENT.post(f"/api/rum/{id_}/svar", json={"kvarter": "Norr", "nr": f["nr"], "svar": {"forslag": True}})
+        self.assertTrue(lage["klart"])
+        igen = Rum.ladda(appmodul.KATALOG / f"{id_}.json", appmodul.DATA)
+        self.assertTrue(igen.klart)
+        self.assertIsNone(igen.fel)
+
     def test_fel_enhet_och_gammal_fraga(self):
         id_ = skapa()
         f = KLIENT.get(f"/api/rum/{id_}").json()["fraga"]

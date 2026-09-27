@@ -56,6 +56,7 @@
 <div class="spalter">
   <form class="panel" onsubmit={skapa}>
     <h2>Kvarteren</h2>
+    <p class="hjalp">”Spelare” är en person som ansluter med länken på sin egen mobil. Vill ni spela mot datorn, välj ”Datorn” för de andra kvarteren.</p>
     <ul class="kvarter">
       {#each kvarter as k, i}
         <li>

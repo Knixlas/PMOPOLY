@@ -154,6 +154,23 @@ class Rum:
             self.parti.svara(kod)
             self._ga_vidare()
 
+    def lat_datorn(self, namn):
+        """Datorn tar över ett kvarter som spelas av en människa; väntar partiet på det, svarar datorn direkt."""
+        with self.las:
+            try:
+                self.parti.lat_datorn(namn)
+            except ValueError as e:
+                raise SvarsFel(str(e)) from None
+            self.uppstart["overtagna"] = dict(self.parti.overtagna)
+            f = self.fraga
+            if f is not None and f.kanal == "beslut" and f.kvarter == namn:
+                self.svar.append({"nr": f.nr, "kvarter": namn, "rubrik": f.vy.get("rubrik"),
+                                  "svar": "Datorn tog över och gjorde som förslaget", "tid": time.time()})
+                self.parti.svara(f.forslag)
+                self._ga_vidare()
+            else:
+                self.spara()
+
     # ------------------------------------------------------------------ vad enheterna ser
     def lage(self, kvarter=None):
         f = self.fraga
@@ -161,7 +178,8 @@ class Rum:
             "rum": self.id,
             "slump": self.uppstart.get("slump", "digital"),
             "svarighet": self.uppstart.get("svarighet", "normal"),
-            "kvarter": [{"namn": k["namn"], "styrning": k["styrning"]} for k in self.uppstart["kvarter"]],
+            "kvarter": [{"namn": k["namn"], "styrning": "människa" if self.parti.spelas_av_manniska(k["namn"]) else "bott"}
+                        for k in self.uppstart["kvarter"]],
             "bild": self.bild,
             "ledare": self.ledare,
             "fraga": None if f is None else {"nr": f.nr, "kanal": f.kanal, "kvarter": f.kvarter, "skede": f.skede,

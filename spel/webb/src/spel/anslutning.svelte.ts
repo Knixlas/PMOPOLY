@@ -83,6 +83,13 @@ export async function raderaParti(id: string): Promise<void> {
   if (!r.ok && r.status !== 404) throw new Error(`Servern svarade ${r.status}`);
 }
 
+/** Datorn spelar kvarteret från och med nu (om ingen anslöt som det). */
+export async function latDatorn(id: string, kvarter: string): Promise<void> {
+  const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}/datorn`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kvarter }) });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Servern svarade ${r.status}`);
+}
+
 export async function hamtaLage(id: string): Promise<Lage | null> {
   const r = await fetch(`${bas()}/api/rum/${encodeURIComponent(id)}`);
   return r.ok ? r.json() : null;

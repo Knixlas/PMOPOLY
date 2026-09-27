@@ -123,6 +123,22 @@ async def svara(id_: str, s: SvarIn):
     return rum.lage(s.kvarter)
 
 
+class DatornIn(BaseModel):
+    kvarter: str
+
+
+@app.post("/api/rum/{id_}/datorn")
+async def lat_datorn(id_: str, d: DatornIn):
+    """Datorn spelar kvarteret från och med nu (om ingen anslöt som det)."""
+    rum = _rum(id_)
+    try:
+        await run_in_threadpool(rum.lat_datorn, d.kvarter)
+    except SvarsFel as e:
+        raise HTTPException(409, str(e)) from None
+    await _sand_alla(rum)
+    return rum.lage()
+
+
 @app.delete("/api/rum/{id_}")
 async def radera(id_: str):
     rum = _rum(id_)

@@ -43,7 +43,7 @@ _AVBRYT = object()
 
 class Parti:
     def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION,
-                 slump="digital", svarighet="normal"):
+                 slump="digital", svarighet="normal", overtagna=None):
         """kvarter: [{"namn": str, "styrning": "bott" | "människa", "bottar": {"PU": .., "S2": .., "F": ..}}]
         logg: en tidigare logg att spela upp innan partiet fortsätter.
         slump: "digital" (motorn slår och drar) eller "inmatad" (fysiskt spel: spelarna anger tärningar
@@ -54,6 +54,8 @@ class Parti:
         if svarighet not in SVARIGHET:
             raise ValueError(f"svårighet är en av {', '.join(SVARIGHET)}")
         self.svarighet = svarighet
+        # kvarter som datorn tagit över mitt i partiet: namn -> loggens längd då (besluten efter det är bottens)
+        self.overtagna = dict(overtagna or {})
         self.analog = slump != "digital"                 # spel vid brädet: pusslet läggs på riktigt, inte i appen
         self.visningar = []                              # tärningsslag och dragna kort, för bordet på skärmen
         self._visnr = 0
@@ -79,12 +81,13 @@ class Parti:
     # ------------------------------------------------------------------ inställningar som kan sparas
     def uppstart(self):
         return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt,
-                "svarighet": self.svarighet}
+                "svarighet": self.svarighet, **({"overtagna": self.overtagna} if self.overtagna else {})}
 
     @classmethod
     def fran_sparat(cls, uppstart, logg, **kw):
         return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"],
-                   slump=uppstart.get("slump", "digital"), svarighet=uppstart.get("svarighet", "normal"), **kw)
+                   slump=uppstart.get("slump", "digital"), svarighet=uppstart.get("svarighet", "normal"),
+                   overtagna=uppstart.get("overtagna"), **kw)
 
     # ------------------------------------------------------------------ gränssnitt utåt
     def steg(self):
@@ -104,6 +107,20 @@ class Parti:
             raise RuntimeError("ingen fråga väntar på svar")
         self.aktuell = None
         self._svar.put(kod)
+
+    def lat_datorn(self, namn):
+        """Datorn spelar kvarteret från och med nästa beslut (t.ex. när ingen anslöt som det)."""
+        if not self.spelas_av_manniska(namn):
+            raise ValueError(f"{namn} spelas inte av en människa")
+        self.overtagna[namn] = len(self.logg)
+
+    def spelas_av_manniska(self, namn):
+        return (any(k["namn"] == namn and k["styrning"] == "människa" for k in self.kvarter)
+                and namn not in self.overtagna)
+
+    def _manniska(self, styrd, kvarter):
+        # beslutet som väntade när datorn tog över är fortfarande människans (dess vy byggdes då)
+        return styrd._manniska and not (kvarter in self.overtagna and len(self.logg) > self.overtagna[kvarter])
 
     def avbryt(self):
         if self.aktuell is not None:
@@ -168,7 +185,7 @@ class Parti:
             # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
             # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
             svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw) if styrd._bott is not None else None
-            if styrd._manniska and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+            if self._manniska(styrd, kvarter) and not (self.analog and metod in ANALOGT_AV_BOTTEN):
                 # frågan kan titta i högarna (t.ex. översta kortet), vilket vid brädet frågar vilket kort det är
                 if self.analog and metod == "placering" and svar is not None:
                     svar = [n for n, _, _ in svar]
@@ -182,7 +199,7 @@ class Parti:
             if self.analog and metod == "placering":      # vid brädet: bara vilka projekt som fick plats
                 svar = [n for n, _, _ in svar]
             forslag = koda(svar, rotter)
-        if styrd._manniska and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+        if self._manniska(styrd, kvarter) and not (self.analog and metod in ANALOGT_AV_BOTTEN):
             vy = beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
             kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
             svar = avkoda(kod, rotter)
