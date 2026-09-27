@@ -91,3 +91,19 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   engångsbelopp; korttexterna med belopp är omskrivna. 400 partier: Förvaltningsstrategierna 22–27 %;
   FC *Bostadsveteranen* 34 % är nu starkast (nästa kandidat för justering), *Nätverkaren* 20 %.
   Tryckfilerna (tryck/ut) behöver byggas om innan korten trycks.
+- **Projektekonomin i "A-läge"** (omräkning i `verktyg/bygg_pu_projekt_excel.py`, källan till
+  `kortdata/PU_projekt.xlsx`): marknadsvärdet × 1,3 / 1,4 / 1,5 (fördelat i kortordning inom varje typ),
+  ränta 2 % (minst 1 Mkr), lån 70 % av anskaffningen. Kort med 1,4 fick en motvikt och kort med 1,5 två:
+  Q eller H +1, ett leverantörskrav nivå 2 till, eller energiklass C → D. Kolumnerna *MV-faktor* och
+  *Motvikt* visar vad varje kort fick. Bostäder hamnar på 60–150 tkr/kvm. DN per fastighet: median 2 → 3,5
+  Mkr/år. BRF är oförändrade (annars växer startkassan kraftigt).
+- **Köp med nytt lån:** köparen lånar 70 % av marknadsvärdet och betalar resten ur kassan; vid tvångsbud
+  betalas hela övervärdet (0,2 × MV) med kassa. Säljaren löser sitt lån.
+- **F-poängens delare 15 → 25**, så att Förvaltningen väger lika mycket som förut (F median 8,5–9).
+- **FC Nätverkaren får ha 8 kort på hand.** Skölden med 8 kort prövades också men hjälpte inte (13–17 %),
+  inte heller skydd för fler typer eller två gånger per kvartal – Sköldens svaghet sitter någon annanstans.
+
+  600 partier med allt ovan: Förvaltningsstrategierna 24–28 %. FC *Bostadsveteranen* 35 %, *Den lugna*
+  32 % (hyresrätterna blev värdefullare), *Nätverkaren* 22–24 % (från 20 %), *Tekniska experten* 20–25 %,
+  *Förhandlaren* 17–22 %, *Skölden* 13–17 %. FS 22–28 %. TG-median 4 → 1,7: motvikterna (högre Q och H)
+  gör Genomförandet något svårare. Slutpoäng median 17–19.

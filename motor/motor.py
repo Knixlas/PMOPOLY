@@ -24,7 +24,7 @@ class Parametrar:
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
     kassa_vikt: float = 0.5                        # F-poäng: kassa räknas till denna andel, fastigheter fullt
-    f_delare: float = 15                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare
+    f_delare: float = 25                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare (25 sedan MV-höjningen)
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA")   # som tryckt på F-brädet (Kvartal 1–4)
@@ -44,8 +44,9 @@ class Parametrar:
     fientlig: float = 1.2                          # tvångsbud
     tvang_avgift: float = 2                        # budavgift för tvångsbud (Mkr till banken, oavsett utfall)
     handgrans: int = 6
+    stor_hand: dict = field(default_factory=lambda: {"Nätverkaren": 8})   # FC med större handgräns (beslut 2026-09-27)
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
-    ranta_sats: float = 0.03                       # fast ränta i grundspelet (står på kortet); räntemarknad = expansion
+    ranta_sats: float = 0.02                       # fast ränta i grundspelet (beslut 2026-09-27: 2 %, "A-läge")
 
 
 class Motor:
@@ -102,7 +103,23 @@ class Motor:
 
     def satt_lan(self, f, lan):
         f.lan = lan
-        f.ranta = int(round(self.p.ranta_sats * lan))
+        f.ranta = max(1, int(self.p.ranta_sats * lan + 0.5)) if lan else 0
+
+    def kopelan(self, f):
+        """9.5 (beslut 2026-09-27): köparen tar ett nytt lån på 70 % av marknadsvärdet; resten, och vid
+        tvångsbud hela övervärdet, betalas ur kassan."""
+        mv = self.mv(f)
+        return min(avrunda(self.p.lan_andel * mv, 5), mv)
+
+    def kontant(self, f, pris=None):
+        """Det köparen betalar ur kassan för f till priset pris (standard: marknadsvärdet)."""
+        return (self.mv(f) if pris is None else pris) - self.kopelan(f)
+
+    def overta(self, sp, f):
+        """Köparen tar över f med ett nytt lån (säljaren har redan löst sitt)."""
+        self.satt_lan(f, self.kopelan(f))
+        sp.fastigheter.append(f)
+        f.kopt_kvartal = self.spel.kvartal
 
     @staticmethod
     def utan(lek, bort):
@@ -281,10 +298,13 @@ class Motor:
             kort = self.s.dra("dd")
         self.fastighetseffekt(kort, f, sp)
 
+    def handgrans(self, sp):
+        return self.p.stor_hand.get((sp.fc or {}).get("Namn"), self.p.handgrans)
+
     def ta_emot(self, sp, kort):
         """All väg in till handen går hit, så att handgränsen alltid gäller."""
         sp.hand.append(kort)
-        while len(sp.hand) > self.p.handgrans:
+        while len(sp.hand) > self.handgrans(sp):
             sp.hand.remove(sp.strategi.slang(self, sp))
 
     def dra_natverkskort(self, sp, n=1):
@@ -465,7 +485,7 @@ class Motor:
             utbud = [(f, "projekt") for f in self.spel.projektbank] + [(f, "fynd") for f in self.spel.bankfynd]
             kopt = False
             for f, kalla in utbud:
-                pris = self.mv(f) - f.lan
+                pris = self.kontant(f)
                 intresse = [sp for sp in self.spel.spelare          # 7.2: köpstopp med moderbolagslån
                             if not sp.lan and sp.kassa >= pris and sp.strategi.vill_kopa(self, sp, f, pris)]
                 if not intresse:
@@ -482,8 +502,7 @@ class Motor:
                     vinnare = max(intresse, key=lambda sp: slag[sp.namn])
                 vinnare.kassa -= pris
                 (self.spel.projektbank if kalla == "projekt" else self.spel.bankfynd).remove(f)
-                vinnare.fastigheter.append(f)
-                f.kopt_kvartal = self.spel.kvartal
+                self.overta(vinnare, f)
                 self.dra_dd(f, vinnare)
                 self.stat["kop"] += 1
                 if kalla == "fynd":
@@ -570,7 +589,7 @@ class Motor:
             offer, f = val
             faktor = self.tvangsfaktor(budgivare)
             pris = self.mv(f, faktor)
-            if budgivare.kassa < pris - f.lan + self.p.tvang_avgift:
+            if budgivare.kassa < self.kontant(f, pris) + self.p.tvang_avgift:
                 continue
             self.stat["tvangsbud"] += 1
             budgivare.kassa -= self.p.tvang_avgift          # budavgift till banken, oavsett utfall
@@ -595,12 +614,11 @@ class Motor:
                     offer.hand.remove(self.har_kort(offer, "motbud"))
                     mal = offer.strategi.motbudsmal(self, offer, budgivare)
                     if mal:                              # köp en av budgivarens fastigheter till MV
-                        offer.kassa -= self.mv(mal) - mal.lan
+                        offer.kassa -= self.kontant(mal)
                         budgivare.kassa += self.mv(mal) - mal.lan
                         budgivare.fastigheter.remove(mal)
                         self.visa_plus(mal)
-                        offer.fastigheter.append(mal)
-                        mal.kopt_kvartal = self.spel.kvartal
+                        self.overta(offer, mal)
                         self.dra_dd(mal, offer)
                         self.stat["motbud_kop"] += 1
                 continue
@@ -609,11 +627,10 @@ class Motor:
                 continue
             ersattning = self.mv(f, max(faktor, 1.3) if (self.ar_fs(offer, "Mäklaren") and offer.fs_senior) else faktor)
             offer.kassa += ersattning - f.lan
-            budgivare.kassa -= pris - f.lan
+            budgivare.kassa -= self.kontant(f, pris)            # övervärdet betalas helt ur kassan
             offer.fastigheter.remove(f)
             self.visa_plus(f)
-            budgivare.fastigheter.append(f)
-            f.kopt_kvartal = self.spel.kvartal
+            self.overta(budgivare, f)
             self.stat["tvangskop"] += 1
             self.dra_dd(f, budgivare)
             gratis = self.har_kort(budgivare, "gratis_uppgradering")

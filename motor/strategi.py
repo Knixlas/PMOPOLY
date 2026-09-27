@@ -52,10 +52,10 @@ class Strategi:
 
     def tvangsbud_varde(self, m, sp, o, f):
         """Väntad ändring av F-värdet (eget kapital + vikt × kassa) av att tvångsbuda på f."""
-        pris = m.mv(f, m.tvangsfaktor(sp)) - f.lan
+        pris = m.kontant(f, m.mv(f, m.tvangsfaktor(sp)))
         if sp.kassa - pris - m.p.tvang_avgift < self.kopbuffert:
             return None
-        vinst = (m.mv(f) - f.lan) - m.p.kassa_vikt * pris
+        vinst = (m.mv(f) - m.kopelan(f)) - m.p.kassa_vikt * pris
         if m.har_kort(sp, "gratis_uppgradering") and f.ek != "A":
             vinst += 100 / m.spel.yieldniva[SPAR[f.typ]]          # +1 DN före ränta ÷ yield
         if not m.har_kort(sp, "overtagande"):
@@ -89,7 +89,7 @@ class Strategi:
         return []
 
     def motbudsmal(self, m, sp, budgivare):
-        kand = [f for f in budgivare.fastigheter if sp.kassa - (m.mv(f) - f.lan) >= self.kopbuffert]
+        kand = [f for f in budgivare.fastigheter if sp.kassa - m.kontant(f) >= self.kopbuffert]
         return max(kand, key=lambda f: m.eff_noi(f), default=None)
 
     def salj(self, m, sp):

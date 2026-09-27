@@ -205,7 +205,7 @@
         <li><strong>D20-skalorna (3.5, 11.1)</strong> följer korten: politik/dialog, planeringshändelser och konsekvens-/garantikort har olika intervall.</li>
         <li><strong>Komponentlistan (1.5)</strong> stämmer med korten: 6 CEO/CFO/COO vardera, 54 planeringshändelsekort per set, 31 FAS-kort, 30 konsekvenskort.</li>
         <li><strong>Kapitlen är omnumrerade</strong> — Planering var tidigare också kapitel 5 och är nu kapitel 6; följande kapitel har flyttats ett steg. Hänvisningarna är rättade.</li>
-        <li><strong>Förvaltningen (kapitel 9) är ny:</strong> driftnetto efter ränta, marknadsvärde = (driftnetto + ränta) ÷ yield, lån 70 %, en marknad per kvartal, tvångsbud med duell, nätverkskort på hand. Projektkortens förvaltningsdel trycks om.</li>
+        <li><strong>Förvaltningen (kapitel 9) är ny:</strong> driftnetto efter ränta, marknadsvärde = (driftnetto + ränta) ÷ yield, lån 70 % (av anskaffningen, eller av marknadsvärdet vid köp), ränta 2 %, en marknad per kvartal, tvångsbud med duell, nätverkskort på hand. Projektkortens förvaltningsdel trycks om.</li>
         <li><strong>Slutvärderingen (kapitel 10) är ny:</strong> en poäng per del (runt 20 = riktigt bra), BTA-divisorn och energibonusen utgår.</li>
       </ul>
     </aside>
@@ -218,7 +218,7 @@
 <p>Bygg en fastighetsportfölj som ger högst poäng. Slutformeln är:</p>
 <aside class="ruta"><p class="ruta-rubrik">Slutformel <span class="nytt">Ändrat i 2.0</span></p>
 <p>Slutpoäng = (Projektutveckling + Genomförande + Förvaltning) × Mu (+ ev. quizpoäng)</p>
-<p>Varje del ger en egen poäng, runt 20 är riktigt bra. Projektutveckling = ABT-budget ÷ 20. Genomförande = TG i procent. Förvaltning = (eget kapital + halva kassan) ÷ 15. Mu = måluppfyllnad (10.2). Se kapitel 10.</p>
+<p>Varje del ger en egen poäng, runt 20 är riktigt bra. Projektutveckling = ABT-budget ÷ 20. Genomförande = TG i procent. Förvaltning = (eget kapital + halva kassan) ÷ 25. Mu = måluppfyllnad (10.2). Se kapitel 10.</p>
 </aside>
 <p>Det kvarter med högst poäng när Förvaltningen är klar har skapat det effektivaste förvaltningsbolaget och vinner spelet.</p>
 <h2 id="k1-2">1.2 Bolagsstruktur: Dotterbolag till Moderbolaget</h2>
@@ -1269,8 +1269,8 @@
 <table>
 <tbody>
 <tr><td><strong>Driftnetto (DN)</strong></td><td>Årligt netto i Mkr <em>efter</em> räntekostnaden, i kortets energiklass. Det är det som går till kassan. Kan vara 0.</td></tr>
-<tr><td><strong>Räntekostnad</strong></td><td>Årlig ränta på lånet (3 %). Fast i grundspelet.</td></tr>
-<tr><td><strong>Lån</strong></td><td>70 % av marknadsvärdet när fastigheten kom ut på marknaden. Lånet ändras inte medan ni äger fastigheten.</td></tr>
+<tr><td><strong>Räntekostnad</strong></td><td>Årlig ränta på lånet (2 %, minst 1 Mkr). Fast i grundspelet.</td></tr>
+<tr><td><strong>Lån</strong></td><td>För den som byggt: 70 % av anskaffningen. För den som köper: ett nytt lån på 70 % av marknadsvärdet vid köpet (se 9.5). Lånet ändras inte medan ni äger fastigheten.</td></tr>
 <tr><td><strong>Marknadsvärde (MV)</strong></td><td>Värdet vid startyielden. Ändras när yielden eller driftnettot ändras.</td></tr>
 <tr><td><strong>Energiklass</strong></td><td>A–E. Varje steg är värt 1 Mkr i driftnetto per år.</td></tr>
 </tbody>
@@ -1334,14 +1334,14 @@
 <li><p><strong>Saneringsuppdrag avräknas</strong> (se 9.6).</p></li>
 <li><p><strong>Balanskrav:</strong> slå upp marknadsvärdet för varje fastighet. Är det under lånet tar banken fastigheten. Ni får ingen ersättning men betalar heller inget.</p></li>
 <li><p><strong>Banken disponerar</strong> det den tagit: ett kvarter kan åta sig ett saneringsuppdrag (se 9.6). Annars skriver banken ned lånet till 70 % av nuvarande marknadsvärde (lån-clip) och lägger ut fastigheten som ett fynd.</p></li>
-<li><p><strong>Köp</strong> ur projektbanken och bankens fynd. Köparen betalar <strong>marknadsvärde − lån</strong> och tar över lånet. Vill flera köpa samma fastighet förhandlar ni: slå D20 plus modifierare (FC, nätverkskort), högst vinner, vid lika vinner den med färst fastigheter. Ett förköpskort av rätt typ går före förhandlingen. <strong>Dra ett DD-kort</strong> för varje fastighet ni köper (se 9.9).</p></li>
+<li><p><strong>Köp</strong> ur projektbanken och bankens fynd. Köpeskillingen är marknadsvärdet. Köparen tar ett <strong>nytt lån på 70 % av marknadsvärdet</strong> och betalar resten ur kassan; säljarens lån löses. Vill flera köpa samma fastighet förhandlar ni: slå D20 plus modifierare (FC, nätverkskort), högst vinner, vid lika vinner den med färst fastigheter. Ett förköpskort av rätt typ går före förhandlingen. <strong>Dra ett DD-kort</strong> för varje fastighet ni köper (se 9.9).</p></li>
 <li><p><strong>Tvångsbud</strong> på motspelares fastigheter (se 9.6).</p></li>
 <li><p><strong>Sälj</strong> till banken om ni vill: ni får marknadsvärde − lån. Därefter en ny köprunda. Upprepa tills ingen vill köpa mer.</p></li>
 <li><p><strong>Likviditet:</strong> är kassan negativ måste ni sälja fastigheter till banken tills den inte är det.</p></li>
 </ol>
 
 <h2 id="k9-6">9.6 Tvångsbud och saneringsuppdrag</h2>
-<p><strong>Tvångsbud.</strong> I marknaden kan ni buda på en motspelares fastighet. Priset är <strong>1,2 × marknadsvärdet</strong>. Ni betalar priset minus lånet, och ägaren får samma belopp.</p>
+<p><strong>Tvångsbud.</strong> I marknaden kan ni buda på en motspelares fastighet. Priset är <strong>1,2 × marknadsvärdet</strong>. Ägaren får priset minus sitt lån. Ni lånar 70 % av marknadsvärdet och betalar resten ur kassan – <strong>övervärdet betalas alltså helt med kassa</strong>.</p>
 <ul>
 <li><p><strong>Budavgift:</strong> den som budar betalar 2 Mkr till banken, oavsett utfall.</p></li>
 <li><p><strong>Stoppa:</strong> ägaren kan spela ett stoppkort eller ett motbudskort, eller lägga 2 riskbuffertar (FC Den lugna som senior: 1). Motbudet låter dessutom ägaren köpa en av budgivarens fastigheter till marknadsvärdet.</p></li>
@@ -1376,7 +1376,7 @@
 <p>Brickor och varningar följer med fastigheten om den byter ägare. Den som köper tar över det som ligger dolt.</p>
 
 <h2 id="k9-9">9.9 Nätverkskort och DD-kort</h2>
-<p><strong>Nätverkskort</strong> är er hand. Ni drar tre vid setup och två per kvartal. <strong>Max sex kort på handen</strong>: har ni fler slänger ni valfria. De spelas när som helst, om inte kortet säger annat. Leken innehåller bland annat plusbrickor, energiplus, förhandlingskort, energikort (spelas efter slaget), stoppkort, hyresgästvärvning, headhunting, affärskort (budstrid, övertagande, gratis uppgradering, omförhandlat lån, grundlig besiktning, konvertering) och kort som låter er dra fler.</p>
+<p><strong>Nätverkskort</strong> är er hand. Ni drar tre vid setup och två per kvartal. <strong>Max sex kort på handen</strong> (åtta med FC Nätverkaren): har ni fler slänger ni valfria. De spelas när som helst, om inte kortet säger annat. Leken innehåller bland annat plusbrickor, energiplus, förhandlingskort, energikort (spelas efter slaget), stoppkort, hyresgästvärvning, headhunting, affärskort (budstrid, övertagande, gratis uppgradering, omförhandlat lån, grundlig besiktning, konvertering) och kort som låter er dra fler.</p>
 <p><strong>DD-kort</strong> (due diligence) dras ett per fastighet ni köper, även vid tvångsköp. Kortet gäller direkt. Effekten följer fyndet: en dold bricka, en varning eller sällsynt en direkt ändring. Undantag: med förvaltningsstödet Besiktningsgeniet, eller genom att spela nätverkskortet Grundlig besiktning eller Due diligence-team, drar ni två DD-kort och väljer vilket som gäller.</p>
 
 <h2 id="k9-10">9.10 Omvärld, yieldbanan och kvartalskort</h2>
@@ -1412,7 +1412,7 @@
 <tbody>
 <tr><td><strong>Projektutveckling</strong></td><td>ABT-budget ÷ 20 (se 5.1). Anskaffningen minus tomt, markexpansioner och utvecklingskostnader, alltså det värde ni tagit fram till Genomförandet. Ett riktigt bra kvarter har runt 400 Mkr.</td></tr>
 <tr><td><strong>Genomförande</strong></td><td>TG, täckningsgraden i procent: TB ÷ ABT-budget × 100. Sätts till 0 om ABT-budgeten var 0 eller negativ.</td></tr>
-<tr><td><strong>Förvaltning</strong></td><td>(Eget kapital + halva kassan − 100 Mkr per moderbolagslån) ÷ 15. Eget kapital = summan av marknadsvärde − lån för alla era fastigheter, räknat med yielden efter Q4. Restkort räknas som kassa.</td></tr>
+<tr><td><strong>Förvaltning</strong></td><td>(Eget kapital + halva kassan − 100 Mkr per moderbolagslån) ÷ 25. Eget kapital = summan av marknadsvärde − lån för alla era fastigheter, räknat med yielden efter Q4. Restkort räknas som kassa.</td></tr>
 <tr><td><strong>Mu</strong></td><td>Måluppfyllnad, se 10.2.</td></tr>
 </tbody>
 </table>
@@ -1545,7 +1545,7 @@
 <p><strong>Erfarenhet</strong></p>
 <p>Adderas till D20 vid händelsekort. Tak: 12.</p>
 <p><strong>Lån</strong></p>
-<p>70 % av marknadsvärdet när fastigheten kom ut på marknaden. Står på kortet och ändras inte.</p>
+<p>70 % av anskaffningen för den som byggt (står på kortet), 70 % av marknadsvärdet för den som köpt. Ändras inte medan ni äger fastigheten.</p>
 <p><strong>Marknadsvärde (MV)</strong></p>
 <p>(Driftnetto + ränta) ÷ yield. Under lånet tar banken fastigheten.</p>
 <p><strong>Företagskultur</strong></p>
@@ -1633,7 +1633,7 @@
 <h2 id="slutformel">Slutformel <span class="nytt">Ändrat i 2.0</span></h2>
 <aside class="ruta"><p class="ruta-rubrik">Slutformel <span class="nytt">Ändrat i 2.0</span></p>
 <p>Slutpoäng = (Projektutveckling + Genomförande + Förvaltning) × Mu (+ ev. quizpoäng)</p>
-<p>Varje del ger en egen poäng, runt 20 är riktigt bra. Projektutveckling = ABT-budget ÷ 20. Genomförande = TG i procent. Förvaltning = (eget kapital + halva kassan) ÷ 15. Mu = måluppfyllnad (10.2). Se kapitel 10.</p>
+<p>Varje del ger en egen poäng, runt 20 är riktigt bra. Projektutveckling = ABT-budget ÷ 20. Genomförande = TG i procent. Förvaltning = (eget kapital + halva kassan) ÷ 25. Mu = måluppfyllnad (10.2). Se kapitel 10.</p>
 </aside>
 <h2 id="riskbuffert-rb-tv-anv-ndningar">Riskbuffert (Rb)</h2>
 <ul>

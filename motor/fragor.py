@@ -137,7 +137,7 @@ BESLUT = {
     # Förvaltning
     "valj_fc": ("val", lambda m, s, a: "Välj fastighetschef (FC)", lambda m, s, a: a[0], False),
     "valj_fs": ("val", lambda m, s, a: "Välj förvaltningsstöd (FS)", lambda m, s, a: a[0], False),
-    "vill_kopa": ("janej", lambda m, s, a: f"Köpa {etikett(a[0], m)} för {a[1]:g} Mkr?", None, False),
+    "vill_kopa": ("janej", lambda m, s, a: f"Köpa {etikett(a[0], m)} för {a[1]:g} Mkr ur kassan?", None, False),
     "forhandlingskort": ("flerval", lambda m, s, a: "Spela förhandlingskort?",
                          lambda m, s, a: _med_effekt(s.hand, "forhandling_mod", "forhandling_auto"), False),
     "vill_sanera": ("janej", lambda m, s, a: f"Ta saneringsuppdraget för {etikett(a[0], m)} (skuld {a[1]:g} Mkr)?", None, False),
@@ -246,10 +246,11 @@ HJALP = {
     "eliminera": _eliminera,
     "valj_fc": lambda m, s, a: "Fastighetschefen ger en styrka hela Förvaltningen. Efter några kvartal blir hen senior och blir starkare.",
     "valj_fs": lambda m, s, a: "Förvaltningsstödet är en specialist med en egen förmåga, t.ex. bättre due diligence eller energiarbete.",
-    "vill_kopa": lambda m, s, a: "Köper ni får ni fastigheten med dess driftnetto varje kvartal. Priset betalas ur kassan, resten lånas.",
+    "vill_kopa": lambda m, s, a: (f"Köpeskillingen är marknadsvärdet, {m.mv(a[0]):g} Mkr. Ni lånar 70 % ({m.kopelan(a[0]):g} Mkr, 2 % ränta) och "
+                               "betalar resten ur kassan. Sedan får ni fastighetens driftnetto varje kvartal."),
     "forhandlingskort": lambda m, s, a: "Förhandlingskort förbättrar ert slag i förhandlingen om priset.",
     "vill_sanera": lambda m, s, a: "En fastighet med för stor skuld säljs ut. Tar ni uppdraget köper ni den billigt men tar över skulden.",
-    "tvangsbud": lambda m, s, a: "Ett tvångsbud är ett fientligt köp av en annan spelares fastighet. Budet kostar en avgift oavsett utfall, och ägaren kan försöka stoppa det.",
+    "tvangsbud": lambda m, s, a: "Ett tvångsbud är ett fientligt köp av en annan spelares fastighet till 1,2 × marknadsvärdet. Ni lånar 70 % av marknadsvärdet; resten, även övervärdet, betalas ur kassan. Budet kostar en avgift oavsett utfall, och ägaren kan försöka stoppa det.",
     "stoppa": lambda m, s, a: "Någon vill tvångsköpa er fastighet. Ni kan stoppa det med ett motbud, ett kort eller riskbuffertar, eller låta det gå till duell.",
     "duellkort": lambda m, s, a: "I duellen slår båda; kort ni spelar här lägger till på ert slag.",
     "motbudsmal": lambda m, s, a: "Ett motbud: i stället för att förlora fastigheten tar ni en av budgivarens.",
