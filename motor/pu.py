@@ -45,8 +45,8 @@ class PUParametrar:
     markexpansion_kostnad: float = 5     # regelboken 3.7
     komplettering_faktor: float = 3      # regelboken 4.2: 3 × utvecklingskostnaden
     horn_vid_passering: bool = True      # ANTAGANDE: hörnen verkar när man passerar eller stannar (regelboken 3.7)
-    start_q: int = 6
-    start_h: int = 6
+    start_q: int = 4                  # beslut 2026-09-27: 6 → 4 (färre moderbolagslån, högre TG)
+    start_h: int = 4
     start_t: int = 12
     namnd_hoj_max: int = 99              # hur många gånger kraven får höjas för ett nytt nämndförsök (99 = obegränsat)
     namnd_stor_mix: int = 99             # varje projekt utöver så här många höjer nämndsumman med 1 (99 = av)

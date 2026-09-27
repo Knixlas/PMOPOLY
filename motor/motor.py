@@ -24,7 +24,7 @@ class Parametrar:
     start_projekt: tuple = (4, 6)                  # ANTAGANDE: antal projekt från genomförandet (inkl. BRF)
     tg: tuple = (0.0, 0.20, 0.08)                  # ANTAGANDE: täckningsgrad (min, max, typvärde) — 20 % = tokbra
     kassa_vikt: float = 0.5                        # F-poäng: kassa räknas till denna andel, fastigheter fullt
-    f_delare: float = 25                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare (25 sedan MV-höjningen)
+    f_delare: float = 30                           # F-poäng = (eget kapital + vikt × kassa) ÷ delare (30 sedan MV-höjningen)
     start_riskbuffert: tuple = (0, 2)              # riskbuffertar som följer med från Skede 2
     plus_visning: str = "direkt"                   # "direkt" (tvingande) eller "val" — testas
     fokustyp: tuple = ("HYRESRÄTT", "LOKAL", "KONTOR", "FÖRSKOLA")   # som tryckt på F-brädet (Kvartal 1–4)

@@ -159,8 +159,12 @@ class Parti:
         if self._uppspelning:
             # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
             # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
-            if styrd._bott is not None:
-                getattr(styrd._bott, metod)(motor, subjekt, *args, **kw)
+            svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw) if styrd._bott is not None else None
+            if styrd._manniska and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+                # frågan kan titta i högarna (t.ex. översta kortet), vilket vid brädet frågar vilket kort det är
+                if self.analog and metod == "placering" and svar is not None:
+                    svar = [n for n, _, _ in svar]
+                beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
             post = self._nasta_post("beslut", metod, kvarter)
             self.logg.append(post)
             return avkoda(post["svar"], rotter)

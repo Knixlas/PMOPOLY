@@ -107,3 +107,19 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
   32 % (hyresrätterna blev värdefullare), *Nätverkaren* 22–24 % (från 20 %), *Tekniska experten* 20–25 %,
   *Förhandlaren* 17–22 %, *Skölden* 13–17 %. FS 22–28 %. TG-median 4 → 1,7: motvikterna (högre Q och H)
   gör Genomförandet något svårare. Slutpoäng median 17–19.
+- **Skölden är inte svag – den hamnar hos fel kvarter.** Utan moderbolagslån har Skölden-kvarteren lika
+  hög F som de andra (13,9 mot 13,2–14,9), och förmågan är värd ungefär +1 F-poäng (samma partier med
+  och utan skölden). Men hälften av Skölden-ägarna har moderbolagslån: lånets 95 Mkr räknas som kassa,
+  så de väljer FC sist (9.2: minst kassa väljer först) och får det som blir över. Vinstandelen speglar
+  alltså lånen, inte kortet. Större hand (8), skydd för fler typer eller två gånger per kvartal gav
+  ingen skillnad. Förslag om det ska rättas: välj FC i ordning efter minst *eget kapital* (eller låt
+  moderbolagslånets 95 Mkr inte räknas), så får de som lånat välja först.
+- **Q- och H-kravet startar på 4 i stället för 6** (3.1, Detaljplanen). Moderbolagslån: 46 % → 29 % av
+  kvarteren, TG-median 1,7 → 6,0. Start 3 gav samma lånandel (27 %), så 4 räcker. De lån som är kvar
+  kommer främst från Skede 2-strategin *billig* (45 % lån – billiga val ger fler konsekvens- och
+  garantikort) och små kvarter (*försiktig* 40 %), där fasta kostnader väger tungt mot en liten ABT.
+- **F-poängens delare 25 → 30**, eftersom färre lån gav högre F (F-median 10,8).
+
+  600 partier med allt ovan: Skede 1 *expansiv* 32 %, *försiktig* 19 % (jämnare än förut). Skede 2
+  *balanserad* 38 %, *billig* 11 %. Förvaltningsstrategierna 23–28 %. FC *Bostadsveteranen* 35 %,
+  övriga 21–27 %. FS 22–29 %. Slutpoäng median 25 (PU 15, TG 6, F 11).
