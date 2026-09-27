@@ -44,7 +44,8 @@ S2_STEG = [
 
 F_STEG = [
     ("uppstart", "Uppstart",
-     "Kvarteren blir fastigheter. Välj fastighetschef (FC) och förvaltningsstöd (FS). Ni får startkassan.",
+     "Kvarteren blir fastigheter. Välj fastighetschef (FC) och förvaltningsstöd (FS); den med minst kassa väljer "
+     "först. Varje kvarter drar tre nätverkskort och sedan ett händelsekort per fastighet.",
      ["k9-1", "k9-2", "k9-3"]),
     ("marknad", "Marknad",
      "Uppdatera yielden. Nya fastigheter kommer ut på marknaden (3, 2 och 1 i kvartal 1–3). Köp, sälj, "

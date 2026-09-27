@@ -355,9 +355,9 @@ class Motor:
         for sp in self.spel.spelare:
             while sp.lan and len(sp.fastigheter) > 1:        # 7.2: moderbolagslån → sälj ned till en fastighet
                 self.salj_till_bank(sp, min(sp.fastigheter, key=lambda f: self.mv(f) - f.lan))
+            self.dra_natverkskort(sp, 3)                 # 9.2: först tre nätverkskort, sedan händelsekorten
             for f in sp.fastigheter:
                 self.dra_handelse(f, sp)
-            self.dra_natverkskort(sp, 3)
             sp.start_ek = sum(self.mv(f) - f.lan for f in sp.fastigheter)
             sp.start_kassa = sp.kassa
 
