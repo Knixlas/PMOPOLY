@@ -45,9 +45,9 @@
               <div><dt>BTA</dt><dd>{tal(k.bta)} kvm</dd></div>
               <div><dt>Anskaffning</dt><dd>{tal(k.anskaffning)} Mkr</dd></div>
               <div><dt>Marknadsvärde</dt><dd>{tal(k.marknadsvarde)} Mkr</dd></div>
-              <div><dt>ABT-kostnad</dt><dd>{tal(k.abt_kostnad)} Mkr
+              <div><dt>PU-kostnad</dt><dd>{tal(k.pu_kostnad)} Mkr
                 <small class="del">tomt {tal(k.tomt ?? 10)}{k.markexp ? ` · mark ${tal(k.markexp)}` : ''} · utveckling {tal(k.utveckling ?? 0)}</small></dd></div>
-              <div title="Anskaffning minus ABT-kostnad: vad kvarteret har att bygga för i Skede 2"><dt>ABT-budget nu</dt><dd>{tal(k.abt)} Mkr</dd></div>
+              <div title="Anskaffning minus PU-kostnad: vad kvarteret har att bygga för i Skede 2"><dt>ABT-budget nu</dt><dd>{tal(k.abt)} Mkr</dd></div>
               <div><dt>Q-krav</dt><dd>{k.q_krav}</dd></div>
               <div><dt>H-krav</dt><dd>{k.h_krav}</dd></div>
               <div><dt>Nämndsumma</dt><dd>{k.namndsumma}</dd></div>

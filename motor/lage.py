@@ -23,7 +23,8 @@ def _pu(m):
 
 
 def _pu_siffror(m, kv):
-    """Nuläget för ett kvarter i Skede 1: projekten, BTA, anskaffning, marknadsvärde och ABT just nu (5.1)."""
+    """Nuläget för ett kvarter i Skede 1: projekten, BTA, anskaffning, marknadsvärde, PU-kostnaden (tomt,
+    markexpansioner, utveckling) och ABT-budgeten just nu (5.1)."""
     from .pu import tal
     p = kv.projekt
     anskaffning = sum(tal(x["Anskaffning (Mkr)"]) for x in p)
@@ -31,7 +32,7 @@ def _pu_siffror(m, kv):
     kostnad = m.p.tomtkostnad + m.p.markexpansion_kostnad * len(kv.expansioner) + utveckling
     return {"antal": len(p), "bta": sum(tal(x["BTA (kvm)"]) for x in p), "anskaffning": anskaffning,
             "marknadsvarde": sum(tal(x["Marknadsvärde (Mkr)"]) for x in p), "utveckling": utveckling,
-            "abt_kostnad": kostnad, "tomt": m.p.tomtkostnad, "markexp": m.p.markexpansion_kostnad * len(kv.expansioner),
+            "pu_kostnad": kostnad, "tomt": m.p.tomtkostnad, "markexp": m.p.markexpansion_kostnad * len(kv.expansioner),
             "abt": anskaffning - kostnad, "namndsumma": kv.namndsumma()}
 
 
