@@ -26,7 +26,7 @@ export interface Vy {
 }
 export interface Visning {
   nr: number; typ: 'tarning' | 'kort'; kvarter: string | null; skede: string | null;
-  sidor?: number; varde?: number; lek?: string;
+  sidor?: number; varde?: number; lek?: string; grupp?: string | null;
   kort?: Kortvy;
 }
 export interface Kortvy { id: string; rubrik: string; text: string; typ: string; rader: [string, string][]; bild?: string; lek?: string }

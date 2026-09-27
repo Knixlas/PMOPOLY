@@ -445,7 +445,9 @@ class PUMotor:
             forsok += 1
             self.stat["namnd_forsok"] += 1
             kv.strategi.sla_namnd(self, kv, summa, forsok)   # frågan "slå för nämnden" (ett synligt steg)
+            self.slaggrupp = f"nämnd {kv.namn} {forsok}"          # tärningarna slås tillsammans (bordet)
             slag = [self.s.d20() for _ in range(forsok)]
+            self.slaggrupp = None
             self.logga(f"{kv.namn}: nämnden, summa {summa:g}, slog {', '.join(map(str, slag))} – "
                        f"{'godkänt' if max(slag) > summa else 'inte godkänt'}")
             if max(slag) <= summa and kv.riskbuffert and kv.strategi.sla_om_namnd(self, kv, summa, forsok):

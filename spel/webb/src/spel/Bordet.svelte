@@ -13,8 +13,17 @@
   let forsta = $state<number | null>(null);          // allt t.o.m. detta nr fanns redan: ingen animering
   $effect(() => { if (forsta === null) forsta = visningar.at(-1)?.nr ?? 0; });
 
-  const kort = $derived(visningar.filter(v => v.typ === 'kort').slice(-3).reverse());
-  const tarningar = $derived(visningar.filter(v => v.typ === 'tarning').slice(-2).reverse());
+  // bara det aktuella: senaste kortet och senaste slaget (flera tärningar bara om de slogs samtidigt,
+  // t.ex. nämndens andra försök – motorn märker dem med samma grupp)
+  const kort = $derived(visningar.filter(v => v.typ === 'kort').slice(-1));
+  const tarningar = $derived.by(() => {
+    const t = visningar.filter(v => v.typ === 'tarning');
+    const sista = t.at(-1);
+    if (!sista) return [];
+    const ut = [sista];
+    for (let i = t.length - 2; i >= 0 && sista.grupp && t[i].grupp === sista.grupp; i--) ut.unshift(t[i]);
+    return ut;
+  });
   const ny = (v: Visning) => forsta !== null && v.nr > forsta;
 
   // tärningen som rullar: visar slumpade sidor en stund, sedan värdet

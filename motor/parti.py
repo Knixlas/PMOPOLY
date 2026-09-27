@@ -209,7 +209,8 @@ class Parti:
         m = self.aktuell_motor
         aktiv = getattr(m, "aktiv", None)
         skede = LEK_SKEDE(v.get("lek")) or {"PUMotor": "PU", "Skede2": "S2"}.get(type(m).__name__, "F" if m else None)
-        self.visningar.append({"nr": self._visnr, "kvarter": getattr(aktiv, "namn", None), "skede": skede, **v})
+        self.visningar.append({"nr": self._visnr, "kvarter": getattr(aktiv, "namn", None), "skede": skede,
+                               "grupp": getattr(m, "slaggrupp", None), **v})
         del self.visningar[:-60]
 
     def _visning(self, metod, args, varde):
