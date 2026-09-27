@@ -163,3 +163,11 @@ Motorn har nu parametrar för Skölden (`skold_typer`, `skold_per_kvartal`) om d
     till +2,2–2,5 för alla (inte infört – väntar på beslut; sänker hyresrätternas DN till 1–6).
   - *Genomförandet*: TG 10 mot 7 för hyresrättsrika kvarter. Inte förklarat av byggnadsytan (BYA/BTA är
     lika). Nästa steg: mät Skede 2 med påtvingade portföljer.
+- **PU-poäng = ABT ÷ (Q-krav + H-krav + T-påverkan)** (förslag Niklas, infört). Median 13,9 (10–18) utan
+  extra faktor. 1 000 partier: Skede 1 *expansiv* 30 → 27 %, *försiktig* 16 → 19–20 %; stora kvarter
+  (6–7 projekt) får inte längre mer betalt än 5-projektskvarter. Hyresrättsövertaget påverkas inte.
+- **Förslag, F som tillväxt** (inte infört): F = 40 × (slutvärde − startvärde) ÷ startvärde, där värde =
+  eget kapital + halva kassan (− 100 Mkr per moderbolagslån) och nämnaren är minst 50 Mkr. Samma 1 000
+  partier omräknade: vinstandel för kvarter utan hyresrätter / 1–34 % / 35 %+ blir 26 / 24 / 26 % (i dag
+  12 / 24 / 34 %), F-median 12,2, Skede 1-strategierna 22–29 %. Den som startar med värdefulla
+  fastigheter får inte poäng för startvärdet, bara för vad den gör av det.

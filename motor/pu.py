@@ -560,7 +560,9 @@ class PUMotor:
             "kvarter": kv.namn, "strategi": kv.strategi.namn, "pc": kv.pc["Namn"],
             "projekt": len(kv.placerade), "oplacerade": len(kv.oplacerade),
             "anskaffning": sum(tal(p["Anskaffning (Mkr)"]) for p in kv.placerade),
-            "bta": bta, "bya": bya, "abt": kv.abt, "PU": kv.abt / 20,
+            "bta": bta, "bya": bya, "abt": kv.abt,
+            # 10.1 (beslut 2026-09-27): ABT per kravsteg – ett stort kvarter med höga krav får inte fullt betalt
+            "PU": kv.abt / max(1, kv.q_krav + kv.h_krav + kv.tid),
             "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid, "riskbuffert": kv.riskbuffert,
             "erfarenhet": kv.erfarenhet, "kvartertyp": kv.kvartertyp, "namndforsok": kv.namndforsok,
             "expansioner": len(kv.expansioner), "placerade": kv.placerade, "pc_kort": kv.pc,
