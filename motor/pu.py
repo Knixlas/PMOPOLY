@@ -263,6 +263,7 @@ class PUMotor:
                 kv.varv += 1
                 if kv.varv >= self.p.varv:
                     kv.position = 0
+                    self.horn(kv, ruta, passerar=False)       # 3.7: markanvisning även för den som går i mål
                     return True                               # klar; stannar på start
             if ruta in HORN and (i == steg or self.p.horn_vid_passering):
                 self.horn(kv, ruta, passerar=i != steg)
