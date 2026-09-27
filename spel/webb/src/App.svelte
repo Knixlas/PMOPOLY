@@ -4,7 +4,9 @@
   //   #/parti/{id}            välj kvarter
   //   #/parti/{id}/{kvarter}  spela
   //   #/pussel                prova kvarterspusslet
+  //   #/resultat/{namn,namn}  bara resultat: för in slutsiffrorna, appen räknar poängen
   import Pusselprov from './sidor/Pusselprov.svelte';
+  import Resultat from './sidor/Resultat.svelte';
   import Spela from './sidor/Spela.svelte';
   import Start from './sidor/Start.svelte';
 
@@ -18,6 +20,8 @@
   {#key `${vag[1]}/${vag[2] ?? ''}`}
     <Spela id={vag[1]} kvarter={vag[2] || undefined} />
   {/key}
+{:else if vag[0] === 'resultat' && vag[1]}
+  {#key vag[1]}<Resultat namn={vag[1].split(',').filter(Boolean)} />{/key}
 {:else if vag[0] === 'pussel'}
   <Pusselprov />
 {:else}

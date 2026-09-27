@@ -4,7 +4,7 @@
 
   const forslag = ['Norr', 'Söder', 'Öster', 'Väster'];
   let kvarter = $state([{ namn: 'Norr', styrning: 'människa' }, { namn: 'Söder', styrning: 'människa' }]);
-  let slump = $state<'digital' | 'inmatad'>('digital');
+  let slump = $state<'digital' | 'inmatad' | 'resultat'>('digital');
   let svarighet = $state<'lätt' | 'normal' | 'svår'>('normal');
   let fel = $state('');
   let skapar = $state(false);
@@ -35,6 +35,10 @@
     fel = '';
     const namn = kvarter.map(k => k.namn.trim());
     if (namn.some(n => !n) || new Set(namn).size !== namn.length) { fel = 'Ge kvarteren olika namn.'; return; }
+    if (slump === 'resultat') {                      // inget parti på servern: bara poängräkningen
+      location.hash = `#/resultat/${namn.map(n => encodeURIComponent(n.replace(/,/g, ' '))).join(',')}`;
+      return;
+    }
     skapar = true;
     try {
       const id = await skapaParti({ kvarter: kvarter.map(k => ({ ...k, namn: k.namn.trim() })), slump, svarighet });
@@ -62,10 +66,10 @@
         <li>
           <label for="kv-{i}" class="dold">Kvarter {i + 1}</label>
           <input id="kv-{i}" bind:value={k.namn} maxlength="30" autocomplete="off" />
-          <select id="styr-{i}" bind:value={k.styrning} aria-label="Vem spelar {k.namn}">
+          {#if slump !== 'resultat'}<select id="styr-{i}" bind:value={k.styrning} aria-label="Vem spelar {k.namn}">
             <option value="människa">Spelare</option>
             <option value="bott">Datorn</option>
-          </select>
+          </select>{/if}
           {#if kvarter.length > 1}
             <button type="button" class="ta-bort" aria-label="Ta bort {k.namn}" onclick={() => (kvarter = kvarter.filter((_, j) => j !== i))}>×</button>
           {/if}
@@ -80,6 +84,8 @@
         <span><strong>Helt i appen</strong><br />Appen slår tärningarna och drar korten.</span></label>
       <label class="val"><input type="radio" name="slump" value="inmatad" bind:group={slump} />
         <span><strong>Vid brädet</strong><br />Ni spelar med det fysiska spelet och anger tärningar och dragna kort. Appen håller ordning på regler och poäng.</span></label>
+      <label class="val"><input type="radio" name="slump" value="resultat" bind:group={slump} />
+        <span><strong>Bara resultat</strong><br />Ni spelar helt på brädet och för bara in slutsiffrorna. Appen räknar poängen och visar vem som vann.</span></label>
     </fieldset>
 
     <fieldset>
@@ -94,7 +100,7 @@
     </fieldset>
 
     {#if fel}<p class="fel" role="alert">{fel}</p>{/if}
-    <button type="submit" class="primar" disabled={skapar}>{skapar ? 'Startar …' : 'Starta partiet'}</button>
+    <button type="submit" class="primar" disabled={skapar}>{skapar ? 'Startar …' : slump === 'resultat' ? 'Öppna poängräkningen' : 'Starta partiet'}</button>
   </form>
 
   <section class="panel">
