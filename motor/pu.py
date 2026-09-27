@@ -159,10 +159,11 @@ class PUMotor:
         toppar = {} if bara_banken else {t: self.hogar[t][-1] for t in typer if self.hogar[t]}
         val = kv.strategi.valj_projekt(self, kv, list(toppar.values()) + kandidater)
         if val is None:
-            for t, topp in toppar.items():            # dragna kort som inte tas läggs i banken (3.3)
-                if kv.strategi.dra_anda(self, kv, t):
-                    self.bank.append(self.dra_hog(t))
-                    self.stat["banken_in"] += 1
+            # 3.3: ett draget projektkort som inte tas läggs i projektbanken — inget val. Kort dras bara på en
+            # projektruta (en typ); vid t.ex. Stadshuset väljer man ur högarnas toppar utan att dra.
+            if len(typer) == 1 and toppar:
+                self.bank.append(self.dra_hog(typer[0]))
+                self.stat["banken_in"] += 1
             return None
         if val in kandidater:
             self.bank.remove(val)

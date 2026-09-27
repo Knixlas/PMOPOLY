@@ -90,7 +90,6 @@ BESLUT = {
     "starttyp": ("val", lambda m, s, a: "Vilken projekttyp börjar ni med?",
                  lambda m, s, a: [t for t in m.hogar if m.hogar[t]], False),
     "valj_projekt": ("val", lambda m, s, a: "Vilket projekt tar ni?", lambda m, s, a: a[0], True),
-    "dra_anda": ("janej", lambda m, s, a: f"Dra översta {etikett(a[0]).lower()}-kortet till projektbanken?", None, False),
     "vill_expandera": ("janej", lambda m, s, a: "Ta en markexpansion?", None, False),
     "stadshuset": ("val", lambda m, s, a: "Stadshuset: lämna tillbaka ett projekt?", lambda m, s, a: s.projekt, True),
     "fordela_krav": ("val", lambda m, s, a: (f"{m.orsak}: " if getattr(m, "orsak", None) else "")
@@ -269,7 +268,8 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
                 a_["detalj"] = (f"Q-krav {subjekt.q_krav} → {subjekt.q_krav + x[0]} · "
                                 f"H-krav {subjekt.h_krav} → {subjekt.h_krav + x[1]}")
         if inget:
-            vy["alternativ"].append({"text": "Inget", "detalj": "", "kod": None})
+            vy["alternativ"].append({"text": "Inget", "kod": None,
+                                     "detalj": "Det dragna kortet läggs i projektbanken (3.3)" if metod == "valj_projekt" else ""})
     if typ == "tal":
         vy["min"], vy["max"] = 0, int(MAX_TAL.get(metod, lambda m, s, a: 10)(motor, subjekt, args))
     if typ == "flerval" and metod in MAX_FLERVAL:

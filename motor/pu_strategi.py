@@ -43,9 +43,6 @@ class PUStrategi:
         ok = [p for p in kandidater if self.godtar(m, kv, p)]
         return max(ok, key=lambda p: self.projektvarde(m, kv, p), default=None)
 
-    def dra_anda(self, m, kv, typ):
-        return True          # dra kortet och lägg det i banken om det inte passar
-
     def vill_expandera(self, m, kv):
         mark, bostad = kv.upptaget()
         return max(mark, bostad) >= kv.markceller - 4
