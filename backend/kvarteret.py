@@ -2,9 +2,10 @@
 
 Tre huvuddelar à ca 10 minuter (Före / Under / Efter). Alla spelare beslutar
 samtidigt, servern avslöjar och räknar. Använder bara befintliga komponenter
-(projekt, PC/AC/FC/FS, dialog- och politikkort, markexpansioner, leverantörer,
-organisationer, händelsekort, faskort, kulturkort, konsekvens- och garantikort,
-omvärldskort, yield, DD-kort, budgivning och slutformeln) – läses via GameData.
+(projekt, PC/AC, dialog- och politikkort, markexpansioner, leverantörer,
+organisationer, händelsekort, faskort, kulturkort, konsekvens- och garantikort) via
+GameData. Förvaltningen följer Förvaltning 2.1 med lekarna i data/forvaltning_2-1/,
+och slutpoängen räknas med economics.calc_final_score.
 
 Kvarteret skriver bara i sina egna data: data/kvarteret_logs/ (fylls bara på).
 """
@@ -17,6 +18,7 @@ import string
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
+from types import SimpleNamespace
 from typing import Dict, List, Optional
 
 from fastapi import WebSocket
@@ -24,11 +26,13 @@ from fastapi import WebSocket
 import models
 from config import (
     DATA_DIR, D20_THRESHOLDS, MARK_TOMT_KOSTNAD, EXPANSION_KOSTNAD, TOMT_CELLS,
-    START_Q_KRAV, START_H_KRAV, MIN_T, MAX_PROJECTS, PHASE_COST, EK_FV_MODIFIER,
-    YIELD_START_BOSTADER, YIELD_START_KOMMERSIELLT, QUARTER_NEW_PROPS,
-    ENERGY_CLASSES, ENERGY_UPGRADE_COST_PER_STEP, SLOT_TO_CARD_IDS,
+    START_Q_KRAV, START_H_KRAV, MIN_T, MAX_PROJECTS, PHASE_COST,
+    YIELD_START_BOSTADER, YIELD_START_KOMMERSIELLT, ENERGY_CLASSES, SLOT_TO_CARD_IDS,
+    EK_DN_MODIFIER, EFFECTIVE_DN_ABS_MAX, LOAN_RATIO,
 )
-from economics import deviation_factor
+from data_loader import read_csv
+from economics import calc_final_score
+from engine import _mv_lookup
 
 LOG_DIR = os.path.join(DATA_DIR, "kvarteret_logs")
 CELL_KVM = 250                 # 16 rutor = 4 000 kvm BYA
@@ -38,7 +42,7 @@ COLORS = ["#E4572E", "#2E86AB", "#7BB661", "#F2A541", "#9B5DE5", "#00B8A9"]
 MAX_PLAYERS = 6
 
 # Sekunder per beslut. Info-skärmar har egen klocka.
-TIMER = {"pc": 45, "p1": 45, "ac": 45, "upph": 60, "fas": 50, "fc": 60,
+TIMER = {"pc": 45, "p1": 45, "ac": 45, "upph": 60, "fas": 50, "f_setup": 50,
          "kvartal": 70, "info": 40, "intro": 60}
 
 UPPHANDLINGAR = [
@@ -50,6 +54,23 @@ ORG_SLOTS = set(UPPHANDLINGAR[0][1])
 
 P1_ROUNDS = 5
 QUARTERS = 4
+
+# Förvaltning 2.1 (FORVALTNING_DESIGN_2-1.md) – lekarna läses ur data/forvaltning_2-1/
+F21_DIR = os.path.join(DATA_DIR, "forvaltning_2-1")
+ENERGI_MAX = {1: 3, 2: 2, 3: 1}           # energiuppgraderingar per kvartal
+ENERGI_KOSTNAD = 3                       # Mkr per slagrunda
+YIELD_SPANN = {"b": (2.0, 6.0), "k": (3.0, 7.0)}
+_F21: Dict[str, list] = {}
+
+
+def f21(namn: str) -> list:
+    if namn not in _F21:
+        _F21[namn] = read_csv(os.path.join(F21_DIR, f"F2-1_{namn}.csv"))
+    return _F21[namn]
+
+
+def typ_namn(typ: str) -> str:
+    return {"HYRESRÄTT": "hyresrätt", "FÖRSKOLA": "förskola", "LOKAL": "lokal", "KONTOR": "kontor"}.get(typ, typ.lower())
 
 
 # ── Hjälpfunktioner ──
@@ -113,17 +134,11 @@ def proj_dict(p) -> dict:
         "q": p.kvalitet, "h": p.hallbarhet, "tid": p.tid, "namnd": p.namndbeslut,
         "energiklass": p.energiklass or "C", "driftnetto": p.driftnetto,
         "beskrivning": p.beskrivning,
+        "bas_dn": p.bas_dn if p.bas_dn is not None else int(p.driftnetto or 0),
+        "lanebelopp": p.lanebelopp,
         "krav_lev": {k: int(v.split()[-1]) for k, v in p.supplier_reqs.items()
                      if v and v.startswith("nivå")},
     }
-
-
-def fv(prop: dict, yield_pct: float) -> float:
-    """Fastighetsvärde: årligt driftnetto / yield × energibonus (som engine.py)."""
-    if yield_pct <= 0:
-        return 0.0
-    base = prop["driftnetto"] * 4 / (yield_pct / 100.0)
-    return base * EK_FV_MODIFIER.get(prop["energiklass"], 1.0)
 
 
 # ── Modell ──
@@ -165,8 +180,11 @@ class KPlayer:
     n_t: int = 0
     tb: float = 0.0
     # Skede 3
-    ek: float = 0.0
+    ek: float = 0.0            # eget kapital; kassan i förvaltningen
     props: List[dict] = field(default_factory=list)
+    hand: List[dict] = field(default_factory=list)   # personkort
+    forkop: List[str] = field(default_factory=list)  # förköp per fastighetstyp
+    extra_ansk: float = 0.0    # anskaffning för fastigheter köpta i förvaltningen
     # Runtime
     offer: dict = field(default_factory=dict)
     choice: Optional[dict] = None
@@ -194,14 +212,6 @@ class KPlayer:
     def bya_klass(self) -> str:
         return models.classify(self.bya, models.BYA_CLASSES) if self.bya else "A"
 
-    @property
-    def kapacitet(self) -> int:
-        return (self.fc["kapacitet"] if self.fc else 0) + sum(f["kapacitet"] for f in self.fs)
-
-    @property
-    def lon(self) -> float:
-        return (self.fc["lon"] if self.fc else 0) + sum(f["lon"] for f in self.fs)
-
     def public(self) -> dict:
         return {
             "id": self.id, "name": self.name, "color": self.color, "is_bot": self.is_bot,
@@ -226,7 +236,7 @@ class KPlayer:
             "q": self.q, "h": self.h, "t": self.t, "t_mal": self.t_mal, "erf": self.erf,
             "komp": self.komp, "lev": self.lev,
             "n_q": self.n_q, "n_h": self.n_h, "n_t": self.n_t, "tb": round(self.tb, 1),
-            "props": self.props, "kapacitet": self.kapacitet, "lon": round(self.lon, 2),
+            "props": self.props, "hand": self.hand, "forkop": self.forkop,
             "offer": self.offer, "choice": self.choice, "result": self.result,
         }
 
@@ -270,10 +280,11 @@ class KRoom:
         self.kultur_deck = self._deck(gd.external_support)
         self.penalty = {k: self._deck(v) for k, v in gd.penalty_cards.items()}
         self.garanti = {k: self._deck(v) for k, v in gd.garanti_cards.items()}
-        self.world_deck = self._deck(gd.world_events)
-        self.dd_deck = self._deck(gd.dd_cards)
-        self.mgmt = {k: self._deck(v) for k, v in gd.mgmt_events.items()}
-        self.yield_deck = {k: self._deck(v) for k, v in gd.yield_cards.items()}
+        self.personkort = self._deck(f21("personkort"))
+        self.dd = self._deck(f21("DD"))
+        self.omvarld = self._deck(f21("omvärldskort"))
+        self.kvartalskort = self._deck(f21("kvartalskort"))
+        self.banken: List[dict] = []  # projektbanken / bankens fastigheter
 
     def _draw(self, deck: list, refill=None):
         if not deck and refill is not None:
@@ -292,10 +303,11 @@ class KRoom:
         except OSError as e:
             print(f"KVARTERET: kunde inte logga: {e}")
 
-    def note(self, p: KPlayer, text: str, mkr: float = 0.0, plan: bool = False):
-        """En rad i spelarens reveal. Oplanerade belopp hamnar också i lärdomsloggen."""
+    def note(self, p: KPlayer, text: str, mkr: float = 0.0, plan: bool = False, privat: bool = False):
+        """En rad i spelarens reveal. Oplanerade belopp hamnar också i lärdomsloggen.
+        privat = dolt kort som bara ägaren får läsa."""
         self.reveal.setdefault("rows", {}).setdefault(p.id, []).append(
-            {"text": text, "mkr": round(mkr, 1) if mkr else 0})
+            {"text": text, "mkr": round(mkr, 1) if mkr else 0, "privat": privat})
         if mkr and not plan:
             p.log.append({"del": self._del(), "text": text, "mkr": round(mkr, 1)})
 
@@ -325,7 +337,7 @@ class KRoom:
                      [("namnd", 0), ("slut1", 0), ("intro2", 0), ("ac", 0)] +
                      [x for r in range(1, 4) for x in (("upph", r), ("upph_res", r))] +
                      [x for r in range(1, 4) for x in (("fas", r), ("fas_res", r))] +
-                     [("slut2", 0), ("intro3", 0), ("fc", 0)] +
+                     [("slut2", 0), ("intro3", 0), ("f_setup", 0)] +
                      [x for q in range(1, QUARTERS + 1) for x in (("kvartal", q), ("kvartal_res", q))] +
                      [("final", 0)])
         steg = list(range(1, 9))
@@ -799,11 +811,20 @@ class KRoom:
                 self.note(p, f"{brf['namn']} säljs: {brf['marknadsvarde']} − {brf['anskaffning']}"
                              f"{f' + D{m.group(1)} ({extra})' if m else ''} = {vinst:+.0f} Mkr till eget kapital.",
                           vinst)
-            p.props = [{**x, "agd": "byggd"} for x in p.projects if x["typ"] != "BRF"]
+            # Förvaltning 2.1: TB förs till kassan; fastigheterna får sin energiklass,
+            # ett steg sämre om hållbarhetskravet missades (H-poängen i kortversionen)
+            p.ek += p.tb
+            ek_skift = 1 if p.n_h > 0 else 0
+            p.props = [self._fastighet(x, "byggd", self._ek_steg(x["energiklass"], ek_skift))
+                       for x in p.projects if x["typ"] != "BRF"]
+            self.note(p, f"TB {p.tb:.0f} Mkr förs till kassan. Kassa inför förvaltningen: {p.ek:.0f} Mkr.")
             self.log(p.id, "skede2_slut", {"t": p.t, "q": p.q, "h": p.h, "tb": p.tb, "ek": p.ek})
         return "info"
 
-    # ════════════════ SKEDE 3 – FÖRVALTNING ════════════════
+    # ════════════════ SKEDE 3 – FÖRVALTNING (2.1) ════════════════
+    # Smal version av FORVALTNING_DESIGN_2-1.md: lånemodellen, MV = effektiv DN ÷ yield,
+    # inga löner, händelsebrickor, personkort och eskalerande energislag. Tvångsbud,
+    # saneringsuppdrag och stoppkort ingår inte i kortversionen.
 
     def _enter_intro3(self):
         return "info"
@@ -811,199 +832,457 @@ class KRoom:
     def _yield(self, prop: dict) -> float:
         return self.yield_b if prop["typ"] in BOSTAD_TYPER else self.yield_k
 
-    def _prop_view(self, prop: dict) -> dict:
-        return {**prop, "fv": round(fv(prop, self._yield(prop)), 1)}
+    @staticmethod
+    def _eff_dn(prop: dict) -> int:
+        """Som engine._eff_dn: bas-DN + energiklassens modifier, cap bas × 2."""
+        bas = prop["bas_dn"]
+        eff = bas + EK_DN_MODIFIER.get(prop["energiklass"], 0)
+        if bas > 0:
+            eff = min(eff, bas * 2)
+        return max(0, min(eff, EFFECTIVE_DN_ABS_MAX))
 
-    def _enter_fc(self):
-        fcs = self._deck([s.to_dict() | {"kapacitet": s.kapacitet} for s in self.gd.staff if s.roll == "FC"])
-        fss = self._deck([s.to_dict() | {"kapacitet": s.kapacitet} for s in self.gd.staff if s.roll == "FS"])
-        for i, p in enumerate(self.players.values()):
-            p.offer = {"fc": [fcs[(i * 3 + k) % len(fcs)] for k in range(3)],
-                       "fs": [fss[(i * 3 + k) % len(fss)] for k in range(3)]}
+    def _mv(self, prop: dict) -> int:
+        return _mv_lookup(self._eff_dn(prop), self._yield(prop))
+
+    @staticmethod
+    def _nytt_lan(mv: int) -> int:
+        """Lån = 70 % av MV vid förvärvet, avrundat till närmaste 10 Mkr, capat ≤ MV."""
+        return min(mv, int(round(mv * LOAN_RATIO / 10.0) * 10))
+
+    def _lan(self, prop: dict) -> int:
+        return prop["lan"] if prop.get("lan") is not None else self._nytt_lan(self._mv(prop))
+
+    @staticmethod
+    def _fastighet(proj: dict, agd: str, energiklass: Optional[str] = None) -> dict:
+        prop = {k: proj[k] for k in ("id", "namn", "typ", "bta", "anskaffning", "bas_dn")}
+        prop.update(energiklass=energiklass or proj["energiklass"], agd=agd,
+                    lan=proj.get("lan", proj.get("lanebelopp")), dn_net=0, varn=0, en_net=0)
+        return prop
+
+    def _prop_view(self, prop: dict, egen: bool = True) -> dict:
+        mv = self._mv(prop)
+        lan = self._lan(prop)
+        v = {**prop, "eff_dn": self._eff_dn(prop), "mv": mv, "lan": lan, "pris": mv - lan,
+             "yield": self._yield(prop)}
+        if not egen:  # dolda brickor ser bara ägaren
+            v.pop("dn_net", None)
+            v.pop("en_net", None)
+        return v
+
+    def _personkort(self, p: KPlayer, n: int = 1):
+        for _ in range(n):
+            p.hand.append(dict(self._draw(self.personkort, f21("personkort"))))
+
+    def _enter_f_setup(self):
+        fcs = [c for c in f21("FC") if "konsekvenskort" not in c["Styrka"]]
+        fss = [c for c in f21("FS") if "ta bort" in c["Egenskap"] or "dolt DN" in c["Egenskap"]]
+        for p in self.players.values():
+            p.offer = {"fc": self.rng.sample(fcs, min(3, len(fcs))), "fs": fss}
+        # Projektbanken: tre fastigheter ur de kvarvarande högarna
+        pool = [x for t, pile in self.proj_piles.items() if t != "BRF" for x in pile]
+        self.rng.shuffle(pool)
+        for proj in pool[:3]:
+            self.proj_piles[proj["typ"]].remove(proj)
+            self.banken.append(self._fastighet({**proj, "lanebelopp": None}, "bank"))
         return "decision"
 
-    def _validate_fc(self, p, data):
-        if data.get("fc") not in [c["id"] for c in p.offer["fc"]]:
+    def _validate_f_setup(self, p, data):
+        if data.get("fc") not in [c["ID"] for c in p.offer["fc"]]:
             return "Välj en fastighetschef."
-        fs = data.get("fs") or []
-        if any(f not in [c["id"] for c in p.offer["fs"]] for f in fs):
-            return "Okänd fastighetsskötare."
-        kap = next(c for c in p.offer["fc"] if c["id"] == data["fc"])["kapacitet"] + \
-            sum(c["kapacitet"] for c in p.offer["fs"] if c["id"] in fs)
-        if kap < len(p.props):
-            return f"Personalen räcker till {kap} fastigheter, du äger {len(p.props)}."
+        if data.get("fs") not in [c["ID"] for c in p.offer["fs"]]:
+            return "Välj en fastighetsskötare."
 
-    def _resolve_fc(self):
+    def _resolve_f_setup(self):
         for p in self.players.values():
-            p.fc = next(c for c in p.offer["fc"] if c["id"] == p.choice["fc"])
-            p.fs = [c for c in p.offer["fs"] if c["id"] in (p.choice.get("fs") or [])]
+            fc = next(c for c in p.offer["fc"] if c["ID"] == p.choice["fc"])
+            mods = {"forh": 0, "energi": 0}
+            for text in (fc["Styrka"], fc["Svaghet"]):
+                for v, typ in re.findall(r"([+-]\d+)\s*(?:på\s*)?(förhandling|energi)", text):
+                    mods["forh" if typ == "förhandling" else "energi"] += int(v)
+            p.fc = {"id": fc["ID"], "namn": fc["Namn"], "styrka": fc["Styrka"], "svaghet": fc["Svaghet"],
+                    **mods, "extra_pk": int("personkort" in fc["Styrka"]),
+                    "rb_q": int("riskbuffert" in fc["Styrka"])}
+            fs = next(c for c in p.offer["fs"] if c["ID"] == p.choice["fs"])
+            p.fs = [{"id": fs["ID"], "namn": fs["Namn"], "egenskap": fs["Egenskap"]}]
+            self._personkort(p, 3)
+
+    # ── Kort och brickor ──
+
+    def _bricka(self, p: KPlayer, prop: dict, falt: str, delta: int) -> str:
+        """Plus/minus- och energibrickor: 3 i netto → ±1 bas-DN resp. ±1 energiklass."""
+        prop[falt] += delta
+        if abs(prop[falt]) < 3:
+            return ""
+        steg = 1 if prop[falt] > 0 else -1
+        prop[falt] = 0
+        if falt == "dn_net":
+            prop["bas_dn"] = max(0, prop["bas_dn"] + steg)
+            return f" Tre brickor i netto → bas-DN {'+' if steg > 0 else '−'}1 (nu {prop['bas_dn']})."
+        prop["energiklass"] = self._ek_steg(prop["energiklass"], -steg)
+        return f" Tre energibrickor → energiklass {prop['energiklass']}."
+
+    def _handelse(self, p: KPlayer, prop: dict, kalla: str = "Händelse"):
+        lek = [c for c in f21("händelsekort") if c["Typ"] == prop["typ"]]
+        if not lek:
+            return
+        kort = self.rng.choice(lek)
+        e, dolt = kort["Effekt"], kort["Synlig"] == "nej"
+        v = int(kort["Värde"] or 0)
+        mkr, extra = 0.0, ""
+        if e == "dolt_plus_dn":
+            extra = " +1-bricka." + self._bricka(p, prop, "dn_net", 1)
+        elif e == "dolt_minus_dn":
+            extra = " −1-bricka." + self._bricka(p, prop, "dn_net", -1)
+        elif e == "underhallsvarning":
+            prop["varn"] += 1
+            extra = f" Varning {prop['varn']} av 3."
+            if prop["varn"] >= 3:
+                prop["varn"] = 0
+                prop["bas_dn"] = max(0, prop["bas_dn"] - 1)
+                extra += f" Tre varningar → bas-DN −1 (nu {prop['bas_dn']})."
+        elif e == "energi_plus":
+            extra = " +1 energibricka." + self._bricka(p, prop, "en_net", 1)
+        elif e == "energivarning":
+            extra = " Energivarning." + self._bricka(p, prop, "en_net", -1)
+        elif e in ("direkt_dn_plus", "direkt_dn_minus"):
+            steg = 1 if e.endswith("plus") else -1
+            prop["bas_dn"] = max(0, prop["bas_dn"] + steg)
+            extra = f" Bas-DN {'+' if steg > 0 else '−'}1 direkt (nu {prop['bas_dn']})."
+        elif e in ("engangskassa_plus", "engangskassa_minus"):
+            mkr = v if e.endswith("plus") else -v
+            p.ek += mkr
+            extra = f" {mkr:+.0f} Mkr i kassan."
+        elif e == "villkorskort":
+            extra = " " + self._villkor(p, kort["Beskrivning"], prop)
+        elif e == "forkop":
+            p.forkop.append(prop["typ"])
+            extra = f" Förköp sparas: du vinner nästa förhandling om en {typ_namn(prop['typ'])}."
+        self.note(p, f"{kalla}, {prop['namn']}: {kort['Rubrik']}.{extra}", mkr, privat=dolt)
+
+    def _villkor(self, p: KPlayer, text: str, prop: Optional[dict] = None, typ: Optional[str] = None) -> str:
+        """Villkorskort: 'energiklass D eller sämre ger −1 DN' och 'äger du N eller fler X'."""
+        t = text.lower()
+        if re.search(r"energiklass\w*\s+(?:på\s+)?d eller sämre", t):
+            traffade = [x for x in ([prop] if prop else p.props)
+                        if (typ is None or x["typ"] == typ) and x["energiklass"] in ("D", "E")]
+            for x in traffade:
+                x["bas_dn"] = max(0, x["bas_dn"] - 1)
+            return f"Villkor: energiklass D eller sämre → −1 DN på {len(traffade)} fastighet(er)."
+        m = re.search(r"äger du (\d+) eller fler (\w+)", t)
+        if m:
+            n, ord_ = int(m.group(1)), m.group(2)
+            ftyp = next((k for k in ("HYRESRÄTT", "FÖRSKOLA", "LOKAL", "KONTOR") if k.lower()[:5] in ord_), None)
+            hit = [x for x in p.props if x["typ"] == ftyp]
+            if len(hit) >= n:
+                for x in hit:
+                    x["bas_dn"] = max(0, x["bas_dn"] - 1)
+                return f"Villkor uppfyllt: −1 DN på {len(hit)} fastigheter."
+            return "Villkoret uppfylls inte."
+        return "Villkoret gäller inte i kortversionen."
+
+    # ── Kvartalen ──
 
     def _enter_kvartal(self):
         q = self.round
-        self.reveal = {"title": f"Kvartal {q}", "rows": {}}
-        world = self._draw(self.world_deck, self.gd.world_events)
-        extra_market = 1 if world.effekt_typ == "auktion" else 0
+        self.reveal = {"rows": {}}
         for p in self.players.values():
-            self._apply_world(p, world)
-            dn = sum(x["driftnetto"] for x in p.props)
-            p.ek += dn
-            self.note(p, f"Driftnetto in: {dn:+.1f} Mkr.", dn, plan=True)
-            if p.lon:
-                p.ek -= p.lon
-                self.note(p, f"Löner till personalen: {-p.lon:.1f} Mkr.", -p.lon, plan=True)
-            for prop in p.props:
-                deck = self.mgmt.get(prop["typ"])
-                if not deck and prop["typ"] in self.gd.mgmt_events:
-                    deck = self.mgmt[prop["typ"]] = self._deck(self.gd.mgmt_events[prop["typ"]])
-                if not deck:
-                    continue
-                ev = deck.pop()
-                belopp, txt = ev.effekt_mkr, ""
-                if ev.mildring_roll and self._har_mildring(p, ev):
-                    belopp = ev.mildring_effekt_mkr
-                    txt = f" Din {ev.mildring_roll.lower()} lindrar: {belopp:+.1f} Mkr."
-                p.ek += belopp
-                self.note(p, f"{prop['namn']}: {ev.rubrik} ({ev.effekt_mkr:+.1f} Mkr).{txt}", belopp)
-        # Yield ändras i kvartal 1–3
-        yb = yk = 0.0
-        if q <= 3:
-            yb = self._draw(self.yield_deck["bostader"], self.gd.yield_cards["bostader"])
-            yk = self._draw(self.yield_deck["kommersiellt"], self.gd.yield_cards["kommersiellt"])
-            self.yield_b = max(2.0, self.yield_b + yb)
-            self.yield_k = max(2.0, self.yield_k + yk)
-        # Marknaden
-        pool = [x for t, pile in self.proj_piles.items() if t != "BRF" for x in pile]
-        self.rng.shuffle(pool)
-        market = []
-        for prop in pool[:QUARTER_NEW_PROPS.get(q, 0) + extra_market]:
-            self.proj_piles[prop["typ"]].remove(prop)
-            market.append(self._prop_view(prop))
-        self.shared = {"kvartal": q, "omvarld": world.to_dict(), "yield_b": self.yield_b,
-                       "yield_k": self.yield_k, "yield_andring": {"b": yb, "k": yk}, "market": market,
-                       "info": self.reveal["rows"]}
+            if q == 1:  # Kvartal 0: ett händelsekort per fastighet
+                for prop in p.props:
+                    self._handelse(p, prop, "Uppställning")
+            if p.fc and p.fc.get("rb_q"):
+                p.rb += 1
+                self.note(p, f"{p.fc['namn']} ger +1 riskbuffert.")
+            # a) Balanskrav: MV ≥ lån, annars tar banken fastigheten
+            for prop in list(p.props):
+                mv, lan = self._mv(prop), self._lan(prop)
+                if mv < lan:
+                    p.props.remove(prop)
+                    self.banken.append({**prop, "lan": self._nytt_lan(mv), "agd": "bank", "fynd": True})
+                    self.note(p, f"{prop['namn']}: MV {mv} < lån {lan}. Banken tar fastigheten utan "
+                                 f"ersättning och listar den som fynd.", -float(prop.get("ek_vid_kop", 0)))
+        self.shared = {"kvartal": q, "info": self.reveal["rows"], "yield_b": self.yield_b,
+                       "yield_k": self.yield_k, "energi_max": ENERGI_MAX.get(q, 0),
+                       "market": [self._prop_view(x, egen=False) for x in self.banken]}
         self.reveal = {}
         for p in self.players.values():
             p.offer = {"props": [self._prop_view(x) for x in p.props],
-                       "fs": [s.to_dict() | {"kapacitet": s.kapacitet}
-                              for s in self.gd.staff if s.roll == "FS"
-                              and s.id not in [f["id"] for f in p.fs]][:4]}
+                       "motstandare": [{"id": o.id, "name": o.name,
+                                        "props": [{"id": x["id"], "namn": x["namn"]} for x in o.props]}
+                                       for o in self.players.values() if o.id != p.id]}
         return "decision"
 
-    def _har_mildring(self, p: KPlayer, ev) -> bool:
-        folk = ([p.fc] if p.fc and "chef" in ev.mildring_roll.lower() else []) + \
-               (p.fs if "skötare" in ev.mildring_roll.lower() else [])
-        return any(f["specialisering"] == ev.mildring_spec for f in folk)
+    def _validate_kvartal(self, p, data):
+        market = {m["id"]: m for m in self.shared["market"]}
+        egna = {x["id"]: x for x in p.props}
+        kop, salj, energi = data.get("kop") or [], data.get("salj") or [], data.get("energi") or []
+        if any(x not in market for x in kop):
+            return "Okänd fastighet på marknaden."
+        if any(x not in egna for x in salj + energi):
+            return "Okänd egen fastighet."
+        if set(salj) & set(energi):
+            return "Du kan inte både sälja och energiuppgradera samma fastighet."
+        if len(energi) > self.shared["energi_max"]:
+            return f"Högst {self.shared['energi_max']} energiuppgraderingar det här kvartalet."
+        if any(egna[x]["energiklass"] == "A" for x in energi):
+            return "Energiklass A kan inte uppgraderas."
+        inkomst = sum(self._mv(egna[x]) - self._lan(egna[x]) for x in salj)
+        if sum(market[x]["pris"] for x in kop) > max(0.0, p.ek + inkomst):
+            return f"Kassan ({p.ek:.0f} Mkr) räcker inte till köpen."
+        kort = data.get("kort") or {}
+        if kort:
+            c = next((c for c in p.hand if c["ID"] == kort.get("id")), None)
+            if not c:
+                return "Kortet finns inte på din hand."
+            mal = kort.get("mal")
+            if c["Effekt"] in ("lagg_dn_plus_egen", "stada") and mal not in egna:
+                return "Välj en av dina fastigheter för kortet."
+            if c["Effekt"] == "sabotage_minus" and not any(
+                    x["id"] == mal for o in self.players.values() if o.id != p.id for x in o.props):
+                return "Välj en motståndares fastighet för kortet."
+            if c["Effekt"] in ("kika", "sabotage_slang") and mal not in self.players:
+                return "Välj en motståndare för kortet."
+            if c["Effekt"] == "stopp":
+                return "Stoppkort spelas bara mot tvångsbud, som inte finns i kortversionen."
 
-    def _apply_world(self, p: KPlayer, w):
-        typ, mkr = w.effekt_typ, w.effekt_mkr
-        if typ in ("kostnad_alla", "intäkt_alla"):
-            hit = p.props
-        elif typ in ("kostnad_per_ek", "intäkt_per_ek"):
-            klasser = re.findall(r"\b([A-F])\b", w.poverkar.replace("+", " "))
-            hit = [x for x in p.props if x["energiklass"] in klasser]
-        elif typ == "kostnad_kommersiellt":
-            hit = [x for x in p.props if x["typ"] not in BOSTAD_TYPER]
-        elif typ == "kostnad_kon":
-            hit = [x for x in p.props if x["typ"] == "KONTOR"]
-        elif typ == "intäkt_hr":
-            hit = [x for x in p.props if x["typ"] == "HYRESRÄTT"]
-        elif typ == "energi_sänkning_alla":
-            for x in p.props:
-                x["energiklass"] = self._ek_steg(x["energiklass"], +1)
-            self.note(p, f"Omvärld: {w.rubrik}. Alla dina fastigheter tappar en energiklass.")
+    def _spela_personkort(self, p: KPlayer, kort: dict, mods: dict):
+        c = next(c for c in p.hand if c["ID"] == kort["id"])
+        p.hand.remove(c)
+        e, mal = c["Effekt"], kort.get("mal")
+        v = int((c["Värde"] or "0").replace("+", ""))
+        text = f"Personkort: {c['Rubrik']}."
+        if e == "forhandling_mod":
+            mods["forh"] += v
+            text += f" +{v} på förhandling det här kvartalet."
+        elif e == "forhandling_auto":
+            mods["auto"] = True
+            text += " Du vinner nästa förhandling."
+        elif e == "energi_mod":
+            mods["energi"] += v
+            text += f" +{v} på energislag det här kvartalet."
+        elif e == "lagg_dn_plus_egen":
+            prop = next(x for x in p.props if x["id"] == mal)
+            text += f" Dold +1 på {prop['namn']}." + self._bricka(p, prop, "dn_net", 1)
+        elif e == "stada":
+            prop = next(x for x in p.props if x["id"] == mal)
+            if prop["dn_net"] < 0:
+                prop["dn_net"] += 1
+            elif prop["varn"] > 0:
+                prop["varn"] -= 1
+            elif prop["en_net"] < 0:
+                prop["en_net"] += 1
+            text += f" En minus- eller varningsbricka bort från {prop['namn']}."
+        elif e == "sabotage_minus":
+            o, prop = next((o, x) for o in self.players.values() for x in o.props if x["id"] == mal)
+            extra = self._bricka(o, prop, "dn_net", -1)
+            text += f" Minusbricka på {o.name}s {prop['namn']}."
+            self.note(o, f"{p.name} lade en minusbricka på {prop['namn']}.{extra}")
+        elif e == "kika":
+            o = self.players[mal]
+            if o.props:
+                prop = self.rng.choice(o.props)
+                text += f" {o.name}s {prop['namn']} har {prop['dn_net']:+d} i dolda brickor."
+            else:
+                text += f" {o.name} äger inga fastigheter."
+        elif e == "sabotage_slang":
+            o = self.players[mal]
+            if o.hand:
+                o.hand.remove(self.rng.choice(o.hand))
+                self.note(o, f"{p.name} tvingade dig att slänga ett personkort.")
+            text += f" {o.name} slänger ett personkort."
+        elif e == "riskbuffert":
+            p.rb += 1
+            text += " +1 riskbuffert."
+        elif e == "dra_personkort":
+            self._personkort(p)
+            text += " Du drar ett personkort."
+        self.note(p, text, privat=e == "kika")
+
+    def _resolve_kvartal(self):
+        q = self.round
+        self.reveal = {"title": f"Kvartal {q}", "rows": {}, "kop": []}
+        mods = {pid: {"forh": p.fc["forh"], "energi": p.fc["energi"], "auto": False}
+                for pid, p in self.players.items()}
+        # 1. Personkort
+        for p in self.players.values():
+            if p.choice.get("kort"):
+                self._spela_personkort(p, p.choice["kort"], mods[p.id])
+        # 2. Försäljning till banken för Normal-MV
+        for p in self.players.values():
+            for pid_ in p.choice.get("salj") or []:
+                prop = next((x for x in p.props if x["id"] == pid_), None)
+                if not prop:
+                    continue
+                mv, lan = self._mv(prop), self._lan(prop)
+                p.props.remove(prop)
+                p.ek += mv - lan
+                self.banken.append({**prop, "lan": None, "agd": "bank", "dn_net": 0, "varn": 0, "en_net": 0})
+                self.note(p, f"Sålde {prop['namn']} till banken: MV {mv} − lån {lan} = {mv - lan:+d} Mkr.",
+                          mv - lan, plan=True)
+        # 3. Köp med förhandling (D20 + modifierare, högst vinner, lika → färst fastigheter)
+        for listing in list(self.banken):
+            pris = self._mv(listing) - self._lan(listing)
+            buyers = [p for p in self.players.values()
+                      if listing["id"] in (p.choice.get("kop") or []) and p.ek >= pris]
+            if not buyers:
+                continue
+            slag = []
+            for p in buyers:
+                if mods[p.id]["auto"] or listing["typ"] in p.forkop:
+                    s, txt = 99, "vinner direkt"
+                else:
+                    r = d(20, self.rng)
+                    s, txt = r + mods[p.id]["forh"], f"D20 {r}{mods[p.id]['forh']:+d}"
+                slag.append((s, -len(p.props), self.rng.random(), p, txt))
+            slag.sort(key=lambda x: x[:3], reverse=True)
+            w = slag[0][3]
+            if slag[0][0] == 99:
+                if mods[w.id]["auto"]:
+                    mods[w.id]["auto"] = False
+                else:
+                    w.forkop.remove(listing["typ"])
+            lan = self._lan(listing)
+            w.ek -= pris
+            self.banken.remove(listing)
+            prop = {**listing, "lan": lan, "agd": "köpt", "ek_vid_kop": pris}
+            w.props.append(prop)
+            w.extra_ansk += prop["anskaffning"]
+            self.reveal["kop"].append({"namn": listing["namn"], "pris": pris, "vinnare": w.name,
+                                       "slag": [{"name": x[3].name, "color": x[3].color, "txt": x[4]} for x in slag]})
+            self.note(w, f"Du köpte {prop['namn']}: MV {pris + lan} − lån {lan} = {pris} Mkr ur kassan.",
+                      -pris, plan=True)
+            dd = self._draw(self.dd, f21("DD"))
+            if dd["Effekt"] == "dd_ek":
+                prop["energiklass"] = self._ek_steg(prop["energiklass"], 1 if "sämre" in dd["Rubrik"] else -1)
+                self.note(w, f"DD-kort: {dd['Rubrik']}. Energiklass nu {prop['energiklass']}.", privat=True)
+            else:
+                extra = self._bricka(w, prop, "dn_net", 1 if dd["Effekt"] == "dd_plus" else -1)
+                self.note(w, f"DD-kort: {dd['Rubrik']} ({'plus' if dd['Effekt'] == 'dd_plus' else 'minus'}"
+                             f"bricka).{extra}", privat=True)
+        # 4. Omvärldskort (träffar alla)
+        w = self._draw(self.omvarld, f21("omvärldskort"))
+        self.reveal["omvarld"] = {"rubrik": w["Rubrik"], "beskrivning": w["Beskrivning"]}
+        self._apply_omvarld(w)
+        # 5–7. Driftnetto, personkort, fastighetsskötare och händelser
+        for p in self.players.values():
+            dn = sum(self._eff_dn(x) for x in p.props) / 4
+            p.ek += dn
+            self.note(p, f"Driftnetto in: {dn:+.2f} Mkr (summa effektiv DN ÷ 4).", dn, plan=True)
+            self._personkort(p, 2 + p.fc.get("extra_pk", 0))
+            fs = p.fs[0] if p.fs else None
+            if fs and p.props:
+                if "ta bort" in fs["egenskap"]:
+                    prop = min(p.props, key=lambda x: (x["dn_net"], -x["varn"]))
+                    if prop["dn_net"] < 0 or prop["varn"] > 0:
+                        if prop["dn_net"] < 0:
+                            prop["dn_net"] += 1
+                        else:
+                            prop["varn"] -= 1
+                        self.note(p, f"{fs['namn']} tar bort en minus- eller varningsbricka på {prop['namn']}.")
+                else:
+                    prop = max(p.props, key=lambda x: x["bas_dn"])
+                    extra = self._bricka(p, prop, "dn_net", 1)
+                    self.note(p, f"{fs['namn']}: dold +1 på {prop['namn']}.{extra}", privat=True)
+            for prop in list(p.props):
+                self._handelse(p, prop)
+        # 8. Kvartalskort (tempo/resurs, aldrig yield)
+        k = self._draw(self.kvartalskort, f21("kvartalskort"))
+        self.reveal["kvartalskort"] = {"rubrik": k["Rubrik"], "beskrivning": k["Beskrivning"], "typ": k["Typ"]}
+        self._apply_kvartalskort(k)
+        # 9. Energiuppgraderingar
+        for p in self.players.values():
+            for pid_ in p.choice.get("energi") or []:
+                prop = next((x for x in p.props if x["id"] == pid_), None)
+                if prop:
+                    self._energi(p, prop, mods[p.id]["energi"])
+        self.log(None, "kvartal", {"kop": self.reveal["kop"], "omvarld": w["ID"], "kvartalskort": k["ID"],
+                                   "yield": [self.yield_b, self.yield_k]})
+
+    def _apply_omvarld(self, w: dict):
+        e = w["Effekt"]
+        if e in ("yield_rorelse", "yield_stor"):
+            v = _num(w["Värde"])
+            if "bost" in w["Påverkar"]:
+                self.yield_b = min(YIELD_SPANN["b"][1], max(YIELD_SPANN["b"][0], self.yield_b + v))
+            else:
+                self.yield_k = min(YIELD_SPANN["k"][1], max(YIELD_SPANN["k"][0], self.yield_k + v))
+        elif e == "bords_dn":
+            # "Välj typ": i kortversionen den typ som finns flest av på bordet
+            typer = [x["typ"] for p in self.players.values() for x in p.props]
+            steg = -1 if "-1 DN" in w["Beskrivning"] or "−1 DN" in w["Beskrivning"] else 1
+            if typer:
+                typ = max(set(typer), key=lambda t: (typer.count(t), t))
+                for p in self.players.values():
+                    for x in p.props:
+                        if x["typ"] == typ:
+                            x["bas_dn"] = max(0, x["bas_dn"] + steg)
+                self.reveal["omvarld"]["effekt"] = f"Typen med flest fastigheter, {typ_namn(typ)}: {steg:+d} DN."
+        elif e == "resurs":
+            for p in self.players.values():
+                if "riskbuffert" in w["Beskrivning"]:
+                    p.rb += 1
+                if "personkort" in w["Beskrivning"]:
+                    self._personkort(p)
+
+    def _apply_kvartalskort(self, k: dict):
+        e, typ = k["Effekt"], k["Typ"]
+        for p in self.players.values():
+            hit = [x for x in p.props if x["typ"] == typ]
+            if not hit:
+                continue
+            if e in ("typbred_dn_plus", "typbred_dn_minus"):
+                steg = 1 if e.endswith("plus") else -1
+                for x in hit:
+                    x["bas_dn"] = max(0, x["bas_dn"] + steg)
+                self.note(p, f"Kvartalskort: {k['Rubrik']} → {steg:+d} DN på {len(hit)} fastighet(er).")
+            elif e in ("typbred_ek_plus", "typbred_ek_minus"):
+                steg = -1 if e.endswith("plus") else 1
+                for x in hit:
+                    x["energiklass"] = self._ek_steg(x["energiklass"], steg)
+                self.note(p, f"Kvartalskort: {k['Rubrik']} → energiklass {'+' if steg < 0 else '−'}1 "
+                             f"på {len(hit)} fastighet(er).")
+            elif e == "spotlight":
+                for x in hit:
+                    self._handelse(p, x, "Extra händelse")
+            elif e == "resurs":
+                self._personkort(p)
+                self.note(p, f"Kvartalskort: {k['Rubrik']} → du drar ett personkort.")
+            elif e == "villkorat":
+                self.note(p, f"Kvartalskort: {k['Rubrik']}. " + self._villkor(p, k["Beskrivning"], typ=typ))
+
+    def _energi(self, p: KPlayer, prop: dict, mod: int):
+        """Eskalerande slag: 1×D20, 2×D20 … för 3 Mkr per runda, en 20 gör rundan gratis.
+        Över 10 (med modifierare) → +1 energiklass. Riskbufferten ger ett omslag."""
+        if prop["energiklass"] == ENERGY_CLASSES[0]:
             return
-        elif typ == "energi_höjning_val" and p.props:
-            worst = max(p.props, key=lambda x: ENERGY_CLASSES.index(x["energiklass"])
-                        if x["energiklass"] in ENERGY_CLASSES else 2)
-            worst["energiklass"] = self._ek_steg(worst["energiklass"], -1)
-            p.ek += mkr
-            self.note(p, f"Omvärld: {w.rubrik}. {worst['namn']} lyfts till klass "
-                         f"{worst['energiklass']} ({mkr:+.1f} Mkr).", mkr)
-            return
-        else:
-            self.note(p, f"Omvärld: {w.rubrik}.")
-            return
-        total = mkr * len(hit)
-        p.ek += total
-        self.note(p, f"Omvärld: {w.rubrik} → {mkr:+.1f} Mkr × {len(hit)} fastigheter.", total)
+        kostnad, omslag = 0, False
+        for runda in range(1, 7):
+            tarn = [d(20, self.rng) for _ in range(runda)]
+            if 20 not in tarn:
+                if p.ek < ENERGI_KOSTNAD:
+                    self.note(p, f"{prop['namn']}: kassan räcker inte till fler energislag.")
+                    break
+                p.ek -= ENERGI_KOSTNAD
+                kostnad += ENERGI_KOSTNAD
+            if max(tarn) + mod <= 10 and p.rb > 0 and not omslag:
+                p.rb -= 1
+                omslag = True
+                tarn = [d(20, self.rng) for _ in range(runda)]
+            if max(tarn) + mod > 10:
+                prop["energiklass"] = self._ek_steg(prop["energiklass"], -1)
+                self.note(p, f"{prop['namn']}: energiuppgradering till {prop['energiklass']} "
+                             f"{'på första slaget' if runda == 1 else f'efter {runda} slagrundor'}"
+                             f"{' (med omslag)' if omslag else ''}, {kostnad} Mkr.",
+                          -kostnad, plan=True)
+                return
+        self.note(p, f"{prop['namn']}: energiuppgraderingen misslyckades, {kostnad} Mkr.", -kostnad)
 
     @staticmethod
     def _ek_steg(klass: str, steg: int) -> str:
+        """steg −1 = bättre klass (mot A), +1 = sämre (mot E)."""
         if klass not in ENERGY_CLASSES:
             klass = "C"
         i = min(len(ENERGY_CLASSES) - 1, max(0, ENERGY_CLASSES.index(klass) + steg))
         return ENERGY_CLASSES[i]
-
-    def _validate_kvartal(self, p, data):
-        market = {m["id"]: m for m in self.shared["market"]}
-        bud = {k: float(v) for k, v in (data.get("bud") or {}).items() if v}
-        for pid_, b in bud.items():
-            if pid_ not in market:
-                return "Okänd fastighet."
-            if b < market[pid_]["fv"]:
-                return f"Budet på {market[pid_]['namn']} måste vara minst {market[pid_]['fv']:.0f} Mkr."
-        if 0.3 * sum(bud.values()) > max(0.0, p.ek):
-            return f"Du har {p.ek:.1f} Mkr i eget kapital. 30 % av buden får inte överstiga det."
-        salj = data.get("salj")
-        if salj and salj not in [x["id"] for x in p.props]:
-            return "Okänd fastighet att sälja."
-        if salj and self.round == QUARTERS and len(p.props) <= 1:
-            return "Du måste äga minst en fastighet när året är slut."
-        upp = data.get("uppgradera")
-        if upp:
-            prop = next((x for x in p.props if x["id"] == upp), None)
-            if not prop or prop["energiklass"] == ENERGY_CLASSES[0]:
-                return "Fastigheten kan inte uppgraderas."
-        fs = data.get("fs")
-        if fs and fs not in [f["id"] for f in p.offer["fs"]]:
-            return "Okänd fastighetsskötare."
-        kap = p.kapacitet + (next(f["kapacitet"] for f in p.offer["fs"] if f["id"] == fs) if fs else 0)
-        if len(p.props) - (1 if salj else 0) + len(bud) > kap:
-            return f"Personalen räcker till {kap} fastigheter. Anställ en fastighetsskötare eller bjud på färre."
-
-    def _resolve_kvartal(self):
-        self.reveal = {"title": f"Kvartal {self.round}: marknaden", "rows": {}, "bud": {}}
-        for p in self.players.values():
-            c = p.choice
-            if c.get("fs"):
-                fs = next(f for f in p.offer["fs"] if f["id"] == c["fs"])
-                p.fs.append(fs)
-                self.note(p, f"Anställde fastighetsskötare {fs['namn']} (lön {fs['lon']} Mkr/kvartal).")
-            if c.get("salj"):
-                prop = next(x for x in p.props if x["id"] == c["salj"])
-                varde = 0.8 * fv(prop, self._yield(prop))
-                p.props.remove(prop)
-                self.proj_piles[prop["typ"]].insert(0, {k: v for k, v in prop.items() if k != "agd"})
-                p.ek += 0.3 * varde
-                self.note(p, f"Sålde {prop['namn']} till banken för 80 % ({varde:.0f} Mkr). "
-                             f"Din andel 30 % → {0.3 * varde:+.1f} Mkr.", 0.3 * varde, plan=True)
-            if c.get("uppgradera"):
-                prop = next(x for x in p.props if x["id"] == c["uppgradera"])
-                prop["energiklass"] = self._ek_steg(prop["energiklass"], -1)
-                p.ek -= ENERGY_UPGRADE_COST_PER_STEP
-                self.note(p, f"Energiuppgraderade {prop['namn']} till klass {prop['energiklass']}.",
-                          -ENERGY_UPGRADE_COST_PER_STEP, plan=True)
-        for m in self.shared["market"]:
-            bids = [(float(p.choice.get("bud", {}).get(m["id"]) or 0), d(6, self.rng), p)
-                    for p in self.players.values()]
-            bids = [b for b in bids if b[0] >= m["fv"]]
-            self.reveal["bud"][m["id"]] = {
-                "namn": m["namn"], "fv": m["fv"],
-                "bud": [{"name": p.name, "color": p.color, "bud": b} for b, _, p in bids]}
-            if not bids:
-                self.proj_piles[m["typ"]].insert(0, {k: v for k, v in m.items() if k != "fv"})
-                continue
-            bud, _, w = max(bids, key=lambda x: (x[0], x[1]))
-            self.reveal["bud"][m["id"]]["vinnare"] = w.name
-            w.ek -= 0.3 * bud
-            prop = {k: v for k, v in m.items() if k != "fv"} | {"agd": "köpt"}
-            w.props.append(prop)
-            self.note(w, f"Du vann {m['namn']} för {bud:.0f} Mkr. Du betalar 30 %: {-0.3 * bud:.1f} Mkr.",
-                      -0.3 * bud, plan=True)
-            dd = self._draw(self.dd_deck, self.gd.dd_cards)
-            w.ek += dd.effekt_mkr
-            self.note(w, f"DD-kort: {dd.rubrik} ({dd.effekt_mkr:+.1f} Mkr).", dd.effekt_mkr)
-        self.log(None, "kvartal", {"bud": self.reveal["bud"]})
 
     def _enter_kvartal_res(self):
         return "info"
@@ -1011,21 +1290,21 @@ class KRoom:
     # ════════════════ SLUTRESULTAT ════════════════
 
     def _enter_final(self):
+        """Slutpoäng via economics.calc_final_score: (S1 + S2 + S3) × f(n)."""
         res = []
         for p in self.players.values():
-            fv_tot = sum(fv(x, self._yield(x)) for x in p.props)
-            bta = sum(x["bta"] for x in p.props)
-            ek_factor = 0.10 if p.ek >= 0 else 2.00
-            rapong = ((0.30 * fv_tot + ek_factor * p.ek + p.tb) / bta * 1000) if bta else p.tb
-            n = p.n_q + p.n_h + p.n_t
-            f_n = deviation_factor(n)
-            score = rapong * f_n
-            p.result = {"fv": round(fv_tot, 1), "fv_30": round(0.3 * fv_tot, 1), "ek": round(p.ek, 1),
-                        "ek_factor": ek_factor, "tb": round(p.tb, 1), "bta": bta,
-                        "rapong": round(rapong, 1), "n": n, "f_n": f_n, "score": round(score, 1),
+            fv_obelan = sum(self._mv(x) - self._lan(x) for x in p.props)
+            spelare = SimpleNamespace(
+                projects=[SimpleNamespace(id=x["id"], anskaffning=x["anskaffning"]) for x in p.projects],
+                placed_project_ids=[x["id"] for x in p.projects],
+                abt_start=p.abt_start, abt_budget=p.tb, abt_loans_net=0.0, abt_borrowing_cost=0.0,
+                eget_kapital=p.ek, q_krav=p.q_krav, h_krav=p.h_krav,
+                snap_exec_q=p.q, snap_exec_h=p.h, snap_exec_t=p.t)
+            r = calc_final_score(spelare, fv_obelan, extra_anskaffning=p.extra_ansk)
+            p.result = {**r, "n_props": len(p.props),
                         "lardomar": sorted(p.log, key=lambda x: x["mkr"])[:3],
                         "basta": sorted(p.log, key=lambda x: -x["mkr"])[:2]}
-            res.append((score, p))
+            res.append((r["score"], p))
         res.sort(key=lambda x: -x[0])
         self.shared = {"ranking": [{"id": p.id, "name": p.name, "color": p.color, **p.result}
                                    for _, p in res],
@@ -1058,44 +1337,54 @@ class KRoom:
                 if not self._validate_fas(p, {"niva": i, "kultur": []}):
                     return {"niva": i, "kultur": []}
             return {"niva": 0, "kultur": []}
-        if s == "fc":
-            fc = r.choice(p.offer["fc"])
-            fs, kap = [], fc["kapacitet"]
-            for f in sorted(p.offer["fs"], key=lambda x: -x["kapacitet"]):
-                if kap >= len(p.props):
-                    break
-                fs.append(f["id"])
-                kap += f["kapacitet"]
-            return {"fc": fc["id"], "fs": fs}
+        if s == "f_setup":
+            return {"fc": r.choice(p.offer["fc"])["ID"], "fs": r.choice(p.offer["fs"])["ID"]}
         if s == "kvartal":
-            bud, kap = {}, p.kapacitet - len(p.props)
-            budget = max(0.0, p.ek) / 0.3
+            kassa = p.ek
+            kop = []
             for m in self.shared["market"]:
-                b = round(m["fv"] * r.uniform(1.0, 1.15))
-                if kap > 0 and b <= budget and r.random() < 0.6:
-                    bud[m["id"]] = b
-                    budget -= b
-                    kap -= 1
-            upp = None
-            if p.ek > 10:
-                cands = [x for x in p.props if x["energiklass"] not in ("A",)]
-                if cands:
-                    upp = max(cands, key=lambda x: ENERGY_CLASSES.index(x["energiklass"])
-                              if x["energiklass"] in ENERGY_CLASSES else 2)["id"]
-            return {"bud": bud, "uppgradera": upp, "salj": None, "fs": None}
+                if m["pris"] <= kassa * 0.6 and r.random() < 0.5:
+                    kop.append(m["id"])
+                    kassa -= m["pris"]
+            energi = []
+            if kassa > 8:
+                cands = sorted((x for x in p.props if x["energiklass"] != "A"),
+                               key=lambda x: -ENERGY_CLASSES.index(x["energiklass"]))
+                energi = [x["id"] for x in cands[:self.shared["energi_max"]]]
+            kort = None
+            for c in p.hand:
+                if c["Effekt"] in ("riskbuffert", "dra_personkort", "forhandling_mod", "energi_mod"):
+                    kort = {"id": c["ID"]}
+                elif c["Effekt"] in ("lagg_dn_plus_egen", "stada") and p.props:
+                    kort = {"id": c["ID"], "mal": p.props[0]["id"]}
+                if kort:
+                    break
+            return {"kop": kop, "salj": [], "energi": energi, "kort": kort}
         return {}
 
     # ════════════════ VY ════════════════
 
+    @staticmethod
+    def _dolj(rows: dict, pid: Optional[str]) -> dict:
+        """Andra spelares dolda kort visas bara som 'Dolt kort'."""
+        return {owner: [r if owner == pid or not r.get("privat") else {"text": "Dolt kort.", "mkr": 0}
+                        for r in lines] for owner, lines in rows.items()}
+
     def view(self, pid: Optional[str]) -> dict:
         me = self.players.get(pid) if pid else None
+        reveal = dict(self.reveal)
+        if "rows" in reveal:
+            reveal["rows"] = self._dolj(reveal["rows"], pid)
+        shared = dict(self.shared)
+        if "info" in shared:
+            shared["info"] = self._dolj(shared["info"], pid)
         return {
             "code": self.code, "step": self.step, "round": self.round, "kind": self.kind,
             "deadline": self.deadline, "now": time.time(),
             "del": self._del() if self.step != "lobby" else 0,
             "players": [p.public() for p in self.players.values()],
             "me": me.private() if me else None,
-            "shared": self.shared, "reveal": self.reveal,
+            "shared": shared, "reveal": reveal,
             "fas_steg": self.fas_steg, "yield_b": self.yield_b, "yield_k": self.yield_k,
         }
 
