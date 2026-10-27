@@ -15,6 +15,7 @@ from data_loader import GameData
 from room_manager import RoomManager
 from ws_handler import manager, handle_ws_message
 from companion import companion_manager
+from kvarteret import kvarteret_manager
 
 
 # Global state
@@ -702,6 +703,52 @@ async def companion_ws(ws: WebSocket, code: str, player_id: str):
         import traceback
         traceback.print_exc()
         companion_manager.disconnect(code, player_id, ws)
+
+
+# ── Kvarteret (digital kortversion utan spelplaner) ──
+
+@app.get("/kvarteret")
+async def kvarteret_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "kvarteret.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+
+@app.post("/api/kvarteret/rooms")
+async def kvarteret_create(body: dict):
+    room, player = kvarteret_manager.create(game_data, (body.get("name") or "").strip())
+    return {"code": room.code, "player_id": player.id}
+
+
+@app.post("/api/kvarteret/rooms/{code}/join")
+async def kvarteret_join(code: str, body: dict):
+    room, player, err = kvarteret_manager.join(code, (body.get("name") or "").strip())
+    if err:
+        return JSONResponse({"error": err}, status_code=400)
+    return {"code": room.code, "player_id": player.id}
+
+
+@app.websocket("/kvarteret/ws/{code}/{player_id}")
+async def kvarteret_ws(ws: WebSocket, code: str, player_id: str):
+    room = kvarteret_manager.rooms.get(code)
+    if not room or player_id not in room.players:
+        await ws.accept()  # stäng med egen kod så att klienten slutar försöka
+        await ws.close(code=4004, reason="Rummet eller spelaren finns inte")
+        return
+    await kvarteret_manager.connect(code, player_id, ws)
+    try:
+        await ws.send_json({"type": "state", "state": room.view(player_id)})
+        await kvarteret_manager.broadcast(code)
+        while True:
+            import json
+            data = json.loads(await ws.receive_text())
+            await kvarteret_manager.handle(code, player_id, data, ws)
+    except WebSocketDisconnect:
+        kvarteret_manager.disconnect(code, player_id, ws)
+    except Exception as e:
+        print(f"KVARTERET WS ERROR [{code}/{player_id}]: {e}")
+        import traceback
+        traceback.print_exc()
+        kvarteret_manager.disconnect(code, player_id, ws)
 
 
 @app.get("/health")

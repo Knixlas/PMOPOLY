@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Åkepol – Kvarteret</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --paper:        #F1E8D6;
+    --paper-deep:   #E6D9BD;
+    --paper-edge:   #D9C9A8;
+    --bg-card:      #FAF6EC;
+    --ink:          #1A1410;
+    --ink-mid:      #544A3F;
+    --ink-faint:    #6B6056;
+    --ink-line:     #9E968E;
+    --burgundy:     #6B1815;
+    --burgundy-deep:#5A1411;
+    --success:      #456020;
+    --warning:      #A8501F;
+    --danger:       #6B1815;
+    --border:       rgba(84,74,63,.22);
+    --radius:       6px;
+    --font-serif:   'Source Serif 4', Cambria, 'Times New Roman', serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    /* Skedesfärger från korten (skede_color i CSV:erna) */
+    --pu: #DDA063;  --pu-bg: #FAF1E8;
+    --pl: #1A6B9A;  --pl-bg: #DDE9F0;
+    --gf: #91B542;  --gf-bg: #EEF4E3;
+    --f:  #EF5656;  --f-bg:  #FDE6E6;
+    --skede: var(--burgundy); --skede-bg: var(--paper-deep);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-serif); background: var(--paper); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; line-height: 1.45; }
+body.del1 { --skede: var(--pu); --skede-bg: var(--pu-bg); }
+body.del2 { --skede: var(--pl); --skede-bg: var(--pl-bg); }
+body.del2.genomforande { --skede: var(--gf); --skede-bg: var(--gf-bg); }
+body.del3 { --skede: var(--f); --skede-bg: var(--f-bg); }
+button { font-family: var(--font-mono); cursor: pointer; }
+.mono { font-family: var(--font-mono); }
+.kicker { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-mid); }
+h1 { font-weight: 600; font-size: 2.6rem; line-height: 1.05; }
+h1 em { font-style: italic; color: var(--burgundy); font-weight: 400; }
+h2 { font-weight: 600; font-size: 1.5rem; line-height: 1.15; margin: 4px 0 6px; }
+h3 { font-weight: 600; font-size: 1.05rem; }
+p.lead { color: var(--ink-mid); max-width: 60ch; }
+.pos { color: var(--success); } .neg { color: var(--danger); }
+
+/* ── Start ── */
+#start { max-width: 440px; margin: 0 auto; padding: 48px 16px; display: flex; flex-direction: column; gap: 18px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.card.deep { background: var(--paper-deep); }
+input[type=text], input[type=number] { width: 100%; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--paper); color: var(--ink); font-size: 1rem; font-family: var(--font-serif); outline: none; }
+input:focus { border-color: var(--burgundy); }
+.btn { display: inline-block; padding: 11px 16px; border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 500; }
+.btn:hover { background: var(--paper-edge); }
+.btn.primary { background: var(--burgundy); border-color: var(--burgundy); color: #fff; }
+.btn.primary:hover { background: var(--burgundy-deep); }
+.btn.wide { width: 100%; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.err { color: var(--danger); font-family: var(--font-mono); font-size: .75rem; min-height: 1em; }
+
+/* ── Spel ── */
+#game { display: none; }
+header.bar { position: sticky; top: 0; z-index: 10; background: var(--ink); color: var(--paper); padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 4px solid var(--skede); }
+header.bar .del { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--skede); }
+header.bar .title { font-weight: 600; font-size: 1.05rem; flex: 1; min-width: 160px; }
+.clock { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 600; min-width: 52px; text-align: right; }
+.clock.low { color: var(--f); }
+.code-tag { font-family: var(--font-mono); font-size: .7rem; opacity: .7; }
+.progress { height: 3px; background: rgba(255,255,255,.15); width: 100%; }
+.progress > div { height: 100%; background: var(--skede); transition: width .4s; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 16px; background: var(--paper-deep); border-bottom: 1px solid var(--border); }
+.chip { font-family: var(--font-mono); font-size: .68rem; padding: 3px 8px; border-radius: 99px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; gap: 5px; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+.chip.done { border-color: var(--success); }
+.chip.done::after { content: "✓"; color: var(--success); }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; max-width: 1180px; margin: 0 auto; padding: 20px 16px 120px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+main { min-width: 0; }
+aside .card { position: sticky; top: 92px; }
+.step-head { margin-bottom: 14px; }
+.step-head .kicker { color: var(--skede); filter: brightness(.8); }
+
+/* kortval */
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.opt { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: left; font-family: var(--font-serif); color: var(--ink); font-size: .92rem; display: flex; flex-direction: column; gap: 6px; transition: border-color .15s, transform .15s, box-shadow .15s; position: relative; }
+.opt:hover:not(:disabled) { border-color: var(--skede); transform: translateY(-1px); }
+.opt.sel { border: 2px solid var(--skede); box-shadow: 0 0 0 3px var(--skede-bg); padding: 11px; }
+.opt:disabled { opacity: .45; cursor: not-allowed; }
+.opt .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.opt .typ { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.opt h3 { font-size: 1rem; }
+.opt .desc { color: var(--ink-mid); font-size: .82rem; font-style: italic; }
+.opt img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 4px; background: var(--paper-deep); }
+.stats { display: flex; flex-wrap: wrap; gap: 4px; }
+.stat { font-family: var(--font-mono); font-size: .66rem; background: var(--paper); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+.stat.good { border-color: var(--success); color: var(--success); }
+.stat.bad { border-color: var(--danger); color: var(--danger); }
+.badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: .6rem; background: var(--ink); color: var(--paper); padding: 2px 6px; border-radius: 3px; }
+
+/* rutnät för byggrätt */
+.tomt { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin: 8px 0; }
+.tomt div { aspect-ratio: 1; border-radius: 2px; background: var(--paper); border: 1px solid var(--border); }
+.tomt div.used { background: var(--skede); border-color: var(--skede); }
+.tomt div.exp { border-style: dashed; }
+
+/* upphandling */
+.slot { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
+.slot .levels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+@media (max-width: 600px) { .slot .levels { grid-template-columns: repeat(2, 1fr); } }
+.lvl { border: 1px solid var(--border); border-radius: 4px; background: var(--paper); padding: 8px; text-align: left; font-family: var(--font-serif); font-size: .8rem; color: var(--ink); display: flex; flex-direction: column; gap: 3px; }
+.lvl b { font-family: var(--font-mono); font-size: .7rem; }
+.lvl .nm { color: var(--ink-mid); font-size: .74rem; font-style: italic; line-height: 1.2; }
+.lvl.sel { border: 2px solid var(--skede); padding: 7px; background: var(--skede-bg); }
+.lvl:disabled { opacity: .4; cursor: not-allowed; }
+.sumbar { position: sticky; bottom: 0; background: var(--ink); color: var(--paper); padding: 12px 16px; border-radius: var(--radius) var(--radius) 0 0; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+.sumbar .mono { font-size: .78rem; }
+.sumbar .btn.primary { margin-left: auto; }
+
+/* faskort */
+.faskort { background: var(--bg-card); border: 1px solid var(--border); border-left: 6px solid var(--skede); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+.nivaer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+@media (max-width: 700px) { .nivaer { grid-template-columns: repeat(2, 1fr); } }
+.komp { display: flex; gap: 6px; flex-wrap: wrap; }
+.komp span { font-family: var(--font-mono); font-size: .75rem; background: var(--skede-bg); border: 1px solid var(--border); border-radius: 3px; padding: 3px 7px; }
+
+/* reveal */
+.reveal { display: grid; gap: 12px; }
+.pr { background: var(--bg-card); border: 1px solid var(--border); border-left: 6px solid var(--c); border-radius: var(--radius); padding: 12px 14px; }
+.pr.me { border-width: 2px 2px 2px 8px; }
+.pr h3 { display: flex; justify-content: space-between; gap: 8px; }
+.pr ul { list-style: none; margin-top: 6px; display: grid; gap: 4px; }
+.pr li { font-size: .9rem; display: flex; justify-content: space-between; gap: 10px; }
+.pr li .amt { font-family: var(--font-mono); font-size: .78rem; white-space: nowrap; }
+.analog { background: var(--ink); color: var(--paper); border-radius: var(--radius); padding: 16px; margin-top: 16px; }
+.analog .kicker { color: var(--skede); }
+.analog p { color: #E8DFCB; margin-top: 6px; font-size: .95rem; }
+.analog img { width: 100%; border-radius: 4px; margin-top: 10px; opacity: .92; }
+
+/* bolag */
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: .88rem; margin-top: 6px; }
+.kv .k { color: var(--ink-mid); }
+.kv .v { font-family: var(--font-mono); font-size: .8rem; text-align: right; }
+.meter { margin-top: 8px; }
+.meter .lbl { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .68rem; color: var(--ink-mid); }
+.meter .track { height: 8px; background: var(--paper); border: 1px solid var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+.meter .fill { height: 100%; background: var(--success); }
+.meter .fill.short { background: var(--warning); }
+aside h3 { margin-top: 12px; font-size: .9rem; }
+aside .plist { font-size: .82rem; color: var(--ink-mid); }
+
+table.rank { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.rank th { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; text-align: right; color: var(--ink-mid); padding: 6px; border-bottom: 1px solid var(--border); }
+table.rank td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: .8rem; }
+table.rank th:first-child, table.rank td:first-child { text-align: left; font-family: var(--font-serif); font-size: .95rem; }
+.winner td { background: var(--skede-bg); font-weight: 600; }
+@media (max-width: 600px) {
+    h1 { font-size: 2.1rem; }
+    h2 { font-size: 1.25rem; }
+    header.bar { padding: 8px 16px; gap: 8px; }
+    header.bar .title { font-size: .95rem; min-width: 0; }
+    .code-tag { display: none; }
+    .opt img { aspect-ratio: 16/6; }
+    .layout { padding-top: 14px; }
+}
+.waiting { text-align: center; padding: 28px; color: var(--ink-mid); }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--danger); color: #fff; padding: 10px 16px; border-radius: var(--radius); font-family: var(--font-mono); font-size: .78rem; z-index: 50; display: none; max-width: calc(100% - 32px); }
+.bids { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.bids td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
+.dice { display: inline-block; font-family: var(--font-mono); background: var(--ink); color: var(--paper); border-radius: 4px; padding: 0 5px; font-size: .75rem; }
+</style>
+</head>
+<body>
+
+<section id="start">
+    <div>
+        <div class="kicker">Åkepol · digital kortversion</div>
+        <h1>Kvar<em>teret</em></h1>
+        <p class="lead" style="margin-top:10px">Bygg ett fastighetsbolag på 30 minuter: ta fram projekt, bygg dem och förvalta dem i ett år. Samma kort och samma regler som i brädspelet, fast nedkortat. Du behöver ingen spelplan och inga tärningar, bara en mobil eller dator per bolag.</p>
+    </div>
+    <div class="card deep">
+        <div class="kicker" style="margin-bottom:8px">Ditt bolag</div>
+        <input type="text" id="name" placeholder="Bolagets namn, t.ex. Team Norr" maxlength="24">
+    </div>
+    <div class="card">
+        <div class="kicker" style="margin-bottom:8px">Starta ett nytt rum</div>
+        <button class="btn primary wide" id="btn-create">Skapa rum</button>
+    </div>
+    <div class="card">
+        <div class="kicker" style="margin-bottom:8px">Gå med i ett rum</div>
+        <div class="row"><input type="text" id="code" placeholder="Kod, t.ex. KXPL" maxlength="4" style="flex:1;text-transform:uppercase">
+        <button class="btn" id="btn-join">Gå med</button></div>
+    </div>
+    <div class="err" id="start-err"></div>
+</section>
+
+<section id="game">
+    <header class="bar">
+        <div style="flex:1;min-width:0">
+            <div class="del" id="h-del"></div>
+            <div class="title" id="h-title"></div>
+        </div>
+        <span class="code-tag" id="h-code"></span>
+        <button class="btn" id="btn-skip" style="color:var(--paper);border-color:rgba(255,255,255,.4);padding:6px 10px;display:none" title="Gå vidare utan att vänta">Vidare ›</button>
+        <span class="clock" id="h-clock"></span>
+    </header>
+    <div class="progress"><div id="h-progress"></div></div>
+    <div class="chips" id="chips"></div>
+    <div class="layout">
+        <main id="main"></main>
+        <aside id="aside"></aside>
+    </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/kvarteret.js"></script>
+</body>
+</html>
