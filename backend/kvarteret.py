@@ -52,8 +52,14 @@ UPPHANDLINGAR = [
 ]
 ORG_SLOTS = set(UPPHANDLINGAR[0][1])
 
-P1_ROUNDS = 5
-QUARTERS = 4
+# Kortversionen: spelaren gör de viktiga valen, resten slumpas – lika för alla bolag
+# och utan att straffa någon
+START_PROJEKT_RUTOR = 12   # fem startprojekt (ett per hög) på högst 12 av tomtens 16 rutor
+P1_ROUNDS = 2              # rundor för att ta 1–2 projekt till
+MAX_EGNA_UPPH = 3          # upphandlingar man gör själv; resten får gemensam slumpad nivå 2–3
+FAS_RUNDOR = 2             # byggfaser man spelar; övriga godkänns automatiskt
+QUARTERS = 1               # kvartal i förvaltningen
+ALLA_SLOTS = [s for _, slots in UPPHANDLINGAR for s in slots]
 
 # Förvaltning 2.1 (FORVALTNING_DESIGN_2-1.md) – lekarna läses ur data/forvaltning_2-1/
 F21_DIR = os.path.join(DATA_DIR, "forvaltning_2-1")
@@ -272,7 +278,8 @@ class KRoom:
 
     def _build_decks(self):
         gd = self.gd
-        self.proj_piles = {typ: self._deck(proj_dict(p) for p in ps)
+        # Korten finns i flera exemplar med samma id; varje exemplar får ett eget
+        self.proj_piles = {typ: self._deck(dict(proj_dict(p), id=f"{p.id}-{i}") for i, p in enumerate(ps))
                            for typ, ps in gd.projects.items()}
         self.dialog_deck = self._deck(c for c in gd.dialog if c.nr.startswith("D"))
         self.politik_deck = self._deck(c for c in gd.dialog if c.nr.startswith("P"))
@@ -335,14 +342,14 @@ class KRoom:
         self.flow = ([("intro1", 0), ("pc", 0)] +
                      [x for r in range(1, P1_ROUNDS + 1) for x in (("p1", r), ("p1_res", r))] +
                      [("namnd", 0), ("slut1", 0), ("intro2", 0), ("ac", 0)] +
-                     [x for r in range(1, 4) for x in (("upph", r), ("upph_res", r))] +
-                     [x for r in range(1, 4) for x in (("fas", r), ("fas_res", r))] +
+                     [("upph", 1), ("upph_res", 1)] +
+                     [x for r in range(1, FAS_RUNDOR + 1) for x in (("fas", r), ("fas_res", r))] +
                      [("slut2", 0), ("intro3", 0), ("f_setup", 0)] +
                      [x for q in range(1, QUARTERS + 1) for x in (("kvartal", q), ("kvartal_res", q))] +
                      [("final", 0)])
-        steg = list(range(1, 9))
-        self.fas_steg = sorted([self.rng.choice(steg[0:3]), self.rng.choice(steg[3:6]),
-                                self.rng.choice(steg[6:8])])
+        self.fas_steg = [self.rng.choice([1, 2, 3, 4]), self.rng.choice([5, 6, 7, 8])]
+        # Automatiska upphandlingsnivåer: samma för alla bolag
+        self.auto_niva = {slot: self.rng.choice([2, 3]) for slot in ALLA_SLOTS}
         self.log(None, "start", {"spelare": [p.name for p in self.players.values()]})
         self.advance()
 
@@ -413,6 +420,37 @@ class KRoom:
     # ════════════════ SKEDE 1 – PROJEKTUTVECKLING ════════════════
 
     def _enter_intro1(self):
+        """Fem startprojekt per bolag, ett ur varje hög, på högst START_PROJEKT_RUTOR rutor.
+        Uppsättningarna väljs så att intäkt, kostnad, ytor och krav blir så lika som möjligt
+        mellan bolagen. Startprojekten är redan förankrade och går inte till nämnden."""
+        piles = [pile for pile in self.proj_piles.values() if pile]
+        kandidater = []
+        for _ in range(3000):
+            kand = [self.rng.choice(pile) for pile in piles]
+            if sum(x["rutor"] for x in kand) <= START_PROJEKT_RUTOR:
+                kandidater.append(kand)
+        if not kandidater:
+            kandidater = [[min(pile, key=lambda x: x["rutor"]) for pile in piles]]
+        nycklar = ("anskaffning", "kostnad", "bta", "rutor", "q", "h", "bas_dn")
+        vek = lambda kand: [sum(x[k] for x in kand) for k in nycklar]
+        vektorer = [vek(k) for k in kandidater]
+        median = [sorted(v[i] for v in vektorer)[len(vektorer) // 2] for i in range(len(nycklar))]
+        skala = [max(1, max(v[i] for v in vektorer) - min(v[i] for v in vektorer)) for i in range(len(nycklar))]
+        avst = lambda v: sum(((a - b) / c) ** 2 for a, b, c in zip(v, median, skala))
+        ordning = sorted(range(len(kandidater)), key=lambda i: avst(vektorer[i]))
+        anvanda = set()
+        for p in self.players.values():
+            val = next((kandidater[i] for i in ordning
+                        if not any(id(x) in anvanda for x in kandidater[i])), kandidater[ordning[0]])
+            for proj in val:
+                anvanda.add(id(proj))
+                self.proj_piles[proj["typ"]].remove(proj)
+                proj = dict(proj, start=True)
+                p.projects.append(proj)
+                p.q_krav += proj["q"]
+                p.h_krav += proj["h"]
+            self.log(p.id, "startprojekt", {"projekt": [x["namn"] for x in val],
+                                            **dict(zip(nycklar, vek(val)))})
         return "info"
 
     def _enter_pc(self):
@@ -573,7 +611,7 @@ class KRoom:
         for p in self.players.values():
             bonus = p.pc.get("namnd_bonus", 0) if p.pc else 0
             for proj in list(p.projects):
-                if proj["namnd"] <= 1:
+                if proj["namnd"] <= 1 or proj.get("start"):
                     continue
                 roll = d(20, self.rng)
                 if roll + bonus >= proj["namnd"]:
@@ -650,31 +688,42 @@ class KRoom:
         return {"slot": slot, "min": min_niva, "levels": levels}
 
     def _enter_upph(self):
-        namn, slots = UPPHANDLINGAR[self.round - 1]
-        self.shared = {"namn": namn, "runda": self.round, "av": len(UPPHANDLINGAR)}
+        self.shared = {"max": MAX_EGNA_UPPH, "grupper": [[namn, slots] for namn, slots in UPPHANDLINGAR]}
         for p in self.players.values():
-            p.offer = {"slots": [self._offers_for_slot(p, s) for s in slots]}
+            p.offer = {"slots": [dict(self._offers_for_slot(p, s), auto=max(self._offers_for_slot(p, s)["min"],
+                                                                          self.auto_niva[s]))
+                                 for s in ALLA_SLOTS]}
         return "decision"
 
     def _validate_upph(self, p, data):
         val = data.get("val") or {}
-        for s in p.offer["slots"]:
-            n = val.get(s["slot"])
-            if not isinstance(n, int) or not any(l["niva"] == n for l in s["levels"]):
-                return f"Välj nivå för {s['slot'].lower()}."
+        if len(val) > MAX_EGNA_UPPH:
+            return f"Du upphandlar högst {MAX_EGNA_UPPH} poster själv."
+        slots = {s["slot"]: s for s in p.offer["slots"]}
+        for slot, n in val.items():
+            s = slots.get(slot)
+            if not s or not isinstance(n, int) or not any(l["niva"] == n for l in s["levels"]):
+                return f"Välj nivå för {slot.lower()}."
             if n < s["min"]:
-                return f"Dina projekt kräver minst nivå {s['min']} på {s['slot'].lower()}."
+                return f"Dina projekt kräver minst nivå {s['min']} på {slot.lower()}."
 
     def _resolve_upph(self):
-        namn, slots = UPPHANDLINGAR[self.round - 1]
-        self.reveal = {"title": f"Upphandling: {namn}", "rows": {},
+        """Egna val kostar och ger effekt som vanligt och följs av sitt händelsekort.
+        Övriga poster får den gemensamma slumpade nivån (2–3, minst projektens krav) och
+        ger varken händelse- eller garantikort, så att det automatiska inte straffar någon."""
+        self.reveal = {"title": "Upphandling", "rows": {},
                        "val": {pid: p.choice["val"] for pid, p in self.players.items()}}
         for p in self.players.values():
-            kost = 0
+            egna, auto = 0, 0
             for s in p.offer["slots"]:
-                lvl = next(l for l in s["levels"] if l["niva"] == p.choice["val"][s["slot"]])
-                p.lev[s["slot"]] = {**lvl, "slot": s["slot"]}
-                kost += lvl["kostnad"]
+                eget = s["slot"] in p.choice["val"]
+                n = p.choice["val"][s["slot"]] if eget else s["auto"]
+                lvl = next(l for l in s["levels"] if l["niva"] == n)
+                p.lev[s["slot"]] = {**lvl, "slot": s["slot"], "auto": not eget}
+                if eget:
+                    egna += lvl["kostnad"]
+                else:
+                    auto += lvl["kostnad"]
                 p.q += lvl["q"]
                 p.h += lvl["h"]
                 p.t = max(MIN_T, p.t + lvl["t"])
@@ -683,9 +732,13 @@ class KRoom:
                 for k, v in lvl["komp"].items():
                     if k in p.komp:
                         p.komp[k] += v
-            p.abt -= kost
-            self.note(p, f"Upphandlat för {kost} Mkr.", -kost, plan=True)
-            self._planning_event(p, self.rng.choice(slots))
+            p.abt -= egna + auto
+            if egna:
+                self.note(p, f"Egna upphandlingar för {egna} Mkr.", -egna, plan=True)
+            self.note(p, f"Övriga {len(ALLA_SLOTS) - len(p.choice['val'])} poster upphandlades automatiskt "
+                         f"för {auto} Mkr.", -auto, plan=True)
+            for slot in p.choice["val"]:
+                self._planning_event(p, slot)
 
     def _planning_event(self, p: KPlayer, slot: str):
         card_id = slot if slot in ORG_SLOTS else SLOT_TO_CARD_IDS.get(slot, [slot])[0]
@@ -717,12 +770,12 @@ class KRoom:
         return "info"
 
     def _krav_key(self, p: KPlayer) -> str:
-        return "req_k" if len(p.projects) >= 5 else "req_b"
+        return "req_k" if len(p.projects) >= 7 else "req_b"
 
     def _enter_fas(self):
         steg = self.fas_steg[self.round - 1]
         card = self.rng.choice(self.gd.phase_cards[steg])
-        self.shared = {"steg": steg, "runda": self.round, "av": 3, "kort": card.to_dict(),
+        self.shared = {"steg": steg, "runda": self.round, "av": FAS_RUNDOR, "kort": card.to_dict(),
                        "kulturpris": PHASE_COST[steg - 1]}
         for p in self.players.values():
             key = self._krav_key(p)
@@ -775,7 +828,9 @@ class KRoom:
 
     def _enter_slut2(self):
         self.reveal = {"title": "Skede 2 klart", "rows": {}}
+        ovriga = [str(x) for x in range(1, 9) if x not in self.fas_steg]
         for p in self.players.values():
+            self.note(p, f"Byggfas {', '.join(ovriga)} godkändes automatiskt utan anmärkning.")
             p.n_t = max(0, p.t - p.t_mal)
             p.n_q = max(0, p.q_krav - p.q)
             p.n_h = max(0, p.h_krav - p.h)
@@ -792,7 +847,7 @@ class KRoom:
                     garanti.append((gtyp, f"efter missad {typ.lower()}"))
                     self.note(p, f"Konsekvenskort {typ.lower()}: {card.namn} → {e['mkr']:+.0f} Mkr.", e["mkr"])
             for lev in p.lev.values():
-                if lev["slot"] not in ORG_SLOTS and lev["niva"] <= 2:
+                if lev["slot"] not in ORG_SLOTS and lev["niva"] <= 2 and not lev.get("auto"):
                     garanti.append(("KVALITETSBRIST", f"{lev['slot'].lower()} nivå {lev['niva']}"))
             for gtyp, orsak in garanti:
                 card = self._draw(self.garanti[gtyp], self.gd.garanti_cards[gtyp])
@@ -817,6 +872,8 @@ class KRoom:
             ek_skift = 1 if p.n_h > 0 else 0
             p.props = [self._fastighet(x, "byggd", self._ek_steg(x["energiklass"], ek_skift))
                        for x in p.projects if x["typ"] != "BRF"]
+            for prop in p.props:  # §4: lånet är 70 % av MV vid inträdet i förvaltningen
+                prop["lan"] = self._nytt_lan(self._mv(prop))
             self.note(p, f"TB {p.tb:.0f} Mkr förs till kassan. Kassa inför förvaltningen: {p.ek:.0f} Mkr.")
             self.log(p.id, "skede2_slut", {"t": p.t, "q": p.q, "h": p.h, "tb": p.tb, "ek": p.ek})
         return "info"
@@ -1330,8 +1387,8 @@ class KRoom:
                 return {"val": "markexpansion"}
             return {"val": r.choice(["dialog", "riskbuffert"])}
         if s == "upph":
-            return {"val": {o["slot"]: max(o["min"], r.choice([2, 2, 3, 3, 4, 1]))
-                            for o in p.offer["slots"]}}
+            return {"val": {o["slot"]: max(o["min"], r.choice([2, 3, 3, 4]))
+                            for o in r.sample(p.offer["slots"], 2)}}
         if s == "fas":
             for i in range(len(p.offer["nivaer"]) - 1, -1, -1):
                 if not self._validate_fas(p, {"niva": i, "kultur": []}):
