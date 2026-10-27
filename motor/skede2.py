@@ -80,6 +80,9 @@ class S2Parametrar:
     t_start: int = 12
     t_projekt_tak: int = 14
     t_golv: int = 8
+    # kortversionen (motor/kortlage.py); 0 = hela spelet
+    egna_upphandlingar: int = 0      # poster man upphandlar själv; övriga får gemensam slumpad nivå
+    spelade_faser: int = 0           # byggfaser som spelas; övriga godkänns utan effekt
 
 
 @dataclass
@@ -193,6 +196,13 @@ class Skede2:
             utfall = las(self.s.d20() + b.erfarenhet)
         self.effekt(b, utfall)
 
+    def lagsta_niva(self, b, kravkol):
+        """Den nivå projekten kräver på en post (1 om inget krav)."""
+        if not kravkol:
+            return 1
+        return max([1] + [int(m.group(1)) for p in b.pu["placerade"]
+                          if (m := re.search(r"(\d)", str(p.get(kravkol) or "")))])
+
     def pl_handelse(self, b):
         if b.handelsehog:
             kort = self.s.dra_fran(b.handelsehog, "PL-händelser")
@@ -226,22 +236,40 @@ class Skede2:
                        t=-int(tal(b.ac["Förbättrar krav: tid (T)"])), erf=int(tal(b.ac["Erfarenhet"])))
             b.hand.append(b.ac)
         self.fas = "planering"
+        egna, auto_niva = {}, {}
+        if self.p.egna_upphandlingar:                    # kortversionen: välj egna poster, resten automatiskt
+            from .kortlage import automatiska_nivaer, fro_av
+            kategorier = [k for k, _, _ in STEG]
+            auto_niva = automatiska_nivaer(kategorier, fro_av(*ledning.values(), [b.ac for b in self.bolag]))
+            self.auto_niva = auto_niva                   # för frågan (motor/fragor.py)
+            self.steg_nr, self.steg_namn = 1, "egna poster (kortversionen)"   # för spelledaren
+            for b in self.bolag:
+                self.aktiv = b
+                valda = b.strategi.valj_egna_upphandlingar(self, b, kategorier, self.p.egna_upphandlingar)
+                egna[b.namn] = set(list(valda or [])[:self.p.egna_upphandlingar])
         for nr, (kategori, sort, kravkol) in enumerate(STEG, 1):
             self.steg_nr, self.steg_namn = nr, kategori
             for b in self.bolag:
                 self.aktiv = b
-                b.handelsehog += [k for k in self.d.handelse
-                                  if HANDELSE_STEG.get(k["Kategori"], k["Kategori"]) == kategori]
+                sjalv = not auto_niva or kategori in egna.get(b.namn, ())
+                if sjalv:
+                    b.handelsehog += [k for k in self.d.handelse
+                                      if HANDELSE_STEG.get(k["Kategori"], k["Kategori"]) == kategori]
                 lek = self.d.leverantorer if sort == "lev" else self.d.organisation
                 alternativ = sorted((k for k in lek if k["Kategori"] == kategori), key=lambda k: tal(k["Nivå"]))
                 lagst = 1
                 if kravkol:                                  # leverantören måste klara projektens nivåkrav
                     lagst = max([1] + [int(m.group(1)) for p in b.pu["placerade"]
                                        if (m := re.search(r"(\d)", str(p.get(kravkol) or "")))])
-                kort = b.strategi.valj_niva(self, b, [k for k in alternativ if tal(k["Nivå"]) >= lagst])
+                mojliga = [k for k in alternativ if tal(k["Nivå"]) >= lagst]
+                if sjalv:
+                    kort = b.strategi.valj_niva(self, b, mojliga)
+                else:                                        # kortversionen: gemensam nivå, minst projektens krav
+                    mal = max(lagst, auto_niva[kategori])
+                    kort = next((k for k in mojliga if tal(k["Nivå"]) >= mal), mojliga[-1])
                 if sort == "lev":
                     self.betala(b, tal(kort[f"Kostnad klass {b.bya_klass if kort['Kostnaden beror av'] == 'BYA' else b.bta_klass} (Mkr)"]))
-                    if tal(kort["Nivå"]) <= 2:
+                    if tal(kort["Nivå"]) <= 2 and sjalv:     # automatiska poster ger inga garantikort
                         b.lev_niva_1_2 += 1
                 else:
                     self.betala(b, tal(kort["Fast kostnad (Mkr)"]))
@@ -249,7 +277,8 @@ class Skede2:
                 self.andra(b, q=int(tal(kort["Q"])), h=int(tal(kort["H"])), t=int(tal(kort["T (mån)"])),
                            erf=int(tal(kort["Erfarenhet"])))
                 b.hand.append(kort)
-                self.pl_handelse(b)
+                if sjalv:
+                    self.pl_handelse(b)
 
     # ------------------------------------------------------------------ Genomförande
     def losning(self, krav_, hand):
@@ -276,8 +305,16 @@ class Skede2:
         kulturhog = self.kulturhog = self.s.blanda_lista(self.d.kultur, "kultur")   # (frågan visar hur många som finns)
         ordning = sorted(self.bolag, key=lambda b: b.pu["bta"])     # beslut: lägst BTA först
         self.fas = "genomforande"
+        spelas = set(range(1, 9))
+        if self.p.spelade_faser:                         # kortversionen: några faser spelas, övriga godkänns
+            from .kortlage import fro_av, spelade_faser
+            spelas = set(spelade_faser(self.p.spelade_faser, fro_av(*(hogar[s] for s in range(1, 9)))))
         for steg in range(1, 9):
             self.steg_nr, self.fas_kort = steg, None
+            if steg not in spelas:
+                for b in ordning:
+                    b.fas_utfall.append("Godkänd")
+                continue
             fas = hogar[steg].pop()
             self.fas_kort = fas
             pris = tal(fas["Kostnad kulturaktiviteter (Mkr)"])

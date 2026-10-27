@@ -7,6 +7,7 @@
   let kvarter = $state([{ namn: 'Norr', styrning: 'människa' }, { namn: 'Söder', styrning: 'människa' }]);
   let slump = $state<'digital' | 'inmatad' | 'resultat'>('digital');
   let svarighet = $state<'lätt' | 'normal' | 'svår'>('normal');
+  let langd = $state<'hela' | 'kort'>('hela');
   let fel = $state('');
   let skapar = $state(false);
   let partier = $state<Awaited<ReturnType<typeof listaPartier>>>([]);
@@ -60,7 +61,8 @@
     }
     skapar = true;
     try {
-      const id = await skapaParti({ kvarter: kvarter.map(k => ({ ...k, namn: k.namn.trim() })), slump, svarighet });
+      const id = await skapaParti({ kvarter: kvarter.map(k => ({ ...k, namn: k.namn.trim() })), slump, svarighet,
+                                    langd: slump === 'digital' ? langd : 'hela' });
       location.hash = `#/parti/${id}`;
     } catch (err) {
       fel = `Partiet gick inte att skapa: ${(err as Error).message}`;
@@ -107,6 +109,16 @@
         <span><strong>Bara resultat</strong><br />Ni spelar helt på brädet och för bara in slutsiffrorna. Appen räknar poängen och visar vem som vann.</span></label>
     </fieldset>
 
+    {#if slump === 'digital'}
+      <fieldset>
+        <legend>Längd</legend>
+        <label class="val"><input type="radio" name="langd" value="hela" bind:group={langd} />
+          <span><strong>Hela spelet</strong><br />Alla tre skedena som vid bordet: brädet, 13 upphandlingar, åtta byggfaser och fyra kvartal.</span></label>
+        <label class="val"><input type="radio" name="langd" value="kort" bind:group={langd} />
+          <span><strong>Kortversion, cirka 20 minuter</strong><br />Samma regler i kortare form: fyra lika stora startprojekt, några drag på brädet, nämnden, tre egna upphandlingar, två byggfaser och ett kvartal. Det ni inte gör själva sköts automatiskt och lika för alla.</span></label>
+      </fieldset>
+    {/if}
+
     <fieldset>
       <legend>Svårighetsgrad</legend>
       <p class="hjalp">Detaljplanens startkrav för kvalitet (Q) och hållbarhet (H). Ju högre krav, desto tuffare att klara Genomförandet.</p>
@@ -135,7 +147,7 @@
         {#each partier.slice(0, 12) as p}
           <li class:fragar={radera === p.id}>
             <a href="#/parti/{p.id}"><strong>{p.kvarter.join(', ')}</strong>
-              <span>{[p.klart ? 'Klart' : p.skede, p.slump === 'inmatad' ? 'vid brädet' : 'i appen', p.svarighet && p.svarighet !== 'normal' ? p.svarighet : '', p.id].filter(Boolean).join(' · ')}</span></a>
+              <span>{[p.klart ? 'Klart' : p.skede, p.slump === 'inmatad' ? 'vid brädet' : 'i appen', p.svarighet && p.svarighet !== 'normal' ? p.svarighet : '', p.langd === 'kort' ? 'kortversion' : '', p.id].filter(Boolean).join(' · ')}</span></a>
             {#if radera === p.id}
               <div class="bekrafta" role="group" aria-label="Radera partiet">
                 <span>Radera partiet för alla? Det går inte att ångra.</span>

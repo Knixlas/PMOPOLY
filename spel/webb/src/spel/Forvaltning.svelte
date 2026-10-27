@@ -93,7 +93,7 @@
         </tbody>
       </table>
     {/if}
-    <figcaption>{q ? `Kvartal ${q} av 4` : 'Innan första kvartalet'}{nuIndex >= 0 ? ` · ${STATIONER[nuIndex][1]}` : ''}
+    <figcaption>{q ? `Kvartal ${q} av ${bild.kvartal_antal ?? 4}` : 'Innan första kvartalet'}{nuIndex >= 0 ? ` · ${STATIONER[nuIndex][1]}` : ''}
       </figcaption>
   </figure>
 

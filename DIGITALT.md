@@ -33,6 +33,23 @@ särskilt prognoskursen med filmversion.
 - Att göra när det blir aktuellt: gå igenom ÅSA/ÅKE och prognoskursen, välj de moment som passar
   spelets skeden (Skede 1 PU, Skede 2 planering/genomförande, Förvaltning), skissa en första mockup.
 
+## Kortversionen (~20 minuter)
+
+Ett val när partiet startas ("Längd": hela spelet eller kortversion, bara helt i appen). Samma motor och
+samma regler; `motor/kortlage.py` bestämmer bara hur mycket som spelas och vem som svarar:
+
+- **Skede 1:** fyra startprojekt per kvarter, valda så att intäkt, utvecklingskostnad, BTA, krav och
+  nämndsumma blir så lika som möjligt (och att de ryms i pusslet). Tre drag på brädet, nämnden enligt R1.
+  Kompletteringen (4.2) hoppas över; pusslet (4.3) läggs av lösaren.
+- **Skede 2:** man väljer tre av de 13 posterna att upphandla själv. Övriga får en slumpad nivå (2–3,
+  minst projektens krav) som är densamma för alla kvarter och ger varken händelse- eller garantikort.
+  Två byggfaser spelas (en ur 1–4, en ur 5–8); övriga godkänns utan effekt.
+- **Förvaltningen:** ett kvartal.
+
+Det kortversionen själv slumpar tas ur högar som redan är blandade och loggade, så partiet spelas upp och
+återupptas som vanligt. Utan kortversionen är allt som förut (parametrarna har hela spelet som standard).
+Tester: `tester/test_kortlage.py`.
+
 ## Pusslet (regelboken 4.3, förtydligat)
 
 - Tomten är 16×16; marken 4×4 är byggrätten. **Markexpansioner läggs kant i kant med befintlig mark.**

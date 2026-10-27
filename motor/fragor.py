@@ -129,6 +129,8 @@ BESLUT = {
     # Skede 2 — planering och genomförande
     "valj_ac": ("val", lambda m, s, a: "Välj arbetschef (AC)", lambda m, s, a: a[0], False),
     "valj_niva": ("val", lambda m, s, a: "Välj nivå", lambda m, s, a: a[0], False),
+    "valj_egna_upphandlingar": ("flerval", lambda m, s, a: f"Vilka {a[1]} poster upphandlar ni själva?",
+                                lambda m, s, a: a[0], False),
     "sla_om": ("janej", lambda m, s, a: "Slå om med en riskbuffert?", None, False),
     "kulturkort": ("tal", lambda m, s, a: f"Hur många kulturkort köper ni ({_tal(a[1]):g} Mkr styck)?", None, False),
     "spela_niva": ("janej", lambda m, s, a: f"Spela korten och nå nivå {a[0]}?", None, False),
@@ -281,6 +283,10 @@ def _eliminera(m, s, a):
 
 
 HJALP = {
+    "valj_egna_upphandlingar": lambda m, s, a: (
+        "Kortversionen: de poster ni väljer upphandlar ni själva – ni väljer nivå och drar postens "
+        "händelsekort, och leverantörer på nivå 1–2 ger garantikort. Övriga poster får den nivå som står "
+        "på dem, samma för alla kvarter, utan händelse- och garantikort."),
     "sla_om": lambda m, s, a: ((getattr(m, "omslag_info", None) or (f"Utfallet blev: {a[0]}." if a and isinstance(a[0], str) else ""))
                                + f" Ett omslag kostar en riskbuffert (ni har {s.riskbuffert})."),
     "eliminera": _eliminera,
@@ -342,7 +348,7 @@ HJALP = {
 
 
 MAX_TAL = {"rb_sank_krav": lambda m, s, a: getattr(s, "riskbuffert", 0), "kulturkort": lambda m, s, a: max(0, len(getattr(m, "kulturhog", [])) or 5)}
-MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0]}
+MAX_FLERVAL = {"uppgradera": lambda m, s, a: a[0], "valj_egna_upphandlingar": lambda m, s, a: a[1]}
 
 
 def _ar_kort(x):
@@ -420,6 +426,13 @@ def beskriv_beslut(metod, motor, subjekt, args, rotter, forslag, analog=False):
                                      if metod == "valj_projekt" and len(getattr(motor, "projektval_typer", [])) == 1 else ""})
     if typ == "tal":
         vy["min"], vy["max"] = 0, int(MAX_TAL.get(metod, lambda m, s, a: 10)(motor, subjekt, args))
+    if metod == "valj_egna_upphandlingar" and getattr(motor, "auto_niva", None):
+        from .skede2 import STEG
+        kravkol = {k: kol for k, _, kol in STEG}
+        for alt in vy.get("alternativ", []):
+            lagst = motor.lagsta_niva(subjekt, kravkol.get(alt["kod"]))
+            auto = max(lagst, motor.auto_niva.get(alt["kod"], 2))
+            alt["detalj"] = (f"Automatiskt: nivå {auto}" + (f" · projekten kräver nivå {lagst}" if lagst > 1 else ""))
     if typ == "flerval" and metod in MAX_FLERVAL:
         vy["max"] = int(MAX_FLERVAL[metod](motor, subjekt, args))
     if typ == "fasspel":                                    # Genomförandet: korten, nivåerna och kraven
