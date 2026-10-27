@@ -9,3 +9,6 @@ venv/
 
 # Word/Office temp lock-filer
 ~$*
+node_modules/
+# Kvarterets körtidsloggar (skrivs av servern, fylls bara på)
+data/kvarteret_logs/
