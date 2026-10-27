@@ -21,7 +21,7 @@ const DELAR = {
 const INTRO = {
     intro1: {
         rubrik: "Del 1: Byggrätten",
-        text: "Du har fått en markanvisning på 4 000 kvm (16 rutor) och fem startprojekt, ett av varje typ. Alla bolag får lika stora startportföljer i intäkt, kostnad och yta. Under två rundor väljer du samtidigt som de andra bolagen vad du gör: tar ett projekt till, går på en medborgardialog, bygger en riskbuffert eller köper mer mark. Varje projekt höjer kraven på kvalitet och hållbarhet. Nämnden prövar de projekt du tar själv. Det som blir kvar av intäkterna efter mark och utvecklingskostnader blir din byggbudget (ABT).",
+        text: "Du har fått en markanvisning på 4 000 kvm (16 rutor) och fyra startprojekt av olika typ. Alla bolag får lika stora startportföljer i intäkt, kostnad och yta. Varje ruta är 250 kvm. Bostäder (BRF och hyresrätter) får staplas ovanpå andra projekt, så marken räcker längre än man tror. Under två rundor väljer du samtidigt som de andra bolagen vad du gör: tar ett projekt till, går på en medborgardialog, bygger en riskbuffert eller köper mer mark. Varje projekt höjer kraven på kvalitet och hållbarhet. Sedan prövar nämnden hela portföljen. Det som blir kvar av intäkterna efter mark och utvecklingskostnader blir din byggbudget (ABT).",
         analog: "I brädspelet slår du tärning och går runt Stadsbyggnadskontoret. Var du hamnar avgör om du får ett projekt, ett dialog- eller politikkort eller en riskbuffert. Sedan pusslar du in projektens former på din tomt. Bostäder får läggas i ett övre lager, men bara om de täcker andra projekt helt.",
     },
     intro2: {
@@ -38,7 +38,7 @@ const INTRO = {
 
 const STEP_TITLE = {
     lobby: "Väntrum", intro1: "Del 1: Byggrätten", pc: "Välj projektchef", p1: "Vad gör ni den här rundan?",
-    p1_res: "Rundans utfall", namnd: "Nämndbeslut", slut1: "Skede 1 klart", intro2: "Del 2: Bygget",
+    p1_res: "Rundans utfall", namnd: "Nämndbeslut", namnd_res: "Nämndens beslut", slut1: "Skede 1 klart", intro2: "Del 2: Bygget",
     ac: "Välj arbetschef", upph: "Upphandling", upph_res: "Upphandlingens utfall", fas: "Genomförande",
     fas_res: "Fasens utfall", slut2: "Slutbesiktning och garanti", intro3: "Del 3: Året", f_setup: "Fastighetschef och skötare",
     kvartal: "Kvartal", kvartal_res: "Kvartalets utfall", final: "Slutresultat",
@@ -47,7 +47,7 @@ const STEP_TITLE = {
 const P1_ROUNDS = 2;
 const ORG_SLOTS = ["OPERATIVT TEAM", "STÖDFUNKTIONER", "MARKNADSTEAM", "DIGITALISERING"];
 const BILDPREFIX = { BRF: "BRF", "FÖRSKOLA": "FÖRSKOLOR", LOKAL: "LOKAL", KONTOR: "KONTOR", "HYRESRÄTT": "Hyresrätt" };
-const projImg = (p) => `/img/projects/${encodeURIComponent(`${BILDPREFIX[p.typ] || p.typ} ${p.namn.split(" ").pop()}`)}.jpg`;
+const projImg = (p) => `/img/projects/${encodeURIComponent(`${BILDPREFIX[p.typ] || p.typ} ${p.namn.split(" ").pop()}`)}.png`;
 const typNamn = (t) => ({ "FÖRSKOLA": "Förskola", "HYRESRÄTT": "Hyresrätt", BRF: "BRF", LOKAL: "Lokal", KONTOR: "Kontor" }[t] || t);
 
 // ── Start och anslutning ──
@@ -239,7 +239,7 @@ const VIEWS = {
         const m = S.shared.market;
         const full = me.n_projects >= 9;
         const projekt = Object.values(m).map((p) => {
-            const fits = p.rutor <= me.rutor_kvar;
+            const fits = me.offer.passar?.[p.typ] ?? true;
             return projCard(p, { sel: draft.val === "projekt" && draft.typ === p.typ, disabled: !fits || full, note: fits ? "" : "Får inte plats på din mark" });
         }).join("");
         const alt = (val, rubrik, text, stats) => `<button class="opt ${draft.val === val ? "sel" : ""}" data-val="${val}">
@@ -255,7 +255,14 @@ const VIEWS = {
     },
 
     p1_res: (me) => head(`Runda ${S.round} av ${P1_ROUNDS}`, "Så gick rundan") + revealRows(S.reveal) + readyButton(),
-    namnd: (me) => head("Stadsbyggnadsnämnden", "Nämndbeslut", "Projekt med nämndkrav över 1 kräver ett D20-slag. Projektchefens nämndbonus läggs till.") + revealRows(S.reveal) + readyButton(),
+    namnd(me) {
+        const o = me.offer;
+        const alt = (val, rubrik, nu) => `<button class="opt" data-hoj="${val}"><div class="typ">Vid miss</div><h3>Höj ${rubrik}</h3><div class="stats"><span class="stat">Nu ${nu}</span></div></button>`;
+        return head("Stadsbyggnadsnämnden", "Nämndbeslut",
+            `Nämnden prövar hela portföljen. Du slår D20${o.bonus ? ` + ${o.bonus} (projektchefens nämndbonus)` : ""} och måste komma över summan av projektens nämndkrav: <b>${o.summa}</b>. Missar du höjs ett krav ett steg och du slår om, tills det går igenom. Välj vilket krav som får ta smällen.`)
+            + `<div class="grid">${alt("q", "kvalitetskravet (Q)", o.q_krav)}${alt("h", "hållbarhetskravet (H)", o.h_krav)}</div>`;
+    },
+    namnd_res: (me) => head("Stadsbyggnadsnämnden", "Nämndens beslut") + revealRows(S.reveal) + readyButton(),
 
     slut1(me) {
         const e = me.ekonomi1;
@@ -455,7 +462,8 @@ const BIND = {
         on("[data-rm]", (el) => send({ type: "remove_bot", id: el.dataset.rm }));
     },
     intro1: bindReady, intro2: bindReady, intro3: bindReady,
-    p1_res: bindReady, namnd: bindReady, slut1: bindReady, upph_res: bindReady, fas_res: bindReady,
+    p1_res: bindReady, namnd_res: bindReady, slut1: bindReady,
+    namnd() { on("[data-hoj]", (el) => submit({ hoj: el.dataset.hoj })); }, upph_res: bindReady, fas_res: bindReady,
     slut2: bindReady, kvartal_res: bindReady,
     pc() { on(".opt", (el) => submit({ id: el.dataset.id })); },
     ac() { on(".opt", (el) => submit({ id: el.dataset.id })); },
@@ -543,7 +551,8 @@ function renderAside() {
     if (S.del === 1) {
         const used = me.rutor - me.rutor_kvar;
         html += `<h3>Din mark</h3><div class="tomt">${Array.from({ length: me.rutor }, (_, i) => `<div class="${i < used ? "used" : ""} ${i >= 16 ? "exp" : ""}"></div>`).join("")}</div>
-            <div class="kv"><span class="k">Rutor kvar</span><span class="v">${me.rutor_kvar} av ${me.rutor}</span>
+            <div class="kv"><span class="k">Mark kvar</span><span class="v">${me.rutor_kvar} av ${me.rutor} rutor</span>
+            <span class="k">Kommersiellt / bostäder</span><span class="v">${me.rutor_ovrigt} / ${me.rutor_bostad} rutor</span>
             <span class="k">BTA</span><span class="v">${me.bta} kvm (${me.bta_klass})</span>
             <span class="k">Kvalitetskrav</span><span class="v">${me.q_krav}</span><span class="k">Hållbarhetskrav</span><span class="v">${me.h_krav}</span>
             <span class="k">Riskbuffertar</span><span class="v">${me.rb}</span><span class="k">Projektchef</span><span class="v">${esc(me.pc || "–")}</span></div>
@@ -578,7 +587,7 @@ setInterval(() => {
     $("h-progress").style.width = progressPct();
 }, 500);
 
-const ORDER = ["intro1", "pc", "p1", "p1_res", "namnd", "slut1", "intro2", "ac", "upph", "upph_res", "fas", "fas_res", "slut2", "intro3", "f_setup", "kvartal", "kvartal_res", "final"];
+const ORDER = ["intro1", "pc", "p1", "p1_res", "namnd", "namnd_res", "slut1", "intro2", "ac", "upph", "upph_res", "fas", "fas_res", "slut2", "intro3", "f_setup", "kvartal", "kvartal_res", "final"];
 function progressPct() {
     if (!S || S.step === "lobby") return "0%";
     const i = ORDER.indexOf(S.step);

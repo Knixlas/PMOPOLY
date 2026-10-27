@@ -54,7 +54,8 @@ ORG_SLOTS = set(UPPHANDLINGAR[0][1])
 
 # Kortversionen: spelaren gör de viktiga valen, resten slumpas – lika för alla bolag
 # och utan att straffa någon
-START_PROJEKT_RUTOR = 12   # fem startprojekt (ett per hög) på högst 12 av tomtens 16 rutor
+START_PROJEKT_ANTAL = 4    # fyra startprojekt av olika typ
+START_PROJEKT_RUTOR = 12   # på högst 12 av tomtens 16 rutor mark (bostäder staplas)
 P1_ROUNDS = 2              # rundor för att ta 1–2 projekt till
 MAX_EGNA_UPPH = 3          # upphandlingar man gör själv; resten får gemensam slumpad nivå 2–3
 FAS_RUNDOR = 2             # byggfaser man spelar; övriga godkänns automatiskt
@@ -132,10 +133,18 @@ def parse_krav(text: str) -> Dict[str, int]:
     return out
 
 
+def markbehov(projects: List[dict]) -> int:
+    """Rutor mark som projekten kräver. Bostäder (BRF, hyresrätt) får läggas i ett övre
+    lager ovanpå andra projekt, så marken blir den största av kommersiella och bostadsrutor."""
+    bostad = sum(x["rutor"] for x in projects if x["typ"] in BOSTAD_TYPER)
+    ovrigt = sum(x["rutor"] for x in projects if x["typ"] not in BOSTAD_TYPER)
+    return max(bostad, ovrigt)
+
+
 def proj_dict(p) -> dict:
     return {
         "id": p.id, "namn": p.namn, "typ": p.typ, "kostnad": p.kostnad,
-        "rutor": p.formfaktor, "bta": p.bta, "anskaffning": p.anskaffning,
+        "rutor": max(1, p.bta // CELL_KVM), "bta": p.bta, "anskaffning": p.anskaffning,
         "marknadsvarde": p.marknadsvarde, "rorlig": p.rorlig_intakt,
         "q": p.kvalitet, "h": p.hallbarhet, "tid": p.tid, "namnd": p.namndbeslut,
         "energiklass": p.energiklass or "C", "driftnetto": p.driftnetto,
@@ -200,7 +209,10 @@ class KPlayer:
 
     @property
     def rutor_kvar(self) -> int:
-        return self.rutor - sum(p["rutor"] for p in self.projects)
+        return self.rutor - markbehov(self.projects)
+
+    def passar(self, proj: dict) -> bool:
+        return markbehov(self.projects + [proj]) <= self.rutor
 
     @property
     def bta(self) -> int:
@@ -208,7 +220,7 @@ class KPlayer:
 
     @property
     def bya(self) -> int:
-        return sum(p["rutor"] for p in self.projects) * CELL_KVM
+        return markbehov(self.projects) * CELL_KVM
 
     @property
     def bta_klass(self) -> str:
@@ -236,6 +248,8 @@ class KPlayer:
             "pc_full": self.pc, "ac_full": self.ac, "fc_full": self.fc, "fs_full": self.fs,
             "projects": self.projects, "returned": self.returned,
             "rutor": self.rutor, "rutor_kvar": self.rutor_kvar, "expansions": self.expansions,
+            "rutor_bostad": sum(x["rutor"] for x in self.projects if x["typ"] in BOSTAD_TYPER),
+            "rutor_ovrigt": sum(x["rutor"] for x in self.projects if x["typ"] not in BOSTAD_TYPER),
             "q_krav": self.q_krav, "h_krav": self.h_krav,
             "bya": self.bya, "bta_klass": self.bta_klass, "bya_klass": self.bya_klass,
             "ekonomi1": self.ekonomi1, "abt_start": round(self.abt_start, 1),
@@ -341,7 +355,7 @@ class KRoom:
     def start(self):
         self.flow = ([("intro1", 0), ("pc", 0)] +
                      [x for r in range(1, P1_ROUNDS + 1) for x in (("p1", r), ("p1_res", r))] +
-                     [("namnd", 0), ("slut1", 0), ("intro2", 0), ("ac", 0)] +
+                     [("namnd", 0), ("namnd_res", 0), ("slut1", 0), ("intro2", 0), ("ac", 0)] +
                      [("upph", 1), ("upph_res", 1)] +
                      [x for r in range(1, FAS_RUNDOR + 1) for x in (("fas", r), ("fas_res", r))] +
                      [("slut2", 0), ("intro3", 0), ("f_setup", 0)] +
@@ -420,17 +434,18 @@ class KRoom:
     # ════════════════ SKEDE 1 – PROJEKTUTVECKLING ════════════════
 
     def _enter_intro1(self):
-        """Fem startprojekt per bolag, ett ur varje hög, på högst START_PROJEKT_RUTOR rutor.
+        """Fyra startprojekt per bolag av olika typ, på högst START_PROJEKT_RUTOR rutor mark.
         Uppsättningarna väljs så att intäkt, kostnad, ytor och krav blir så lika som möjligt
         mellan bolagen. Startprojekten är redan förankrade och går inte till nämnden."""
         piles = [pile for pile in self.proj_piles.values() if pile]
         kandidater = []
         for _ in range(3000):
-            kand = [self.rng.choice(pile) for pile in piles]
-            if sum(x["rutor"] for x in kand) <= START_PROJEKT_RUTOR:
+            kand = [self.rng.choice(pile) for pile in self.rng.sample(piles, START_PROJEKT_ANTAL)]
+            if markbehov(kand) <= START_PROJEKT_RUTOR:
                 kandidater.append(kand)
         if not kandidater:
             kandidater = [[min(pile, key=lambda x: x["rutor"]) for pile in piles]]
+            # (bara om inga slumpade uppsättningar får plats)
         nycklar = ("anskaffning", "kostnad", "bta", "rutor", "q", "h", "bas_dn")
         vek = lambda kand: [sum(x[k] for x in kand) for k in nycklar]
         vektorer = [vek(k) for k in kandidater]
@@ -473,6 +488,8 @@ class KRoom:
 
     def _enter_p1(self):
         self.shared = {"market": self._market(), "runda": self.round, "av": P1_ROUNDS}
+        for p in self.players.values():
+            p.offer = {"passar": {t: p.passar(x) for t, x in self.shared["market"].items()}}
         return "decision"
 
     def _validate_p1(self, p, data):
@@ -481,7 +498,7 @@ class KRoom:
             proj = self.shared["market"].get(data.get("typ"))
             if not proj:
                 return "Högen är tom."
-            if proj["rutor"] > p.rutor_kvar:
+            if not p.passar(proj):
                 return "Projektet får inte plats på din mark."
             if len(p.projects) >= MAX_PROJECTS:
                 return f"Max {MAX_PROJECTS} projekt."
@@ -503,7 +520,7 @@ class KRoom:
                 if len(ps) > 1:
                     self.note(p, f"Krock om {typ.lower()}! Du slog D6 = {int(rolls[p.id])}.")
                 proj = pile[-1] if pile else None
-                if proj and proj["rutor"] <= p.rutor_kvar:
+                if proj and p.passar(proj):
                     pile.pop()
                     p.projects.append(proj)
                     p.q_krav += proj["q"]
@@ -570,7 +587,7 @@ class KRoom:
             self.note(p, f"Du tar markanvisningen: +{exp['cell_count']} rutor ({EXPANSION_KOSTNAD} Mkr).")
             return
         if "ta projekt" in e:  # valfritt – största projektet som får plats
-            fits = [x for x in self._market().values() if x["rutor"] <= p.rutor_kvar]
+            fits = [x for x in self._market().values() if p.passar(x)]
             if fits and len(p.projects) < MAX_PROJECTS:
                 proj = max(fits, key=lambda x: x["bta"])
                 self.proj_piles[proj["typ"]].pop()
@@ -606,24 +623,45 @@ class KRoom:
     def _enter_p1_res(self):
         return "info"
 
+    def _namnd_summa(self, p: KPlayer) -> int:
+        return sum(x["namnd"] for x in p.projects)
+
     def _enter_namnd(self):
-        self.reveal = {"title": "Nämndbeslut", "rows": {}}
+        """Nämnden prövar hela portföljen: D20 + projektchefens nämndbonus ska bli högre
+        än summan av projektens nämndkrav. Varje miss höjer Q- eller H-kravet ett steg
+        (spelaren väljer vilket) och man slår om tills det går igenom."""
         for p in self.players.values():
             bonus = p.pc.get("namnd_bonus", 0) if p.pc else 0
-            for proj in list(p.projects):
-                if proj["namnd"] <= 1 or proj.get("start"):
-                    continue
-                roll = d(20, self.rng)
-                if roll + bonus >= proj["namnd"]:
-                    self.note(p, f"{proj['namn']}: D20 = {roll}{f' + {bonus}' if bonus else ''} "
-                                 f"(behövde {proj['namnd']}). Godkänt!")
+            p.offer = {"summa": self._namnd_summa(p), "bonus": bonus,
+                       "q_krav": p.q_krav, "h_krav": p.h_krav}
+        return "decision"
+
+    def _validate_namnd(self, p, data):
+        if data.get("hoj") not in ("q", "h"):
+            return "Välj vilket krav som höjs vid en miss."
+
+    def _resolve_namnd(self):
+        self.reveal = {"title": "Nämndbeslut", "rows": {}}
+        for p in self.players.values():
+            summa, bonus = p.offer["summa"], p.offer["bonus"]
+            krav = "kvalitetskravet" if p.choice["hoj"] == "q" else "hållbarhetskravet"
+            slag = []
+            for _ in range(30):
+                r = d(20, self.rng)
+                slag.append(r)
+                if r == 20 or r + bonus > summa:
+                    break
+                if p.choice["hoj"] == "q":
+                    p.q_krav += 1
                 else:
-                    self._return_project(p, proj)
-                    self.note(p, f"{proj['namn']}: D20 = {roll}{f' + {bonus}' if bonus else ''} "
-                                 f"(behövde {proj['namnd']}). Avslag – projektet går tillbaka.",
-                              -proj["kostnad"])
-            if not self.reveal["rows"].get(p.id):
-                self.note(p, "Inga projekt behövde gå till nämnden. Allt godkänt.")
+                    p.h_krav += 1
+            missar = len(slag) - 1
+            txt = " → ".join(f"{r}{f'+{bonus}' if bonus else ''}" for r in slag)
+            self.note(p, f"Summa nämndkrav {summa}. D20: {txt}. Godkänt"
+                         + (f" efter {missar} miss{'ar' if missar > 1 else ''}: {krav} +{missar}." if missar else " direkt!"))
+            self.log(p.id, "namnd", {"summa": summa, "slag": slag, "hoj": p.choice["hoj"]})
+
+    def _enter_namnd_res(self):
         return "info"
 
     def _enter_slut1(self):
@@ -1376,10 +1414,12 @@ class KRoom:
         s = self.step
         if s == "pc":
             return {"id": r.choice(p.offer["pc"])["id"]}
+        if s == "namnd":
+            return {"hoj": r.choice(["q", "h"])}
         if s == "ac":
             return {"id": r.choice(p.offer["ac"])["id"]}
         if s == "p1":
-            fits = [t for t, x in self.shared["market"].items() if x["rutor"] <= p.rutor_kvar]
+            fits = [t for t, x in self.shared["market"].items() if p.passar(x)]
             if fits and len(p.projects) < MAX_PROJECTS and r.random() < 0.7:
                 best = max(fits, key=lambda t: self.shared["market"][t]["bta"] / max(1, self.shared["market"][t]["rutor"]) + r.random() * 200)
                 return {"val": "projekt", "typ": best}
