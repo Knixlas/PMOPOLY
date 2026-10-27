@@ -81,7 +81,8 @@ def convert_cp1252_to_utf8(src: Path, dst: Path, dry: bool) -> bool:
     except UnicodeDecodeError:
         # Fallback: prova UTF-8 om filen redan är konverterad
         text = raw.decode("utf-8", errors="replace")
-    dst.write_text(text, encoding="utf-8", newline="\r\n")
+    # Källan har redan \r\n; normalisera först, annars blir det \r\r\n
+    dst.write_text(text.replace("\r\n", "\n"), encoding="utf-8", newline="\r\n")
     return True
 
 
