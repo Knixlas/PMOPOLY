@@ -3,6 +3,8 @@
     python tryck/bygg_tryck.py prov          # provark (A4) för granskning -> tryck/ut/provark.pdf + .png
     python tryck/bygg_tryck.py tryck [lek]   # tryckeri-PDF:er -> tryck/ut/<lek>_tryckeri.pdf
     python tryck/bygg_tryck.py kontroll      # hittar kortsidor där text krockar med foten
+    python tryck/bygg_tryck.py a4 [lek]      # skriv ut själv: textsidorna 3 × 3 på A4, klipp längs linjerna
+                                             #   -> tryck/ut/<lek>_a4.pdf och tryck/ut/F_alla_a4.pdf
 
 Tryckfilerna följer de gamla: ett motiv per sida, 3 mm utfall, skärmärken, bildsida och textsida
 växelvis (sida 1 = kort 1 fram, sida 2 = kort 1 bak …), varje kort × "Antal exemplar".
@@ -19,7 +21,7 @@ import kortmallar as km  # noqa: E402
 
 ROT = Path(__file__).resolve().parent
 UT = ROT / "ut"
-CHROME = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+CHROME = os.environ.get("CHROME", "/opt/pw-browsers/chromium")   # Playwrights länk till aktuell Chromium
 
 # Bahnschrift hämtas från Niklas Adobe Fonts-licens via ett webbkit (Regular 400 och Bold 700).
 # Typsnittet sparas aldrig på disk eller i repot: Chromiums anrop till Typekit hämtas av Python
@@ -154,6 +156,29 @@ async def skriv_tryck(lek):
     return antal
 
 
+# a4: bara innehållet (textsidan); FC och FS har två innehållssidor (junior och senior)
+A4_SIDOR = {lek: (fil, (lambda f: (lambda k: f(k)[1:]))(sidor)) for lek, (fil, _, sidor) in LEKAR.items()
+            if lek.startswith("F_") and lek not in ("F_FC", "F_FS")}
+A4_SIDOR["F_FC"] = ("F_FC.xlsx", lambda k: [km.fc_kort(k), km.fc_kort(k, senior=True)])
+A4_SIDOR["F_FS"] = ("F_FS.xlsx", lambda k: [km.fs_kort(k), km.fs_kort(k, senior=True)])
+
+
+def a4ark(lekar):
+    """Kortens textsidor 3 × 3 per A4 (58 × 88 mm), kant i kant så ett snitt delar två kort. Baksidan blank."""
+    kort = []
+    for lek in lekar:
+        fil, sidor = A4_SIDOR[lek]
+        for k in las_lek(fil):
+            for _ in range(int(k.get("Antal exemplar") or 1)):
+                kort += sidor(k)
+    ark = ["".join(f'<div class="ruta">{k}</div>' for k in kort[i:i + 9]) for i in range(0, len(kort), 9)]
+    css = ("@page { size: A4; margin: 0; } body { background: #fff; margin: 0; }"
+           ".a4 { width: 210mm; height: 297mm; display: grid; grid-template-columns: repeat(3, 58mm);"
+           " grid-auto-rows: 88mm; justify-content: center; align-content: center; break-after: page; }"
+           ".ruta { outline: .15mm solid #999; overflow: hidden; }")
+    return sida("".join(f'<div class="a4">{a}</div>' for a in ark), css), len(kort), len(ark)
+
+
 async def skriv(html_, pdf, png=None):
     from playwright.async_api import async_playwright
     UT.mkdir(exist_ok=True)
@@ -173,6 +198,16 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["tryck"]:
         for lek in sys.argv[2:] or LEKAR:
             print(f"{lek}: {asyncio.run(skriv_tryck(lek))} sidor -> {UT / (lek + '_tryckeri.pdf')}")
+    if sys.argv[1:2] == ["a4"]:
+        lekar = sys.argv[2:] or list(A4_SIDOR)
+        for lek in lekar:
+            html_, n, ark = a4ark([lek])
+            asyncio.run(skriv(html_, UT / f"{lek}_a4.pdf"))
+            print(f"{lek}: {n} kort på {ark} A4 -> {UT / (lek + '_a4.pdf')}")
+        if not sys.argv[2:]:
+            html_, n, ark = a4ark(lekar)
+            asyncio.run(skriv(html_, UT / "F_alla_a4.pdf"))
+            print(f"Alla: {n} kort på {ark} A4 -> {UT / 'F_alla_a4.pdf'}")
     if sys.argv[1:2] == ["prov"]:
         asyncio.run(skriv(provark(), UT / "provark.pdf", UT / "provark.png"))
         print("Skrev", UT / "provark.pdf")
