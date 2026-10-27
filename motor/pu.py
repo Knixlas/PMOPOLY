@@ -52,6 +52,11 @@ class PUParametrar:
     namnd_stor_mix: int = 99             # varje projekt utöver så här många höjer nämndsumman med 1 (99 = av)
     handelse_vid_nej: bool = True        # regeländring: tar man inte ett draget projekt, eller lämnar tillbaka
                                          # ett vid Stadshuset, drar man ett händelsekort
+    # kortversionen (motor/kortlage.py); standardvärdena ger hela spelet
+    start_portfolj: int = 0              # >0: så många startprojekt per kvarter, lika stora för alla
+    start_mark: int = 12                 # rutor mark som startportföljen högst får ta
+    drag_max: int = 0                    # >0: brädfasen slutar när alla gjort så många drag
+    komplettering: bool = True           # 4.2 komplettering (av i kortversionen)
 
 
 @dataclass
@@ -73,6 +78,8 @@ class Kvarter:
     layout: dict = field(default_factory=dict)          # projektets namn -> (rutor, lager)
     position: int = 0
     varv: int = 0
+    drag: int = 0                                       # drag på brädet (kortversionen räknar dem)
+    startportfolj: list = field(default_factory=list)   # kortversionens startprojekt
     godkanda: list = field(default_factory=list)
     kompletterade: list = field(default_factory=list)  # tagna i 4.2 (3 × utvecklingskostnad)
     placerade: list = field(default_factory=list)
@@ -244,12 +251,35 @@ class PUMotor:
             # beslut: PC:s kravminskning gäller direkt
             self.andra_krav(kv, -int(tal(pc["Minskar krav: kvalitet (Q)"])), -int(tal(pc["Minskar krav: hållbarhet (H)"])))
             kv.tid -= int(tal(pc["Minskar krav: tid (T)"]))
+        if self.p.start_portfolj:                           # kortversionen: lika stora startportföljer
+            self.startportfoljer()
+            return
         for kv in self.ordning:                              # brädet: "Vid start: ta markruta och valfritt projekt"
             self.aktiv = kv
             typ = kv.strategi.starttyp(self, kv)
             p = self.dra_hog(typ)
             if p:
                 self.ta_projekt(kv, p)
+
+    def startportfoljer(self):
+        """Kortversionen: varje kvarter får en startportfölj som är lika stor som de andras
+        (motor/kortlage.py). Portföljen ska gå att lägga i pusslet."""
+        from .kortlage import rattvis_startportfolj
+        from .pussel import losa
+        prov = Kvarter(namn="prov", strategi=None)
+
+        def ryms(projekt):
+            plac, full = losa(prov.mark, [(p["Namn"], p["Typ"], form_av(p)) for p in projekt], alla=True, grans=5_000)
+            return bool(plac) or not full
+        portfoljer = rattvis_startportfolj(self, self.p.start_portfolj, self.p.start_mark, ryms)
+        for kv, portfolj in zip(self.ordning, portfoljer):
+            self.aktiv = kv
+            for p in portfolj:
+                hog = self.hogar[p["Typ"]]
+                hog.pop(next(i for i, x in enumerate(hog) if x is p))
+                self.ta_projekt(kv, p)
+            kv.startportfolj = list(portfolj)
+            self.logga(f"{kv.namn}: startportfölj {', '.join(p['Namn'] for p in portfolj)}")
 
     # ------------------------------------------------------------------ brädet
     def flytta(self, kv):
@@ -485,7 +515,7 @@ class PUMotor:
         kv.godkanda = list(godkanda)
         # 4.2 komplettering (3 × utvecklingskostnad, egen nämnd)
         nya = []
-        while True:
+        while self.p.komplettering:
             p = kv.strategi.komplettera(self, kv)
             if not p:
                 break
@@ -554,6 +584,9 @@ class PUMotor:
                 self.aktiv = kv
                 if kv.namn not in klara and self.flytta(kv):
                     klara.add(kv.namn)
+                kv.drag += 1
+                if self.p.drag_max and kv.drag >= self.p.drag_max:
+                    klara.add(kv.namn)                       # kortversionen: draget räknas, rundan spelas klart
         for kv in self.ordning:                              # 4.2 sker i spelordning
             self.avsluta(kv)
         return [self.resultat(kv) for kv in self.kvarter]
@@ -574,5 +607,6 @@ class PUMotor:
             "q_krav": kv.q_krav, "h_krav": kv.h_krav, "tid": kv.tid, "riskbuffert": kv.riskbuffert,
             "erfarenhet": kv.erfarenhet, "kvartertyp": kv.kvartertyp, "namndforsok": kv.namndforsok,
             "expansioner": len(kv.expansioner), "placerade": kv.placerade, "pc_kort": kv.pc,
+            "startportfolj": kv.startportfolj,
             "mark": sorted(kv.mark), "markbitar": {i: sorted(c) for i, c in kv.markbitar.items()}, "layout": {n: (sorted(c), l) for n, (c, l) in kv.layout.items()},
         }

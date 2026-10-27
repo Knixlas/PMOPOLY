@@ -28,6 +28,8 @@ from .styrning import Fraga, LoggFel, Styrd, StyrdSlump, avkoda, koda
 
 # Svårighetsgrad = Detaljplanens startkrav för Q och H (3.1). Högre krav, tuffare att klara skedet.
 SVARIGHET = {"lätt": 3, "normal": 4, "svår": 6}
+# Längd: hela spelet eller kortversionen (motor/kortlage.py, ~20 minuter)
+LANGD = ("hela", "kort")
 
 # höjs när reglerna i motorn ändras; loggen bär versionen
 #   2026-09-27:  handkort när som helst (beslut "handkort" vid varje station)
@@ -47,7 +49,7 @@ _AVBRYT = object()
 
 class Parti:
     def __init__(self, kvarter, fro=None, logg=None, parametrar=None, data=None, regelversion=REGELVERSION,
-                 slump="digital", svarighet="normal", overtagna=None):
+                 slump="digital", svarighet="normal", overtagna=None, langd="hela"):
         """kvarter: [{"namn": str, "styrning": "bott" | "människa", "bottar": {"PU": .., "S2": .., "F": ..}}]
         logg: en tidigare logg att spela upp innan partiet fortsätter.
         slump: "digital" (motorn slår och drar) eller "inmatad" (fysiskt spel: spelarna anger tärningar
@@ -58,6 +60,11 @@ class Parti:
         if svarighet not in SVARIGHET:
             raise ValueError(f"svårighet är en av {', '.join(SVARIGHET)}")
         self.svarighet = svarighet
+        if langd not in LANGD:
+            raise ValueError(f"längd är en av {', '.join(LANGD)}")
+        if langd == "kort" and slump != "digital":
+            raise ValueError("kortversionen spelas i appen (digital slump)")
+        self.langd = langd
         # kvarter som datorn tagit över mitt i partiet: namn -> loggens längd då (besluten efter det är bottens)
         self.overtagna = dict(overtagna or {})
         self.analog = slump != "digital"                 # spel vid brädet: pusslet läggs på riktigt, inte i appen
@@ -74,6 +81,10 @@ class Parti:
         self.parametrar.handkort_nar_som_helst = regelversion >= "2026-09-27"
         self.parametrar.uppgradering_flera_steg = regelversion >= "2026-09-27b"
         self.parametrar.konsekvens_som_varning = regelversion >= "2026-09-27c"
+        if langd == "kort":
+            from .kortlage import KORT
+            self.parametrar.kortlage = dict(KORT)
+            self.parametrar.kvartal = KORT["kvartal"]
         self.onskade = {}                                # kvarter -> kort-id som spelaren tryckt på i handen
         self.data = data or Kortdata()
         self.logg = []
@@ -90,13 +101,14 @@ class Parti:
     # ------------------------------------------------------------------ inställningar som kan sparas
     def uppstart(self):
         return {"regelversion": self.regelversion, "fro": self.fro, "kvarter": self.kvarter, "slump": self.slumpsatt,
-                "svarighet": self.svarighet, **({"overtagna": self.overtagna} if self.overtagna else {})}
+                "svarighet": self.svarighet, **({"langd": self.langd} if self.langd != "hela" else {}),
+                **({"overtagna": self.overtagna} if self.overtagna else {})}
 
     @classmethod
     def fran_sparat(cls, uppstart, logg, **kw):
         return cls(uppstart["kvarter"], fro=uppstart["fro"], logg=logg, regelversion=uppstart["regelversion"],
                    slump=uppstart.get("slump", "digital"), svarighet=uppstart.get("svarighet", "normal"),
-                   overtagna=uppstart.get("overtagna"), **kw)
+                   overtagna=uppstart.get("overtagna"), langd=uppstart.get("langd", "hela"), **kw)
 
     # ------------------------------------------------------------------ gränssnitt utåt
     def steg(self):
@@ -127,8 +139,12 @@ class Parti:
         return (any(k["namn"] == namn and k["styrning"] == "människa" for k in self.kvarter)
                 and namn not in self.overtagna)
 
-    def _manniska(self, styrd, kvarter):
+    def _manniska(self, styrd, kvarter, metod=None):
         # beslutet som väntade när datorn tog över är fortfarande människans (dess vy byggdes då)
+        if self.langd == "kort" and metod is not None:
+            from .kortlage import AUTOMAT
+            if metod in AUTOMAT:                         # kortversionen: automaten tar beslutet
+                return False
         return styrd._manniska and not (kvarter in self.overtagna and len(self.logg) > self.overtagna[kvarter])
 
     def avbryt(self):
@@ -228,7 +244,7 @@ class Parti:
             # botten räknar som i originalet (före beslutet): dess egen slump och det den tittar på
             # (t.ex. översta kortet i en hög) kommer i samma ordning som i loggen
             svar = getattr(styrd._bott, metod)(motor, subjekt, *args, **kw) if styrd._bott is not None else None
-            if self._manniska(styrd, kvarter) and metod != "handkort" and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+            if self._manniska(styrd, kvarter, metod) and metod != "handkort" and not (self.analog and metod in ANALOGT_AV_BOTTEN):
                 # frågan kan titta i högarna (t.ex. översta kortet), vilket vid brädet frågar vilket kort det är
                 if self.analog and metod == "placering" and svar is not None:
                     svar = [n for n, _, _ in svar]
@@ -242,7 +258,7 @@ class Parti:
             if self.analog and metod == "placering":      # vid brädet: bara vilka projekt som fick plats
                 svar = [n for n, _, _ in svar]
             forslag = koda(svar, rotter)
-        if self._manniska(styrd, kvarter) and not (self.analog and metod in ANALOGT_AV_BOTTEN):
+        if self._manniska(styrd, kvarter, metod) and not (self.analog and metod in ANALOGT_AV_BOTTEN):
             vy = beskriv_beslut(metod, motor, subjekt, (*args, *kw.values()), rotter, svar, analog=self.analog)
             kod = self._fraga(kanal="beslut", kvarter=kvarter, skede=skede, metod=metod, forslag=forslag, vy=vy)
             svar = avkoda(kod, rotter)

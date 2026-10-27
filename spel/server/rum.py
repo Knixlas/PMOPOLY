@@ -186,6 +186,7 @@ class Rum:
             "rum": self.id,
             "slump": self.uppstart.get("slump", "digital"),
             "svarighet": self.uppstart.get("svarighet", "normal"),
+            "langd": self.uppstart.get("langd", "hela"),
             "onskade_kort": sorted(self.parti.onskade.get(kvarter, ())) if kvarter else [],
             "kvarter": [{"namn": k["namn"], "styrning": "människa" if self.parti.spelas_av_manniska(k["namn"]) else "bott"}
                         for k in self.uppstart["kvarter"]],

@@ -91,7 +91,8 @@ def _f(m):
                 "villkor": [v for v in f.villkor if v],
                 # dolda brickor: bara ägaren ser nettot (klienten visar dem för det egna kvarteret)
                 "dn_brickor": f.dn_brickor, "ek_brickor": f.ek_brickor, "plus_att_visa": f.plus_att_visa}
-    return {"skede": "F", "namn": "Förvaltning", "kvartal": spel.kvartal, "fas": getattr(spel, "fas", None),
+    return {"skede": "F", "namn": "Förvaltning", "kvartal": spel.kvartal, "kvartal_antal": m.p.kvartal,
+            "fas": getattr(spel, "fas", None),
             "yield": {k: _tal(v) for k, v in spel.yieldniva.items()},
             # 9.10: yieldbanan ligger öppet – ändringen på platserna Q2, Q3 och Q4 per spår
             "yieldbana": {k: [_tal(v) for v in bana] for k, bana in spel.yieldbana.items()},

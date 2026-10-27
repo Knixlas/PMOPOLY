@@ -51,6 +51,8 @@ class Parametrar:
     handgrans: int = 6
     stor_hand: dict = field(default_factory=lambda: {"Nätverkaren": 8})   # FC med större handgräns (beslut 2026-09-27)
     lan_andel: float = 0.7                         # fast i grundspelet (beslut)
+    kvartal: int = 4                               # kvartal i Förvaltningen (kortversionen: 1)
+    kortlage: dict = None                          # kortversionen (motor/kortlage.py); None = hela spelet
     ranta_sats: float = 0.02                       # fast ränta i grundspelet (beslut 2026-09-27: 2 %, "A-läge")
 
 
@@ -147,9 +149,17 @@ class Motor:
         if not hasattr(self.d, "pu"):
             self.d.pu, self.d.s2 = PUData(), S2Data()     # läses en gång per Kortdata
         strategier = self.pu_strategier or [self.s.bott.choice(list(PU_STRATEGIER.values()))() for _ in self.spel.spelare]
-        pu = PUMotor(strategier, PUParametrar(start_q=self.p.start_krav, start_h=self.p.start_krav), self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
+        from .skede2 import S2Parametrar
+        kort = self.p.kortlage or {}
+        pu_p = PUParametrar(start_q=self.p.start_krav, start_h=self.p.start_krav)
+        s2_p = S2Parametrar()
+        if kort:
+            pu_p.start_portfolj, pu_p.start_mark = kort["start_portfolj"], kort["start_mark"]
+            pu_p.drag_max, pu_p.komplettering = kort["drag"], False
+            s2_p.egna_upphandlingar, s2_p.spelade_faser = kort["egna_upphandlingar"], kort["spelade_faser"]
+        pu = PUMotor(strategier, pu_p, self.s, self.d.pu, [sp.namn for sp in self.spel.spelare]).spela()
         strategier = self.s2_strategier or [self.s.bott.choice(list(S2_STRATEGIER.values()))() for _ in self.spel.spelare]
-        s2 = Skede2(pu, strategier, slump=self.s, data=self.d.s2).spela()
+        s2 = Skede2(pu, strategier, parametrar=s2_p, slump=self.s, data=self.d.s2).spela()
         for r, r2 in zip(pu, s2):
             r.update({"s2_strategi": r2["strategi"], "tb": r2["tb"], "TG": r2["TG"], "lan": r2["lan"],
                       "n": r2["n"], "Mu": r2["Mu"], "riskbuffert": r2["riskbuffert"],
@@ -986,7 +996,7 @@ class Motor:
 
     def spela(self):
         self.starta()
-        for q in range(1, 5):
+        for q in range(1, self.p.kvartal + 1):
             self.spel.kvartal = q
             self.kvartalet()
         return self.slutrakning()

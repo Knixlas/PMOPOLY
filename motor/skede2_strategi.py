@@ -21,6 +21,15 @@ class S2Strategi:
         mal = min(mal, int(tal(alternativ[-1]["Nivå"])))
         return next((k for k in alternativ if tal(k["Nivå"]) >= mal), alternativ[-1])
 
+    def valj_egna_upphandlingar(self, m, b, kategorier, antal):
+        """Kortversionen: vilka poster upphandlar kvarteret själv? De med projektens nivåkrav först,
+        sedan organisationen (riskbuffert, erfarenhet) och stommen."""
+        from .skede2 import STEG
+        krav = [k for k, sort, kol in STEG if kol and any(p.get(kol) for p in b.pu["placerade"])]
+        resten = [k for k in ("STOMME", "OPERATIVT TEAM", "INSTALLATIONER", "STÖDFUNKTIONER") if k in kategorier]
+        ordning = list(dict.fromkeys(krav + resten + list(kategorier)))
+        return ordning[:antal]
+
     def sla_om(self, m, b, utfall):
         return b.riskbuffert > self.spara_rb
 

@@ -104,7 +104,7 @@ def ledare(parti, fraga=None):
         elif hasattr(m, "spel"):
             steg, nu = F_STEG, getattr(m.spel, "fas", None) or "uppstart"
             skede = "Skede 3 · Förvaltning"
-            plats = f"Kvartal {m.spel.kvartal} av 4" if m.spel.kvartal else "Innan första kvartalet"
+            plats = f"Kvartal {m.spel.kvartal} av {m.p.kvartal}" if m.spel.kvartal else "Innan första kvartalet"
         else:
             return None
     except Exception:                                  # noqa: BLE001 — spelledaren får aldrig stoppa spelet
