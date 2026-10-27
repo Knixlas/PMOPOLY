@@ -23,19 +23,16 @@ const INTRO = {
         rubrik: "Del 1: Byggrätten",
         text: "Du har fått en markanvisning på 4 000 kvm (16 rutor). Under fem rundor väljer du samtidigt som de andra bolagen vad du gör: tar ett projekt, går på en medborgardialog, bygger en riskbuffert eller köper mer mark. Varje projekt höjer kraven på kvalitet och hållbarhet. Sedan säger nämnden sitt, och det som blir kvar av intäkterna efter mark och utvecklingskostnader blir din byggbudget (ABT).",
         analog: "I brädspelet slår du tärning och går runt Stadsbyggnadskontoret. Var du hamnar avgör om du får ett projekt, ett dialog- eller politikkort eller en riskbuffert. Sedan pusslar du in projektens former på din tomt. Bostäder får läggas i ett övre lager, men bara om de täcker andra projekt helt.",
-        bild: "/img/boards/phase1.jpg",
     },
     intro2: {
         rubrik: "Del 2: Bygget",
         text: "Välj en arbetschef. Upphandla sedan organisation och leverantörer i tre omgångar. Billigt sparar pengar nu, men leverantörer på nivå 1–2 ger garantianmärkningar om fem år. Efter varje upphandling kommer en händelse som du löser med D20 plus erfarenhet. Därefter bygger du genom tre faser, där du lägger kompetenser (STA, KOM, SAM, NOG, INN, ABM) mot faskortens krav. Missar du tid, kvalitet eller hållbarhet drar du konsekvenskort.",
         analog: "I brädspelet upphandlar du alla 13 organisationer och leverantörer en i taget och löser ett händelsekort för varje. Bygget går genom alla åtta faserna, och där lägger du dina personal- och leverantörskort fysiskt mot faskortets krav. Varje kort får användas en gång.",
-        bild: "/img/boards/phase2.jpg",
     },
     intro3: {
         rubrik: "Del 3: Året",
-        text: "Projekten är nu fastigheter. Anställ en fastighetschef och vid behov fastighetsskötare, så att personalen räcker till alla fastigheter. Under fyra kvartal drar du omvärlds- och händelsekort, får in driftnetto och betalar löner. Varje kvartal fattar du beslut: buda på nya fastigheter (du betalar 30 %, resten lånas), energiuppgradera eller sälja till banken. Yielden rör sig och styr värdet.",
-        analog: "I brädspelet går du en kvartalsspiral mot mitten och budar högt mot de andra vid bordet. Energiuppgraderingar och personalens specialiseringar gör stor skillnad när händelsekorten slår till.",
-        bild: "/img/boards/phase4.jpg",
+        text: "Projekten är nu fastigheter med lån på 70 % av marknadsvärdet. Marknadsvärdet (MV) är driftnettot (DN) delat med yield, och energiklassen flyttar DN uppåt eller nedåt. Kvartalet börjar med marknaden. Där måste varje fastighet ha MV ≥ lån, annars tar banken den. Där köper du (MV − lån) och säljer. Sedan kommer omvärldskort, driftnetto, personkort, händelser per fastighet och kvartalskort, och sist energiuppgraderingar. Hävstången är poängen: stiger MV växer ditt kapital snabbt, faller den kan du förlora fastigheten.",
+        analog: "Vid bordet ligger yieldbanan synlig och du flyttar DN-brickor och energiclips för hand. Under kvartalet kostar ingenting något. Allt prissätts först i marknadsrutan, precis som i verkligheten.",
     },
 };
 
@@ -43,8 +40,8 @@ const STEP_TITLE = {
     lobby: "Väntrum", intro1: "Del 1: Byggrätten", pc: "Välj projektchef", p1: "Vad gör ni den här rundan?",
     p1_res: "Rundans utfall", namnd: "Nämndbeslut", slut1: "Skede 1 klart", intro2: "Del 2: Bygget",
     ac: "Välj arbetschef", upph: "Upphandling", upph_res: "Upphandlingens utfall", fas: "Genomförande",
-    fas_res: "Fasens utfall", slut2: "Slutbesiktning och garanti", intro3: "Del 3: Året", fc: "Anställ förvaltare",
-    kvartal: "Kvartal", kvartal_res: "Marknaden", final: "Slutresultat",
+    fas_res: "Fasens utfall", slut2: "Slutbesiktning och garanti", intro3: "Del 3: Året", f_setup: "Fastighetschef och skötare",
+    kvartal: "Kvartal", kvartal_res: "Kvartalets utfall", final: "Slutresultat",
 };
 
 const ORG_SLOTS = ["OPERATIVT TEAM", "STÖDFUNKTIONER", "MARKNADSTEAM", "DIGITALISERING"];
@@ -213,8 +210,8 @@ function projCard(p, opts = {}) {
     </button>`;
 }
 
-function analogBox(text, bild) {
-    return `<div class="analog"><div class="kicker">Så funkar det i brädspelet</div><p>${esc(text)}</p>${bild ? `<img src="${bild}" alt="Spelplanen i brädspelet" onerror="this.remove()">` : ""}</div>`;
+function analogBox(text) {
+    return `<div class="analog"><div class="kicker">Så funkar det i brädspelet</div><p>${esc(text)}</p></div>`;
 }
 
 // ── Vyer per steg ──
@@ -332,78 +329,94 @@ const VIEWS = {
         "Varje steg du missar på tid, kvalitet och hållbarhet ger ett konsekvenskort. Vid femårsbesiktningen dras ett garantikort per konsekvenskort och ett per leverantör på nivå 1–2. Det som är kvar av ABT blir ditt täckningsbidrag (TB). BRF:er säljs och vinsten går till eget kapital.")
         + revealRows(S.reveal) + readyButton("Till del 3"),
 
-    fc(me) {
-        draft.fs ??= [];
-        const fc = me.offer.fc.find((c) => c.id === draft.fc);
-        const kap = (fc?.kapacitet || 0) + me.offer.fs.filter((c) => draft.fs.includes(c.id)).reduce((s, c) => s + c.kapacitet, 0);
-        const card = (c, sel, attr) => `<button class="opt ${sel ? "sel" : ""}" ${attr}="${esc(c.id)}">
-            <div class="typ">${c.roll} · ${esc(c.specialisering)}</div><h3>${esc(c.namn)}</h3>
-            <div class="stats"><span class="stat good">Kapacitet ${c.kapacitet}</span><span class="stat bad">Lön ${fmt(c.lon)} Mkr/kv</span></div></button>`;
-        return head("Förvaltning", "Anställ fastighetschef och fastighetsskötare",
-            `Du äger ${me.props.length} fastigheter. Personalens samlade kapacitet måste räcka till alla. Specialiseringen lindrar vissa händelsekort.`)
-            + `<h3 style="margin-bottom:8px">Fastighetschef (välj en)</h3><div class="grid">${me.offer.fc.map((c) => card(c, draft.fc === c.id, "data-fc")).join("")}</div>
-               <h3 style="margin:16px 0 8px">Fastighetsskötare (valfritt)</h3><div class="grid">${me.offer.fs.map((c) => card(c, draft.fs.includes(c.id), "data-fs")).join("")}</div>`
-            + `<div class="sumbar"><span class="mono">Kapacitet ${kap} / ${me.props.length} fastigheter</span><button class="btn primary" id="btn-go" ${fc && kap >= me.props.length ? "" : "disabled"}>Anställ</button></div>`;
+    f_setup(me) {
+        const card = (c, sel, attr, rows) => `<button class="opt ${sel ? "sel" : ""}" ${attr}="${esc(c.ID)}">
+            <div class="typ">${attr === "data-fc" ? "Fastighetschef" : "Fastighetsskötare"}</div><h3>${esc(c.Namn)}</h3>
+            <div class="stats">${rows}</div><div class="desc">${esc(c.Beskrivning)}</div></button>`;
+        return head("Förvaltning", "Välj fastighetschef och fastighetsskötare",
+            `Du förvaltar ${me.props.length} fastigheter. Båda anställs utan kostnad och har passiva egenskaper. Du får också tre personkort på handen.`)
+            + `<h3 style="margin-bottom:8px">Fastighetschef</h3><div class="grid">${me.offer.fc.map((c) => card(c, draft.fc === c.ID, "data-fc",
+                `<span class="stat good">${esc(c.Styrka)}</span>${c.Svaghet && c.Svaghet !== "ingen spets" ? `<span class="stat bad">${esc(c.Svaghet)}</span>` : ""}`)).join("")}</div>
+               <h3 style="margin:16px 0 8px">Fastighetsskötare</h3><div class="grid">${me.offer.fs.map((c) => card(c, draft.fs === c.ID, "data-fs",
+                `<span class="stat good">${esc(c.Egenskap)}</span>`)).join("")}</div>`
+            + `<div class="sumbar"><span class="mono">${draft.fc && draft.fs ? "Klart att anställa." : "Välj en av varje."}</span><button class="btn primary" id="btn-go" ${draft.fc && draft.fs ? "" : "disabled"}>Anställ</button></div>`;
     },
 
     kvartal(me) {
         const sh = S.shared;
-        draft.bud ??= {};
+        draft.kop ??= []; draft.salj ??= []; draft.energi ??= [];
         const info = sh.info?.[me.id] || [];
-        const yb = sh.yield_andring?.b, yk = sh.yield_andring?.k;
-        return head(`Kvartal ${sh.kvartal} av 4`, `Omvärld: ${sh.omvarld.rubrik}`, esc(sh.omvarld.beskrivning))
-            + `<div class="card"><h3>Det här hände i ditt bolag</h3><ul style="list-style:none;display:grid;gap:4px;margin-top:6px">${info.map((l) =>
-                `<li class="row" style="justify-content:space-between"><span>${esc(dec(l.text))}</span>${l.mkr ? `<span class="mono ${l.mkr > 0 ? "pos" : "neg"}" style="font-size:.78rem">${mkr(l.mkr, 1)}</span>` : ""}</li>`).join("") || "<li>Lugnt kvartal.</li>"}</ul>
-               <div class="kv" style="margin-top:10px"><span class="k">Yield bostäder</span><span class="v">${fmt(sh.yield_b)} %${yb ? ` (${yb > 0 ? "+" : ""}${fmt(yb)})` : ""}</span>
-               <span class="k">Yield kommersiellt</span><span class="v">${fmt(sh.yield_k)} %${yk ? ` (${yk > 0 ? "+" : ""}${fmt(yk)})` : ""}</span>
-               <span class="k">Eget kapital nu</span><span class="v">${fmt(me.ek)} Mkr</span></div></div>`
-            + (sh.market.length ? `<h3 style="margin:16px 0 8px">Marknaden: dolda bud</h3><p class="lead" style="margin-bottom:8px">Lägsta bud är fastighetsvärdet (driftnetto × 4 / yield × energibonus). Du betalar 30 % av budet ur eget kapital, och resten lånas. Den som köper drar ett DD-kort.</p>
-                <div class="grid">${sh.market.map((m) => `<div class="opt">
-                    <img src="${projImg(m)}" alt="" onerror="this.style.display='none'">
+        const kortMal = (c) => {
+            if (!c) return "";
+            if (["lagg_dn_plus_egen", "stada"].includes(c.Effekt))
+                return me.offer.props.map((p) => `<option value="${esc(p.id)}">${esc(p.namn)}</option>`).join("");
+            if (c.Effekt === "sabotage_minus")
+                return me.offer.motstandare.flatMap((o) => o.props.map((p) => `<option value="${esc(p.id)}">${esc(o.name)}: ${esc(p.namn)}</option>`)).join("");
+            if (["kika", "sabotage_slang"].includes(c.Effekt))
+                return me.offer.motstandare.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join("");
+            return "";
+        };
+        const valtKort = me.hand.find((c) => c.ID === draft.kort);
+        const malOpts = kortMal(valtKort);
+        const propStats = (p, egen) => `<span class="stat">DN ${p.eff_dn} (bas ${p.bas_dn})</span><span class="stat">MV ${p.mv}</span><span class="stat">Lån ${p.lan}</span>
+            <span class="stat ${p.mv - p.lan >= 0 ? "good" : "bad"}">${egen ? "Ditt kapital" : "Pris"} ${p.mv - p.lan} Mkr</span>
+            ${egen && (p.dn_net || p.varn || p.en_net) ? `<span class="stat">Dolda brickor ${p.dn_net >= 0 ? "+" : ""}${p.dn_net}${p.varn ? ` · varning ${p.varn}/3` : ""}${p.en_net ? ` · energi ${p.en_net >= 0 ? "+" : ""}${p.en_net}` : ""}</span>` : ""}`;
+        return head(`Kvartal ${sh.kvartal} av 4`, "Marknaden",
+            "Marknaden är spelets enda avräkning. Varje fastighet måste ha MV ≥ lån, annars tar banken den. Här köper och säljer du, väljer energiuppgraderingar och kan spela ett personkort. Sedan kommer kvartalets kort.")
+            + `<div class="card"><h3>Sedan förra kvartalet</h3><ul style="list-style:none;display:grid;gap:4px;margin-top:6px">${info.map((l) =>
+                `<li class="row" style="justify-content:space-between"><span>${esc(dec(l.text))}</span>${l.mkr ? `<span class="mono ${l.mkr > 0 ? "pos" : "neg"}" style="font-size:.78rem">${mkr(l.mkr, 1)}</span>` : ""}</li>`).join("") || "<li>Alla fastigheter klarar balanskravet.</li>"}</ul>
+               <div class="kv" style="margin-top:10px"><span class="k">Yield bostäder / kommersiellt</span><span class="v">${fmt(sh.yield_b)} / ${fmt(sh.yield_k)} %</span>
+               <span class="k">Kassa</span><span class="v">${fmt(me.ek)} Mkr</span><span class="k">Riskbuffertar</span><span class="v">${me.rb}</span></div></div>`
+            + `<h3 style="margin:16px 0 8px">Till salu</h3>` + (sh.market.length ? `<p class="lead" style="margin-bottom:8px">Du betalar MV − lån och tar över lånet. Vill flera köpa samma fastighet avgörs det med D20 plus modifierare, och vid lika vinner den som har färst fastigheter. Köparen drar ett dolt DD-kort.</p>
+                <div class="grid">${sh.market.map((m) => `<button class="opt ${draft.kop.includes(m.id) ? "sel" : ""}" data-kop="${esc(m.id)}" ${m.pris > me.ek && !draft.kop.includes(m.id) ? "disabled" : ""}>
+                    ${m.fynd ? '<span class="badge">Fynd från banken</span>' : ""}<img src="${projImg(m)}" alt="" onerror="this.style.display='none'">
                     <div class="top"><span class="typ">${typNamn(m.typ)}</span><span class="typ">Energi ${m.energiklass}</span></div><h3>${esc(m.namn)}</h3>
-                    <div class="stats"><span class="stat">${m.bta} kvm</span><span class="stat good">Driftnetto ${fmt(m.driftnetto)}/kv</span><span class="stat">Värde ${fmt(m.fv, 0)} Mkr</span></div>
-                    <input type="number" min="${Math.ceil(m.fv)}" step="1" placeholder="Bud, minst ${Math.ceil(m.fv)} Mkr" data-bud="${esc(m.id)}" value="${draft.bud[m.id] ?? ""}"></div>`).join("")}</div>`
-                : `<p class="lead" style="margin-top:14px">Inga nya fastigheter på marknaden i kvartal ${sh.kvartal}.</p>`)
+                    <div class="stats">${propStats(m, false)}</div></button>`).join("")}</div>`
+                : `<p class="lead">Inget till salu det här kvartalet.</p>`)
             + `<h3 style="margin:16px 0 8px">Dina fastigheter</h3><div class="grid">${me.offer.props.map((p) => `<div class="opt">
                 <div class="top"><span class="typ">${typNamn(p.typ)}</span><span class="typ">Energi ${p.energiklass}</span></div><h3>${esc(p.namn)}</h3>
-                <div class="stats"><span class="stat good">DN ${fmt(p.driftnetto)}/kv</span><span class="stat">Värde ${fmt(p.fv, 0)} Mkr</span></div>
-                <div class="row">${p.energiklass !== "A" ? `<button class="btn" style="padding:5px 8px" data-upp="${esc(p.id)}">${draft.upp === p.id ? "✓ " : ""}Energi ↑ (−3 Mkr)</button>` : ""}
-                <button class="btn" style="padding:5px 8px" data-salj="${esc(p.id)}">${draft.salj === p.id ? "✓ " : ""}Sälj (80 %)</button></div></div>`).join("") || "<p>Du äger inga fastigheter. Buda på marknaden, för du måste äga minst en när året är slut.</p>"}</div>
-               <h3 style="margin:16px 0 8px">Anställ fastighetsskötare? Din kapacitet: ${me.kapacitet}</h3><div class="row">${me.offer.fs.map((f) =>
-                `<button class="btn" style="padding:6px 10px" data-fsq="${esc(f.id)}">${draft.fs === f.id ? "✓ " : ""}${esc(f.namn)} · kap ${f.kapacitet} · ${fmt(f.lon)} Mkr/kv</button>`).join("")}</div>`
+                <div class="stats">${propStats(p, true)}</div>
+                <div class="row">${sh.energi_max && p.energiklass !== "A" ? `<button class="btn" style="padding:5px 8px" data-energi="${esc(p.id)}">${draft.energi.includes(p.id) ? "✓ " : ""}Energi ↑ (3 Mkr per slagrunda)</button>` : ""}
+                <button class="btn" style="padding:5px 8px" data-salj="${esc(p.id)}">${draft.salj.includes(p.id) ? "✓ " : ""}Sälj (${p.mv - p.lan} Mkr)</button></div></div>`).join("") || "<p>Du äger inga fastigheter. Köp på marknaden.</p>"}</div>
+               ${sh.energi_max ? `<p class="mono" style="font-size:.72rem;margin-top:6px">Energiuppgradering: högst ${sh.energi_max} det här kvartalet. 1×D20 över 10 lyckas, annars 2×D20 och så vidare. Varje runda kostar 3 Mkr, men en 20:a gör rundan gratis.</p>` : ""}
+               <h3 style="margin:16px 0 8px">Personkort på handen (${me.hand.length})</h3><div class="grid">${me.hand.map((c) => `<button class="opt ${draft.kort === c.ID ? "sel" : ""}" data-kort="${esc(c.ID)}" ${c.Effekt === "stopp" ? "disabled" : ""}>
+                    <div class="typ">Personkort</div><h3>${esc(c.Rubrik)}</h3><div class="desc" style="font-style:normal">${esc(c.Beskrivning)}</div></button>`).join("") || "<p>Inga kort.</p>"}</div>
+               ${malOpts ? `<label class="row" style="margin-top:8px"><span class="mono" style="font-size:.75rem">Mål för kortet:</span><select id="kort-mal">${malOpts}</select></label>` : ""}`
             + `<div class="sumbar"><span class="mono" id="kv-sum"></span><button class="btn primary" id="btn-go">Lägg beslut</button></div>`;
     },
 
     kvartal_res(me) {
-        const bud = Object.values(S.reveal.bud || {});
-        return head(`Kvartal ${S.round}`, "Budgivningen avgjord")
-            + (bud.length ? `<div class="card" style="margin-bottom:12px"><table class="bids">${bud.map((b) => `<tr><td><b>${esc(b.namn)}</b><br><span class="mono" style="font-size:.7rem">värde ${fmt(b.fv, 0)} Mkr</span></td>
-                <td>${b.bud.map((x) => `<span class="chip" style="display:inline-flex;margin:2px"><span class="dot" style="background:${x.color}"></span>${esc(x.name)} ${fmt(x.bud, 0)}</span>`).join("") || "<i>Inga bud, fastigheten går tillbaka till banken</i>"}</td>
-                <td style="text-align:right">${b.vinnare ? `🏠 <b>${esc(b.vinnare)}</b>` : ""}</td></tr>`).join("")}</table></div>` : "")
+        const kop = S.reveal.kop || [];
+        const kort = (k, rubrik) => k ? `<div class="faskort" style="margin-bottom:10px"><span class="kicker">${rubrik}</span><h3>${esc(k.rubrik)}</h3><p>${esc(k.beskrivning)}</p>${k.effekt ? `<p class="mono" style="font-size:.75rem;margin-top:4px">${esc(k.effekt)}</p>` : ""}</div>` : "";
+        return head(`Kvartal ${S.round}`, "Så gick kvartalet")
+            + (kop.length ? `<div class="card" style="margin-bottom:12px"><h3>Affärer</h3><table class="bids">${kop.map((b) => `<tr><td><b>${esc(b.namn)}</b><br><span class="mono" style="font-size:.7rem">${b.pris} Mkr</span></td>
+                <td>${b.slag.map((x) => `<span class="chip" style="display:inline-flex;margin:2px"><span class="dot" style="background:${x.color}"></span>${esc(x.name)} · ${esc(x.txt)}</span>`).join("")}</td>
+                <td style="text-align:right">🏠 <b>${esc(b.vinnare)}</b></td></tr>`).join("")}</table></div>` : "")
+            + kort(S.reveal.omvarld, "Omvärldskort") + kort(S.reveal.kvartalskort && { ...S.reveal.kvartalskort, rubrik: `${S.reveal.kvartalskort.rubrik} (${typNamn(S.reveal.kvartalskort.typ)})` }, "Kvartalskort")
             + revealRows(S.reveal) + readyButton(S.round === 4 ? "Till slutresultatet" : "Nästa kvartal");
     },
 
     final(me) {
         const r = S.shared.ranking;
         const mine = me.result;
-        return head("Slutresultat", `${esc(r[0].name)} vinner Kvarteret!`, "Poäng = (fastighetsvärde × 30 % + 10 % av eget kapital + TB) / BTA × 1 000, multiplicerat med måluppfyllelsen f(n). Där är n antalet missade steg på tid, kvalitet och hållbarhet.")
-            + `<div class="card"><table class="rank"><tr><th>Bolag</th><th>FV × 30 %</th><th>EK</th><th>TB</th><th>BTA</th><th>f(n)</th><th>Poäng</th></tr>
+        return head("Slutresultat", `${esc(r[0].name)} vinner Kvarteret!`, "Tre delpoäng, en per skede: Utveckling = total anskaffning ÷ 100, Byggande = täckningsgrad (TG, %), Förvaltning = (fastighetsvärde obelånat + kassa) ÷ 30. Summan multipliceras med måluppfyllelsen f(n), där n är antalet missade steg på tid, kvalitet och hållbarhet.")
+            + `<div class="card"><table class="rank"><tr><th>Bolag</th><th>Utveckling</th><th>Byggande</th><th>Förvaltning</th><th>f(n)</th><th>Poäng</th></tr>
                ${r.map((p, i) => `<tr class="${i === 0 ? "winner" : ""}"><td><span class="chip" style="display:inline-flex"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span></td>
-               <td>${fmt(p.fv_30, 0)}</td><td>${fmt(p.ek, 0)}</td><td>${fmt(p.tb, 0)}</td><td>${p.bta}</td><td>${Math.round(p.f_n * 100)} %</td><td><b>${fmt(p.score)}</b></td></tr>`).join("")}</table></div>`
+               <td>${fmt(p.skede1)}</td><td>${fmt(p.skede2)}</td><td>${fmt(p.skede3)}</td><td>${Math.round(p.f_n * 100)} %</td><td><b>${fmt(p.score)}</b></td></tr>`).join("")}</table>
+               <p class="mono" style="font-size:.72rem;margin-top:8px">Ditt underlag: anskaffning ${fmt(mine.ansk_total, 0)} Mkr · fastighetsvärde obelånat ${fmt(mine.fv_obelan, 0)} Mkr · kassa ${fmt(mine.kassa, 0)} Mkr · missade steg Q ${mine.n_q}, H ${mine.n_h}, T ${mine.n_t}</p></div>`
             + `<div class="grid" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
                <div class="card"><h3>Dina dyraste missar</h3><ul style="list-style:none;display:grid;gap:6px;margin-top:6px">${mine.lardomar.filter((l) => l.mkr < 0).map((l) =>
                     `<li><span class="kicker">Del ${l.del}</span><br>${esc(dec(l.text))} <span class="mono neg">${mkr(l.mkr, 1)}</span></li>`).join("") || "<li>Inga missar alls. Imponerande!</li>"}</ul></div>
                <div class="card"><h3>Det som gick bäst</h3><ul style="list-style:none;display:grid;gap:6px;margin-top:6px">${mine.basta.filter((l) => l.mkr > 0).map((l) =>
                     `<li><span class="kicker">Del ${l.del}</span><br>${esc(dec(l.text))} <span class="mono pos">${mkr(l.mkr, 1)}</span></li>`).join("") || "<li>—</li>"}</ul></div></div>`
             + `<div class="analog"><div class="kicker">Vill du ha hela spelet?</div><h2 style="color:var(--paper)">Det här var Åkepol på 30 minuter</h2>
-               <p>I brädspelet spelar ni runt ett bord i 3–4 timmar. Ni slår tärning runt Stadsbyggnadskontoret, pusslar in projektformer på tomten, upphandlar alla 13 organisationer och leverantörer och bygger genom alla åtta faserna. Sedan budar ni öga mot öga i förvaltningsspiralen. Samma kort och samma ekonomi, men med mycket mer att diskutera.</p>
-               <img src="/img/boards/phase3.jpg" alt="" onerror="this.remove()"></div>`;
+               <p>Vid bordet tar spelet några timmar. Ni slår tärning runt Stadsbyggnadskontoret, pusslar in projektformer på tomten, upphandlar alla 13 organisationer och leverantörer och bygger genom alla åtta faserna. Sedan förvaltar ni fastigheterna med hävstång och yieldbana. Samma kort och samma ekonomi, men med mycket mer att diskutera.</p></div>`;
     },
 };
 
 function introView(step, del) {
     const t = INTRO[step];
-    return head(DELAR[del].namn, t.rubrik) + `<div class="card"><p>${esc(t.text)}</p></div>` + analogBox(t.analog, t.bild) + readyButton("Kör!");
+    return head(DELAR[del].namn, t.rubrik) + `<div class="card"><p>${esc(t.text)}</p></div>` + analogBox(t.analog) + readyButton("Kör!");
 }
 
 function kompAfter(me) {
@@ -462,32 +475,32 @@ const BIND = {
         });
         $("btn-go").onclick = () => submit({ niva: draft.niva, kultur: draft.kultur });
     },
-    fc(me) {
+    f_setup(me) {
         on("[data-fc]", (el) => { draft.fc = el.dataset.fc; rerender(); });
-        on("[data-fs]", (el) => {
-            const id = el.dataset.fs;
-            draft.fs = draft.fs.includes(id) ? draft.fs.filter((x) => x !== id) : [...draft.fs, id];
-            rerender();
-        });
+        on("[data-fs]", (el) => { draft.fs = el.dataset.fs; rerender(); });
         $("btn-go").onclick = () => submit({ fc: draft.fc, fs: draft.fs });
     },
     kvartal(me) {
-        const upd = () => {
-            const tot = Object.values(draft.bud).reduce((s, v) => s + (+v || 0), 0);
-            const parts = [];
-            if (tot) parts.push(`Bud ${fmt(tot, 0)} Mkr → du betalar ${fmt(tot * 0.3)} av ${fmt(me.ek)} Mkr EK`);
-            if (draft.upp) parts.push("1 energiuppgradering");
-            if (draft.salj) parts.push("1 försäljning");
-            if (draft.fs) parts.push("1 ny skötare");
-            $("kv-sum").textContent = parts.join(" · ") || "Inget beslut är också ett beslut.";
-        };
-        document.querySelectorAll("[data-bud]").forEach((el) => (el.oninput = () => { draft.bud[el.dataset.bud] = el.value; upd(); }));
-        const toggle = (key, attr) => on(`[data-${attr}]`, (el) => { draft[key] = draft[key] === el.dataset[attr] ? null : el.dataset[attr]; rerender(); });
-        toggle("upp", "upp"); toggle("salj", "salj"); toggle("fs", "fsq");
-        upd();
+        const lista = (key, id) => { draft[key] = draft[key].includes(id) ? draft[key].filter((x) => x !== id) : [...draft[key], id]; };
+        on("[data-kop]", (el) => { lista("kop", el.dataset.kop); rerender(); });
+        on("[data-salj]", (el) => { lista("salj", el.dataset.salj); draft.energi = draft.energi.filter((x) => x !== el.dataset.salj); rerender(); });
+        on("[data-energi]", (el) => {
+            const id = el.dataset.energi;
+            if (!draft.energi.includes(id) && draft.energi.length >= S.shared.energi_max) { toast(`Högst ${S.shared.energi_max} energiuppgraderingar det här kvartalet.`); return; }
+            lista("energi", id); draft.salj = draft.salj.filter((x) => x !== id); rerender();
+        });
+        on("[data-kort]", (el) => { draft.kort = draft.kort === el.dataset.kort ? null : el.dataset.kort; rerender(); });
+        const kop = S.shared.market.filter((m) => draft.kop.includes(m.id)).reduce((s, m) => s + m.pris, 0);
+        const salj = me.offer.props.filter((x) => draft.salj.includes(x.id)).reduce((s, x) => s + x.mv - x.lan, 0);
+        const parts = [];
+        if (draft.kop.length) parts.push(`Köp ${kop} Mkr`);
+        if (draft.salj.length) parts.push(`Sälj +${salj} Mkr`);
+        if (draft.energi.length) parts.push(`${draft.energi.length} energiuppgradering(ar)`);
+        if (draft.kort) parts.push("1 personkort");
+        $("kv-sum").textContent = parts.length ? `${parts.join(" · ")} · Kassa ${fmt(me.ek, 0)} Mkr` : "Inget beslut är också ett beslut.";
         $("btn-go").onclick = () => {
-            const bud = Object.fromEntries(Object.entries(draft.bud).filter(([, v]) => +v > 0).map(([k, v]) => [k, +v]));
-            submit({ bud, uppgradera: draft.upp || null, salj: draft.salj || null, fs: draft.fs || null });
+            const mal = $("kort-mal")?.value || null;
+            submit({ kop: draft.kop, salj: draft.salj, energi: draft.energi, kort: draft.kort ? { id: draft.kort, mal } : null });
         };
     },
 };
@@ -519,13 +532,14 @@ function renderAside() {
             ${meter("Kvalitet", me.q, me.q_krav)}${meter("Hållbarhet", me.h, me.h_krav)}${meter("Tid (mån)", me.t, me.t_mal, true)}
             <h3>Kompetenser</h3><div class="komp" style="margin-top:4px">${Object.entries(me.komp).map(([k, v]) => `<span>${k} ${v}</span>`).join("")}</div>`;
     } else {
-        html += `<div class="kv"><span class="k">Eget kapital</span><span class="v ${me.ek < 0 ? "neg" : ""}">${fmt(me.ek)} Mkr</span>
+        html += `<div class="kv"><span class="k">Kassa</span><span class="v ${me.ek < 0 ? "neg" : ""}">${fmt(me.ek)} Mkr</span>
             <span class="k">TB från bygget</span><span class="v">${fmt(me.tb, 0)} Mkr</span>
-            <span class="k">Kapacitet</span><span class="v">${me.kapacitet} (${me.props.length} fastigheter)</span>
-            <span class="k">Löner</span><span class="v">${fmt(me.lon)} Mkr/kv</span>
+            <span class="k">Riskbuffertar</span><span class="v">${me.rb}</span>
+            <span class="k">Personkort</span><span class="v">${me.hand.length}</span>
             <span class="k">Yield bostäder / kommersiellt</span><span class="v">${fmt(S.yield_b)} / ${fmt(S.yield_k)} %</span>
-            <span class="k">Fastighetschef</span><span class="v">${esc(me.fc || "–")}</span></div>
-            <h3>Fastigheter</h3><div class="plist">${me.props.map((p) => `${esc(p.namn)} · ${p.energiklass}`).join("<br>") || "Inga"}</div>`;
+            <span class="k">Fastighetschef</span><span class="v">${esc(me.fc || "–")}</span>
+            <span class="k">Fastighetsskötare</span><span class="v">${esc(me.fs_full?.[0]?.namn || "–")}</span></div>
+            <h3>Fastigheter</h3><div class="plist">${me.props.map((p) => `${esc(p.namn)} · ${p.energiklass} · bas-DN ${p.bas_dn} · lån ${p.lan ?? "–"}`).join("<br>") || "Inga"}</div>`;
     }
     html += `</div>`;
     $("aside").innerHTML = html;
@@ -541,7 +555,7 @@ setInterval(() => {
     $("h-progress").style.width = progressPct();
 }, 500);
 
-const ORDER = ["intro1", "pc", "p1", "p1_res", "namnd", "slut1", "intro2", "ac", "upph", "upph_res", "fas", "fas_res", "slut2", "intro3", "fc", "kvartal", "kvartal_res", "final"];
+const ORDER = ["intro1", "pc", "p1", "p1_res", "namnd", "slut1", "intro2", "ac", "upph", "upph_res", "fas", "fas_res", "slut2", "intro3", "f_setup", "kvartal", "kvartal_res", "final"];
 function progressPct() {
     if (!S || S.step === "lobby") return "0%";
     const i = ORDER.indexOf(S.step);
