@@ -55,6 +55,26 @@ def safe_str(val, default="") -> str:
     return str(val).strip()
 
 
+def _fix_stavning(s: str) -> str:
+    """Normalisera kortrubriker/beskrivningar utan att röra OneDrive-källan.
+    Just nu: byt norska 'förkjöp' till svenska 'förköp'."""
+    if not s:
+        return s
+    return (s.replace("förkjöp", "förköp")
+             .replace("Förkjöp", "Förköp")
+             .replace("FÖRKJÖP", "FÖRKÖP"))
+
+
+def _round_half_up(x: float) -> int:
+    """Avrunda till närmaste heltal, halvor upp i magnitud (0,5→1, -0,5→-1, 1,5→2)."""
+    import math
+    if x is None:
+        return 0
+    if x >= 0:
+        return int(math.floor(x + 0.5))
+    return -int(math.floor(-x + 0.5))
+
+
 # ── Projects ──
 
 def load_projects() -> Dict[str, List[Project]]:
@@ -118,23 +138,380 @@ def load_projects() -> Dict[str, List[Project]]:
     return stacks
 
 
+# ── Förvaltning 2.0: FC/FS-arketyper (separata kortlekar) ──
+
+def load_f2_fc_arketyper() -> List[dict]:
+    """Läs F2_FC_personal.csv (6 fastighetschef-arketyper med passiva egenskaper).
+
+    Kolumner: Roll, ID, Namn, Specialisering, Kapacitet_proj, Lön_Mkr_per_kv,
+    Förhandling (+3/-1/+1/0), Motstånd_konsekvens (+3/-1/+2/0), Specialeffekt, Not.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_FC_personal.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "roll": "FC",
+            "id": nid,
+            "namn": safe_str(r.get("Namn")),
+            "specialisering": safe_str(r.get("Specialisering")),
+            "kapacitet": safe_int(r.get("Kapacitet_proj")),
+            "lon": safe_float(r.get("Lön_Mkr_per_kv")),
+            "forhandling": safe_str(r.get("Förhandling")),
+            "motstand_konsekvens": safe_str(r.get("Motstånd_konsekvens")),
+            "specialeffekt": safe_str(r.get("Specialeffekt")),
+            "not": safe_str(r.get("Not")),
+        })
+    return out
+
+
+def load_f2_fs_arketyper() -> List[dict]:
+    """Läs F2_FS_personal.csv (4 fastighetsspecialist-arketyper med taktiska egenskaper).
+
+    Kolumner: Roll, ID, Namn, Specialisering, Lön_Mkr_per_kv, Effekt_beskrivning, Not.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_FS_personal.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "roll": "FS",
+            "id": nid,
+            "namn": safe_str(r.get("Namn")),
+            "specialisering": safe_str(r.get("Specialisering")),
+            "lon": safe_float(r.get("Lön_Mkr_per_kv")),
+            "effekt_beskrivning": safe_str(r.get("Effekt_beskrivning")),
+            "not": safe_str(r.get("Not")),
+        })
+    return out
+
+
+def _parse_f2_modifier(s: str) -> int:
+    """Parsea F2-modifier-sträng ('+3', '-1', '0', '+2') till int. 0 vid fel."""
+    if not s:
+        return 0
+    s = s.strip()
+    try:
+        return int(s.replace("+", "").replace(" ", ""))
+    except ValueError:
+        return 0
+
+
+def load_f2_dd() -> List[dict]:
+    """Läs F2_DD.csv (10 DD-kort). Effekt_Mkr tolkas som DN-modifier i Mkr
+    (positiv = dolt + DN, negativ = dolt − DN). Typ ('Kostnad'/'Intäkt') ger
+    färg i UI:n."""
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_DD.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        out.append({
+            "id": nid,
+            "typ": safe_str(r.get("Typ")),  # 'Kostnad' eller 'Intäkt'
+            "rubrik": safe_str(r.get("Rubrik")),
+            "effekt_mkr": safe_float(r.get("Effekt_Mkr")),
+            "beskrivning": safe_str(r.get("Beskrivning")),
+        })
+    return out
+
+
+def load_f2_handelsekort() -> List[dict]:
+    """Läs F2_händelsekort.csv (28 typkort + 3 stoppkort).
+
+    Effekt-kolumnen kan vara tom på rader där användaren inte fyllt i — då
+    härleder vi värdet från är_*-flaggorna eller fill_color så spelets mekanik
+    fungerar oavsett:
+      är_varningskort=ja  → 'varning'
+      är_energi_varning=ja → 'energivarning'
+      är_förköpsrätt=ja  → 'förköpsrätt'  (OneDrive-stavningen 'förkjöp' stöds också)
+      är_stoppkort=ja     → 'stoppkort'
+      annars (fill_color grön) → 'pluskort'
+      annars (fill_color röd)  → 'minuskort'
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_händelsekort.csv")
+    if not os.path.exists(fp):
+        return []
+    rows = read_csv(fp)
+    out = []
+    for r in rows:
+        nid = safe_str(r.get("ID"))
+        if not nid:
+            continue
+        effekt = safe_str(r.get("Effekt")).lower().strip()
+        # Härleda effekt om tom
+        if not effekt:
+            if safe_str(r.get("Är_stoppkort", r.get("är_stoppkort"))).lower() == "ja":
+                effekt = "stoppkort"
+            elif (safe_str(r.get("Är_förköpsrätt", r.get("är_förköpsrätt"))).lower() == "ja"
+                  or safe_str(r.get("Är_förkjöpsrätt", r.get("är_förkjöpsrätt"))).lower() == "ja"):
+                effekt = "förköpsrätt"
+            elif safe_str(r.get("Är_energi_varning", r.get("är_energi_varning"))).lower() == "ja":
+                effekt = "energivarning"
+            elif safe_str(r.get("Är_varningskort", r.get("är_varningskort"))).lower() == "ja":
+                effekt = "varning"
+            else:
+                fill = safe_str(r.get("fill_color")).lower()
+                if "1f5e2b" in fill or "5cc07a" in fill:
+                    effekt = "pluskort"
+                elif "9e968e" in fill or "ef5656" in fill:
+                    effekt = "minuskort"
+                else:
+                    effekt = "minuskort"  # fallback
+        out.append({
+            "id": nid,
+            "typ": safe_str(r.get("Typ")).upper(),
+            "handelsetyp": safe_str(r.get("Händelsetyp")),
+            "rubrik": _fix_stavning(safe_str(r.get("Rubrik"))),
+            "effekt": effekt,
+            "beskrivning": _fix_stavning(safe_str(r.get("Beskrivning"))),
+            "ar_dolt": safe_str(r.get("Är_dolt", r.get("är_dolt"))).lower() == "ja",
+        })
+    return out
+
+
+# Default-listor för FC/FS-personkort. Används när OneDrive-CSV:n bara har
+# rubriker (som vid Q0 idag — du fyller i text senare). Varje kort har en
+# kort 'effekt'-kod som backend-handlern kan matcha mot.
+# Personkort-effekter (designprincip från användaren): direkta och permanenta,
+# förutom plus/minus (som räknas i fastighetens stack) och 'spela när du vill'-
+# kort där effekten är direkt vid spelandet. Inga 'denna runda'/'nästa kvartal'-
+# effekter — när kortet spelas händer det NU och förändringen är permanent.
+_DEFAULT_FC_PERSONKORT = [
+    ("FCHK-01", "Energimässa",            "auto_energi",    "Spela istället för energiuppgraderingsslag — lyckas automatiskt."),
+    ("FCHK-02", "Senior FC inhyrd",       "dn_plus1_perm",  "+1 bas-DN permanent på en valfri fastighet."),
+    ("FCHK-03", "Bra omdöme i pressen",   "blockera_kons",  "Blockera ett konsekvenskort som drabbar en av dina fastigheter."),
+    ("FCHK-04", "PR-kupp",                "dn_plus1_perm",  "+1 bas-DN permanent på en valfri fastighet."),
+    ("FCHK-05", "Förhandlingsteknik",     "forh_plus3",     "Spela i samband med hyresförhandling: +3 på slaget."),
+    ("FCHK-06", "Nätverk i branschen",    "kika_kort",      "Titta på ett dolt kort hos en motståndare nu."),
+    ("FCHK-07", "Strategiplan",           "flytta_kort",    "Flytta ett av dina dolda kort till en annan av dina fastigheter."),
+    ("FCHK-08", "Diskussion med banken",  "lan_minus10",    "Sänk en fastighets lån med 10 Mkr permanent (även räntan minskar)."),
+    ("FCHK-09", "Kassaflödesoptimering",  "cash_plus5",     "+5 mkr direkt till kassan."),
+    ("FCHK-10", "Bra avtal med leverantör","auto_energi",   "Spela istället för energiuppgraderingsslag — lyckas automatiskt."),
+    ("FCHK-11", "Kontaktnät",             "forsta_val",     "Spelas reaktivt: du får förstaval på nästa fastighet som dyker upp på marknaden."),
+    ("FCHK-12", "Insider på stadshuset",  "byggratt_plus",  "+1 byggrätt på en valfri fastighet (för framtida tillbyggnad)."),
+    ("FCHK-13", "Lyckosam refinansiering","lan_minus10",    "Sänk en fastighets lån med 10 Mkr permanent."),
+    ("FCHK-14", "Branschmässa",           "auto_energi",    "Auto-success på en energiuppgradering."),
+    ("FCHK-15", "Förhandlingsdelegation", "forh_plus2",     "Spela i samband med hyresförhandling: +2 på slaget."),
+    ("FCHK-16", "Likviditetsstöd",        "cash_plus5",     "+5 mkr direkt till kassan."),
+    ("FCHK-17", "Markaffär",              "forsta_val",     "Spelas reaktivt: förstaval på nästa marknadsfastighet."),
+    ("FCHK-18", "Kassainjektion",         "cash_plus5",     "+5 mkr direkt till kassan."),
+    ("FCHK-19", "Tillväxtinitiativ",      "dn_plus1_perm",  "+1 bas-DN permanent på en valfri fastighet."),
+    ("FCHK-20", "Reservplan",             "blockera_kons",  "Blockera ett konsekvenskort som drabbar en av dina fastigheter."),
+]
+
+_DEFAULT_FS_PERSONKORT = [
+    ("FSHK-01", "Känningar i branschen",     "forh_plus2",      "Spela i samband med hyresförhandling: +2 på slaget."),
+    ("FSHK-02", "Energirevision",            "konv_energivarn", "Konvertera 1 energivarning till ett pluskort på samma fastighet."),
+    ("FSHK-03", "Hyresgästrelation",         "annullera_minus", "Annullera ett minuskort som hade lagts på en fastighet."),
+    ("FSHK-04", "Konsultarmé",               "skicka_tillb",    "Skicka tillbaka 1 konsekvenskort till leken."),
+    ("FSHK-05", "Snabbjobbare",              "dn_plus1_perm",   "+1 bas-DN permanent på en valfri fastighet."),
+    ("FSHK-06", "Spaning",                   "kika_kort",       "Titta på ett dolt kort hos en motståndare nu."),
+    ("FSHK-07", "Förebyggande underhåll",    "ta_bort_varning", "Ta bort 1 varningskort från en valfri fastighet."),
+    ("FSHK-08", "Driftekonomi",              "lan_minus10",     "Sänk en fastighets lån med 10 Mkr permanent."),
+    ("FSHK-09", "Marknadsdata",              "byt_yield",       "Byt ett yield-kort i kön mot ett från toppen av leken."),
+    ("FSHK-10", "Kvalitetslyft",             "dn_plus1_perm",   "+1 bas-DN permanent på en valfri fastighet."),
+    ("FSHK-11", "Hyresgästjuridik",          "annullera_minus", "Annullera ett minuskort som hade lagts på en fastighet."),
+    ("FSHK-12", "Besiktningsexpert",         "ignorera_garanti","Ignorera ett garantibesiktningskort som hade drabbat en fastighet."),
+    ("FSHK-13", "Likviditetsstöd",           "cash_plus3",      "+3 mkr direkt till kassan."),
+    ("FSHK-14", "Underhållstajming",         "auto_energi",     "Auto-success på en energiuppgradering."),
+    ("FSHK-15", "Branschspaning",            "kika_kort",       "Titta på ett dolt kort hos en motståndare nu."),
+    ("FSHK-16", "Förhandlingsbacking",       "forh_plus2",      "Spela i samband med hyresförhandling: +2 på slaget."),
+    ("FSHK-17", "Energiteknisk insikt",      "konv_energivarn", "Konvertera energivarning till pluskort."),
+    ("FSHK-18", "Snabbreparation",           "annullera_minus", "Annullera ett minuskort."),
+    ("FSHK-19", "Refinansieringsexpert",     "lan_minus10",     "Sänk en fastighets lån med 10 Mkr permanent."),
+    ("FSHK-20", "Kvalitetspris",             "dn_plus1_perm",   "+1 bas-DN permanent på en valfri fastighet."),
+]
+
+
+def load_f2_personkort(roll: str) -> List[dict]:
+    """Läs F2_FCkort.csv eller F2_FSkort.csv. Om CSV:n bara har platshållar-rader
+    (mestadels tomma Rubrik/Beskrivning) faller vi tillbaka till default-listan
+    så spelmekaniken fungerar redan idag.
+    """
+    filename = "F2_FCkort.csv" if roll == "FC" else "F2_FSkort.csv"
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", filename)
+    csv_cards = []
+    if os.path.exists(fp):
+        rows = read_csv(fp)
+        for r in rows:
+            nid = safe_str(r.get("ID"))
+            rubrik = safe_str(r.get("Rubrik"))
+            besk = safe_str(r.get("Beskrivning"))
+            if nid and rubrik:  # bara rader med ifylld rubrik
+                # Använd 'effekt'-kod från beskrivning om kort namn matchar
+                # default-listan, annars 'generic'
+                effekt_code = "generic"
+                default_match = next((d for d in (_DEFAULT_FC_PERSONKORT
+                                                   if roll == "FC"
+                                                   else _DEFAULT_FS_PERSONKORT)
+                                       if d[0] == nid), None)
+                if default_match:
+                    effekt_code = default_match[2]
+                csv_cards.append({
+                    "id": nid, "roll": roll, "rubrik": rubrik,
+                    "effekt": effekt_code, "beskrivning": besk,
+                })
+    # Om CSV har < 5 riktiga kort, använd default
+    if len(csv_cards) < 5:
+        defaults = _DEFAULT_FC_PERSONKORT if roll == "FC" else _DEFAULT_FS_PERSONKORT
+        return [{"id": d[0], "roll": roll, "rubrik": d[1],
+                 "effekt": d[2], "beskrivning": d[3]} for d in defaults]
+    return csv_cards
+
+
+def build_f2_staff_objects(fc_list: List[dict], fs_list: List[dict]) -> List[Staff]:
+    """Bygg Staff-instanser från F2-arketyperna så befintliga hire-/turn-handlers
+    kan använda dem oförändrat. Designdokets nyckelregler:
+      - Inga lönekostnader (lon = 0.0)
+      - Inga kapacitetstak (kapacitet = 999)
+      - Egenskaperna (förh/motst-modifier som int, specialeffekt som text)
+
+    Spelmekanik som tittar på arketyp-specifika egenskaper (t.ex. _energy_upgrade_modifier
+    som ger +3 vid 'Tekniska experten') matchar på namn — F2-namnen bevaras.
+    """
+    out: List[Staff] = []
+    for fc in fc_list:
+        forh_mod = _parse_f2_modifier(fc.get("forhandling", ""))
+        motst_mod = _parse_f2_modifier(fc.get("motstand_konsekvens", ""))
+        # Lagra förhandlings- och motstånds-värdena i specialisering-textfältet
+        # för synlighet i UI:n.
+        spec = fc.get("specialisering", "")
+        spec = f"{spec} · Förh {forh_mod:+d} / Motst {motst_mod:+d}"
+        if fc.get("specialeffekt") and fc["specialeffekt"] != "-":
+            spec += f" · {fc['specialeffekt']}"
+        out.append(Staff(
+            roll="FC",
+            id=fc["id"],
+            namn=fc["namn"],
+            specialisering=spec,
+            kapacitet=999,
+            handelsemotstand=fc.get("motstand_konsekvens", ""),
+            lon=0.0,
+            forhandling="D6",  # baseline dice för bakåtkompatibel hyresförhandling
+            f2_forh_modifier=forh_mod,
+            f2_motstand_modifier=motst_mod,
+        ))
+    for fs in fs_list:
+        spec = fs.get("specialisering", "")
+        if fs.get("effekt_beskrivning"):
+            spec += f" · {fs['effekt_beskrivning']}"
+        out.append(Staff(
+            roll="FS",
+            id=fs["id"],
+            namn=fs["namn"],
+            specialisering=spec,
+            kapacitet=999,
+            handelsemotstand="",
+            lon=0.0,
+            forhandling="D6",
+            f2_forh_modifier=0,
+            f2_motstand_modifier=0,
+        ))
+    return out
+
+
+# ── Förvaltning 2.0: berika projekt med Bas_DN / Lanebelopp / Rantekostnad ──
+
+def enrich_projects_from_f2(stacks: Dict[str, List[Project]]) -> int:
+    """Läs F2_fastighetskort.csv och fyll i bas_dn / lanebelopp / rantekostnad_kvartal
+    på matchande projekt (per Namn). Returnerar antal projekt-instanser som berikats.
+
+    Filen är optional — saknas den lämnas projekten orörda.
+    """
+    fp = os.path.join(DATA_DIR, "4_forvaltning_v2", "F2_fastighetskort.csv")
+    if not os.path.exists(fp):
+        return 0
+
+    rows = read_csv(fp)
+    by_name: Dict[str, dict] = {}
+    for r in rows:
+        namn = safe_str(r.get("Namn"))
+        if namn:
+            by_name[namn] = r
+
+    import math
+    enriched = 0
+    for stack in stacks.values():
+        for p in stack:
+            r = by_name.get(p.namn)
+            if not r:
+                continue
+            bd = safe_str(r.get("Bas_DN"))
+            ln = safe_str(r.get("Lanebelopp"))
+            rk = safe_str(r.get("Rantekostnad_kvartal"))
+            if bd:
+                p.bas_dn = safe_int(bd)
+            if ln:
+                p.lanebelopp = safe_int(ln)
+            if rk:
+                p.rantekostnad_kvartal = safe_int(rk)
+
+            # Normalisera bas_dn så MV @ baseline-yield ≥ lånebeloppet.
+            # CSV:n har vissa fastigheter med bas_dn räknat på anskaffning
+            # istället för marknadsvärde — det ger MV < lån redan vid Q1
+            # och tvingar omedelbar tvångsförsäljning. Vi höjer bas_dn till
+            # max(ursprunglig_bas_dn, MV*yield_baseline, lan*yield_baseline)
+            # för konsistens med 70%-belåningsregeln.
+            if p.lanebelopp and p.marknadsvarde:
+                typ = (p.typ or "").upper()
+                yield_baseline = 0.04 if typ in ("HYRESRÄTT", "BRF") else 0.05
+                from_mv = round(p.marknadsvarde * yield_baseline)
+                from_lan = math.ceil(p.lanebelopp * yield_baseline)
+                ny_bas = max(p.bas_dn or 0, from_mv, from_lan)
+                if ny_bas > (p.bas_dn or 0):
+                    p.bas_dn = ny_bas
+            enriched += 1
+    return enriched
+
+
 # ── Politik/Dialog Cards ──
 
 def load_politik_dialog() -> Tuple[List[PolitikDialogCard], List[PolitikDialogCard]]:
+    """Läs PU_poldia.csv. Stödjer både gamla typer (Politik/Dialog) och nya
+    sammanslagna typen HÄNDELSEKORT. Vid HÄNDELSEKORT läggs kortet i BÅDA leken
+    så att brädets gamla 'politik' resp 'dialog'-rutor får dragbara kort.
+
+    Kolumnnamnen för effekter har också ändrats från '2-10' till '2 till 10' osv.
+    """
     rows = read_csv(data_path("poldia"))
     politik = []
     dialog = []
+
+    # Mappning gamla -> nuvarande kolumnnamn för D20-effekter.
+    effect_keys = [
+        ("1", ["1"]),
+        ("2-10", ["2-10", "2 till 10"]),
+        ("11-15", ["11-15", "11 till 15"]),
+        ("16-19", ["16-19", "16 till 19"]),
+        ("20", ["20", "20+"]),
+    ]
 
     for row in rows:
         typ = safe_str(row.get("Typ"))
         if not typ:
             continue
         effects = {}
-        # Columns: 1, 2-10, 11-15, 16-19, 20
-        for key in ["1", "2-10", "11-15", "16-19", "20"]:
-            val = safe_str(row.get(key))
-            if val:
-                effects[key] = val
+        for canonical, aliases in effect_keys:
+            for alias in aliases:
+                val = safe_str(row.get(alias))
+                if val:
+                    effects[canonical] = val
+                    break
 
         card = PolitikDialogCard(
             typ=typ, nr=safe_str(row.get("Nr")),
@@ -142,7 +519,13 @@ def load_politik_dialog() -> Tuple[List[PolitikDialogCard], List[PolitikDialogCa
             text=safe_str(row.get("Text")),
             effects=effects,
         )
-        if typ.lower().startswith("politik"):
+        typ_lower = typ.lower()
+        if "händelsekort" in typ_lower or "handelsekort" in typ_lower:
+            # Ny sammanslagen typ – kortet ska vara dragbart från båda korttyperna
+            # på brädet tills BOARD_SQUARES skrivits om till en gemensam korttyp.
+            politik.append(card)
+            dialog.append(card)
+        elif typ_lower.startswith("politik"):
             politik.append(card)
         else:
             dialog.append(card)
@@ -238,8 +621,22 @@ def load_organisations() -> Dict[str, List[Organisation]]:
         )
         orgs.setdefault(namn, []).append(o)
 
-    for key in orgs:
+    for key in list(orgs.keys()):
         orgs[key].sort(key=lambda x: x.niva)
+
+    # Case-insensitive alias för att överbygga PLANNING_ORDER ("Stödfunktioner",
+    # "Operativt team", "Marknadsteam", "Digitalisering") vs CSV-data
+    # ("STÖDFUNKTIONER", "OPERATIVT TEAM", ...). Lägg in värdena under fler
+    # varianter så att slot_name-lookup matchar oavsett skiftläge.
+    aliases = {
+        "STÖDFUNKTIONER": "Stödfunktioner",
+        "OPERATIVT TEAM": "Operativt team",
+        "MARKNADSTEAM": "Marknadsteam",
+        "DIGITALISERING": "Digitalisering",
+    }
+    for csv_key, planning_key in aliases.items():
+        if csv_key in orgs and planning_key not in orgs:
+            orgs[planning_key] = orgs[csv_key]
 
     return orgs
 
@@ -563,7 +960,9 @@ def load_pc_ac_staff() -> Dict[str, list]:
             "t_bonus": safe_int(row.get("T")),
         }
         if roll == "PC":
-            entry["lindring"] = safe_int(row.get("Lindring"))
+            # Lindring slopas på PrC — istället används Erfarenhet som lindrar
+            # alla händelsekort i Skede 1 (samma mekanik som AC i Skede 2-3).
+            entry["erfarenhet"] = safe_int(row.get("Erfarenhet"))
             entry["namnd_bonus"] = safe_int(row.get("Nämnd", row.get("N\xe4mnd", 0)))
             entry["lon"] = 0  # PC cost handled differently now
         elif roll == "AC":
@@ -603,13 +1002,16 @@ def load_world_events() -> List[WorldEvent]:
     rows = read_csv(fp)
     events = []
     for row in rows:
+        # Avrunda halvmiljoner till hela tal (designprincip: 'bara hela miljoner').
+        raw_mkr = safe_float(row.get("Effekt_Mkr"))
+        effekt_mkr = float(_round_half_up(raw_mkr))
         events.append(WorldEvent(
             id=safe_str(row.get("ID")),
-            rubrik=safe_str(row.get("Rubrik")),
+            rubrik=_fix_stavning(safe_str(row.get("Rubrik"))),
             effekt_typ=safe_str(row.get("Effekt_typ")),
-            effekt_mkr=safe_float(row.get("Effekt_Mkr")),
+            effekt_mkr=effekt_mkr,
             poverkar=safe_str(row.get("Påverkar", row.get("P\x86verkar"))),
-            beskrivning=safe_str(row.get("Beskrivning")),
+            beskrivning=_fix_stavning(safe_str(row.get("Beskrivning"))),
         ))
     return events
 
@@ -803,6 +1205,17 @@ class GameData:
     def __init__(self):
         load_klass_table()
         self.projects = load_projects()
+        # Förvaltning 2.0 – fyll i förtryckta lånevärden + Bas_DN på projekten.
+        self.f2_enriched_count = enrich_projects_from_f2(self.projects)
+        # Förvaltning 2.0 – FC/FS-arketyper. Råform och Staff-instanser.
+        self.f2_fc_arketyper = load_f2_fc_arketyper()
+        self.f2_fs_arketyper = load_f2_fs_arketyper()
+        self.f2_staff_objects = build_f2_staff_objects(self.f2_fc_arketyper, self.f2_fs_arketyper)
+        # F2-händelsekort per fastighet och FC/FS-personkort (default-lista om CSV tom).
+        self.f2_handelsekort = load_f2_handelsekort()
+        self.f2_fc_personkort = load_f2_personkort("FC")
+        self.f2_fs_personkort = load_f2_personkort("FS")
+        self.f2_dd_cards = load_f2_dd()
         self.politik, self.dialog = load_politik_dialog()
         self.special_cards = load_special_cards()
         self.suppliers = load_suppliers()
@@ -831,7 +1244,9 @@ class GameData:
         total_garanti = sum(len(v) for v in self.garanti_cards.values())
         total_mgmt = sum(len(v) for v in self.mgmt_events.values())
         total_yield = sum(len(v) for v in self.yield_cards.values())
-        print(f"  Data loaded: {total_projects} projects, "
+        print(f"  Data loaded: {total_projects} projects "
+              f"({self.f2_enriched_count} berikade via F2_fastighetskort, "
+              f"F2: {len(self.f2_fc_arketyper)} FC + {len(self.f2_fs_arketyper)} FS-arketyper), "
               f"{len(self.politik)} politik, {len(self.dialog)} dialog, "
               f"{sum(len(v) for v in self.suppliers.values())} suppliers, "
               f"{sum(len(v) for v in self.organisations.values())} orgs, "

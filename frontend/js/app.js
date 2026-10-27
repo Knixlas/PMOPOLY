@@ -75,6 +75,8 @@ export function sendAction(action) {
         state.ws.send(JSON.stringify({ type: 'action', ...action }));
     }
 }
+// Expose for phase4.js personkort-knappar (reaktiva — kan spelas när som helst).
+if (typeof window !== 'undefined') window._sendAction = sendAction;
 
 export function sendMessage(type, data = {}) {
     if (state.ws && state.ws.readyState === WebSocket.OPEN) {
@@ -141,6 +143,57 @@ function updateWaitingRoom(gameState) {
         startBtn.onclick = () => {
             sendMessage('start_game');
             startBtn.disabled = true;
+        };
+
+        // Provspels-genvägar: hoppa direkt till Skede 2 eller Skede 3 med standardportfölj.
+        let presetWrap = document.getElementById('preset-buttons');
+        if (!presetWrap) {
+            presetWrap = document.createElement('div');
+            presetWrap.id = 'preset-buttons';
+            presetWrap.style.marginTop = '12px';
+            presetWrap.style.display = 'flex';
+            presetWrap.style.gap = '8px';
+            presetWrap.style.justifyContent = 'center';
+            presetWrap.innerHTML = `
+                <button id="btn-preset-s2" class="btn-secondary" style="font-size:0.85em;padding:8px 12px;">
+                    ⏭ Starta i Skede 2 (provspel)
+                </button>
+                <button id="btn-preset-s3" class="btn-secondary" style="font-size:0.85em;padding:8px 12px;">
+                    ⏭ Starta i Skede 3 (provspel)
+                </button>
+            `;
+            startBtn.parentElement.appendChild(presetWrap);
+        }
+        document.getElementById('btn-preset-s2').onclick = () => {
+            sendMessage('start_game_preset', { preset: 'skede_2' });
+            startBtn.disabled = true;
+        };
+        document.getElementById('btn-preset-s3').onclick = () => {
+            sendMessage('start_game_preset', { preset: 'skede_3' });
+            startBtn.disabled = true;
+        };
+
+        // AI-motspelare för solo-läge
+        let aiWrap = document.getElementById('ai-button-wrap');
+        if (!aiWrap) {
+            aiWrap = document.createElement('div');
+            aiWrap.id = 'ai-button-wrap';
+            aiWrap.style.marginTop = '8px';
+            aiWrap.style.textAlign = 'center';
+            aiWrap.innerHTML = `<button id="btn-add-ai" class="btn-secondary" style="font-size:0.85em;padding:6px 14px;">🤖 Lägg till AI-motspelare</button>`;
+            startBtn.parentElement.appendChild(aiWrap);
+        }
+        document.getElementById('btn-add-ai').onclick = async () => {
+            const roomId = state.roomId || (state.gameState && state.gameState.room_id);
+            if (!roomId) return;
+            try {
+                await fetch(`/api/rooms/${roomId}/add_ai`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ name: 'AI-motspelare' })
+                });
+            } catch (err) {
+                console.error('add_ai failed', err);
+            }
         };
     } else {
         startBtn.style.display = 'none';

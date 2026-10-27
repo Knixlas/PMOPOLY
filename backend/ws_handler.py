@@ -4,7 +4,8 @@ from typing import Dict, Set
 from fastapi import WebSocket
 from room_manager import GameRoom, RoomManager
 from models import GamePhase
-from engine import process_action
+import asyncio
+from engine import process_action, ai_default_action
 
 
 class ConnectionManager:
@@ -53,6 +54,79 @@ class ConnectionManager:
                 "type": "game_state",
                 "state": state,
             })
+        # Om pending_action gäller en AI-spelare — kör AI:ns default-val automatiskt.
+        await self._maybe_step_ai(room)
+
+    async def _maybe_step_ai(self, room: GameRoom):
+        """Om pending_action är AI:ns tur: kör AI:s default och rebroadcast.
+        Loopar tills nästa pending_action är en mänsklig spelare (eller ingen).
+        Avbryter vid fel-result eller om pending_action inte ändras (skydd mot
+        oändliga loops om AI:s val inte accepteras)."""
+        last_sub = None  # senaste current_marker-tupeln (inkluderar EK + list-längder)
+        stuck_count = 0
+        for _ in range(30):  # säkerhets-cap
+            pending = room.pending_action
+            if not pending:
+                return
+            pid = pending.get("player_id")
+            if not pid:
+                return
+            player = room.get_player(pid)
+            if not player or not getattr(player, "is_ai", False):
+                return
+            action = ai_default_action(room, player)
+            if not action:
+                # AI saknar handlingsregel för denna sub_state — logga och avbryt
+                await self.broadcast(room.room_id, {
+                    "type": "events",
+                    "events": [{
+                        "type": "event",
+                        "text": f"⚠ AI ({player.name}) saknar regel för "
+                                f"sub_state={room.sub_state!r} / "
+                                f"action={pending.get('action')!r} — väntar.",
+                    }],
+                })
+                return
+            # Stuck-detektion: inkludera EK + längd på listor så att iterativa
+            # actions (t.ex. flera energi-uppgraderingar i samma kvartal) inte
+            # räknas som stuck. Vi bryter bara när INTET förändras mellan varv.
+            upgr_len = len(pending.get("upgradeable", []) or [])
+            avail_len = len(pending.get("available", []) or [])
+            current_marker = (room.sub_state, pid, pending.get("action"),
+                              round(player.eget_kapital, 1), upgr_len, avail_len)
+            if current_marker == last_sub:
+                stuck_count += 1
+                if stuck_count >= 3:
+                    await self.broadcast(room.room_id, {
+                        "type": "events",
+                        "events": [{
+                            "type": "event",
+                            "text": f"⚠ AI fastnade på {current_marker} — avbryter.",
+                        }],
+                    })
+                    return
+            else:
+                stuck_count = 0
+                last_sub = current_marker
+            await asyncio.sleep(0.3)  # synligt för spelaren att AI agerar
+            result = process_action(room, pid, action)
+            if isinstance(result, dict) and result.get("type") == "error":
+                await self.broadcast(room.room_id, {
+                    "type": "events",
+                    "events": [{
+                        "type": "event",
+                        "text": f"⚠ AI-fel: {result.get('message','?')} — avbryter.",
+                    }],
+                })
+                return
+            events = result.get("events", []) if isinstance(result, dict) else []
+            if events:
+                await self.broadcast(room.room_id, {"type": "events", "events": events})
+            if room.phase == GamePhase.PUZZLE_PLACEMENT:
+                await self._broadcast_puzzle_state(room)
+            else:
+                state = room.to_dict()
+                await self.broadcast(room.room_id, {"type": "game_state", "state": state})
 
     async def _broadcast_puzzle_state(self, room: GameRoom):
         """Send per-player puzzle state during puzzle placement."""
@@ -134,6 +208,22 @@ async def handle_ws_message(ws: WebSocket, room: GameRoom, player_id: str, messa
             return
 
         room.start_game()
+        await manager.broadcast_state(room)
+        return
+
+    if msg_type == "start_game_preset":
+        # Provspels-genväg: hoppa direkt till Skede 2 eller Skede 3 med standardportfölj.
+        if player_id != room.host_id:
+            await ws.send_json({"type": "error", "message": "Bara värden kan starta"})
+            return
+        preset_name = data.get("preset", "")
+        result = room.start_game_preset(preset_name)
+        if result.get("type") == "error":
+            await ws.send_json(result)
+            return
+        events = result.get("events", [])
+        if events:
+            await manager.broadcast(room.room_id, {"type": "events", "events": events})
         await manager.broadcast_state(room)
         return
 

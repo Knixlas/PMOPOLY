@@ -1,0 +1,99 @@
+ID;Typ;Effekt;Synlig;Värde;Rubrik;Beskrivning
+HR-01;HYRESRÄTT;dolt_plus_dn;nej;;Ny hyresgäst flyttar in;Lägenheten hyrs ut snabbt till högre hyra efter renovering.
+HR-02;HYRESRÄTT;dolt_plus_dn;nej;;Indexuppräkning slår igenom;Hyrorna räknas upp enligt konsumentprisindex utan protester.
+HR-03;HYRESRÄTT;dolt_plus_dn;nej;;Lokal i bottenplan hyrs ut;Tidigare tom lokal blir uthyrd till frisersalong på långt kontrakt.
+HR-04;HYRESRÄTT;dolt_plus_dn;nej;;Skötsamma hyresgäster stannar;Låg omflyttning ger stabila intäkter och färre inflyttningskostnader.
+HR-05;HYRESRÄTT;dolt_plus_dn;nej;;Garageplatser fulltecknade;Alla bilplatser i garaget är uthyrda för första gången på länge.
+HR-06;HYRESRÄTT;dolt_plus_dn;nej;;Tvättstugebokningar ökar;Fler hyresgäster nyttjar tvättstugan och lägenhetsförrådet mot avgift.
+HR-07;HYRESRÄTT;dolt_minus_dn;nej;;Lägenhet står tom;Uppsägning och flyttstädning drar ut på tiden innan ny hyresgäst hittas.
+HR-08;HYRESRÄTT;dolt_minus_dn;nej;;Andrahandsuthyrning upptäcks;Hyresgästen har hyrt ut svart. Hyresintäkten uteblir under utredningen.
+HR-09;HYRESRÄTT;dolt_minus_dn;nej;;Källarförråd vattenskadat;Mindre läcka i grunden skadar hyresgästernas förvaring.
+HR-10;HYRESRÄTT;energi_plus;nej;;Nya termostatventiler monteras;Injustering av värmesystemet ger bättre reglering än beräknat.
+HR-11;HYRESRÄTT;energi_plus;nej;;Tätning av fönster lyckas;Fogar och tätningslister byts i samband med löpande underhåll.
+HR-12;HYRESRÄTT;energivarning;ja;;Fjärrvärmeväxlare åldras;Växlaren är original från byggåret och tappar verkningsgrad.
+HR-13;HYRESRÄTT;direkt_dn_plus;ja;;Kommunen tecknar blockhyra;Kommunen hyr tio lägenheter för nyanlända på ett tioårigt avtal.
+HR-14;HYRESRÄTT;underhallsvarning;ja;3;Stammar i akut behov av byte;Avloppsstammarna är uttjänta och läcker i flera våningsplan.
+HR-15;HYRESRÄTT;underhallsvarning;ja;3;Taket läcker vid slagregn;Papptäckningen har passerat sin livslängd och släpper in vatten.
+HR-16;HYRESRÄTT;underhallsvarning;ja;2;Hissen klarar inte besiktning;Hissmaskineriet är slitet och måste bytas för att godkännas.
+HR-17;HYRESRÄTT;villkorskort;ja;;Boverket skärper energikrav;Villkor: har fastigheten energiklass D eller sämre blir det −1 DN.
+HR-18;HYRESRÄTT;villkorskort;ja;;Portföljen granskas av försäkringsbolag;Villkor: äger du 3 eller fler hyresrätter — −1 DN på alla.
+HR-19;HYRESRÄTT;engangskassa_plus;ja;4;Retroaktiv hyra betalas ut;Hyresnämnden godkänner efterdebiterad hyra för tidigare år.
+HR-20;HYRESRÄTT;engangskassa_plus;ja;2;Försäkringsersättning för stormskada;Ersättningen täcker mer än den akuta reparationskostnaden.
+HR-21;HYRESRÄTT;engangskassa_minus;ja;3;Akut sanering av mögel;Fukt bakom kakel har spridit sig och kräver omedelbar åtgärd.
+HR-22;HYRESRÄTT;forkop;ja;;Tips om hyresfastighet i grannkvarteret;Behåll på hand. Ger förstaval när en hyresrätt sätts till budgivning.
+HR-23;HYRESRÄTT;forkop;ja;;Mäklarkontakt i bostadsbolaget;Behåll på hand. Kortet ger dig förstaval nästa gång en hyresrätt går till budgivning.
+FO-01;FÖRSKOLA;dolt_plus_dn;nej;;Kommunen förlänger avtalet;Verksamheten förlänger hyresavtalet med ytterligare fem år.
+FO-02;FÖRSKOLA;dolt_plus_dn;nej;;Fler avdelningar öppnas;Förskolan utökar med en avdelning och hyr angränsande yta.
+FO-03;FÖRSKOLA;dolt_plus_dn;nej;;Indexklausul ger högre hyra;Avtalet räknas upp enligt index utan invändning från kommunen.
+FO-04;FÖRSKOLA;dolt_plus_dn;nej;;Föräldrakooperativ flyttar in;Ny huvudman tar över driften och tecknar längre kontrakt.
+FO-05;FÖRSKOLA;dolt_plus_dn;nej;;Gården nyttjas av flera verksamheter;Kvällsuthyrning av gården till närliggande fritidsgård ger extra intäkt.
+FO-06;FÖRSKOLA;dolt_plus_dn;nej;;Köket hyrs ut för catering;Storköket används kvällstid av extern cateringfirma mot avgift.
+FO-07;FÖRSKOLA;dolt_minus_dn;nej;;Avdelning läggs vilande;Färre barn i upptagningsområdet gör att en avdelning står tom.
+FO-08;FÖRSKOLA;dolt_minus_dn;nej;;Personalutrymme underutnyttjat;Del av ytan står oanvänd sedan verksamheten omorganiserades.
+FO-09;FÖRSKOLA;dolt_minus_dn;nej;;Fuktskada i grovkök;Mindre läcka under diskbänken har gått obemärkt förbi ett tag.
+FO-10;FÖRSKOLA;energi_plus;nej;;Solavskärmning minskar kylbehov;Nya markiser håller nere temperaturen i lekrummen sommartid.
+FO-11;FÖRSKOLA;energi_plus;nej;;Behovsstyrd ventilation installeras;Luftflödet anpassas efter antal barn i lokalen.
+FO-12;FÖRSKOLA;energivarning;ja;;Undercentralen är original;Värmeväxlaren från byggåret börjar tappa i effektivitet.
+FO-13;FÖRSKOLA;direkt_dn_plus;ja;;Kommunen bygger ut avtalet till hela huset;Kommunen tecknar långt hyresavtal för hela fastigheten inklusive tillbyggnad.
+FO-14;FÖRSKOLA;underhallsvarning;ja;2;Lekutrustningen underkänns;Rutschkana och klätterställning klarar inte säkerhetsbesiktningen.
+FO-15;FÖRSKOLA;underhallsvarning;ja;3;Ventilationen klarar inte OVK;Luftflödena i lekrummen understiger kraven och kräver ombyggnad.
+FO-16;FÖRSKOLA;underhallsvarning;ja;3;Fasaden har frostsprängts;Putsen släpper i stora fält och måste lagas före vintern.
+FO-17;FÖRSKOLA;villkorskort;ja;;Kommunen inför skärpta miljökrav;Villkor: ligger energiklassen på D eller sämre dras 1 DN.
+FO-18;FÖRSKOLA;villkorskort;ja;;Skolinspektionen granskar fastighetsbeståndet;Villkor: äger du 3 eller fler förskolor — −1 DN på alla.
+FO-19;FÖRSKOLA;engangskassa_plus;ja;3;Kommunalt underhållsbidrag betalas ut;Bidraget täcker mer än den planerade underhållsåtgärden.
+FO-20;FÖRSKOLA;engangskassa_plus;ja;2;Försäkringsersättning för skadegörelse;Ersättningen från inbrottet överstiger reparationskostnaden.
+FO-21;FÖRSKOLA;engangskassa_plus;ja;5;Statligt investeringsstöd för förskolor;Fastigheten kvalificerar för stöd till förbättrad barnmiljö.
+FO-22;FÖRSKOLA;forkop;ja;;Tips om förskola på kommunens lista;Behåll på hand. Ger förstaval när en förskola sätts till budgivning.
+FO-23;FÖRSKOLA;forkop;ja;;Kontakt på kommunens fastighetskontor;Behåll på hand. Kortet ger dig förstaval nästa gång en förskola går till budgivning.
+LO-01;LOKAL;dolt_plus_dn;nej;;Omsättningshyra slår väl ut;Butikens julförsäljning ger högre omsättningshyra än väntat.
+LO-02;LOKAL;dolt_plus_dn;nej;;Ny hyresgäst tecknar långt kontrakt;Kedjebutik flyttar in på ett femårsavtal med indexklausul.
+LO-03;LOKAL;dolt_plus_dn;nej;;Skyltläget lockar ny verksamhet;Ett gynnsamt gathörn gör att hyresgästen kan ta ut högre hyra.
+LO-04;LOKAL;dolt_plus_dn;nej;;Restaurangen bygger ut uteserveringen;Utökad serveringsyta höjer hyresintäkten under sommarhalvåret.
+LO-05;LOKAL;dolt_plus_dn;nej;;Popup-butik hyr in sig kort;Ledig lokal fylls tillfälligt av kampanjhyresgäst mellan avtal.
+LO-06;LOKAL;dolt_minus_dn;nej;;Butiken sänker sin omsättning;Minskad handel gör att omsättningshyran blir lägre än budgeterat.
+LO-07;LOKAL;dolt_minus_dn;nej;;Lokal svår att hyra ut vidare;Ovanlig planlösning gör att uthyrningen drar ut på tiden.
+LO-08;LOKAL;dolt_minus_dn;nej;;Konkurrerande handelsplats öppnar;Kunderna söker sig till nytt köpcentrum i närheten.
+LO-09;LOKAL;dolt_minus_dn;nej;;Fettavskiljaren läcker smått;Mindre läckage i restauranglokalens avlopp har gått obemärkt förbi.
+LO-10;LOKAL;dolt_minus_dn;nej;;Skyltfönster krossat en tid;Reparation dröjer och lokalen syns sämre mot gatan.
+LO-11;LOKAL;dolt_minus_dn;nej;;Hyresrabatt förhandlas fram i det tysta;Hyresgästen får tillfällig rabatt för att inte flytta.
+LO-12;LOKAL;energi_plus;nej;;Ny LED-belysning i butiksytan;Hyresgästen byter armaturer och sänker fastighetens elkostnad.
+LO-13;LOKAL;energivarning;ja;;Kylanläggningen börjar dra mer el;Kompressorn i livsmedelsbutikens kyla närmar sig sin livslängd.
+LO-14;LOKAL;energivarning;ja;;Ventilationsaggregatet är original;Aggregatet från byggåret har sämre verkningsgrad än moderna system.
+LO-15;LOKAL;direkt_dn_plus;ja;;Ankarhyresgäst tecknar tioårsavtal;Stor kedjebutik flyttar in och lyfter hela husets attraktionskraft.
+LO-16;LOKAL;direkt_dn_minus;ja;;Ankarhyresgästen går i konkurs;Den stora hyresgästen lämnar utan uppsägningstid och lokalen står tom.
+LO-17;LOKAL;underhallsvarning;ja;2;Golvet i handelslokalen är utslitet;Betonggolvet måste slipas och beläggas på nytt.
+LO-18;LOKAL;underhallsvarning;ja;3;Fasaden mot gatan vittrar;Putsskador och lossnande fasadplattor måste åtgärdas.
+LO-19;LOKAL;villkorskort;ja;;E-handeln tar ytterligare mark;Villkor: äger du 3 eller fler lokaler — −1 DN på alla.
+LO-20;LOKAL;villkorskort;ja;;Kommunen skärper energikrav för handel;Villkor: energiklass D eller sämre ger −1 DN på fastigheten.
+LO-21;LOKAL;engangskassa_plus;ja;3;Avflyttande hyresgäst betalar avgångsvederlag;Hyresgästen löser ut sig ur kontraktet i förtid.
+LO-22;LOKAL;engangskassa_plus;ja;4;Försäkringsersättning efter vattenskada;Ersättningen från skyfallet täcker mer än saneringskostnaden.
+LO-23;LOKAL;engangskassa_minus;ja;3;Akutsanering av fettavskiljare;Avskiljaren är överfull och måste tömmas och åtgärdas omgående.
+LO-24;LOKAL;engangskassa_minus;ja;2;Klotter saneras akut på fasaden;Fasaden klottras ned upprepade gånger och kräver skyddsbehandling.
+LO-25;LOKAL;forkop;ja;;Tips om butikslokal i köpstark gata;Behåll på hand. Ger förstaval när en lokal sätts till budgivning.
+LO-26;LOKAL;forkop;ja;;Kontakt hos fastighetsmäklare i city;Behåll på hand. Kortet ger dig förstaval nästa gång en lokal går till budgivning.
+KO-01;KONTOR;dolt_plus_dn;nej;;Hyresgästen expanderar på plats;Företaget hyr angränsande yta i samband med tillväxt.
+KO-02;KONTOR;dolt_plus_dn;nej;;Långt avtal förlängs i förtid;Hyresgästen tecknar nytt avtal två år innan det gamla löper ut.
+KO-03;KONTOR;dolt_plus_dn;nej;;Kontorshotell fyller vakanta ytor;Flexibla korttidskontrakt gör att tomma ytor snabbt hyrs ut.
+KO-04;KONTOR;dolt_plus_dn;nej;;Indexuppräkning ger högre hyra;Avtalet räknas upp enligt konsumentprisindex utan omförhandling.
+KO-05;KONTOR;dolt_minus_dn;nej;;Del av våningsplan står tomt;Hyresgästen har krympt sin yta men avtalet omförhandlas inte förrän nästa period.
+KO-06;KONTOR;dolt_minus_dn;nej;;Distansarbete minskar ytbehovet;Hyresgästen nyttjar bara halva sin kontrakterade yta.
+KO-07;KONTOR;dolt_minus_dn;nej;;Konferensrum står obokat;Gemensamma ytor genererar mindre avgiftsintäkt än beräknat.
+KO-08;KONTOR;dolt_minus_dn;nej;;Elkapaciteten börjar bli en flaskhals;Ökad serverdrift hos hyresgästen belastar fastighetens elnät i det tysta.
+KO-09;KONTOR;dolt_minus_dn;nej;;Reception underutnyttjad;Delad servicefunktion i entrén ger lägre intäkt än planerat.
+KO-10;KONTOR;dolt_minus_dn;nej;;Parkeringsgaraget har lediga platser;Färre anställda på plats gör att garageintäkterna sjunker.
+KO-11;KONTOR;energi_plus;nej;;Behovsstyrd belysning installeras;Närvarostyrda armaturer sänker elförbrukningen i kontorskorridorerna.
+KO-12;KONTOR;energivarning;ja;;Kylmaskinen för komfortkyla åldras;Kompressorn börjar dra mer el än när den var ny.
+KO-13;KONTOR;energivarning;ja;;Klimatskalet läcker värme;Fönsterpartierna från byggåret har sämre isolerförmåga än moderna glas.
+KO-14;KONTOR;direkt_dn_plus;ja;;Storbolag flyttar in på tioårsavtal;Ett väletablerat företag hyr hela plan för sitt regionkontor.
+KO-15;KONTOR;direkt_dn_minus;ja;;Storhyresgästen flyttar till nybygge;Ankarhyresgästen lämnar för modernare lokaler i nybyggt kvarter.
+KO-16;KONTOR;direkt_dn_minus;ja;;Hyresgästen läggs ner i omorganisation;Moderbolaget stänger den lokala verksamheten och avtalet upphör.
+KO-17;KONTOR;underhallsvarning;ja;2;Hissen uppfyller inte tillgänglighetskrav;Hissen måste moderniseras för att klara nya myndighetskrav.
+KO-18;KONTOR;underhallsvarning;ja;4;Parkeringsdäcket har armeringsskador;Betongdäcket i garaget visar korrosion och måste renoveras.
+KO-19;KONTOR;villkorskort;ja;;Fastighetsskatten justeras för äldre bestånd;Villkor: fastigheter i energiklass D eller sämre får −1 DN.
+KO-20;KONTOR;villkorskort;ja;;Kreditgivaren granskar portföljens miljöprofil;Villkor: äger du 3 eller fler kontor — −1 DN på alla.
+KO-21;KONTOR;villkorskort;ja;;Konjunkturen viker för kontorsmarknaden;Villkor: har fastigheten en vakant yta sedan tidigare — ytterligare −1 DN.
+KO-22;KONTOR;engangskassa_plus;ja;5;Avflyttande hyresgäst löser ut kontraktet;Företaget betalar avgångsvederlag för att lämna i förtid.
+KO-23;KONTOR;engangskassa_minus;ja;4;Elcentralen måste uppgraderas akut;Ökad effektbehov hos hyresgästerna kräver omedelbar förstärkning.
+KO-24;KONTOR;engangskassa_minus;ja;2;Sprinklerhuvud löser ut felaktigt;Vattenskadan efter felutlösningen måste åtgärdas omgående.
+KO-25;KONTOR;forkop;ja;;Tips om kontorsfastighet i city;Behåll på hand. Ger förstaval när ett kontor sätts till budgivning.
+KO-26;KONTOR;forkop;ja;;Kontakt hos kommersiell fastighetsmäklare;Behåll på hand. Kortet ger dig förstaval nästa gång ett kontor går till budgivning.

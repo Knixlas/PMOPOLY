@@ -240,10 +240,23 @@ input[type="text"]:focus { border-color: var(--burgundy); }
     flex: 1; padding: 14px; overflow-y: auto; min-height: 0;
 }
 .event-log {
-    height: 130px; background: var(--paper-deep);
+    height: 280px; background: var(--paper-deep);
     border-top: 1px solid var(--border);
     overflow-y: auto; flex-shrink: 0;
 }
+.event-log-header {
+    font-weight: 600; padding: 6px 14px;
+    background: var(--burgundy); color: #fff;
+    position: sticky; top: 0; z-index: 1;
+}
+/* Yield-kö-celler i status-rutan */
+.yield-cell {
+    display: inline-block; padding: 1px 6px; margin: 0 2px;
+    border-radius: 3px; background: rgba(0,0,0,0.05);
+    font-family: var(--font-mono, monospace);
+}
+.yield-cell.up { background: #fee; color: #c00; }
+.yield-cell.down { background: #efe; color: #060; }
 
 /* Right: Actions panel */
 .game-sidebar {

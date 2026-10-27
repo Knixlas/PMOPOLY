@@ -57,6 +57,10 @@ class GameRoom:
         self.f4_no_trading: bool = False
         self.f4_energy_discount: float = 1.0
         self.f4_hired_ids: set = set()  # Global hired staff IDs
+        self.f4_final_results: list = []  # Sätts av _f4_final_valuation vid spelslut
+        # Historik per kvartal för grafer i Skede 3-UI. Lista av snapshots:
+        # {quarter, yield_b, yield_k, players: [{id, ek, dn_total, score}]}
+        self.f4_history: list = []
 
         # Add host
         host_id = str(uuid.uuid4())[:8]
@@ -79,6 +83,20 @@ class GameRoom:
         pid = str(uuid.uuid4())[:8]
         color = PLAYER_COLORS[len(self.players)]
         p = Player(id=pid, name=name, color=color)
+        self.players.append(p)
+        return p
+
+    def add_ai_player(self, name: str = "AI-motspelare") -> Optional[Player]:
+        """Lägg till en passiv AI-spelare. AI:n gör default-val (skip på alla
+        valfria moment, hire första FC + första FS automatiskt). Använd för
+        ensam-läge så man har en motpart att jämföra slutpoäng mot."""
+        if len(self.players) >= 4:
+            return None
+        if self.phase != GamePhase.LOBBY:
+            return None
+        pid = "ai-" + str(uuid.uuid4())[:6]
+        color = PLAYER_COLORS[len(self.players)]
+        p = Player(id=pid, name=name, color=color, is_ai=True)
         self.players.append(p)
         return p
 
@@ -120,6 +138,35 @@ class GameRoom:
         from engine import _setup_pc_hire
         _setup_pc_hire(self)
 
+    def start_game_preset(self, preset_name: str) -> dict:
+        """Provspels-genväg: hoppa direkt till Skede 2 eller Skede 3 med en
+        fördefinierad portfölj. Setupar projekt-stackar och decks som vanligt
+        (eftersom följande faser drar kort därifrån) men hoppar över Skede 1.
+
+        preset_name: 'skede_2' eller 'skede_3'.
+        """
+        # Initiera projekt-stackar + kort-decks som vid normal start
+        for typ, projects in self.game_data.projects.items():
+            stack = copy.deepcopy(projects)
+            random.shuffle(stack)
+            self.projekt_stacks[typ] = stack
+        self.politik_deck = list(range(len(self.game_data.politik)))
+        random.shuffle(self.politik_deck)
+        self.dialog_deck = list(range(len(self.game_data.dialog)))
+        random.shuffle(self.dialog_deck)
+        self.mark_expansion_deck = copy.deepcopy(self.game_data.mark_expansion_deck)
+        random.shuffle(self.mark_expansion_deck)
+
+        random.shuffle(self.players)
+
+        from engine import _setup_preset_skede2, _setup_preset_skede3
+        if preset_name == "skede_2":
+            return _setup_preset_skede2(self)
+        elif preset_name == "skede_3":
+            return _setup_preset_skede3(self)
+        else:
+            return {"type": "error", "message": f"Okänd preset: {preset_name}"}
+
     def _setup_mark_tomt_action(self):
         """Set up action for current player to pick a project type."""
         player = self.current_player
@@ -137,6 +184,16 @@ class GameRoom:
         self.turn_index = (self.turn_index + 1) % len(self.players)
 
     def to_dict(self) -> dict:
+        from config import YIELD_QUEUE_SIZE
+        # Live-slutresultat (visas under Skede 3 i sidopanelen).
+        live_scores = {}
+        if self.phase == GamePhase.PHASE4_FORVALTNING:
+            try:
+                from engine import calc_live_score
+                for p in self.players:
+                    live_scores[p.id] = calc_live_score(self, p)
+            except Exception:
+                pass
         return {
             "room_id": self.room_id,
             "name": self.name,
@@ -147,6 +204,15 @@ class GameRoom:
             "sub_state": self.sub_state,
             "pending_action": self.pending_action,
             "events_log": self.events_log[-20:],  # Last 20 events
+            # Förvaltning 2.0 – marknadskartan + yield-kö (synliga närmaste rörelser).
+            "f4_quarter": self.f4_quarter,
+            "f4_yield_b": round(self.f4_yield_b, 2),
+            "f4_yield_k": round(self.f4_yield_k, 2),
+            "f4_yield_queue_bostader": list(self.f4_yield_cards.get("bostader", []))[:YIELD_QUEUE_SIZE],
+            "f4_yield_queue_kommersiellt": list(self.f4_yield_cards.get("kommersiellt", []))[:YIELD_QUEUE_SIZE],
+            "f4_final_results": self.f4_final_results,
+            "f4_live_scores": live_scores,
+            "f4_history": self.f4_history,
         }
 
     def to_lobby_dict(self) -> dict:

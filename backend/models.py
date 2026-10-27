@@ -63,6 +63,10 @@ class Project:
     sam: int = 0
     pro: int = 0
     abm: int = 0
+    # Förvaltning 2.0 – förtryckta värden från F2_fastighetskort.csv (None när data saknas).
+    bas_dn: Optional[int] = None
+    lanebelopp: Optional[int] = None
+    rantekostnad_kvartal: Optional[int] = None
 
     def to_dict(self) -> dict:
         return {
@@ -74,6 +78,8 @@ class Project:
             "tid": self.tid, "riskbuffert": self.riskbuffert,
             "namndbeslut": self.namndbeslut, "energiklass": self.energiklass,
             "driftnetto": self.driftnetto, "forekomst": self.forekomst,
+            "bas_dn": self.bas_dn, "lanebelopp": self.lanebelopp,
+            "rantekostnad_kvartal": self.rantekostnad_kvartal,
         }
 
 
@@ -234,12 +240,18 @@ class Staff:
     handelsemotstand: str
     lon: float
     forhandling: str
+    # Förvaltning 2.0 – modifier-värden parseade ur F2-arketyperna.
+    # Används av hyresförhandling och (framtida) konsekvenskortsystem.
+    f2_forh_modifier: int = 0
+    f2_motstand_modifier: int = 0
 
     def to_dict(self) -> dict:
         return {
             "roll": self.roll, "id": self.id, "namn": self.namn,
             "specialisering": self.specialisering, "kapacitet": self.kapacitet,
             "lon": self.lon, "forhandling": self.forhandling,
+            "f2_forh_modifier": self.f2_forh_modifier,
+            "f2_motstand_modifier": self.f2_motstand_modifier,
         }
 
 
@@ -374,6 +386,33 @@ class Player:
     f4_fv_30: float = 0.0
     f4_real_ek: float = 0.0
     f4_tb: float = 0.0
+    # Förvaltning 2.0 — set av fastighetsnamn med röd risk-flagga ("risk för
+    # tvångsförsäljning nästa kvartal"). Internt variabelnamn bevarat.
+    f4_margin_call_props: set = field(default_factory=set)
+    # Förvaltning 2.0 — restkort (1 per 0,25 Mkr residual vid kvartalsavrundning,
+    # autokonverteras till 1 Mkr cash när 4 ackumulerats). Persisterar mellan kvartal.
+    f4_restkort: int = 0
+    # Förvaltning 2.0 — total anskaffning från fastigheter förvärvade DURING Skede 3
+    # (utöver ursprungsportföljen i player.projects). Räknas in i Skede 1-poäng.
+    f4_extra_anskaffning: float = 0.0
+    # Förvaltning 2.0 — antal "garanterad nästa gång"-tokens per fastighet (namn).
+    # Sparas vid misslyckad energiuppgradering: nästa försök på SAMMA fastighet
+    # blir auto-success utan D20-slag (token konsumeras).
+    f4_energi_garanti: Dict[str, int] = field(default_factory=dict)
+    # F2-händelsekort: dolda kort placerade på varje fastighet (namn → lista av kort).
+    f4_handelse_per_prop: Dict[str, list] = field(default_factory=dict)
+    # F2-DD-kort: dolda DD-kort placerade på varje fastighet (namn → lista av kort).
+    # DN-effekten räknas in i driftnetto_bonus så intäktsfasen får dolt DN automatiskt.
+    f4_dd_per_prop: Dict[str, list] = field(default_factory=dict)
+    # Aktiva modifiers från spelade personkort. Konsumeras vid relevant moment.
+    f4_forh_bonus_next: int = 0          # +N på nästa hyresförhandling
+    f4_ranta_reduction_next: int = 0     # −N mkr ränta nästa intäktsfas
+    f4_blockera_konsekvens: int = 0      # Blockera N kommande konsekvenskort
+    f4_annullera_minus: int = 0          # Annullera N kommande minuskort vid dragning
+    # FC + FS personkort på hand (cap 6 totalt, max 3 av varje per designdok).
+    f4_personkort_hand: list = field(default_factory=list)
+    # Om spelaren är en passiv AI (skippar alla aktiva val).
+    is_ai: bool = False
 
     @property
     def total_bta(self) -> int:
@@ -549,6 +588,18 @@ class Player:
             "f4_fv_30": round(self.f4_fv_30, 1),
             "f4_real_ek": round(self.f4_real_ek, 1),
             "f4_tb": round(self.f4_tb, 1),
+            "f4_margin_call_props": sorted(self.f4_margin_call_props),
+            "f4_restkort": self.f4_restkort,
+            "f4_extra_anskaffning": round(self.f4_extra_anskaffning, 1),
+            "f4_energi_garanti": dict(self.f4_energi_garanti),
+            "f4_handelse_per_prop": {k: list(v) for k, v in self.f4_handelse_per_prop.items()},
+            "f4_dd_per_prop": {k: list(v) for k, v in self.f4_dd_per_prop.items()},
+            "f4_forh_bonus_next": self.f4_forh_bonus_next,
+            "f4_ranta_reduction_next": self.f4_ranta_reduction_next,
+            "f4_blockera_konsekvens": self.f4_blockera_konsekvens,
+            "f4_annullera_minus": self.f4_annullera_minus,
+            "f4_personkort_hand": list(self.f4_personkort_hand),
+            "is_ai": self.is_ai,
             "puzzle_confirmed": self.puzzle_confirmed,
             "placed_project_ids": self.placed_project_ids,
             "projektchef": self.projektchef,

@@ -5,3 +5,7 @@ __pycache__/
 *.db
 .venv/
 venv/
+.claude/
+
+# Word/Office temp lock-filer
+~$*

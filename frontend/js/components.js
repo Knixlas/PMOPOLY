@@ -160,44 +160,73 @@ export function closeCardModal() {
 }
 
 // ── Player Status Bar ──
-export function renderPlayerBar(players, currentPlayerId, myPlayerId) {
+export function renderPlayerBar(players, currentPlayerId, myPlayerId, gs) {
     const bar = document.getElementById('player-bar');
     if (!bar) return;
 
-    bar.innerHTML = players.map(p => `
-        <div class="player-status ${p.id === currentPlayerId ? 'active' : ''}"
-             style="border-color: ${p.id === currentPlayerId ? p.color : 'transparent'}">
-            <div class="ps-name" style="color:${p.color}">
-                ${p.name} ${p.id === myPlayerId ? '(du)' : ''}
+    const isForvaltning = gs && gs.phase === 'phase4_forvaltning';
+    const liveScores = (gs && gs.f4_live_scores) || {};
+
+    bar.innerHTML = players.map(p => {
+        const live = liveScores[p.id];
+        // Skede 3 visar Skede 3-relevant statistik istället för projekt/BTA/Q/H/ABT.
+        const stats = isForvaltning ? `
+            <div class="ps-stat">
+                <div class="label">EK</div>
+                <div class="value">${p.eget_kapital} Mkr</div>
             </div>
-            <div class="ps-stats">
-                <div class="ps-stat">
-                    <div class="label">Projekt</div>
-                    <div class="value">${p.projects?.length || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">BTA</div>
-                    <div class="value">${p.total_bta || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">Rb</div>
-                    <div class="value">${p.riskbuffertar || 0}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">Q-krav</div>
-                    <div class="value">${p.q_krav}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">H-krav</div>
-                    <div class="value">${p.h_krav}</div>
-                </div>
-                <div class="ps-stat">
-                    <div class="label">ABT</div>
-                    <div class="value">${p.abt_budget || 0} Mkr</div>
-                </div>
+            <div class="ps-stat">
+                <div class="label">Fast</div>
+                <div class="value">${(p.fastigheter || []).length}</div>
             </div>
-        </div>
-    `).join('');
+            <div class="ps-stat">
+                <div class="label">DN/år</div>
+                <div class="value">${live ? live.total_dn : 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Restkort</div>
+                <div class="value">${p.f4_restkort || 0}/3</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Poäng nu</div>
+                <div class="value" style="font-weight:700;color:var(--burgundy)">${live ? live.score : '–'}</div>
+            </div>
+        ` : `
+            <div class="ps-stat">
+                <div class="label">Projekt</div>
+                <div class="value">${p.projects?.length || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">BTA</div>
+                <div class="value">${p.total_bta || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Rb</div>
+                <div class="value">${p.riskbuffertar || 0}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">Q-krav</div>
+                <div class="value">${p.q_krav}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">H-krav</div>
+                <div class="value">${p.h_krav}</div>
+            </div>
+            <div class="ps-stat">
+                <div class="label">ABT</div>
+                <div class="value">${p.abt_budget || 0} Mkr</div>
+            </div>
+        `;
+        return `
+            <div class="player-status ${p.id === currentPlayerId ? 'active' : ''}"
+                 style="border-color: ${p.id === currentPlayerId ? p.color : 'transparent'}">
+                <div class="ps-name" style="color:${p.color}">
+                    ${p.name} ${p.id === myPlayerId ? '(du)' : ''}
+                </div>
+                <div class="ps-stats">${stats}</div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ══════════════════════════════════════
@@ -373,7 +402,8 @@ function truncate(str, max) {
 // ══════════════════════════════════════
 const SQ_COLORS = {
     start: '#2E7D32', projekt: '#1565C0', kort: '#6A1B9A',
-    stjarna: '#F9A825', stadshuset: '#C62828', lansstyrelsen: '#4E342E',
+    stjarna: '#F9A825', riskbuffert: '#F9A825',
+    stadshuset: '#C62828', lansstyrelsen: '#4E342E',
     skonhetsradet: '#AD1457',
 };
 
@@ -410,7 +440,7 @@ function renderSquareOverlays(boardSquares) {
         }
 
         // Type icon
-        const icons = { kort: '🃏', stjarna: '⭐', stadshuset: '🏛', lansstyrelsen: '⚖', skonhetsradet: '🎨', start: '🏁' };
+        const icons = { kort: '🃏', stjarna: '⭐', riskbuffert: '🛡', stadshuset: '🏛', lansstyrelsen: '⚖', skonhetsradet: '🎨', start: '🏁' };
         if (icons[sq.typ]) {
             html += `<text x="${x + SQ_W - 14}" y="${y + 14}" font-size="11">${icons[sq.typ]}</text>`;
         }
@@ -849,12 +879,23 @@ export function previewOrg(opt) {
 }
 
 export function previewStaff(s) {
+    // F2-arketyper (lon=0, kapacitet=999) visar egenskaper, inte lön/kapacitet.
+    const isF2 = (s.lon || 0) === 0 || (s.kapacitet || 0) >= 99;
+    if (isF2) {
+        return `
+            <h3>${s.namn}</h3>
+            <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+            <div class="detail-grid">
+                ${s.f2_forh_modifier !== undefined ? `<div class="detail-row"><span>Förhandling</span><span>${s.f2_forh_modifier >= 0 ? '+' : ''}${s.f2_forh_modifier}</span></div>` : ''}
+                ${s.f2_motstand_modifier !== undefined ? `<div class="detail-row"><span>Motstånd konsekvens</span><span>${s.f2_motstand_modifier >= 0 ? '+' : ''}${s.f2_motstand_modifier}</span></div>` : ''}
+            </div>
+        `;
+    }
     return `
         <h3>${s.namn}</h3>
         <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
         <div class="detail-grid">
             <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
-            <div class="detail-row"><span>Lön</span><span>${s.lon} Mkr/kvartal</span></div>
             <div class="detail-row"><span>Förhandling</span><span>${s.forhandling ? 'D' + s.forhandling : '—'}</span></div>
         </div>
     `;

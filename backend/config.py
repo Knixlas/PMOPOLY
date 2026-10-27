@@ -19,9 +19,9 @@ MIN_T = 8                    # months minimum
 
 DICE_MAP = {"D4": 4, "D6": 6, "D8": 8, "D10": 10, "D12": 12, "D20": 20}
 
-PROJECT_TYPES = ["BRF", "FÖRSKOLOR", "LOKAL", "KONTOR", "Hyresrätt"]
-TYPE_CODES = {"BRF": "B", "FÖRSKOLOR": "F", "LOKAL": "L", "KONTOR": "K", "Hyresrätt": "H"}
-CODE_TO_TYPES = {"B": ["BRF"], "F": ["FÖRSKOLOR"], "L": ["LOKAL"], "K": ["KONTOR"], "H": ["Hyresrätt"]}
+PROJECT_TYPES = ["BRF", "FÖRSKOLA", "LOKAL", "KONTOR", "HYRESRÄTT"]
+TYPE_CODES = {"BRF": "B", "FÖRSKOLA": "F", "LOKAL": "L", "KONTOR": "K", "HYRESRÄTT": "H"}
+CODE_TO_TYPES = {"B": ["BRF"], "F": ["FÖRSKOLA"], "L": ["LOKAL"], "K": ["KONTOR"], "H": ["HYRESRÄTT"]}
 
 # Phase 3: external support cost per phase (1-8)
 PHASE_COST = [2, 2, 3, 3, 4, 5, 6, 7]
@@ -31,13 +31,27 @@ ENERGY_CLASSES = ["A", "B", "C", "D", "E"]  # Per regelboken §9.1 — F borttag
 YIELD_START_BOSTADER = 4.0   # %
 YIELD_START_KOMMERSIELLT = 5.0  # %
 LOAN_RATIO = 0.70  # 70% debt financing
-BOSTADER_TYPES = ["Hyresrätt"]
-KOMMERSIELLT_TYPES = ["FÖRSKOLOR", "LOKAL", "KONTOR"]
+BOSTADER_TYPES = ["HYRESRÄTT"]
+KOMMERSIELLT_TYPES = ["FÖRSKOLA", "LOKAL", "KONTOR"]
 PROJECT_TYPE_TO_EVENT = {
-    "Hyresrätt": "HR", "FÖRSKOLOR": "FSK", "LOKAL": "LOK", "KONTOR": "KON",
+    "HYRESRÄTT": "HR", "FÖRSKOLA": "FSK", "LOKAL": "LOK", "KONTOR": "KON",
 }
 EK_FV_MODIFIER = {"A": 1.10, "B": 1.05, "C": 1.00, "D": 0.95, "E": 0.0}
 QUARTER_NEW_PROPS = {1: 3, 2: 2, 3: 1, 4: 0}
+
+# Förvaltning 2.0: energiklass → DN-modifier (hela mkr, designdoc 2026-05-09).
+# Effektiv DN = bas-DN + EK_DN_MODIFIER[energiklass]. Inga halvsteg.
+EK_DN_MODIFIER = {"A": 2, "B": 1, "C": 0, "D": -1, "E": -2}
+
+# MV-tabell: marknadsvärdesfaktorer beroende på säljläge.
+# Avrundning till närmaste 5 Mkr för läsbarhet (designdoc §MV-tabellen).
+MV_MULTIPLIERS = {"tvang": 0.7, "normal": 1.0, "fientlig": 1.2}
+
+# Effektiv DN cap = bas_dn × 2, absolut max 15 (designdoc §Fastigheter, DN och DN-kort).
+EFFECTIVE_DN_ABS_MAX = 15
+
+# Yield-kön: hur många omvärldskort/yield-rörelser ligger uppvända framför kartan.
+YIELD_QUEUE_SIZE = 3
 
 # Rent negotiation scale: netto value -> höjning per HR property (Mkr)
 RENT_SCALE = {
@@ -48,8 +62,40 @@ RENT_SCALE = {
     16: 1.5, 17: 1.6,
 }
 
-# Energy upgrade cost — fast pris per steg (regelboken §8.8)
-ENERGY_UPGRADE_COST_PER_STEP = 3.0  # Mkr per steg, fast pris
+# Energiuppgradering — Förvaltning 2.0 (Regelhäfte §8): 5 mkr/steg, D20 ≥ 10 för success.
+# Vid fail spenderas kostnaden ändå. FC/FS-modifier appliceras på slaget.
+ENERGY_UPGRADE_COST_PER_STEP = 5.0  # Mkr per steg, fast pris
+ENERGY_UPGRADE_D20_THRESHOLD = 10   # D20-tröskel för success
+
+# Pusselspel inaktiverat under provspel — alla projekt anses placerade automatiskt.
+# Sätt till False för att återaktivera pusselplaceringen mellan Skede 1 och 2.
+SKIP_PUZZLE_PLACEMENT = True
+
+# Förvaltning 2.0 – Personal: F2-arketyperna (6 FC + 4 FS) ersätter gamla F_personal.csv-staff.
+# F2-designdoket säger 'Inga separata kostnader eller kapacitetstak' – varje FC/FS har
+# egenskaper på fastighetsnivå istället. Sätt till False för att gå tillbaka till
+# gamla löne-/kapacitets-modellen.
+USE_F2_STAFF = True
+
+# Slutformel – tre delpoäng som var och en landar runt 20–25 vid "riktigt bra" spel,
+# 25 vid "superbra". Kalibrera dessa baserat på provspel.
+#
+#   Skede 1 (Utveckling)  = total anskaffning / 100   → 25 vid 2500 Mkr förvärv
+#   Skede 2 (Byggande)    = TG (procent)              → 25 vid TG 25 %
+#   Skede 3 (Förvaltning) = (FV_obelånat + kassa × faktor) / divisor
+#                           där FV_obelånat = säljvärde (normal MV) − utestående lån,
+#                           kassa = EK efter moderbolagslån,
+#                           faktor justerar kassans vikt mot fastighetsvärdet,
+#                           divisor kalibrerar så superbra ger 25.
+#
+# Justera dessa när du har testspels-data.
+SKEDE3_KASSA_FAKTOR = 1.0
+SKEDE3_DIVISOR = 30
+
+# Förvaltning 2.0 – händelsekort per fastighet är inaktiverade tills nya
+# F2_händelsekort-systemet aktiveras (Steg G). Gamla mgmt_events ger
+# konstigt utfall i nuvarande Skede 3, så vi hoppar över dem helt.
+SKIP_MGMT_EVENTS = True
 
 # Planning step order: (slot_name, slot_type)
 PLANNING_ORDER = [
@@ -116,30 +162,35 @@ DATA_FILES = {
 def data_path(key: str) -> str:
     return os.path.join(DATA_DIR, DATA_FILES[key])
 
-# Board squares (hardcoded from original, 24 squares)
+# Board squares — Skede 1-brädet enligt PU_spelbräde2.pdf (2026-05-12).
+# 24 rutor totalt: 4 hörn (Stadsbyggnadskontoret-start, Skönhetsrådet,
+# Stadshuset, Länsstyrelsen), 15 enskilda projektrutor (3 per typ),
+# 3 händelsekortrutor och 2 riskbuffert-rutor. Kombinationsrutor som
+# "BRF + Kontor" är borttagna; tidigare "Politik"/"Dialog" är sammanslagna
+# till en enhetlig "Händelsekort"-ruta (kort_typ="händelsekort").
 BOARD_SQUARES = [
-    {"nr": 1, "typ": "start", "namn": "Stadsbyggnadskontoret"},
-    {"nr": 2, "typ": "projekt", "namn": "Förskola", "projekt_typer": ["FÖRSKOLOR"]},
-    {"nr": 3, "typ": "projekt", "namn": "Hyresrätt", "projekt_typer": ["Hyresrätt"]},
-    {"nr": 4, "typ": "kort", "namn": "Dialog", "kort_typ": "dialog"},
-    {"nr": 5, "typ": "projekt", "namn": "BRF", "projekt_typer": ["BRF"]},
-    {"nr": 6, "typ": "stjarna", "namn": "Stjärna"},
-    {"nr": 7, "typ": "stadshuset", "namn": "Stadshuset"},
-    {"nr": 8, "typ": "projekt", "namn": "Lokal", "projekt_typer": ["LOKAL"]},
-    {"nr": 9, "typ": "kort", "namn": "Politik", "kort_typ": "politik"},
-    {"nr": 10, "typ": "projekt", "namn": "BRF + Kontor", "projekt_typer": ["BRF", "KONTOR"]},
-    {"nr": 11, "typ": "projekt", "namn": "Kontor", "projekt_typer": ["KONTOR"]},
-    {"nr": 12, "typ": "stjarna", "namn": "Stjärna"},
-    {"nr": 13, "typ": "kort", "namn": "Dialog", "kort_typ": "dialog"},
-    {"nr": 14, "typ": "projekt", "namn": "Lokal + Hyresrätt", "projekt_typer": ["LOKAL", "Hyresrätt"]},
-    {"nr": 15, "typ": "lansstyrelsen", "namn": "Länsstyrelsen"},
-    {"nr": 16, "typ": "projekt", "namn": "Förskola", "projekt_typer": ["FÖRSKOLOR"]},
-    {"nr": 17, "typ": "kort", "namn": "Politik", "kort_typ": "politik"},
-    {"nr": 18, "typ": "projekt", "namn": "Lokal + Förskola", "projekt_typer": ["LOKAL", "FÖRSKOLOR"]},
-    {"nr": 19, "typ": "skonhetsradet", "namn": "Skönhetsrådet"},
-    {"nr": 20, "typ": "stjarna", "namn": "Stjärna"},
-    {"nr": 21, "typ": "kort", "namn": "Dialog", "kort_typ": "dialog"},
-    {"nr": 22, "typ": "projekt", "namn": "Hyresrätt", "projekt_typer": ["Hyresrätt"]},
-    {"nr": 23, "typ": "kort", "namn": "Politik", "kort_typ": "politik"},
-    {"nr": 24, "typ": "projekt", "namn": "BRF", "projekt_typer": ["BRF"]},
+    {"nr": 1,  "typ": "start",         "namn": "Stadsbyggnadskontoret"},
+    {"nr": 2,  "typ": "projekt",       "namn": "Hyresrätt",    "projekt_typer": ["HYRESRÄTT"]},
+    {"nr": 3,  "typ": "kort",          "namn": "Händelsekort", "kort_typ": "händelsekort"},
+    {"nr": 4,  "typ": "projekt",       "namn": "Kontor",       "projekt_typer": ["KONTOR"]},
+    {"nr": 5,  "typ": "projekt",       "namn": "BRF",          "projekt_typer": ["BRF"]},
+    {"nr": 6,  "typ": "projekt",       "namn": "Lokal",        "projekt_typer": ["LOKAL"]},
+    {"nr": 7,  "typ": "skonhetsradet", "namn": "Skönhetsrådet"},
+    {"nr": 8,  "typ": "projekt",       "namn": "Förskola",     "projekt_typer": ["FÖRSKOLA"]},
+    {"nr": 9,  "typ": "riskbuffert",   "namn": "Ta en riskbuffert"},
+    {"nr": 10, "typ": "projekt",       "namn": "Hyresrätt",    "projekt_typer": ["HYRESRÄTT"]},
+    {"nr": 11, "typ": "kort",          "namn": "Händelsekort", "kort_typ": "händelsekort"},
+    {"nr": 12, "typ": "projekt",       "namn": "Kontor",       "projekt_typer": ["KONTOR"]},
+    {"nr": 13, "typ": "stadshuset",    "namn": "Stadshuset"},
+    {"nr": 14, "typ": "projekt",       "namn": "Förskola",     "projekt_typer": ["FÖRSKOLA"]},
+    {"nr": 15, "typ": "projekt",       "namn": "Hyresrätt",    "projekt_typer": ["HYRESRÄTT"]},
+    {"nr": 16, "typ": "kort",          "namn": "Händelsekort", "kort_typ": "händelsekort"},
+    {"nr": 17, "typ": "projekt",       "namn": "Lokal",        "projekt_typer": ["LOKAL"]},
+    {"nr": 18, "typ": "projekt",       "namn": "BRF",          "projekt_typer": ["BRF"]},
+    {"nr": 19, "typ": "lansstyrelsen", "namn": "Länsstyrelsen"},
+    {"nr": 20, "typ": "projekt",       "namn": "Lokal",        "projekt_typer": ["LOKAL"]},
+    {"nr": 21, "typ": "projekt",       "namn": "BRF",          "projekt_typer": ["BRF"]},
+    {"nr": 22, "typ": "projekt",       "namn": "Kontor",       "projekt_typer": ["KONTOR"]},
+    {"nr": 23, "typ": "projekt",       "namn": "Förskola",     "projekt_typer": ["FÖRSKOLA"]},
+    {"nr": 24, "typ": "riskbuffert",   "namn": "Ta en riskbuffert"},
 ]

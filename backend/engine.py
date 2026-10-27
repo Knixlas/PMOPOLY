@@ -14,8 +14,19 @@ from config import (
     YIELD_START_BOSTADER, YIELD_START_KOMMERSIELLT, LOAN_RATIO,
     BOSTADER_TYPES, KOMMERSIELLT_TYPES, PROJECT_TYPE_TO_EVENT,
     EK_FV_MODIFIER, QUARTER_NEW_PROPS, RENT_SCALE,
-    ENERGY_UPGRADE_COST_PER_STEP, DICE_MAP,
+    ENERGY_UPGRADE_COST_PER_STEP, ENERGY_UPGRADE_D20_THRESHOLD, DICE_MAP,
+    SKIP_PUZZLE_PLACEMENT, USE_F2_STAFF, SKIP_MGMT_EVENTS,
+    EK_DN_MODIFIER, MV_MULTIPLIERS, EFFECTIVE_DN_ABS_MAX, YIELD_QUEUE_SIZE,
+    SKEDE3_KASSA_FAKTOR, SKEDE3_DIVISOR,
 )
+
+
+def _staff_pool(game_data):
+    """Returnera personalpool för Skede 3-anställning. Använder F2-arketyperna
+    (lon=0, kapacitet=stor) om USE_F2_STAFF är satt, annars gamla F_personal."""
+    if USE_F2_STAFF and getattr(game_data, 'f2_staff_objects', None):
+        return game_data.f2_staff_objects
+    return game_data.staff
 
 
 def process_action(room: GameRoom, player_id: str, action: dict) -> dict:
@@ -23,6 +34,10 @@ def process_action(room: GameRoom, player_id: str, action: dict) -> dict:
     player = room.get_player(player_id)
     if not player:
         return {"type": "error", "message": "Okänd spelare"}
+
+    # play_personkort kan spelas reaktivt även om det inte är spelarens tur.
+    if action.get("action") == "play_personkort" and room.phase == GamePhase.PHASE4_FORVALTNING:
+        return _handle_forvaltning(room, player, action)
 
     # Check it's this player's turn (puzzle phase allows simultaneous play)
     if room.phase != GamePhase.PUZZLE_PLACEMENT:
@@ -231,14 +246,12 @@ def _handle_board(room: GameRoom, player: Player, action: dict) -> dict:
         # Player clicked "Roll D20" in card modal
         card = room.temp.get("current_card")
         d20_result = roll("D20")
-        # PC lindring: add bonus if PC's motstand matches card type
+        # PC erfarenhet lindrar alla händelsekort i Skede 1 (samma logik som
+        # AC i Skede 2-3) — Lindring/Händelsemotstand är historik som ersattes.
         pc_bonus = 0
         if player.projektchef:
-            card_typ = card.typ if hasattr(card, 'typ') else card.get("typ", "")
-            motstand = player.projektchef.get("handelsemotstand", "")
-            if card_typ and card_typ.lower() in motstand.lower():
-                pc_bonus = player.projektchef.get("lindring", 0)
-                d20_result += pc_bonus
+            pc_bonus = player.projektchef.get("erfarenhet", 0)
+            d20_result += pc_bonus
         effect = _get_card_effect(card, d20_result)
         room.temp["d20_result"] = d20_result
 
@@ -359,7 +372,9 @@ def _resolve_square(room: GameRoom, player: Player, square: dict, events: list) 
         else:
             return _finish_board_turn(room, events)
 
-    elif typ == "stjarna":
+    elif typ in ("stjarna", "riskbuffert"):
+        # "stjarna" är legacy-namnet på samma mekanik. Nya brädet (PU_spelbräde2)
+        # använder "riskbuffert".
         player.riskbuffertar += 1
         events.append({
             "type": "riskbuffert",
@@ -964,8 +979,10 @@ def _handle_ekonomi(room: GameRoom, player: Player, action: dict) -> dict:
         return {"type": "state_update", "events": events}
 
     elif room.sub_state == "continue":
-        # Phase 1 complete, move to Puzzle Placement
+        # Skede 1 klar — gå vidare till pussel eller direkt till Skede 2.
         room.temp = {}
+        if SKIP_PUZZLE_PLACEMENT:
+            return _skip_puzzle_to_phase2(room)
         _setup_puzzle_phase(room)
         return {"type": "state_update", "events": [{
             "type": "phase_change",
@@ -1499,7 +1516,160 @@ def _advance_planering_player(room: GameRoom, events: list) -> dict:
 #  PUZZLE PLACEMENT (between Phase 2 and 3)
 # ═══════════════════════════════════════════
 
-BOSTADER_TYPER = {"BRF", "Hyresrätt"}
+BOSTADER_TYPER = {"BRF", "HYRESRÄTT"}
+
+
+def _skip_puzzle_to_phase2(room: GameRoom) -> dict:
+    """Hoppa förbi pusselplaceringen — markera alla projekt som placerade
+    och gå direkt till Skede 2 (AC-anställning). Används under provspel
+    enligt config.SKIP_PUZZLE_PLACEMENT."""
+    events = [{
+        "type": "phase_change",
+        "phase": "phase2_ac_hire",
+        "text": "Skede 1 klar! (Pusselspelet är inaktiverat under provspel.) Välj Arbetschef.",
+    }]
+    for player in room.players:
+        player.placed_project_ids = [p.id for p in player.projects]
+        player.puzzle_confirmed = True
+        player.puzzle_placements = {}
+        player.puzzle_mark_placements = {}
+        player.puzzle_grid_cells = []
+    room.phase = GamePhase.PHASE2_AC_HIRE
+    room.turn_index = 0
+    room.temp = {"ac_hired_ids": set()}
+    _setup_ac_hire(room)
+    return {"type": "state_update", "events": events}
+
+
+# ═══════════════════════════════════════════
+#  PRESETS – hoppa direkt till en senare fas med en standardportfölj.
+#  Används under provspel för att slippa spela igenom tidigare faser.
+# ═══════════════════════════════════════════
+
+# Portfölj enligt skärmdump 2026-05-18: 7 projekt, totalt 7750 BTA, 371 anskaffning.
+PRESET_PROJEKT_NAMN = [
+    "BRF Solrosen",
+    "Lokalen Löparen",
+    "Förskolan Skattkistan",
+    "Lokalen Rokaden",
+    "Kontoret Kometbanan",
+    "BRF Eldningen",
+    "Hyresrätt Hamnskiftet",
+]
+
+
+def _find_project_by_namn(room: GameRoom, namn: str):
+    """Plocka första matchande projekt ur room.projekt_stacks och returnera det."""
+    for typ, stack in room.projekt_stacks.items():
+        for i, proj in enumerate(stack):
+            if proj.namn == namn:
+                return stack.pop(i)
+    return None
+
+
+def _setup_preset_skede2(room: GameRoom) -> dict:
+    """Hoppa direkt till Skede 2.1 (Planering) med portföljen enligt skärmdump
+    'inför skede 2': 7 projekt, PC Diplomaten anställd, riskbuffertar 3,
+    ABT 323 Mkr, Q-krav 15, H-krav 17."""
+    events = []
+
+    pc_diplomaten = next((pc for pc in room.game_data.pc_staff
+                          if "Diplomaten" in pc.get("namn", "")), None)
+
+    for player in room.players:
+        for namn in PRESET_PROJEKT_NAMN:
+            proj = _find_project_by_namn(room, namn)
+            if proj:
+                player.projects.append(proj)
+
+        if pc_diplomaten:
+            player.projektchef = dict(pc_diplomaten)
+        elif room.game_data.pc_staff:
+            player.projektchef = dict(room.game_data.pc_staff[0])
+
+        player.has_mark_tomt = True
+        player.q_krav = 15
+        player.h_krav = 17
+        player.riskbuffertar = 3
+        player.eget_kapital = 0
+        player.abt_budget = 323
+        player.abt_start = 323
+        player.placed_project_ids = [p.id for p in player.projects]
+        player.puzzle_confirmed = True
+
+        events.append({
+            "type": "phase_change",
+            "text": (f"{player.name} startar i Skede 2 med {len(player.projects)} projekt "
+                     f"(ABT 323 Mkr, Q-krav 15, H-krav 17, 3 riskbuffertar)"),
+        })
+
+    room.phase = GamePhase.PHASE2_AC_HIRE
+    room.turn_index = 0
+    room.temp = {"ac_hired_ids": set()}
+    _setup_ac_hire(room)
+    events.append({
+        "type": "phase_change",
+        "phase": "phase2_ac_hire",
+        "text": "Preset 'inför Skede 2' laddad. Välj Arbetschef för att börja planera.",
+    })
+    return {"type": "state_update", "events": events}
+
+
+def _setup_preset_skede3(room: GameRoom) -> dict:
+    """Hoppa direkt till Skede 3 (Förvaltning) med samma portfölj som Skede 2-preset
+    men med Skede 2-3 redan utförda: AC anställd, Q/H/T-mål uppnådda, TB ~35 Mkr.
+    Övergångsekonomin (BRF MV+10, nya lån, kreditiv återbetalt) körs i _setup_forvaltning."""
+    events = []
+
+    pc = next((p for p in room.game_data.pc_staff
+               if "Diplomaten" in p.get("namn", "")),
+              room.game_data.pc_staff[0] if room.game_data.pc_staff else None)
+    ac = next((a for a in room.game_data.ac_staff
+               if "Produktions" in a.get("namn", "")),
+              room.game_data.ac_staff[0] if room.game_data.ac_staff else None)
+
+    for player in room.players:
+        for namn in PRESET_PROJEKT_NAMN:
+            proj = _find_project_by_namn(room, namn)
+            if proj:
+                player.projects.append(proj)
+
+        if pc:
+            player.projektchef = dict(pc)
+        if ac:
+            player.arbetschef = dict(ac)
+
+        player.has_mark_tomt = True
+        player.q_krav = 15
+        player.h_krav = 17
+        player.riskbuffertar = 1
+        player.snap_exec_q = 15
+        player.snap_exec_h = 17
+        player.snap_exec_t = 12
+        player.abt_start = 371
+        player.abt_remaining_before_transfer = 35
+        player.abt_budget = 0
+        player.eget_kapital = 35
+        player.abt_loans_net = 0
+        player.abt_borrowing_cost = 0
+        player.placed_project_ids = [p.id for p in player.projects]
+        player.puzzle_confirmed = True
+
+        events.append({
+            "type": "phase_change",
+            "text": (f"{player.name} startar i Skede 3 med {len(player.projects)} projekt, "
+                     f"TB 35 Mkr, mål uppnådda."),
+        })
+
+    room.phase = GamePhase.PHASE4_FORVALTNING
+    room.turn_index = 0
+    _setup_forvaltning(room)
+    events.append({
+        "type": "phase_change",
+        "phase": "phase4_forvaltning",
+        "text": "Preset 'inför Skede 3' laddad. Förvaltning börjar.",
+    })
+    return {"type": "state_update", "events": events}
 
 
 def _setup_puzzle_phase(room: GameRoom):
@@ -2805,10 +2975,14 @@ def _gf_finish(room: GameRoom, events: list) -> dict:
         player.eget_kapital += player.abt_budget
         player.abt_budget = 0
 
-        # Forskott: roll rorlig_intakt for placed projects only
+        # Forskott: roll rorlig_intakt for placed projects only.
+        # BRF har ingen 10%-MV-bonus här – BRF säljs vid Skede 4-start för MV + 10
+        # (Förvaltning 2.0, _setup_forvaltning) så bonusen skulle dubbelräknas.
         forskott_total = 0.0
         for proj in player.projects:
             if proj.id not in player.placed_project_ids:
+                continue
+            if proj.typ == "BRF":
                 continue
             if proj.rorlig_intakt and proj.rorlig_intakt.strip():
                 try:
@@ -2816,9 +2990,6 @@ def _gf_finish(room: GameRoom, events: list) -> dict:
                     forskott_total += r
                 except ValueError:
                     pass
-            # BRF bonus: 10% of marknadsvarde
-            if proj.typ == "BRF":
-                forskott_total += proj.marknadsvarde * 0.10
 
         player.eget_kapital += forskott_total
 
@@ -2889,7 +3060,579 @@ def _calc_tb(player) -> float:
 
 def _prop_yield(prop, room) -> float:
     typ = prop.typ if hasattr(prop, 'typ') else prop.get("typ", "")
-    return room.f4_yield_b if typ in BOSTADER_TYPES else room.f4_yield_k
+    # Bostäder-yield gäller hyresrätter (case-insensitive — datakällan använder "HYRESRÄTT",
+    # config-listan har "Hyresrätt"). Allt annat icke-BRF räknas som kommersiellt.
+    if typ.upper().startswith("HYRESR"):
+        return room.f4_yield_b
+    return room.f4_yield_k
+
+
+# ── Förvaltning 2.0: effektiv DN, MV-tabell, risk för tvångsförsäljning ──
+
+def _eff_dn(prop, player) -> int:
+    """Effektiv DN = bas-DN + energiklass-modifier (designdoc §Fastigheter, DN).
+
+    Cap = bas_dn × 2 (absolut max EFFECTIVE_DN_ABS_MAX). Faller tillbaka till
+    int(driftnetto) om bas_dn saknas (icke-berikade projekt).
+    """
+    bas = prop.bas_dn if getattr(prop, 'bas_dn', None) is not None else int(prop.driftnetto or 0)
+    ek = player.projekt_energiklass.get(prop.namn, prop.energiklass) if player else prop.energiklass
+    eff = bas + EK_DN_MODIFIER.get(ek, 0)
+    if bas > 0:
+        eff = min(eff, bas * 2)
+    return max(0, min(eff, EFFECTIVE_DN_ABS_MAX))
+
+
+def _mv_lookup(eff_dn: int, yield_pct: float, mode: str = "normal") -> int:
+    """MV-tabell uppslag. MV = effektiv DN / yield, multiplicerat med läge-faktor
+    (tvång 0.7, normal 1.0, fientlig 1.2), avrundat till närmaste 5 Mkr.
+    """
+    if yield_pct <= 0 or eff_dn <= 0:
+        return 0
+    mv_raw = (eff_dn / (yield_pct / 100.0)) * MV_MULTIPLIERS.get(mode, 1.0)
+    return int(round(mv_raw / 5.0) * 5)
+
+
+def _margin_call_scan(room, player, events: list) -> list:
+    """Sätt röd markör BARA på fastigheter där NÄSTA kvartals MV < lån.
+
+    Vi peekar på första värdet i yield-kön och simulerar yielden efter den
+    rörelsen. Då varnar vi i god tid (1 kvartal innan tvångsförsäljning) utan
+    att vräka spelaren med varningar för varje liten yield-fluktuation som
+    råkar tippa MV under lån just nu.
+    """
+    yb_next = room.f4_yield_b + (room.f4_yield_cards.get("bostader", [0])[0]
+                                  if room.f4_yield_cards.get("bostader") else 0)
+    yk_next = room.f4_yield_k + (room.f4_yield_cards.get("kommersiellt", [0])[0]
+                                  if room.f4_yield_cards.get("kommersiellt") else 0)
+
+    in_call = []
+    new_set = set()
+    for prop in player.fastigheter:
+        lan = getattr(prop, 'lanebelopp', None) or 0
+        if lan <= 0:
+            continue
+        # Använd nästa kvartals yield för bedömning, inte nuvarande.
+        typ = prop.typ.upper() if hasattr(prop, 'typ') else ""
+        y_next = yb_next if typ.startswith("HYRESR") else yk_next
+        eff = _eff_dn(prop, player)
+        mv_next = _mv_lookup(eff, y_next, "normal")
+        if mv_next < lan:
+            in_call.append({"namn": prop.namn, "mv_next": mv_next, "lan": lan,
+                            "eff_dn": eff, "yield_next": round(y_next, 2)})
+            new_set.add(prop.namn)
+            events.append({
+                "type": "event",
+                "text": (f"⚠ {player.name}: {prop.namn} riskerar tvångsförsäljning "
+                         f"nästa kvartal (MV {mv_next} < lån {lan} vid yield {y_next:.2f}%)"),
+            })
+    player.f4_margin_call_props = new_set
+    return in_call
+
+
+def _yield_queue(room, track: str) -> list:
+    """Returnera de YIELD_QUEUE_SIZE närmaste yield-kortvärdena för ett spår
+    (peek, utan att poppa)."""
+    deck = room.f4_yield_cards.get(track, [])
+    return list(deck[:YIELD_QUEUE_SIZE])
+
+
+def _energy_upgrade_modifier(player) -> int:
+    """Returnera total bonus till D20-slag vid energiuppgradering.
+
+    F2-arketyper med specialeffekt på energiuppgradering:
+      - 'Tekniska experten' (FC-6): +3 på alla energiuppgraderingsslag
+
+    Senare etapp: 'Energirevisor'-personkort ger auto-success (hanteras separat).
+    """
+    bonus = 0
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Tekniska experten" in namn or namn.lower().startswith("tekniska"):
+            bonus += 3
+    return bonus
+
+
+def _fc_forhandling_modifier(player) -> int:
+    """Summerar f2_forh_modifier över alla FC i staben. Används som modifier
+    på hyresförhandlingens netto i Q2 (Förvaltning 2.0)."""
+    total = 0
+    for s in player.staff:
+        roll_attr = s.roll if hasattr(s, 'roll') else s.get("roll", "")
+        if roll_attr != "FC":
+            continue
+        total += s.f2_forh_modifier if hasattr(s, 'f2_forh_modifier') else 0
+    return total
+
+
+def _fs_kvalitetsoptimerare_bonus(player) -> int:
+    """+1 DN per kvartal om FS-2 'Per Kvalitetsoptimeraren' i staben.
+    Designdoket: '+1 DN på fastighet med högst Q' — vi adderar 1 till total DN
+    eftersom intäktsfasen summerar ändå."""
+    if not player.fastigheter:
+        return 0
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Kvalitetsoptimer" in namn:
+            return 1
+    return 0
+
+
+def _fc_den_lugna_rantereduktion(player) -> int:
+    """-1 mkr räntedrag/kvartal om FC-5 'Den lugna' i staben.
+    Designdoket: '-1 mkr räntedrag på en valfri fastighet' — för enkelhet
+    drar vi 1 från totalräntan istället för att kräva fastighetsval."""
+    for s in player.staff:
+        namn = s.namn if hasattr(s, 'namn') else s.get("namn", "")
+        if "Den lugna" in namn or namn.lower().startswith("den lugna"):
+            return 1
+    return 0
+
+
+# ── AI-motspelare: enkel default-handler ──────────────────────────────────
+
+def ai_default_action(room, player) -> Optional[dict]:
+    """Returnera ett default-val för en AI-spelare baserat på pending_action.
+
+    Enkel strategi (passiv stand-in):
+      - Hire: välj första tillgänglig FC och FS
+      - Energiuppgradering: alltid skip
+      - Marknad: alltid skip
+      - Sell/Buy: alltid skip
+      - Continue: alltid continue
+    """
+    pending = room.pending_action or {}
+    action = pending.get("action")
+    if not action:
+        return None
+    if action == "f4_hire":
+        avail = pending.get("available", [])
+        has_fc = pending.get("has_fc", False)
+        has_fs = pending.get("has_fs", False)
+        # Hire första saknade rollen
+        for s in avail:
+            roll = s.get("roll", "")
+            if not has_fc and roll == "FC":
+                return {"action": "f4_hire", "value": s["id"]}
+            if not has_fs and roll == "FS":
+                return {"action": "f4_hire", "value": s["id"]}
+        # Ingen kvar att anställa – skicka None (klar)
+        return {"action": "f4_hire", "value": None}
+    if action == "f4_energy_upgrade":
+        # Konservativ AI:
+        # - Uppgradera bara om EK > 30 mkr (spara kassa)
+        # - Bara en NY fastighet per kvartal (inte trampa upp samma fastighet
+        #   till EK A på en runda — för dyrt och oklart strategiskt)
+        # - Välj fastighet med lägst EK-klass (E/D/C/B)
+        upgradeable = pending.get("upgradeable", [])
+        ek_left = pending.get("eget_kapital", 0)
+        already_started = {u["namn"] for u in upgradeable
+                            if u.get("already_started_this_q")}
+        if ek_left >= 30 and upgradeable and not already_started:
+            order = {"E": 0, "D": 1, "C": 2, "B": 3}
+            sortable = sorted(upgradeable, key=lambda u: order.get(u.get("ek"), 9))
+            for u in sortable:
+                if u.get("cost", 0) <= ek_left:
+                    return {"action": "f4_energy_upgrade", "value": u["namn"]}
+        return {"action": "f4_energy_upgrade", "value": None}
+
+    if action == "f4_market":
+        # Marknadsfasen: AI:n hoppar över bud/sälj. OBS: backend förväntar
+        # value="skip" här, inte None (None matchar ingen gren och låser).
+        return {"action": "f4_market", "value": "skip"}
+
+    if action in ("f4_market_sell", "f4_market_buy"):
+        # I sell/buy-sub-state är None = avbryt
+        return {"action": action, "value": None}
+    if action == "continue":
+        return {"action": "continue"}
+    return None
+
+
+from typing import Optional  # noqa: E402
+
+
+# ── F2-händelsekort: dragning per fastighet + plus/minus-tröskel ──────────
+
+_F2_TYP_TILL_DECK = {
+    "HYRESRÄTT": "HYRESRÄTT",
+    "KONTOR": "KONTOR",
+    "LOKAL": "LOKAL",
+    "FÖRSKOLA": "FÖRSKOLA",
+}
+
+
+def _f2_handelse_deck_for_typ(game_data, fastighet_typ: str) -> list:
+    """Returnerar lista med F2-händelsekort som passar fastighetstypen.
+    Stoppkort och förköpsrätt-kort INGÅR — de dras men hamnar på handen
+    (som personkort) istället för på fastigheten."""
+    deck_typ = _F2_TYP_TILL_DECK.get(fastighet_typ.upper(), "HYRESRÄTT")
+    return [k for k in (game_data.f2_handelsekort or [])
+            if k.get("typ") == deck_typ]
+
+
+def _dra_handelsekort_per_fastighet(room, player, events: list):
+    """Förvaltning 2.0: vid varje kvartalsstart drar spelaren ett händelsekort
+    per fastighet. Kortet placeras dolt om är_dolt eller effekt är pluskort/minuskort.
+    När 3 pluskort eller 3 minuskort samlats på samma fastighet kasseras alla
+    och bas-DN justeras +1/-1 permanent.
+    """
+    for prop in player.fastigheter:
+        deck = _f2_handelse_deck_for_typ(room.game_data, prop.typ)
+        if not deck:
+            continue
+        kort = random.choice(deck)
+        effekt = kort["effekt"]
+        # Placera på fastigheten
+        stack = player.f4_handelse_per_prop.setdefault(prop.namn, [])
+
+        # Direkt-effekter (synliga, permanenta)
+        if effekt == "+1 dn" or effekt == "+1 DN".lower():
+            prop.bas_dn = (prop.bas_dn or 0) + 1
+            events.append({"type": "event",
+                           "text": f"{player.name}: {prop.namn} drog '{kort['rubrik']}' → +1 DN permanent."})
+            continue
+        if effekt == "-1 dn" or effekt == "-1 DN".lower():
+            prop.bas_dn = max(0, (prop.bas_dn or 0) - 1)
+            events.append({"type": "event",
+                           "text": f"{player.name}: {prop.namn} drog '{kort['rubrik']}' → −1 DN permanent."})
+            continue
+
+        # Stoppkort och förköpsrätt → till handen som reaktiva resurser.
+        if effekt in ("stoppkort", "förköpsrätt"):
+            HAND_CAP = 6
+            if len(player.f4_personkort_hand) < HAND_CAP:
+                player.f4_personkort_hand.append({
+                    "id": kort["id"], "roll": "REAKT",
+                    "rubrik": kort["rubrik"], "effekt": effekt,
+                    "beskrivning": kort["beskrivning"],
+                })
+                events.append({"type": "event",
+                               "text": f"{player.name}: drog reaktivt kort '{kort['rubrik']}' till handen ({effekt})."})
+            continue
+
+        # Annullera-minus: konsumera token om vi just drog ett minuskort
+        if effekt == "minuskort" and player.f4_annullera_minus > 0:
+            player.f4_annullera_minus -= 1
+            events.append({"type": "event",
+                           "text": f"{player.name}: 'Annullera minuskort' aktiverat — '{kort['rubrik']}' på {prop.namn} kasseras direkt."})
+            continue
+
+        # Plus/minus + varning/energivarning placeras (dolt) på fastigheten
+        stack.append({"id": kort["id"], "rubrik": kort["rubrik"],
+                      "effekt": effekt, "beskrivning": kort["beskrivning"],
+                      "kalla": "händelsekort"})
+
+        # Tröskel: 3 plus eller 3 minus → kassera och ±1 bas-DN.
+        # Räkna BÅDE händelsekort OCH DD-kort på fastigheten — de delar stack
+        # konceptuellt (designval: DD-kort är också plus/minus-kort).
+        dd_stack = player.f4_dd_per_prop.get(prop.namn, [])
+        plus_count = (sum(1 for k in stack if k["effekt"] == "pluskort")
+                      + sum(1 for k in dd_stack if k.get("effekt") == "pluskort"))
+        minus_count = (sum(1 for k in stack if k["effekt"] == "minuskort")
+                       + sum(1 for k in dd_stack if k.get("effekt") == "minuskort"))
+        if plus_count >= 3:
+            # Kassera alla pluskort från BÅDE händelse- och DD-stacken
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "pluskort"]
+            player.f4_dd_per_prop[prop.namn] = [k for k in dd_stack if k.get("effekt") != "pluskort"]
+            prop.bas_dn = (prop.bas_dn or 0) + 1
+            events.append({"type": "event",
+                           "text": f"⬆ {player.name}: {prop.namn} ackumulerade 3 pluskort (inkl. DD) → +1 bas-DN permanent."})
+        elif minus_count >= 3:
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "minuskort"]
+            player.f4_dd_per_prop[prop.namn] = [k for k in dd_stack if k.get("effekt") != "minuskort"]
+            prop.bas_dn = max(0, (prop.bas_dn or 0) - 1)
+            events.append({"type": "event",
+                           "text": f"⬇ {player.name}: {prop.namn} ackumulerade 3 minuskort (inkl. DD) → −1 bas-DN permanent."})
+
+        # Energivarning-tröskel: 3 → -1 EK-steg (designdok)
+        energi_count = sum(1 for k in stack if k["effekt"] == "energivarning")
+        if energi_count >= 3:
+            player.f4_handelse_per_prop[prop.namn] = [k for k in stack if k["effekt"] != "energivarning"]
+            ek = player.projekt_energiklass.get(prop.namn, prop.energiklass)
+            if ek in ENERGY_CLASSES:
+                idx = ENERGY_CLASSES.index(ek)
+                if idx < len(ENERGY_CLASSES) - 1:
+                    ny_ek = ENERGY_CLASSES[idx + 1]
+                    player.projekt_energiklass[prop.namn] = ny_ek
+                    events.append({"type": "event",
+                                   "text": f"⚠ {player.name}: {prop.namn} ackumulerade 3 energivarningar → EK {ek}→{ny_ek}."})
+
+
+def _dra_dd_kort_for_prop(room, player, prop, events: list):
+    """Dra ett DD-kort och lägg DOLT på fastigheten.
+
+    Förvaltning 2.0 (uppdaterad design): DD-kort är samma typ av plus/minus-
+    kort som händelsekort. Typ='Intäkt' → pluskort, Typ='Kostnad' → minuskort.
+    De räknas in i samma 3-tröskel på fastigheten — vid 3 i netto avslöjas
+    alla och bas-DN justeras ±1.
+    Effekt_Mkr-kolumnen i CSV används inte längre direkt (kan vara kvar som
+    designkommentar)."""
+    deck = room.game_data.f2_dd_cards or []
+    if not deck:
+        return
+    dd = dict(random.choice(deck))
+    # Tagga DD med en plus/minus-effekt som matchar händelsekort-mekaniken.
+    typ = (dd.get("typ") or "").lower()
+    dd["effekt"] = "pluskort" if typ == "intäkt" else "minuskort"
+    player.f4_dd_per_prop.setdefault(prop.namn, []).append(dd)
+    events.append({
+        "type": "event",
+        "text": f"{player.name}: drog ett DD-kort dolt på {prop.namn}.",
+    })
+
+
+def _dra_dd_per_fastighet(room, player, events: list):
+    """Vid Q0 (Skede 3-start) dras ett DD-kort dolt per fastighet (designdok)."""
+    for prop in player.fastigheter:
+        _dra_dd_kort_for_prop(room, player, prop, events)
+
+
+def _avsloja_dolda_kort(player, prop_namn: str, events: list, anledning: str = "sålde"):
+    """Avslöja alla dolda kort (DD + dolda händelsekort) på en fastighet.
+    Loggar i event-listan som synligt för alla spelare."""
+    dds = player.f4_dd_per_prop.pop(prop_namn, []) or []
+    handelser = player.f4_handelse_per_prop.pop(prop_namn, []) or []
+    if not dds and not handelser:
+        return
+    parts = []
+    for d in dds:
+        eff = d.get("effekt", "?")
+        parts.append(f"DD: \"{d.get('rubrik','?')}\" ({eff})")
+    for h in handelser:
+        eff = h.get("effekt", "?")
+        if eff in ("pluskort", "minuskort", "varning", "energivarning"):
+            parts.append(f"\"{h.get('rubrik','?')}\" ({eff})")
+    if parts:
+        events.append({
+            "type": "event",
+            "text": f"🔓 {player.name} {anledning} {prop_namn} — avslöjade dolda kort: " + " · ".join(parts),
+        })
+
+
+def _play_personkort(room, player, kort_id: str, events: list) -> dict:
+    """Spela ett personkort från handen och applicera dess effekt.
+
+    Stödda effekter (utvidgas iterativt):
+      - auto_energi: lägg en energi-garanti på fastighet med lägst EK
+      - cash_plus5 / cash_plus3: +5/+3 mkr till EK
+      - ranta_minus1: −1 mkr räntekostnad nästa intäktsfas
+      - forh_plus2 / forh_plus3 / forh_plus2_efter: bonus på hyresförhandling
+      - blockera_kons: blockera nästa konsekvenskort
+      - annullera_minus: nästa minuskort som dras kasseras direkt
+      - rensa_minus_3: kasta upp till 3 minuskort från fastighet med flest minus
+      - halverad_uppgr: nästa energiuppgradering kostar halvt
+    Andra effekter returneras som 'inte_stödd' utan att kortet konsumeras.
+    """
+    idx = next((i for i, k in enumerate(player.f4_personkort_hand) if k.get("id") == kort_id), -1)
+    if idx < 0:
+        return {"ok": False, "msg": "Hittade inte kortet i handen"}
+    kort = player.f4_personkort_hand[idx]
+    effekt = kort.get("effekt", "")
+
+    def consume():
+        player.f4_personkort_hand.pop(idx)
+
+    if effekt == "auto_energi":
+        # Lägg garanti-token på fastighet med lägst EK (D/E först), annars första
+        target = None
+        for ek in ("E", "D", "C", "B"):
+            for prop in player.fastigheter:
+                cur = player.projekt_energiklass.get(prop.namn, prop.energiklass)
+                if cur == ek:
+                    target = prop
+                    break
+            if target:
+                break
+        if not target and player.fastigheter:
+            target = player.fastigheter[0]
+        if target:
+            player.f4_energi_garanti[target.namn] = player.f4_energi_garanti.get(target.namn, 0) + 1
+            consume()
+            events.append({"type": "event",
+                           "text": f"{player.name} spelade '{kort['rubrik']}' → energi-garanti på {target.namn}."})
+            return {"ok": True}
+        return {"ok": False, "msg": "Inga fastigheter"}
+
+    if effekt == "cash_plus5":
+        player.eget_kapital += 5
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +5 Mkr till EK."})
+        return {"ok": True}
+
+    if effekt == "cash_plus3":
+        player.eget_kapital += 3
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +3 Mkr till EK."})
+        return {"ok": True}
+
+    if effekt == "dn_plus1_perm":
+        # +1 bas-DN permanent på fastighet med lägst bas-DN (för enkelhet)
+        if not player.fastigheter:
+            return {"ok": False, "msg": "Inga fastigheter"}
+        target = min(player.fastigheter, key=lambda p: p.bas_dn or 0)
+        target.bas_dn = (target.bas_dn or 0) + 1
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +1 bas-DN permanent på {target.namn} (nu {target.bas_dn})."})
+        return {"ok": True}
+
+    if effekt == "lan_minus10":
+        # Sänk lån permanent med 10 Mkr på fastighet med högst belåningsgrad
+        if not player.fastigheter:
+            return {"ok": False, "msg": "Inga fastigheter"}
+        # Välj fastighet med högst lan/MV-kvot — utan MV använder vi lan absolut
+        target = max(player.fastigheter, key=lambda p: (p.lanebelopp or 0))
+        if not target.lanebelopp:
+            return {"ok": False, "msg": "Ingen belånad fastighet"}
+        old_lan = target.lanebelopp
+        target.lanebelopp = max(0, target.lanebelopp - 10)
+        # Sänk räntekostnad proportionellt (10 Mkr × 4 % / 4 = 0.1 Mkr/kv → 0)
+        if (target.rantekostnad_kvartal or 0) > 0 and old_lan >= 100:
+            target.rantekostnad_kvartal -= 1
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → {target.namn} lån {old_lan}→{target.lanebelopp} Mkr permanent."})
+        return {"ok": True}
+
+    if effekt in ("forh_plus2", "forh_plus2_efter"):
+        # Spelas direkt i samband med hyresförhandling → +2 på slaget.
+        # Effekten 'spara' tills nästa förhandling som event-sekvens, men UI-mässigt
+        # förväntas spelaren spela kortet vid rätt moment.
+        player.f4_forh_bonus_next += 2
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +2 på hyresförhandling."})
+        return {"ok": True}
+    if effekt == "forh_plus3":
+        player.f4_forh_bonus_next += 3
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → +3 på hyresförhandling."})
+        return {"ok": True}
+
+    if effekt == "blockera_kons":
+        player.f4_blockera_konsekvens += 1
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → nästa konsekvenskort blockeras."})
+        return {"ok": True}
+
+    if effekt == "annullera_minus":
+        player.f4_annullera_minus += 1
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → nästa minuskort kasseras direkt."})
+        return {"ok": True}
+
+    if effekt == "rensa_minus_3":
+        # Hitta fastigheten med flest minuskort (händelse + DD), kasta upp till 3
+        target_namn = None
+        max_minus = 0
+        for prop in player.fastigheter:
+            h = player.f4_handelse_per_prop.get(prop.namn, [])
+            d = player.f4_dd_per_prop.get(prop.namn, [])
+            minus = sum(1 for k in h if k.get("effekt") == "minuskort") + \
+                    sum(1 for k in d if k.get("effekt") == "minuskort")
+            if minus > max_minus:
+                max_minus = minus
+                target_namn = prop.namn
+        if not target_namn:
+            return {"ok": False, "msg": "Inga minuskort att kasta"}
+        rensat = 0
+        new_h = []
+        for k in player.f4_handelse_per_prop.get(target_namn, []):
+            if k.get("effekt") == "minuskort" and rensat < 3:
+                rensat += 1
+                continue
+            new_h.append(k)
+        player.f4_handelse_per_prop[target_namn] = new_h
+        new_d = []
+        for k in player.f4_dd_per_prop.get(target_namn, []):
+            if k.get("effekt") == "minuskort" and rensat < 3:
+                rensat += 1
+                continue
+            new_d.append(k)
+        player.f4_dd_per_prop[target_namn] = new_d
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → kastade {rensat} minuskort från {target_namn}."})
+        return {"ok": True}
+
+    if effekt == "halverad_uppgr":
+        # Sätt 0.5 rabatt på room (engångs — nollställs efter nästa upgrade)
+        room.f4_energy_discount = 0.5
+        consume()
+        events.append({"type": "event",
+                       "text": f"{player.name} spelade '{kort['rubrik']}' → nästa energiuppgradering kostar halvt."})
+        return {"ok": True}
+
+    return {"ok": False, "msg": f"Effekten '{effekt}' är inte stödd än"}
+
+
+def _dra_personkort(room, player, events: list, fc_n: int = 1, fs_n: int = 1):
+    """Dra fc_n FC-personkort och fs_n FS-personkort till spelarens hand.
+    Cap 6 i hand totalt (designdok). Vid full hand: skippa nya kort."""
+    HAND_CAP = 6
+    decks = [("FC", room.game_data.f2_fc_personkort or [], fc_n),
+             ("FS", room.game_data.f2_fs_personkort or [], fs_n)]
+    dragna = []
+    for roll_name, deck, n in decks:
+        for _ in range(n):
+            if len(player.f4_personkort_hand) >= HAND_CAP:
+                break
+            if deck:
+                kort = dict(random.choice(deck))
+                player.f4_personkort_hand.append(kort)
+                dragna.append(f"{roll_name}: {kort['rubrik']}")
+    if dragna:
+        events.append({
+            "type": "event",
+            "text": f"{player.name} drar personkort: {', '.join(dragna)}",
+        })
+
+
+def calc_live_score(room, player) -> dict:
+    """Räkna ett 'live'-slutpoäng utifrån spelarens nuvarande tillstånd.
+    Används för att visa hur poängen står just nu under Skede 3 (innan slutvärdering)."""
+    from economics import calc_tg, deviation_factor, calc_deviation_n
+
+    placed_ids = set(getattr(player, 'placed_project_ids', []) or [])
+    ansk_orig = sum(p.anskaffning for p in player.projects if p.id in placed_ids)
+    ansk_total = ansk_orig + player.f4_extra_anskaffning
+    skede1 = ansk_total / 100.0
+
+    skede2 = calc_tg(player) if player.abt_start > 0 else 0
+
+    total_dn = sum(_eff_dn(prop, player) for prop in player.fastigheter)
+    saljvarde = sum(_mv_lookup(_eff_dn(prop, player),
+                               _prop_yield(prop, room),
+                               "normal")
+                    for prop in player.fastigheter)
+    utestaende_lan = sum((prop.lanebelopp or 0) for prop in player.fastigheter)
+    fv_obelan = saljvarde - utestaende_lan
+    kassa = _calc_real_ek(player)
+    skede3 = (fv_obelan + kassa * SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
+
+    rapong = skede1 + skede2 + skede3
+    dev = calc_deviation_n(player)
+    f_n = deviation_factor(dev["n_total"])
+    score = rapong * f_n
+
+    return {
+        "skede1": round(skede1, 1),
+        "skede2": round(skede2, 1),
+        "skede3": round(skede3, 1),
+        "rapong": round(rapong, 1),
+        "f_n": round(f_n, 2),
+        "score": round(score, 1),
+        "ansk_total": round(ansk_total, 0),
+        "fv_obelan": round(fv_obelan, 1),
+        "kassa": round(kassa, 1),
+        "total_dn": total_dn,
+    }
 
 
 def _setup_forvaltning(room: GameRoom):
@@ -2921,29 +3664,45 @@ def _setup_forvaltning(room: GameRoom):
                 room.f4_market_props.append(copy.deepcopy(proj))
     random.shuffle(room.f4_market_props)
 
-    # Per-player: sell BRFs (add profit to EK), keep rest as fastigheter
+    # Per-player: Förvaltning 2.0 övergångsekonomi (Nya Förvaltning, designdoc 2026-05-09).
+    #   Slutkassa Fas 4-start = TB + BRF-intäkt + nya lån − byggnadskreditiv
+    # där TB redan ligger i EK (flyttades dit i _gf_finish som abt_remaining_before_transfer),
+    # BRF säljs för MV + 10 (fast vinst, ersätter gamla MV − ansk + tärning),
+    # nya lån = summan av förtryckta lånebelopp på förvaltade fastigheter,
+    # kreditiv = total anskaffning för spelarens portfölj.
     room.f4_mgmt_decks = {}
     for player in room.players:
-        # BRF profit: (marknadsvärde - anskaffning) + tärning → EK
-        brf_projects = [p for p in player.projects
-                        if p.typ == "BRF" and p.id in player.placed_project_ids]
+        placed_projects = [p for p in player.projects
+                           if p.id in player.placed_project_ids]
+        brf_projects = [p for p in placed_projects if p.typ == "BRF"]
+        forvaltade = [p for p in placed_projects if p.typ != "BRF"]
+
+        brf_intakt = sum(p.marknadsvarde + 10 for p in brf_projects)
+        nya_lan = sum((p.lanebelopp or 0) for p in forvaltade)
+        kreditiv = sum(p.anskaffning for p in placed_projects)
+
+        # TB är redan inräknad i player.eget_kapital efter _gf_finish.
+        # Vi loggar TB explicit för transparens, men adderar den inte igen.
+        tb = player.abt_remaining_before_transfer
+        slutkassa_delta = brf_intakt + nya_lan - kreditiv
+        player.eget_kapital += slutkassa_delta
+        player.f4_tb = tb
+
         if brf_projects:
-            brf_profit = 0
-            brf_details = []
-            for p in brf_projects:
-                base = p.marknadsvarde - p.anskaffning
-                dice_roll = roll(p.rorlig_intakt) if p.rorlig_intakt else 0
-                profit = base + dice_roll
-                brf_profit += profit
-                brf_details.append(f"{p.namn}: {base}+{dice_roll}={profit}")
-            player.eget_kapital += brf_profit
+            brf_details = ", ".join(f"{p.namn} (MV {p.marknadsvarde}+10)"
+                                    for p in brf_projects)
             events.append({
                 "type": "event",
-                "text": f"{player.name} säljer BRF:er: {', '.join(brf_details)} → +{brf_profit} Mkr till EK",
+                "text": f"{player.name} säljer BRF: {brf_details} → +{brf_intakt} Mkr",
             })
+        events.append({
+            "type": "economics",
+            "text": (f"{player.name} övergångsekonomi: TB {tb:.0f} + BRF {brf_intakt} "
+                     f"+ nya lån {nya_lan} − kreditiv {kreditiv} "
+                     f"→ kassa {player.eget_kapital:.0f} Mkr"),
+        })
 
-        player.fastigheter = [p for p in player.projects
-                              if p.typ != "BRF" and p.id in player.placed_project_ids]
+        player.fastigheter = forvaltade
         for prop in player.fastigheter:
             if prop.namn not in player.projekt_energiklass:
                 player.projekt_energiklass[prop.namn] = prop.energiklass
@@ -2963,6 +3722,14 @@ def _setup_forvaltning(room: GameRoom):
         })
 
     room.f4_hired_ids = set()
+
+    # Förvaltning 2.0 §Kvartal 0: dra händelsekort per fastighet + DD per fastighet
+    # + 2 FC + 2 FS-personkort.
+    for player in room.players:
+        _dra_dd_per_fastighet(room, player, events)
+        _dra_handelsekort_per_fastighet(room, player, events)
+        _dra_personkort(room, player, events, fc_n=2, fs_n=2)
+
     room.events_log.extend(events)
 
     # Start with hiring for first player
@@ -2971,30 +3738,37 @@ def _setup_forvaltning(room: GameRoom):
 
 
 def _f4_setup_hire(room, player):
-    """Setup staff hiring for a player."""
-    required = len(player.fastigheter)
-    current_cap = sum(s.kapacitet if hasattr(s, 'kapacitet') else s.get("kapacitet", 0)
-                      for s in player.staff)
+    """Setup staff hiring for a player.
+
+    Förvaltning 2.0: Båda måste anställas — en FC OCH en FS. Inga kostnader,
+    inga kapacitetstak (designdok §Personal). Varje arketyp har egenskaper
+    som påverkar spelet på fastighetsnivå.
+    """
     has_fc = any((s.roll if hasattr(s, 'roll') else s.get("roll", "")) == "FC"
                  for s in player.staff)
+    has_fs = any((s.roll if hasattr(s, 'roll') else s.get("roll", "")) == "FS"
+                 for s in player.staff)
 
-    available = [s for s in room.game_data.staff if s.id not in room.f4_hired_ids]
+    available = [s for s in _staff_pool(room.game_data) if s.id not in room.f4_hired_ids]
 
-    # Must hire if: no FC or capacity < required
-    must_hire = not has_fc or current_cap < required
+    must_hire = not has_fc or not has_fs
+    msg_parts = []
+    if not has_fc:
+        msg_parts.append("välj en Fastighetschef (FC)")
+    if not has_fs:
+        msg_parts.append("välj en Fastighetsspecialist (FS)")
+    msg = " och ".join(msg_parts) if msg_parts else "Personal klar"
+    msg = msg.capitalize()
+
     room.sub_state = "f4_hire_staff"
     room.pending_action = {
         "action": "f4_hire",
         "player_id": player.id,
-        "message": f"Anställ personal ({current_cap}/{required} kapacitet"
-                   + (", behöver FC!" if not has_fc else "") + ")",
+        "message": msg,
         "available": [s.to_dict() for s in available],
-        "current_cap": current_cap,
-        "required": required,
         "has_fc": has_fc,
+        "has_fs": has_fs,
         "must_hire": must_hire,
-        "staff_cost": sum(s.lon if hasattr(s, 'lon') else s.get("lon", 0)
-                         for s in player.staff),
     }
 
 
@@ -3034,6 +3808,35 @@ def _f4_start_quarter(room, events):
                     f"Kommersiellt {yk_change:+.2f}% → {room.f4_yield_k:.2f}%",
         })
 
+    # Säkerhetscheck efter yield-rörelsen (designdoc §Margin call). Sätter röd
+    # markör på alla fastigheter där MV < lånebelopp.
+    for player in room.players:
+        _margin_call_scan(room, player, events)
+
+    # Historik-snapshot per kvartal (yield-bana, EK + slutpoäng per spelare).
+    snapshot = {
+        "quarter": q,
+        "yield_b": round(room.f4_yield_b, 2),
+        "yield_k": round(room.f4_yield_k, 2),
+        "players": [],
+    }
+    for p in room.players:
+        live = calc_live_score(room, p)
+        snapshot["players"].append({
+            "id": p.id,
+            "name": p.name,
+            "color": p.color,
+            "ek": round(p.eget_kapital, 1),
+            "dn_total": live["total_dn"],
+            "score": live["score"],
+        })
+    room.f4_history.append(snapshot)
+
+    # Förvaltning 2.0: dra händelsekort per fastighet + 1 FC + 1 FS personkort.
+    for p in room.players:
+        _dra_handelsekort_per_fastighet(room, p, events)
+        _dra_personkort(room, p, events, fc_n=1, fs_n=1)
+
     # World event
     if room.f4_world_events:
         we = room.f4_world_events.pop(0)
@@ -3066,10 +3869,10 @@ def _f4_resolve_world_event(room, event, events):
             count = sum(1 for p in player.fastigheter if p.typ in KOMMERSIELLT_TYPES)
             total_effect = event.effekt_mkr * count
         elif event.effekt_typ == "intäkt_hr":
-            count = sum(1 for p in player.fastigheter if p.typ == "Hyresrätt")
+            count = sum(1 for p in player.fastigheter if p.typ == "HYRESRÄTT")
             total_effect = event.effekt_mkr * count
         elif event.effekt_typ == "intäkt_fsk":
-            count = sum(1 for p in player.fastigheter if p.typ == "FÖRSKOLOR")
+            count = sum(1 for p in player.fastigheter if p.typ == "FÖRSKOLA")
             total_effect = event.effekt_mkr * count
         elif event.effekt_typ == "kostnad_per_ek":
             for prop in player.fastigheter:
@@ -3095,44 +3898,94 @@ def _f4_resolve_world_event(room, event, events):
 
 
 def _f4_start_player_turn(room, events):
-    """Start a player's quarter turn: collect driftnetto, pay salaries."""
+    """Start a player's quarter turn: collect driftnetto, pay salaries.
+
+    Förvaltning 2.0: Summera effektiv DN över alla fastigheter (årlig), dela med 4
+    för kvartalscash (avrundat nedåt). Residual hanteras med restkort (1 per 0,25 Mkr;
+    autokonvertera 4→1 Mkr cash). Drar därtill räntekostnad (förtryckt per fastighet).
+    """
     player = room.current_player
     q = room.f4_quarter
 
-    # Collect driftnetto
+    # Total årlig effektiv DN (visible only — dolda kort räknas i senare etapp).
     dn_total = 0
     for prop in player.fastigheter:
-        base = prop.driftnetto if prop.driftnetto else 0
-        bonus = player.driftnetto_bonus.get(prop.namn, 0)
-        dn_total += base + bonus
-    if dn_total != 0:
-        player.eget_kapital += dn_total
+        dn_total += _eff_dn(prop, player)
+        dn_total += int(round(player.driftnetto_bonus.get(prop.namn, 0)))
 
-    # Pay salaries
-    salary_total = sum(s.lon if hasattr(s, 'lon') else s.get("lon", 0)
-                       for s in player.staff)
-    if salary_total > 0:
-        player.eget_kapital -= salary_total
+    # FS-2 'Per Kvalitetsoptimeraren': +1 DN på fastighet med högst Q (passiv).
+    fs2_bonus = _fs_kvalitetsoptimerare_bonus(player)
+    dn_total += fs2_bonus
 
+    # Kvartalscash + residual i 0,25-steg (heltal 0..3 = 0/0,25/0,5/0,75 Mkr).
+    quarter_cash = dn_total // 4
+    residual_steps = dn_total % 4
+    player.f4_restkort += residual_steps
+    auto_converted = 0
+    while player.f4_restkort >= 4:
+        player.f4_restkort -= 4
+        quarter_cash += 1
+        auto_converted += 1
+
+    # Räntekostnad: summa förtryckta räntekostnader per kvartal från fastighetskorten.
+    ranta_total = sum((prop.rantekostnad_kvartal or 0) for prop in player.fastigheter)
+
+    # FC-5 'Den lugna': -1 mkr räntedrag/kvartal (passiv).
+    rantereduktion = _fc_den_lugna_rantereduktion(player)
+    ranta_total = max(0, ranta_total - rantereduktion)
+
+    # Personkort 'ranta_minus1': konsumera ev. token från handen.
+    if player.f4_ranta_reduction_next > 0:
+        ranta_total = max(0, ranta_total - player.f4_ranta_reduction_next)
+        player.f4_ranta_reduction_next = 0
+
+    # Personallöner – F2-arketyperna har lon=0 (designdok: 'Inga separata kostnader').
+    # Gamla F_personal-staff har fortfarande lön om USE_F2_STAFF=False.
+    salary_total = 0 if USE_F2_STAFF else sum(
+        s.lon if hasattr(s, 'lon') else s.get("lon", 0)
+        for s in player.staff
+    )
+
+    cash_flow = quarter_cash - ranta_total - salary_total
+    player.eget_kapital += cash_flow
+
+    restkort_note = (f" (auto-konv {auto_converted} Mkr)" if auto_converted else "")
+    extras = []
+    if fs2_bonus:
+        extras.append(f"FS-2 +{fs2_bonus} DN")
+    if rantereduktion:
+        extras.append(f"FC-5 −{rantereduktion} ränta")
+    extra_text = (" [" + ", ".join(extras) + "]") if extras else ""
+    lon_text = f", lön −{salary_total:.1f}" if salary_total > 0 else ""
     events.append({
         "type": "economics",
-        "text": f"{player.name} Q{q}: DN +{dn_total:.1f}, Lön -{salary_total:.1f} Mkr "
-                f"(EK: {player.eget_kapital:.1f})",
+        "text": (f"{player.name} Q{q}: DN {dn_total} → cash {quarter_cash}"
+                 f"{restkort_note}, restkort {player.f4_restkort}/3, "
+                 f"ränta −{ranta_total}{lon_text} = "
+                 f"{cash_flow:+.1f} Mkr (EK: {player.eget_kapital:.1f}){extra_text}"),
     })
 
     # Q2: rent negotiation
     if q == 2:
-        hr_props = [p for p in player.fastigheter if p.typ == "Hyresrätt"]
+        hr_props = [p for p in player.fastigheter if p.typ == "HYRESRÄTT"]
         if hr_props:
             _f4_setup_rent_negotiation(room, player, hr_props, events)
             return
 
-    # Management events
-    _f4_start_mgmt_events(room, player, events)
+    # Management events (gamla mgmt_events) hoppas över när SKIP_MGMT_EVENTS är satt.
+    # Nya F2_händelsekort per typ kommer in i Steg G med rätt mekanik.
+    if SKIP_MGMT_EVENTS:
+        _f4_after_mgmt(room, player, events)
+    else:
+        _f4_start_mgmt_events(room, player, events)
 
 
 def _f4_setup_rent_negotiation(room, player, hr_props, events):
-    """Setup rent negotiation for HR properties."""
+    """Setup rent negotiation for HR properties.
+
+    Förvaltning 2.0: F2-FC bidrar med en platt förhandlingsmodifier (+3/+1/0/-1)
+    utöver dice-rollen. Modifiern adderas till netto innan RENT_SCALE-uppslag.
+    """
     # Roll dice
     hgf_roll = roll("D6")
     fa_roll = roll("D6")
@@ -3155,7 +4008,14 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
     fc_name = best_fc.namn if best_fc and hasattr(best_fc, 'namn') else (
         best_fc.get("namn", "") if best_fc else "Ingen FC")
 
-    netto = fc_roll_val + fa_roll - hgf_roll
+    # F2 FC förhandlings-modifier (Förh +3/+1/0/-1 från arketypen).
+    fc_modifier = _fc_forhandling_modifier(player)
+
+    # Personkort-bonus från spelade kort (forh_plus2 / forh_plus3).
+    personkort_bonus = player.f4_forh_bonus_next
+    player.f4_forh_bonus_next = 0
+
+    netto = fc_roll_val + fa_roll - hgf_roll + fc_modifier + personkort_bonus
     netto_clamped = max(min(netto, 17), -4)
     hojning = RENT_SCALE.get(netto_clamped, 0)
     total = hojning * len(hr_props)
@@ -3163,10 +4023,11 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
     if total > 0:
         player.eget_kapital += total
 
+    mod_text = f" + FC-bonus({fc_modifier:+d})" if fc_modifier else ""
     events.append({
         "type": "economics",
-        "text": f"{player.name}: Hyresförhandling FC({fc_roll_val}) + FÄ({fa_roll}) "
-                f"- HGF({hgf_roll}) = {netto} → {total:+.1f} Mkr",
+        "text": (f"{player.name}: Hyresförhandling FC({fc_roll_val}) + FÄ({fa_roll}) "
+                 f"- HGF({hgf_roll}){mod_text} = {netto} → {total:+.1f} Mkr"),
     })
 
     room.sub_state = "f4_rent_result"
@@ -3179,6 +4040,7 @@ def _f4_setup_rent_negotiation(room, player, hr_props, events):
         "fc_roll": fc_roll_val,
         "fc_name": fc_name,
         "fc_die": best_die or "Ingen",
+        "fc_modifier": fc_modifier,
         "netto": netto,
         "hojning_per": round(hojning, 1),
         "hr_count": len(hr_props),
@@ -3346,11 +4208,43 @@ def _f4_setup_energy_upgrade(room, player):
 
 
 def _f4_setup_market(room, player, events):
-    """Setup market phase: sell then buy."""
+    """Setup market phase: sell then buy.
+
+    Förvaltning 2.0: Fastigheter med risk för tvångsförsäljning (MV < lån)
+    auto-säljs här innan vanlig sell/buy. Spelaren får tvångs-MV (0.7 × normal).
+    """
     q = room.f4_quarter
     if q > 3 or room.f4_no_trading:
         _f4_finish_player_turn(room, events)
         return
+
+    # Auto-tvångsförsäljning av fastigheter där MV < lån (risk-flagga satt)
+    margin_call_names = set(player.f4_margin_call_props or set())
+    if margin_call_names:
+        sold = []
+        idx_to_sell = [i for i, p in enumerate(player.fastigheter)
+                        if p.namn in margin_call_names]
+        # Sälj från slutet så index inte skiftar
+        for i in reversed(idx_to_sell):
+            prop = player.fastigheter[i]
+            y = _prop_yield(prop, room)
+            eff = _eff_dn(prop, player)
+            mv_tvang = _mv_lookup(eff, y, "tvang")  # 0.7 × normal MV
+            lan = getattr(prop, 'lanebelopp', 0) or 0
+            net = mv_tvang - lan  # kan vara negativt
+            player.eget_kapital += net
+            player.fastigheter.pop(i)
+            player.projekt_energiklass.pop(prop.namn, None)
+            # Avslöja dolda kort vid tvångsauktion (designdok)
+            _avsloja_dolda_kort(player, prop.namn, events, anledning="tvångsförsäljs")
+            sold.append(f"{prop.namn} (MV {mv_tvang} − lån {lan} = {net:+d} Mkr)")
+        # Rensa risk-markörer
+        player.f4_margin_call_props = set()
+        events.append({
+            "type": "event",
+            "text": (f"⚠ {player.name}: AUTO-TVÅNGSFÖRSÄLJNING vid marknadsfas: "
+                     f"{', '.join(sold)}. EK: {player.eget_kapital:.0f} Mkr"),
+        })
 
     real_ek = _calc_real_ek(player)
     has_loan = (player.abt_loans_net + player.abt_borrowing_cost) > 0
@@ -3439,13 +4333,17 @@ def _f4_setup_sell(room, player, forced=False):
 
 
 def _f4_do_sell(room, player, prop_idx, events):
-    """Execute a property sale. Sale proceeds go to EK."""
+    """Execute a property sale. Sale proceeds go to EK.
+    Förvaltning 2.0: dolda kort (DD + dolda händelsekort) avslöjas för alla."""
     prop = player.fastigheter.pop(prop_idx)
     y = _prop_yield(prop, room)
     fv = _calc_fastighetsvarde(prop, y, _get_prop_ek(prop, player))
     earn = fv * (1 - LOAN_RATIO)
     player.eget_kapital += earn
     player.projekt_energiklass.pop(prop.namn, None)
+
+    # Avslöja dolda kort (designdok §Försäljning)
+    _avsloja_dolda_kort(player, prop.namn, events, anledning="sålde")
 
     events.append({
         "type": "economics",
@@ -3505,7 +4403,12 @@ def _f4_setup_buy(room, player):
 
 
 def _f4_do_buy(room, player, prop_idx, events):
-    """Execute a property purchase + DD card."""
+    """Execute a property purchase + DD card.
+
+    Förvaltning 2.0: DD-kortet läggs DOLT på fastigheten (precis som vid Q0),
+    inte applicerat direkt på EK. Effekten räknas som dolt DN via
+    driftnetto_bonus i intäktsfasen.
+    """
     new_avail = room.temp.get("f4_new_avail", [])
     prop = new_avail.pop(prop_idx)
     y = _prop_yield(prop, room)
@@ -3514,24 +4417,17 @@ def _f4_do_buy(room, player, prop_idx, events):
     player.eget_kapital -= cost
     player.fastigheter.append(prop)
     player.projekt_energiklass[prop.namn] = prop.energiklass
+    # Förvaltning 2.0: Skede 1-poängen räknar all anskaffning, inklusive Skede 3-köp.
+    player.f4_extra_anskaffning += prop.anskaffning
 
     events.append({
         "type": "economics",
         "text": f"{player.name} köpte {prop.namn} för {cost:.1f} Mkr",
     })
 
-    # DD card
-    if room.f4_dd_deck:
-        dd = room.f4_dd_deck.pop(0)
-        if dd.effekt_mkr != 0:
-            player.eget_kapital += dd.effekt_mkr
-        events.append({
-            "type": "economics",
-            "text": f"DD: {dd.rubrik} ({dd.effekt_mkr:+.1f} Mkr)",
-        })
-        room.temp["f4_last_dd"] = dd.to_dict()
-    else:
-        room.temp["f4_last_dd"] = None
+    # Dra DD dolt på den nyköpta fastigheten (samma logik som Q0).
+    _dra_dd_kort_for_prop(room, player, prop, events)
+    room.temp["f4_last_dd"] = None
 
 
 def _f4_after_market(room, player, events):
@@ -3567,46 +4463,80 @@ def _f4_finish_player_turn(room, events):
 
 
 def _f4_final_valuation(room, events):
-    """Calculate final scores and end game."""
+    """Räkna slutpoäng enligt Förvaltning 2.0 (kalibrerad så 'superbra' = 25 per skede).
+
+    Skede 1 (Utveckling)  = anskaffning / 100              → 25 vid 2500 Mkr förvärv
+    Skede 2 (Byggande)    = TG (procent)                    → 25 vid TG 25 %
+    Skede 3 (Förvaltning) = (FV_obelånat + kassa × SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
+                            där FV_obelånat = säljvärde (normal MV) − utestående lån,
+                            kassa = real EK (efter moderbolagslån).
+    Råpoäng = S1 + S2 + S3
+    Slutpoäng = Råpoäng × f(n)  där f(n) är Q/H/T-baserad straffaktor.
+    """
+    from economics import calc_tg, deviation_factor, calc_deviation_n
+
     results = []
     for player in room.players:
-        total_fv = 0
-        for prop in player.fastigheter:
-            y = _prop_yield(prop, room)
-            fv = _calc_fastighetsvarde(prop, y, _get_prop_ek(prop, player))
-            total_fv += fv * (1 - LOAN_RATIO)
+        # Total anskaffning: ursprungsportfölj (placerade projekt) + nya köp i Skede 3.
+        ansk_orig = sum(p.anskaffning for p in player.projects
+                        if p.id in player.placed_project_ids)
+        ansk_total = ansk_orig + player.f4_extra_anskaffning
+        skede1 = ansk_total / 100.0
 
-        real_ek = _calc_real_ek(player)
-        tb = _calc_tb(player)
-        score = total_fv + real_ek + tb
+        # Skede 2 — TG (saldo-%)
+        skede2 = calc_tg(player)
 
-        player.f4_fv_30 = total_fv
-        player.f4_real_ek = real_ek
-        player.f4_tb = tb
+        # Skede 3 — fastighetsvärde obelånat + kassa-vikt
+        total_dn = sum(_eff_dn(prop, player) for prop in player.fastigheter)
+        saljvarde = sum(_mv_lookup(_eff_dn(prop, player),
+                                   _prop_yield(prop, room),
+                                   "normal")
+                        for prop in player.fastigheter)
+        utestaende_lan = sum((prop.lanebelopp or 0) for prop in player.fastigheter)
+        fv_obelan = saljvarde - utestaende_lan
+        kassa = _calc_real_ek(player)
+        skede3 = (fv_obelan + kassa * SKEDE3_KASSA_FAKTOR) / SKEDE3_DIVISOR
+
+        rapong = skede1 + skede2 + skede3
+
+        # Straffaktor från Q/H/T-avvikelse vid Skede 2-3-snapshot.
+        dev = calc_deviation_n(player)
+        f_n = deviation_factor(dev["n_total"])
+        score = rapong * f_n
+
+        # Behåll tidigare fält för kompatibilitet med rapporter.
+        player.f4_real_ek = kassa
+        player.f4_tb = _calc_tb(player)
+        player.f4_fv_30 = fv_obelan  # Nu: FV obelånat (säljvärde − lån)
         player.f4_score = score
-
-        # BTA-normalized score
-        total_bta = sum(p.bta for p in player.fastigheter)
-        score_per_bta = (score / (total_bta / 1000)) if total_bta > 0 else 0
-        player.f4_score_per_bta = score_per_bta
+        player.f4_score_per_bta = 0  # BTA-normaliseringen är borttagen i nya formeln
 
         results.append({
             "name": player.name,
             "score": round(score, 1),
-            "score_per_bta": round(score_per_bta, 1),
-            "fv_30": round(total_fv, 1),
-            "real_ek": round(real_ek, 1),
-            "tb": round(tb, 1),
+            "rapong": round(rapong, 1),
+            "skede1": round(skede1, 1),
+            "skede2": round(skede2, 1),
+            "skede3": round(skede3, 1),
+            "ansk_total": round(ansk_total, 0),
+            "total_dn": total_dn,
+            "saljvarde": saljvarde,
+            "utestaende_lan": utestaende_lan,
+            "fv_obelan": round(fv_obelan, 1),
+            "kassa": round(kassa, 1),
+            "f_n": round(f_n, 2),
+            "n_total": dev["n_total"],
             "fastigheter": len(player.fastigheter),
-            "bta": total_bta,
         })
 
-    results.sort(key=lambda x: x["score_per_bta"], reverse=True)
+    results.sort(key=lambda x: x["score"], reverse=True)
+    room.f4_final_results = results
     events.append({
         "type": "gf_summary",
-        "text": f"Slutvärdering klar! Vinnare: {results[0]['name']} "
-                f"med {results[0]['score_per_bta']:.1f} Mkr/1000 BTA "
-                f"(totalt {results[0]['score']:.1f} Mkr)",
+        "text": (f"Slutvärdering klar! Vinnare: {results[0]['name']} "
+                 f"med {results[0]['score']:.1f} poäng "
+                 f"(S1 {results[0]['skede1']} + S2 {results[0]['skede2']} "
+                 f"+ S3 {results[0]['skede3']}, f(n)={results[0]['f_n']})"),
         "results": results,
     })
 
@@ -3623,13 +4553,21 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
     act = action.get("action")
     val = action.get("value")
 
+    # ── Spela personkort (oberoende av pending_action) ──
+    if act == "play_personkort" and val:
+        result = _play_personkort(room, player, val, events)
+        room.events_log.extend(events)
+        if not result.get("ok"):
+            return {"type": "error", "message": result.get("msg", "Kunde inte spela kortet")}
+        return {"type": "state_update", "events": events}
+
     # ── Staff hiring ──
     if sub in ("f4_hire_staff", "f4_rehire"):
         if act == "f4_hire" and val:
             # Hire a staff member
             staff_id = val
             staff_obj = None
-            for s in room.game_data.staff:
+            for s in _staff_pool(room.game_data):
                 if s.id == staff_id:
                     staff_obj = s
                     break
@@ -3643,19 +4581,20 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
                 "text": f"{player.name} anställde {staff_obj.namn} ({staff_obj.roll})",
             })
 
-            # Check if done hiring
-            if sub == "f4_rehire":
-                current_cap = sum(s.kapacitet if hasattr(s, 'kapacitet') else 0
-                                  for s in player.staff)
-                if current_cap >= len(player.fastigheter):
-                    # Pay new hire's salary
-                    player.eget_kapital -= staff_obj.lon
+            # Check if done hiring (F2: kräver både FC och FS, inga kostnader/kapacitetstak).
+            has_fc = any((s.roll if hasattr(s, 'roll') else s.get("roll","")) == "FC"
+                         for s in player.staff)
+            has_fs = any((s.roll if hasattr(s, 'roll') else s.get("roll","")) == "FS"
+                         for s in player.staff)
+            if has_fc and has_fs:
+                if sub == "f4_rehire":
                     _f4_finish_player_turn(room, events)
                 else:
-                    _f4_setup_hire(room, player)
-                    room.sub_state = "f4_rehire"
+                    _f4_advance_hire(room, events)
             else:
                 _f4_setup_hire(room, player)
+                if sub == "f4_rehire":
+                    room.sub_state = "f4_rehire"
 
         elif act == "f4_hire" and not val:
             # Done hiring (skip) - only if requirements met
@@ -3679,7 +4618,10 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
 
     # ── Rent negotiation continue ──
     if sub == "f4_rent_result" and act == "continue":
-        _f4_start_mgmt_events(room, player, events)
+        if SKIP_MGMT_EVENTS:
+            _f4_after_mgmt(room, player, events)
+        else:
+            _f4_start_mgmt_events(room, player, events)
         room.events_log.extend(events)
         return {"type": "state_update", "events": events}
 
@@ -3718,20 +4660,52 @@ def _handle_forvaltning(room: GameRoom, player: Player, action: dict) -> dict:
 
             ek = _get_prop_ek(prop, player)
             ek_idx = ENERGY_CLASSES.index(ek) if ek in ENERGY_CLASSES else 2
-            new_ek = ENERGY_CLASSES[ek_idx - 1] if ek_idx > 0 else "A"
-            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 3 Mkr/steg per §8.8
+            if ek_idx == 0:
+                return {"type": "error", "message": f"{prop.namn} är redan EK A — kan inte uppgraderas mer."}
 
-            # Spåra projekt-namnet i kvartalets set
+            new_ek = ENERGY_CLASSES[ek_idx - 1]
+            cost = ENERGY_UPGRADE_COST_PER_STEP * room.f4_energy_discount  # 5 Mkr/steg per Regelhäfte §8
+
+            # Förvaltning 2.0: D20-slag, FC/FS-modifier (Tekniska experten +3).
+            # Garanti-token från tidigare misslyckande på SAMMA fastighet ger auto-success
+            # (designdok: 'misslyckad uppgradering ger något — typ lyckas automatiskt nästa gång').
+            garanti = player.f4_energi_garanti.get(prop_namn, 0)
+            if garanti > 0:
+                d20 = "AUTO"
+                modifier = 0
+                total = "garanti"
+                success = True
+                player.f4_energi_garanti[prop_namn] = garanti - 1
+            else:
+                d20 = roll("D20")
+                modifier = _energy_upgrade_modifier(player)
+                total = d20 + modifier
+                success = total >= ENERGY_UPGRADE_D20_THRESHOLD
+
+            # Spåra projekt-namnet i kvartalets set även vid fail (försök räknas som "kvartalets uppgradering").
             if prop_namn not in already:
                 already.append(prop_namn)
                 player.f4_upgrades_per_quarter[q_key] = already
 
             player.eget_kapital -= cost
-            player.projekt_energiklass[prop.namn] = new_ek
-            events.append({
-                "type": "economics",
-                "text": f"{player.name}: {prop.namn} EK {ek}→{new_ek} (-{cost:.1f} Mkr)",
-            })
+            mod_text = f"+{modifier}" if isinstance(modifier, int) and modifier > 0 else ""
+            if success:
+                player.projekt_energiklass[prop.namn] = new_ek
+                slag_text = "AUTO (garanti)" if d20 == "AUTO" else f"D20 {d20}{mod_text}={total}"
+                events.append({
+                    "type": "economics",
+                    "text": (f"{player.name}: {prop.namn} {slag_text} "
+                             f"→ uppgradering EK {ek}→{new_ek} (−{cost:.1f} Mkr)"),
+                })
+            else:
+                # Spara garanti för nästa försök på samma fastighet
+                player.f4_energi_garanti[prop_namn] = player.f4_energi_garanti.get(prop_namn, 0) + 1
+                events.append({
+                    "type": "economics",
+                    "text": (f"{player.name}: {prop.namn} D20 {d20}{mod_text}={total} "
+                             f"< {ENERGY_UPGRADE_D20_THRESHOLD} → MISSLYCKAD ({cost:.1f} Mkr förlorad), "
+                             f"men nästa försök på {prop.namn} lyckas automatiskt."),
+                })
             # Show upgrade options again
             _f4_setup_energy_upgrade(room, player)
         elif act == "f4_energy_upgrade" and not val:

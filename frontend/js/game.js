@@ -2,39 +2,41 @@
  * PMOPOLY - Game view controller
  */
 import { state, sendAction, addEventLog } from './app.js';
-import { renderBoard, renderPlanGFBoard, renderPhase4Board, renderPlayerBar, showDice, showCard, updateCardResult, closeCardModal, showInstruction, cycleInstructionLevel, getInstructionLevel, getInstructionLabel } from './components.js';
+import { renderBoard, renderPlanGFBoard, renderPhase4Board as renderPhase4BoardSVG, renderPlayerBar, showDice, showCard, updateCardResult, closeCardModal, showInstruction, cycleInstructionLevel, getInstructionLevel, getInstructionLabel } from './components.js';
+import { renderPhase4Board as renderPhase4BoardHTML } from './phase4.js';
 import { renderPhase1Action } from './phase1.js';
 import { renderPhase2Action } from './phase2.js';
 import { renderPhase3Action } from './phase3.js';
 import { renderPhase4Action } from './phase4.js';
 import { renderPuzzleBoard, renderPuzzleAction, renderPuzzleInfo, startDrag, selectPiece, getSelectState, openPieceModal } from './puzzle.js';
 
-// Board square definitions (must match backend config.py)
+// Board square definitions — Skede 1-brädet enligt PU_spelbräde2.pdf (2026-05-12).
+// Måste matcha backend/config.py: BOARD_SQUARES.
 const BOARD_SQUARES = [
-    { nr: 1, typ: "start", namn: "Stadsbyggnads-kontoret" },
-    { nr: 2, typ: "projekt", namn: "Förskola", projekt_typer: ["FÖRSKOLOR"] },
-    { nr: 3, typ: "projekt", namn: "Hyresrätt", projekt_typer: ["Hyresrätt"] },
-    { nr: 4, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 5, typ: "projekt", namn: "BRF", projekt_typer: ["BRF"] },
-    { nr: 6, typ: "stjarna", namn: "Stjärna" },
-    { nr: 7, typ: "stadshuset", namn: "Stadshuset" },
-    { nr: 8, typ: "projekt", namn: "Lokal", projekt_typer: ["LOKAL"] },
-    { nr: 9, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 10, typ: "projekt", namn: "BRF + Kontor", projekt_typer: ["BRF", "KONTOR"] },
-    { nr: 11, typ: "projekt", namn: "Kontor", projekt_typer: ["KONTOR"] },
-    { nr: 12, typ: "stjarna", namn: "Stjärna" },
-    { nr: 13, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 14, typ: "projekt", namn: "Lokal + Hyresrätt", projekt_typer: ["LOKAL", "Hyresrätt"] },
-    { nr: 15, typ: "lansstyrelsen", namn: "Länsstyrelsen" },
-    { nr: 16, typ: "projekt", namn: "Förskola", projekt_typer: ["FÖRSKOLOR"] },
-    { nr: 17, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 18, typ: "projekt", namn: "Lokal + Förskola", projekt_typer: ["LOKAL", "FÖRSKOLOR"] },
-    { nr: 19, typ: "skonhetsradet", namn: "Skönhetsrådet" },
-    { nr: 20, typ: "stjarna", namn: "Stjärna" },
-    { nr: 21, typ: "kort", namn: "Dialog", kort_typ: "dialog" },
-    { nr: 22, typ: "projekt", namn: "Hyresrätt", projekt_typer: ["Hyresrätt"] },
-    { nr: 23, typ: "kort", namn: "Politik", kort_typ: "politik" },
-    { nr: 24, typ: "projekt", namn: "BRF", projekt_typer: ["BRF"] },
+    { nr: 1,  typ: "start",         namn: "Stadsbyggnads-kontoret" },
+    { nr: 2,  typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 3,  typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 4,  typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 5,  typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 6,  typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 7,  typ: "skonhetsradet", namn: "Skönhetsrådet" },
+    { nr: 8,  typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 9,  typ: "riskbuffert",   namn: "Ta en riskbuffert" },
+    { nr: 10, typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 11, typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 12, typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 13, typ: "stadshuset",    namn: "Stadshuset" },
+    { nr: 14, typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 15, typ: "projekt",       namn: "Hyresrätt",    projekt_typer: ["HYRESRÄTT"] },
+    { nr: 16, typ: "kort",          namn: "Händelsekort", kort_typ: "händelsekort" },
+    { nr: 17, typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 18, typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 19, typ: "lansstyrelsen", namn: "Länsstyrelsen" },
+    { nr: 20, typ: "projekt",       namn: "Lokal",        projekt_typer: ["LOKAL"] },
+    { nr: 21, typ: "projekt",       namn: "BRF",          projekt_typer: ["BRF"] },
+    { nr: 22, typ: "projekt",       namn: "Kontor",       projekt_typer: ["KONTOR"] },
+    { nr: 23, typ: "projekt",       namn: "Förskola",     projekt_typer: ["FÖRSKOLA"] },
+    { nr: 24, typ: "riskbuffert",   namn: "Ta en riskbuffert" },
 ];
 
 let _lastPhase = null;
@@ -46,6 +48,7 @@ export function initGame() {
 export function handleGameState(gs) {
     state.gameState = gs;
     window._lastGameState = gs;
+    window._state = state;
 
     // Update phase indicator
     updatePhaseIndicator(gs);
@@ -73,14 +76,17 @@ export function handleGameState(gs) {
         renderPlanGFBoard(gs);
         if (boardEl) boardEl.style.display = '';
     } else if (gs.phase === 'phase4_forvaltning') {
-        renderPhase4Board(gs);
-        if (boardEl) boardEl.style.display = '';
+        // Skede 3: mittenrutan visar fastigheter + kopplade kort istället för SVG-spelplan
+        if (boardEl) {
+            boardEl.style.display = '';
+            renderPhase4BoardHTML(boardEl, gs);
+        }
     } else {
         if (boardEl) boardEl.style.display = 'none';
     }
 
     // Update player bar
-    renderPlayerBar(gs.players, gs.current_player_id, state.playerId);
+    renderPlayerBar(gs.players, gs.current_player_id, state.playerId, gs);
 
     // Update assets panel
     renderAssetsPanel(gs);
@@ -224,19 +230,22 @@ function renderInfoPanel(gs) {
         if (sq) {
             const sqColors = {
                 'start': '#2980b9', 'projekt': '#27ae60', 'kort': '#8e44ad',
-                'stjarna': 'var(--burgundy)', 'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
+                'stjarna': 'var(--burgundy)', 'riskbuffert': 'var(--burgundy)',
+                'stadshuset': '#c0392b', 'lansstyrelsen': '#e67e22',
                 'skonhetsradet': '#16a085'
             };
             const sqIcons = {
                 'start': '🏛️', 'projekt': '🏗️', 'kort': '🃏',
-                'stjarna': '⭐', 'stadshuset': '🏰', 'lansstyrelsen': '⚖️',
+                'stjarna': '⭐', 'riskbuffert': '🛡️',
+                'stadshuset': '🏰', 'lansstyrelsen': '⚖️',
                 'skonhetsradet': '🎨'
             };
             const sqDescriptions = {
                 'start': 'Stadsbyggnadskontoret — startposition.',
                 'projekt': `Här kan du förvärva ett projekt av typ: ${sq.projekt_typer?.join(', ') || ''}`,
-                'kort': `${sq.namn}kort — Dra ett kort och slå D20.`,
+                'kort': `${sq.namn} — Dra ett kort och slå D20.`,
                 'stjarna': '+1 Riskbuffert!',
+                'riskbuffert': '+1 Riskbuffert!',
                 'stadshuset': 'Stadshuset — Möjlighet att utöka tomtmark.',
                 'lansstyrelsen': 'Länsstyrelsen — Minskar H-krav med 2.',
                 'skonhetsradet': 'Skönhetsrådet — Minskar Q-krav med 2.',
@@ -317,7 +326,6 @@ function renderInfoPanel(gs) {
         }
     } else if (gs.phase === 'phase4_forvaltning') {
         const quarter = gs.f4_quarter || pending.quarter || 1;
-        const subState = gs.sub_state || '';
         html += `
             <div class="info-square" style="border-color:var(--burgundy)">
                 <div class="info-sq-icon">🏢</div>
@@ -326,13 +334,17 @@ function renderInfoPanel(gs) {
             </div>
         `;
         if (me) {
-            const props = (me.fastigheter || me.projects || []).length;
+            const fast = (me.fastigheter || []).length;
+            const marginCalls = (me.f4_margin_call_props || []).length;
+            const live = (gs.f4_live_scores || {})[me.id];
             html += `
                 <div class="info-stats">
+                    <div class="info-stat-row"><span>Kvartalscash (DN/4)</span><span>${live ? Math.floor((live.total_dn || 0) / 4) : 0} Mkr</span></div>
+                    <div class="info-stat-row"><span>Total DN/år</span><span>${live ? live.total_dn : 0}</span></div>
                     <div class="info-stat-row"><span>EK</span><span>${me.eget_kapital} Mkr</span></div>
-                    <div class="info-stat-row"><span>Fastigheter</span><span>${props}</span></div>
-                    <div class="info-stat-row"><span>Personal</span><span>${(me.staff || []).length}</span></div>
-                    ${me.abt_loans_net > 0 ? `<div class="info-stat-row"><span>Lån</span><span>${me.abt_loans_net} Mkr</span></div>` : ''}
+                    <div class="info-stat-row"><span>Restkort</span><span>${me.f4_restkort || 0}/3</span></div>
+                    <div class="info-stat-row"><span>Fastigheter</span><span>${fast}${marginCalls ? ` <span style="color:#c00">⚠${marginCalls}</span>` : ''}</span></div>
+                    ${live ? `<div class="info-stat-row"><span>Slutpoäng nu</span><span style="font-weight:700;color:var(--burgundy)">${live.score}</span></div>` : ''}
                 </div>
             `;
         }
@@ -385,46 +397,57 @@ function renderFinished(panel, gs) {
     let html = '<h3>🏆 Spelet är slut!</h3>';
     html += '<div class="f4-results">';
 
-    const sorted = [...gs.players].sort((a, b) =>
-        (b.f4_score_per_bta || 0) - (a.f4_score_per_bta || 0));
+    const results = gs.f4_final_results || [];
 
-    // Header
+    // Header — förklara formeln
     html += `<div class="f4-result-header">
-        <span>Poäng per 1000 BTA = (FV×30% + EK + TB) / (BTA/1000)</span>
+        <span>Slutpoäng = (Skede 1 + Skede 2 + Skede 3) × f(n) — "superbra" ≈ 25 per skede</span>
+    </div>
+    <div class="f4-result-formula" style="font-size:0.8em;color:#888;margin:4px 0 12px 0;text-align:center;">
+        S1 = anskaffning / 100 &nbsp; · &nbsp; S2 = TG % &nbsp; · &nbsp; S3 = (FV obelånat + kassa) / 30
     </div>`;
 
-    sorted.forEach((p, i) => {
-        const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
-        const hasScores = p.f4_score !== undefined && p.f4_score !== 0;
-        html += `
-            <div class="f4-result-row ${i === 0 ? 'winner' : ''}">
-                <div class="f4-result-place">${medal}</div>
+    if (results.length === 0) {
+        // Fallback: visa rå EK om resultat saknas (t.ex. innan slutvärdering körts)
+        gs.players.forEach((p, i) => {
+            html += `<div class="f4-result-row">
+                <div class="f4-result-place">${i+1}.</div>
                 <div class="f4-result-info">
                     <div class="f4-result-name">${p.name}</div>
-                    ${hasScores ? `
-                    <div class="f4-result-details">
-                        FV×30%: ${p.f4_fv_30} |
-                        EK: ${p.f4_real_ek} |
-                        TB: ${p.f4_tb}
-                    </div>
-                    <div class="f4-result-props">
-                        Fastigheter: ${(p.fastigheter || []).length} |
-                        BTA: ${p.total_bta || 0} kvm
-                    </div>
-                    ` : `
-                    <div class="f4-result-details">
-                        ABT: ${p.abt_budget} Mkr | EK: ${p.eget_kapital} Mkr
-                    </div>
-                    `}
+                    <div class="f4-result-details">EK: ${p.eget_kapital} Mkr</div>
                 </div>
-                <div class="f4-result-score">
-                    ${hasScores
-                        ? `${p.f4_score_per_bta} Mkr/kBTA<br><span class="f4-score-raw">(${p.f4_score} Mkr)</span>`
-                        : `${(p.abt_budget + p.eget_kapital).toFixed(1)} Mkr`}
+                <div class="f4-result-score">${(p.eget_kapital||0).toFixed(1)} Mkr</div>
+            </div>`;
+        });
+    } else {
+        results.forEach((r, i) => {
+            const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
+            html += `
+                <div class="f4-result-row ${i === 0 ? 'winner' : ''}">
+                    <div class="f4-result-place">${medal}</div>
+                    <div class="f4-result-info">
+                        <div class="f4-result-name">${r.name}</div>
+                        <div class="f4-result-details">
+                            S1 <strong>${r.skede1}</strong>
+                            (ansk ${r.ansk_total}) ·
+                            S2 <strong>${r.skede2}</strong>
+                            (TG%) ·
+                            S3 <strong>${r.skede3}</strong>
+                            (FV obel. ${r.fv_obelan} + kassa ${r.kassa})
+                        </div>
+                        <div class="f4-result-props">
+                            Råpoäng ${r.rapong} · f(n) ${r.f_n} (n=${r.n_total})
+                            · ${r.fastigheter} fastigheter · DN ${r.total_dn}
+                        </div>
+                    </div>
+                    <div class="f4-result-score">
+                        <strong>${r.score}</strong>
+                        <span class="f4-score-raw">poäng</span>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    }
 
     html += '</div>';
     panel.innerHTML = html;
@@ -436,6 +459,34 @@ function renderAssetsPanel(gs) {
 
     const me = gs.players.find(p => p.id === state.playerId);
     if (!me) return;
+
+    // Skede 3-vy: visa BARA FC/FS + lån — inga Skede 1/2-rester
+    // (projekt, mark, PC, AC, suppliers, orgs).
+    if (gs.phase === 'phase4_forvaltning') {
+        let html = '';
+        const staff = me.staff || [];
+        staff.forEach(s => {
+            html += `<div class="asset-card clickable" style="background:#2c3e50" data-detail="staff" data-idx="${s.namn}">
+                <div class="ac-name">${truncName(s.namn, 14)}</div>
+                <div class="ac-type">${s.roll}</div>
+                <div class="ac-stats">${(s.specialisering || '').substring(0,18)}</div>
+            </div>`;
+        });
+        const loanNet = me.abt_loans_net || 0;
+        if (loanNet > 0) {
+            const nLoans = Math.ceil(loanNet / 95);
+            html += `<div class="asset-card clickable" style="background:#7f1d1d" data-detail="loan">
+                <div class="ac-name">Moderbolagslån</div>
+                <div class="ac-type">${nLoans}×100</div>
+                <div class="ac-stats">${loanNet} Mkr</div>
+            </div>`;
+        }
+        panel.innerHTML = html || '<div style="padding:6px;color:#888;font-size:0.85em">Inga anställda än.</div>';
+        panel.querySelectorAll('.asset-card.clickable').forEach(card => {
+            card.addEventListener('click', () => showAssetDetail(card, me));
+        });
+        return;
+    }
 
     let html = '';
     const TYPE_COLORS = {
@@ -699,15 +750,14 @@ function showAssetDetail(card, player) {
     } else if (type === 'pc') {
         const pc = player.projektchef;
         if (!pc) return;
-        const motstand = pc.handelsemotstand || '';
         html = `
             <h3>${pc.namn}</h3>
             <div class="card-type">Projektchef — ${pc.specialisering || ''}</div>
             <div class="detail-grid">
-                ${(pc.lindring && motstand) ? `<div class="detail-row"><span>Slag avseende ${motstand}</span><span>+${pc.lindring}</span></div>` : ''}
-                ${pc.namnd_bonus ? `<div class="detail-row"><span>Slag avseende Nämndbeslut</span><span>+${pc.namnd_bonus}</span></div>` : ''}
-                ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
+                ${pc.erfarenhet ? `<div class="detail-row"><span>Erfarenhet (lindrar alla händelsekort)</span><span>+${pc.erfarenhet}</span></div>` : ''}
+                ${pc.namnd_bonus ? `<div class="detail-row"><span>Nämndslag</span><span>+${pc.namnd_bonus}</span></div>` : ''}
                 ${pc.h_bonus ? `<div class="detail-row"><span>Sänker H-krav</span><span>−${pc.h_bonus}</span></div>` : ''}
+                ${pc.q_bonus ? `<div class="detail-row"><span>Sänker Q-krav</span><span>−${pc.q_bonus}</span></div>` : ''}
                 ${pc.t_bonus ? `<div class="detail-row"><span>Kortar byggtid</span><span>−${pc.t_bonus} mån</span></div>` : ''}
                 ${pc.rb ? `<div class="detail-row"><span>Riskbuffert</span><span>+${pc.rb}</span></div>` : ''}
             </div>
@@ -733,15 +783,27 @@ function showAssetDetail(card, player) {
     } else if (type === 'staff') {
         const s = player.staff?.find(st => st.namn === idx);
         if (!s) return;
-        html = `
-            <h3>${s.namn}</h3>
-            <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
-            <div class="detail-grid">
-                <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
-                <div class="detail-row"><span>Lön</span><span>${s.lon} Mkr/kv</span></div>
-                <div class="detail-row"><span>Förhandling</span><span>D${s.forhandling || '—'}</span></div>
-            </div>
-        `;
+        // F2-arketyper: visa egenskaper, INTE lön/kapacitet (designdok: inga sådana).
+        const isF2 = (s.lon || 0) === 0 || (s.kapacitet || 0) >= 99;
+        if (isF2) {
+            html = `
+                <h3>${s.namn}</h3>
+                <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+                <div class="detail-grid">
+                    ${s.f2_forh_modifier !== undefined ? `<div class="detail-row"><span>Förhandling</span><span>${s.f2_forh_modifier >= 0 ? '+' : ''}${s.f2_forh_modifier}</span></div>` : ''}
+                    ${s.f2_motstand_modifier !== undefined ? `<div class="detail-row"><span>Motstånd konsekvens</span><span>${s.f2_motstand_modifier >= 0 ? '+' : ''}${s.f2_motstand_modifier}</span></div>` : ''}
+                </div>
+            `;
+        } else {
+            html = `
+                <h3>${s.namn}</h3>
+                <div class="card-type">${s.roll} — ${s.specialisering || ''}</div>
+                <div class="detail-grid">
+                    <div class="detail-row"><span>Kapacitet</span><span>${s.kapacitet} fastigheter</span></div>
+                    <div class="detail-row"><span>Förhandling</span><span>D${s.forhandling || '—'}</span></div>
+                </div>
+            `;
+        }
     }
 
     if (!html) return;
@@ -796,11 +858,10 @@ function renderCompanion() {
         html += '<div style="background:var(--paper-deep);padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid #8B7355">';
         html += '<div style="font-size:11px;color:var(--ink-mid)">PROJEKTCHEF</div>';
         html += '<div style="font-weight:600">' + pc.namn + '</div>';
-        var _pcMot = pc.handelsemotstand || '';
-        var _pcLin = pc.lindring || pc.kapacitet || 0;
+        var _pcErf = pc.erfarenhet || 0;
         var _pcParts = [];
-        if (_pcLin && _pcMot) _pcParts.push('+' + _pcLin + ' på slag avseende ' + _pcMot);
-        if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' på slag avseende Nämndbeslut');
+        if (_pcErf) _pcParts.push('+' + _pcErf + ' Erfarenhet');
+        if (pc.namnd_bonus) _pcParts.push('+' + pc.namnd_bonus + ' Nämndslag');
         html += '<div style="font-size:12px;color:var(--ink-mid)">' + (pc.specialisering || '') + (_pcParts.length ? ' | ' + _pcParts.join(' | ') : '') + '</div>';
         html += '</div>';
     }

@@ -26,11 +26,11 @@ PHASES = [
             "Varje spelare väljer 1 av 10 projektchefer. Gratis.\n\n"
             "Attribut att jämföra:\n"
             "• Riskbuffertar (Rb) — säkerhetsmarginal\n"
-            "• Lindring — bonus på politik/dialogkort under PU-brädet\n"
-            "• Nämndbonus — bonus vid nämndbeslut (steg 1.8)\n"
-            "• Q/H/T-bonus — tillämpas i Skede 2.1\n"
+            "• Erfarenhet — lindrar alla händelsekort under PU-brädet\n"
+            "• Nämndslag — D20-bonus vid nämndbeslut (steg 1.8)\n"
+            "• H-/Q-/T-bonus — tillämpas i Skede 2.1\n"
             "• Kompetens — spelbar som kort i Skede 2.2\n\n"
-            "Tips: Hög lindring = bra under PU-brädet. Hög nämndbonus = tryggare med BRF. "
+            "Tips: Hög erfarenhet = bra under PU-brädet. Högt nämndslag = tryggare med BRF. "
             "Hög Rb = mer flexibilitet senare."},
         {"id": "projects", "name": "1.4–1.6 Projektval & Brädspel", "help":
             "Välj ett startprojekt (1.4), sedan spelas PU-brädet (1.5–1.6).\n\n"
@@ -38,15 +38,14 @@ PHASES = [
             "• Projektrutor — ta ett projekt av typen\n"
             "• Stadshuset — ta, byt eller lämna tillbaka\n"
             "• Stjärna — +1 riskbuffert\n"
-            "• Skönhetsrådet — −2 Q-krav\n"
-            "• Länsstyrelsen — −2 H-krav\n"
-            "• Dialogkort — slå D20 + PC-lindring\n"
-            "• Politikkort — slå D20 + PC-lindring\n"
+            "• Länsstyrelsen — höjer valfritt krav (Q eller H), totalt +2 steg\n"
+            "• Skönhetsrådet — sänker valfritt krav (Q eller H), totalt −2 steg\n"
+            "• Politik/dialog-händelsekort — slå D20 + PC-lindring\n"
             "• Stadsbyggnadskontoret — markexpansion (+5 Mkr)\n\n"
-            "Registrera dina projekt och uppdatera Q/H/Rb med +/- knapparna.\n"
+            "Registrera dina projekt och uppdatera H/Q/Rb med +/- knapparna.\n"
             "Tips: Max 9 projekt. KOMPLEX kvarter (bostäder + 2 andra typer) ger svårast händelsekort."},
         {"id": "namndbeslut", "name": "1.8 Nämndbeslut", "help":
-            "Projekt med nämndkrav > 1: slå D20 + PC:s nämndbonus.\n\n"
+            "Projekt med nämndkrav > 1: slå D20 + PC:s nämndslag.\n\n"
             "• Resultat ≥ krav = godkänt\n"
             "• Misslyckat: använd Rb för omslag, eller ta bort projektet\n"
             "• Utvecklingskostnaden är redan betald\n\n"
@@ -55,8 +54,8 @@ PHASES = [
             "Tips: Rb kan rädda ett misslyckat projekt — värt det för dyra projekt!"},
         {"id": "rb_invest", "name": "1.12 Rb-investering", "help":
             "Fördela kvarvarande riskbuffertar:\n\n"
-            "• −1 Q-krav per Rb\n"
             "• −1 H-krav per Rb\n"
+            "• −1 Q-krav per Rb\n"
             "• −1 T (byggtid) per Rb\n\n"
             "Resterande Rb sparas till Skede 2.2 (omslag på händelsekort).\n"
             "Tips: Sänk det krav som är svårast att uppfylla med leverantörer i Skede 2.1."},
@@ -83,8 +82,8 @@ PHASES = [
             "Tips: Kolla TG (täckningsgrad) varje steg. Under 20%? Dags att välja billigare."},
         {"id": "planning_summary", "name": "2.5 Planeringssummering", "help":
             "Kontrollera dina värden:\n\n"
-            "• Q vs Q-krav — uppfyllt?\n"
             "• H vs H-krav — uppfyllt?\n"
+            "• Q vs Q-krav — uppfyllt?\n"
             "• T (byggtid i månader)\n"
             "• ABT kvar — tillräcklig marginal?\n"
             "• Erfarenhet — påverkar Skede 2.2\n\n"
@@ -270,7 +269,8 @@ class CompanionPlayer:
     rb_spent_q: int = 0
     rb_spent_h: int = 0
     rb_spent_t: int = 0
-    mark_expansions: int = 0
+    mark_expansions: int = 0  # Antal bitar (5 Mkr/styck)
+    mark_expansion_cells: int = 0  # Total antal rutor (250 kvm/ruta) — för BYA-klass
     dev_cost_total: float = 0.0  # Aktuell summa av projektens kostnader
     eget_kapital: float = 0.0
     abt_budget: float = 0.0
@@ -367,16 +367,34 @@ class CompanionPlayer:
 
     @property
     def _calc_tb(self) -> float:
-        """Calculate TB (Täckningsbidrag) = anskaffning - kostnader - ABT-förbrukning."""
+        """Calculate TB (Täckningsbidrag) = anskaffning - kostnader - ABT-förbrukning.
+
+        ABT-förbrukning = planeringskostnader + planeringshändelser
+        + faskort-händelser + KULTURKORT (2-8 Mkr/st enligt fas)
+        + konsekvenskort + garantibesiktning."""
+        KULTUR_PRIS = [2, 2, 3, 4, 5, 6, 7, 8]  # fas 1-8
         total_ansk = sum(p.get("anskaffning", 0) for p in self.projects)
-        total_kost = sum(p.get("kostnad", 0) for p in self.projects) + 15 + self.mark_expansions * 5
+        # dev_cost_total räknar in sunk cost för borttagna projekt (nämnd-avslag,
+        # ej placerade) — fall tillbaka på live-summan om det inte är satt.
+        live_kost = sum(p.get("kostnad", 0) for p in self.projects)
+        proj_kost = self.dev_cost_total if self.dev_cost_total else live_kost
+        total_kost = proj_kost + 10 + self.mark_expansions * 5
         abt_used = 0
         for ch in (self.pl_choices or {}).values():
             abt_used += ch.get("cost", 0) if isinstance(ch, dict) else 0
         for ev in (self.pl_events or {}).values():
             abt_used += ev.get("abt", 0) if isinstance(ev, dict) else 0
-        for gf in (self.gf_phases or {}).values():
-            abt_used += gf.get("abt", 0) if isinstance(gf, dict) else 0
+        for fas_key, gf in (self.gf_phases or {}).items():
+            if not isinstance(gf, dict):
+                continue
+            abt_used += gf.get("abt", 0)
+            try:
+                fas_idx = int(fas_key)
+            except (TypeError, ValueError):
+                fas_idx = 0
+            kult = gf.get("kultur", 0)
+            if kult and 1 <= fas_idx <= 8:
+                abt_used += kult * KULTUR_PRIS[fas_idx - 1]
         abt_used += getattr(self, 'gf_kons_q', 0) + getattr(self, 'gf_kons_h', 0) + getattr(self, 'gf_kons_t', 0) + getattr(self, 'gf_garanti_abt', 0)
         return total_ansk - total_kost - abt_used
 
@@ -407,7 +425,7 @@ class CompanionPlayer:
                 risk_bonus = max(0, 20 - self.q_krav - self.h_krav) * 2
                 pc_bonus = 0
                 if self.projektchef:
-                    pc_bonus = self.projektchef.get("lindring", 0) * 2
+                    pc_bonus = self.projektchef.get("erfarenhet", 0) * 2
                     pc_bonus += self.projektchef.get("namnd_bonus", 0) * 3
                 tb = risk_bonus + pc_bonus + self.riskbuffertar * 3
         else:
@@ -439,6 +457,7 @@ class CompanionPlayer:
             "rb_spent_h": self.rb_spent_h,
             "rb_spent_t": self.rb_spent_t,
             "mark_expansions": self.mark_expansions,
+            "mark_expansion_cells": self.mark_expansion_cells,
             "dev_cost_total": round(self.dev_cost_total, 1),
             "eget_kapital": round(self.eget_kapital, 1),
             "abt_budget": round(self.abt_budget, 1),
@@ -579,8 +598,11 @@ class CompanionRoom:
         qp = [p for p in self.players.values() if p.quarter_idx == quarter_idx and not p.is_gm]
         total_projects = sum(len(p.projects) for p in qp)
         total_bta = sum(sum(pr.get("bta", 0) for pr in p.projects) for p in qp)
-        avg_q = round(sum(p.q_krav for p in qp) / max(len(qp), 1), 1)
-        avg_h = round(sum(p.h_krav for p in qp) / max(len(qp), 1), 1)
+        # Sammanställning: total Q/H/Rb (alla spelare i kvarteret delar state, så
+        # detta är värdet för kvarteret som helhet — inte ett genomsnitt).
+        total_q = max((p.q_krav for p in qp), default=0)
+        total_h = max((p.h_krav for p in qp), default=0)
+        total_rb = max((p.riskbuffertar for p in qp), default=0)
         return {
             "quarter_idx": quarter_idx,
             "name": self.quarter_names[quarter_idx] if quarter_idx < len(self.quarter_names) else f"Kvarter {quarter_idx + 1}",
@@ -588,8 +610,12 @@ class CompanionRoom:
             "num_players": len(qp),
             "total_projects": total_projects,
             "total_bta": total_bta,
-            "avg_q_krav": avg_q,
-            "avg_h_krav": avg_h,
+            "total_q_krav": total_q,
+            "total_h_krav": total_h,
+            "total_rb": total_rb,
+            # Bakåtkompat. — frontend kan fortfarande använda gamla namnen
+            "avg_q_krav": total_q,
+            "avg_h_krav": total_h,
             "players": [self._player_with_status(p) for p in qp],
         }
 
@@ -1187,11 +1213,15 @@ class CompanionManager:
                 seller.fastigheter = seller_fasts
                 seller.eget_kapital = round(new_ek_seller, 1)
                 seller.gf_moderbolagslan_antal = seller_modlan
-                # Köparen betalar 30 % kontant, lägger till fastigheten
+                # Köparen betalar 30 % kontant, lägger till fastigheten.
+                # dd_pending-flagga triggar DD-kort-modal i frontend.
                 bought = dict(room.auction["fastighet"])
                 bought["sold"] = False
                 bought["anskaffning"] = kop  # ny anskaffning
                 bought["kopeskilling"] = 0
+                bought["dd_pending"] = True
+                bought["dd_kop"] = kop
+                bought["dd_kontant"] = round(earn, 1)
                 buyer_fasts = list(buyer.fastigheter or [])
                 buyer_fasts.append(bought)
                 buyer.fastigheter = buyer_fasts
@@ -1317,6 +1347,8 @@ class CompanionManager:
                 player.rb_spent_t = int(assets["rb_spent_t"])
             if "mark_expansions" in assets:
                 player.mark_expansions = int(assets["mark_expansions"])
+            if "mark_expansion_cells" in assets:
+                player.mark_expansion_cells = int(assets["mark_expansion_cells"])
             if "eget_kapital" in assets:
                 player.eget_kapital = float(assets["eget_kapital"])
             if "abt_budget" in assets:

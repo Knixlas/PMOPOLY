@@ -146,6 +146,7 @@ class KPlayer:
     rutor: int = TOMT_CELLS
     expansions: int = 0
     rb: int = 0
+    t_pu: int = 0              # tid från dialog-/politikkort i skede 1
     q_krav: int = START_Q_KRAV
     h_krav: int = START_H_KRAV
     ekonomi1: dict = field(default_factory=dict)
@@ -465,12 +466,7 @@ class KRoom:
             val = p.choice["val"]
             if val == "dialog":
                 card = self._draw(self.dialog_deck, [c for c in self.gd.dialog if c.nr.startswith("D")])
-                eff = list(card.effects.values())[0] if card else "Ingen effekt"
-                if "kvalitetskrav" in eff:
-                    p.q_krav = max(0, p.q_krav - 1)
-                if "hållbarhetskrav" in eff:
-                    p.h_krav = max(0, p.h_krav - 1)
-                self.note(p, f"Dialogkort: {card.rubrik} → {eff}.")
+                self._spela_kort(p, card, "Dialogkort")
             elif val == "riskbuffert":
                 p.rb += 1
                 self.note(p, "Du tog en riskbuffert.")
@@ -486,20 +482,55 @@ class KRoom:
             if roll != 1:
                 continue
             card = self._draw(self.politik_deck, [c for c in self.gd.dialog if c.nr.startswith("P")])
-            eff = list(card.effects.values())[0]
-            if p.pc and "politik" in p.pc.get("handelsemotstand", "").lower():
-                self.note(p, f"Politikkort: {card.rubrik}. Din projektchef {p.pc['namn']} "
-                             f"avvärjde det ({eff.lower()}).")
-                continue
-            self.note(p, f"Politikkort: {card.rubrik} → {eff}.")
-            self._apply_politik(p, eff)
+            self._spela_kort(p, card, "Politikkort")
         self.log(None, "runda_p1", {pid: [r["text"] for r in rows]
                                     for pid, rows in self.reveal["rows"].items()})
 
-    def _apply_politik(self, p: KPlayer, eff: str):
+    def _spela_kort(self, p: KPlayer, card, slag: str):
+        """Dialog-/politikkort: D20 (+ projektchefens lindring) på kortets skala, som engine.py."""
+        roll = d(20, self.rng)
+        lindring = 0
+        if p.pc and slag.lower() in p.pc.get("handelsemotstand", "").lower():
+            lindring = p.pc.get("lindring", 0)
+        tot = min(20, roll + lindring)
+        key = "1" if tot <= 1 else "2-10" if tot <= 10 else "11-15" if tot <= 15 else "16-19" if tot <= 19 else "20"
+        eff = card.effects.get(key) or "Ingen effekt"
+        bonus = f" + lindring {lindring} ({p.pc['namn']})" if lindring else ""
+        self.note(p, f"{slag}: {card.rubrik}. D20 = {roll}{bonus} → {eff}.")
+        self._apply_kort(p, eff)
+
+    def _apply_kort(self, p: KPlayer, eff: str):
         e = eff.lower()
+        if e == "ingen effekt":
+            return
+        tal = lambda ord_: sum(int(n) for n in re.findall(r"([+-]\d+)\s*" + ord_, e))
+        if "kvalitetskrav" in e or "hållbarhetskrav" in e or re.search(r"[+-]\d+\s*tid", e):
+            p.q_krav = max(0, p.q_krav + tal("kvalitetskrav"))
+            p.h_krav = max(0, p.h_krav + tal("hållbarhetskrav"))
+            p.t_pu += tal("tid")
+            return
         if "riskbuffert" in e:
-            p.rb = max(0, p.rb - 2)
+            n = int((re.search(r"(\d+)", e) or [0, 1])[1])
+            p.rb = max(0, p.rb - n) if "förlora" in e else p.rb + n
+            return
+        if "markanvisning" in e:  # valfritt – i kortversionen tar man den
+            exp = self._draw(self.exp_deck, self.gd.mark_expansion_deck)
+            p.rutor += exp["cell_count"]
+            p.expansions += 1
+            self.note(p, f"Du tar markanvisningen: +{exp['cell_count']} rutor ({EXPANSION_KOSTNAD} Mkr).")
+            return
+        if "ta projekt" in e:  # valfritt – största projektet som får plats
+            fits = [x for x in self._market().values() if x["rutor"] <= p.rutor_kvar]
+            if fits and len(p.projects) < MAX_PROJECTS:
+                proj = max(fits, key=lambda x: x["bta"])
+                self.proj_piles[proj["typ"]].pop()
+                p.projects.append(proj)
+                p.q_krav += proj["q"]
+                p.h_krav += proj["h"]
+                self.note(p, f"Du tar {proj['namn']} ({proj['bta']} kvm BTA).")
+            return
+        if "byt projekt" in e:
+            self.note(p, "Byte av projekt är valfritt och hoppas över i kortversionen.")
             return
         if not p.projects:
             self.note(p, "Du har inga projekt än – kortet slår inte.")
@@ -581,7 +612,7 @@ class KRoom:
             p.rb += ac.get("rb", 0)
             p.q, p.h = ac.get("q_bonus", 0), ac.get("h_bonus", 0)
             p.t_mal = 12 + max([x["tid"] for x in p.projects] or [0])
-            p.t = 12 - ac.get("t_bonus", 0)
+            p.t = 12 - ac.get("t_bonus", 0) + p.t_pu
             p.erf = ac.get("erfarenhet", 0)
             p.komp = {k: 0 for k in KOMP_KEYS}
             for src in (p.pc or {}, ac):

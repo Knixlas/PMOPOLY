@@ -247,10 +247,10 @@ const VIEWS = {
         }).join("");
         const alt = (val, rubrik, text, stats) => `<button class="opt ${draft.val === val ? "sel" : ""}" data-val="${val}">
             <div class="typ">${rubrik.typ}</div><h3>${rubrik.h}</h3><div class="desc" style="font-style:normal">${text}</div><div class="stats">${stats}</div></button>`;
-        return head(`Runda ${S.round} av 5`, "Vad gör ni den här rundan?", "Alla väljer samtidigt. Om två bolag tar samma projekt avgör en D6, och förloraren får nästa projekt i samma hög. Efter varje runda slår alla en D6 för Stadshuset. Den som slår en etta drar ett politikkort.")
+        return head(`Runda ${S.round} av 5`, "Vad gör ni den här rundan?", "Alla väljer samtidigt. Om två bolag tar samma projekt avgör en D6, och förloraren får nästa projekt i samma hög. Efter varje runda slår alla en D6 för Stadshuset. Den som slår en etta drar ett politikkort och slår D20 på dess skala.")
             + `<h3 style="margin:6px 0 8px">Projektmarknaden: översta kortet i varje hög</h3><div class="grid">${projekt}</div>
                <h3 style="margin:18px 0 8px">Eller …</h3><div class="grid">
-               ${alt("dialog", { typ: "Ruta: Dialog", h: "Medborgardialog" }, "Dra ett dialogkort. Det kan sänka ditt kvalitets- eller hållbarhetskrav med 1.", "")}
+               ${alt("dialog", { typ: "Ruta: Dialog", h: "Medborgardialog" }, "Dra ett dialogkort och slå D20 på kortets skala. Det kan sänka dina krav, ge riskbuffertar eller mer mark.", "")}
                ${alt("riskbuffert", { typ: "Ruta: Riskbuffert", h: "Bygg riskbuffert" }, "+1 riskbuffert. Den ger dig ett omslag när en händelse går dåligt under bygget.", `<span class="stat">Du har ${me.rb}</span>`)}
                ${alt("markexpansion", { typ: "Markexpansion", h: "Köp mer mark" }, `Dra en markexpansion (3–5 rutor). Kostar ${5} Mkr, som dras från byggbudgeten.`, `<span class="stat bad">−5 Mkr</span>`)}
                </div>`
