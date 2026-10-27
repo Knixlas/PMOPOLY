@@ -11,7 +11,7 @@ och dokument på svenska.
   - `main.py` — REST-endpoints, WebSocket `/ws/{room_id}/{player_id}`, `/health`, companion-routes
   - `engine.py` — spelmotorn (tillståndsmaskin för alla skeden, ~4800 rader)
   - `companion.py` — companion-läget (GM styr fysiskt spel, spelarna följer i appen)
-  - `kvarteret.py` — Kvarteret på `/kvarteret`: helt digital ~30-minutersversion (tre delar à ~10 min, samtidiga beslut, datorbolag). Använder bara befintliga kort via `GameData`; loggar till `data/kvarteret_logs/`
+  - `kvarteret.py` — Kvarteret på `/kvarteret`: helt digital ~20-minutersversion (fem startprojekt, tre egna upphandlingar, två byggfaser, ett kvartal; resten slumpas lika för alla). Använder bara befintliga kort via `GameData`; loggar till `data/kvarteret_logs/`
   - `data_loader.py` — läser in CSV/JSON från `data/` till `GameData`
   - `models.py`, `room_manager.py`, `ws_handler.py`, `economics.py`, `config.py` (spelkonstanter)
 - `frontend/` — statiska HTML/JS/CSS, serveras av backend (`js/phase1-4.js` = skedena)
