@@ -1,0 +1,160 @@
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  -  1  -  -  4  FÖRETAGSKULTUR  Skyddsfika  Vi går varvet, hittar risker och hinner dricka kaffe  innan någon säger att sladden “alltid har legat där”.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-001 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  4  1  -  -  1  FÖRETAGSKULTUR  Skrönkväll  Kvällen då succéer återberättas med lagom mycket  lärdom och exakt noll blygsamhet.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-002 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  1  -  4  FÖRETAGSKULTUR  Lyftsmart  Vi tränar på att bära klokt, så ryggen slipper bli  projektets mest överbelastade resurs.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-003 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  -  -  2  -  -  FÖRETAGSKULTUR  Mentorskap  En rutinerad räv delar med sig, så du slipper uppfin -  na samma misstag i egen regi.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-004 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  1  -  -  FÖRETAGSKULTUR  Problemlab  Folk från olika hörn löser samma knut tillsammans  istället för att skicka den vidare med cc.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-005 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  1  -  FÖRETAGSKULTUR  Flyktrum  Teamet låses in med gåtor, stress och precis samma  samarbetsproblem som på måndagsmötet.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-006 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  -  1  FÖRETAGSKULTUR  Partnering  Beställare, entreprenör och UE tränar på att låta  som ett lag och inte tre separata vädersystem.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-007 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  3  -  -  1  FÖRETAGSKULTUR  Byggbingo  Du upptäcker vad grannprojektet gör och inser att  de också lever på kaffe och sena beslut.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-008 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  4  1  -  FÖRETAGSKULTUR  Leandag  Vi jagar slöseri med sådan iver att även onödiga  möten börjar se nervösa ut.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-009 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  4  -  1  FÖRETAGSKULTUR  5S-tävling  Ordning, reda och den sällsynta känslan av att  faktiskt hitta rätt laddare direkt.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-010 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  3  -  -  1  FÖRETAGSKULTUR  Måndagsfrukost  En mjukstart på veckan där folk hinner bli mänskliga  innan inkorgen tar över.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-011 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  2  -  -  -  -  FÖRETAGSKULTUR  VD-frukost  Kaffe, riktning och minst en formulering som låter  dyr i PowerPoint.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-012 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  4  -  -  -  FÖRETAGSKULTUR  Silokross  Vi river murar mellan avdelningar och bygger tillfäl -  ligt något som liknar samarbete.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-013 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  4  1  -  1  -  FÖRETAGSKULTUR  Snackverkstad  Här tränar vi på att säga samma sak så tydligt att  den inte muterar på vägen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-014 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  3  -  -  -  FÖRETAGSKULTUR  Frågestund  Alla får fråga fritt, även sådant man normalt bara  muttrar om vid kaffeautomaten.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-015 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  -  1  3  1  -  FÖRETAGSKULTUR  Planpulsen  Planeringen flyttar närmare verkligheten, vilket gör  den både bättre och lite mindre bekväm.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-016 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  1  5  -  FÖRETAGSKULTUR  Teknikspan  En dag för nya grejer, smartare sätt och den eviga  frågan om någon faktiskt kommer använda dem.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-017 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  2  1  -  -  -  FÖRETAGSKULTUR  Chefslunch  Ledare delar erfarenheter, genvägar och några  omvägar de i efterhand kallar strategi.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-018 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  1  -  4  -  FÖRETAGSKULTUR  Bygghack  Ett skarpt problem får fler hjärnor än vanligt och  färre ursäkter än vanligt.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-019 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  4  -  -  1  -  FÖRETAGSKULTUR  Pitchträning  Du övar på att låta skarp, kort och trovärdig även  efter slide nummer nitton.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-020 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  3  -  -  2  FÖRETAGSKULTUR  Byggslinga  Frågor, frisk luft och den sortens internkunskap som  aldrig hamnar i manualen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-021 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  1  2  -  -  -  FÖRETAGSKULTUR  Skugga  Följ en platschef och upptäck hur mycket ledarskap  som egentligen består av avbrott.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-022 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  1  -  1  -  -  FÖRETAGSKULTUR  Ledarlabb  Modulen där teori möter vardag och vardagen vinner  på teknisk knockout.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-023 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  3  2  -  FÖRETAGSKULTUR  Betongresa  Vi tittar på flöden, kvalitet och varför grått faktiskt  kan vara rätt fascinerande.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-024 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  1  -  -  4  FÖRETAGSKULTUR  Stegfejd  Rörelseglädje, snäll tävling och smoothies som får  grönkålen att känna sig viktig.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-025 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  -  3  -  -  FÖRETAGSKULTUR  Klarspråk  Vi slipar bort fluffet tills även en stressad platschef  fattar på första läsningen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-026 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  4  1  -  FÖRETAGSKULTUR  Logistiklyft  Rätt sak på rätt plats i rätt tid, alltså motsatsen till  panikleverans fredag 15.42.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-027 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  3  -  1  -  FÖRETAGSKULTUR  Erfarenhetsbyte  Projekt lär av varandra innan samma läxa hinner  kosta pengar två gånger.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-028 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  1  4  -  FÖRETAGSKULTUR  Tvillingtest  Vi testar digitalt först, så verkligheten slipper vara  den dyraste prototypen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-029 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  -  -  -  -  3  FÖRETAGSKULTUR  Lugnknapp  En paus för hjärnan innan den börjar svara “akut” på  mejl om kaffefilter.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-030 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  3  3  -  FÖRETAGSKULTUR  Prototyplab  Vi provar i liten skala innan vi gör misstaget dyrt  och officiellt.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-031 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  -  1  FÖRETAGSKULTUR  Taklagsfest  Stommen står, humöret stiger och någon håller tal  som är bättre än väntat.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-032 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  -  -  2  -  -  FÖRETAGSKULTUR  Beslutsmod  Övning i att fatta beslut i tid, innan frågan blir ett  fossil i Teams.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-033 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  2  1  -  -  -  FÖRETAGSKULTUR  Ledningsvarv  Man går, tänker stort och låtsas att de bästa idéerna  bara råkar kräva frisk luft.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-034 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  3  -  -  1  FÖRETAGSKULTUR  Främlingsfika  Två kollegor, ett bord och en god chans att upptäcka  att ni löser samma problem.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-035 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  1  -  2  -  FÖRETAGSKULTUR  Byggpodd  Projektet får egen mikrofon och alla försöker låta  spontana på tredje tagningen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-036 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  2  -  -  -  -  4  FÖRETAGSKULTUR  Nolldag  Säkerhet först, romantik sen. Vi siktar på noll olyck -  or och helst noll genvägar också.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-037 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  4  2  -  FÖRETAGSKULTUR  Flaskhalsjakt  Vi mäter flöden och hittar tiden som försvinner  mellan “snart klart” och faktiskt klart.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-038 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  -  2  2  -  FÖRETAGSKULTUR  Whiteboardmagi  Pennor, pilar och rutor tills det komplicerade ser ut  som att det var enkelt hela tiden.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-039 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  3  -  1  -  1  FÖRETAGSKULTUR  Samtalsduell  Du tränar på jobbiga samtal med någon som faktiskt  är skicklig på dramatik.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-040 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  1  -  -  4  FÖRETAGSKULTUR  Fredagsyoga  Vi sträcker ut veckan, höfterna och möjligen tålamo -  det med dålig hållning.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-041 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  2  4  -  FÖRETAGSKULTUR  Industrispår  Ett seminarium om smartare byggande, färre omtag  och mindre dyr improvisation.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-042 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  -  1  FÖRETAGSKULTUR  Matlaget  Kollegor lagar lunch ihop och upptäcker snabbt vem  som leder utan mandat.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-043 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  3  -  1  -  FÖRETAGSKULTUR  Kontaktvarv  Nya kontakter knyts i rörelse, vilket är trevligare än  ännu en presentationsrunda i lysrörsljus.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-044 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  3  -  -  1  FÖRETAGSKULTUR  Grannsnack  Vi bygger relationer innan nästa avspärrning gör oss  kända av fel skäl.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-045 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  1  3  -  -  FÖRETAGSKULTUR  Drönarkoll  Lär dig flyga lagligt, dokumentera snyggt och undvi -  ka att bli kvarterets nya samtalsämne.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-046 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  1  -  -  1  -  FÖRETAGSKULTUR  Ledardag  En dag för riktning, prioritering och att se framtiden  lite mindre dimmig än vanligt.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-047 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  1  -  2  -  FÖRETAGSKULTUR  Projektparad  Visa upp vad ni gjort, vad ni lärt er och varför det  inte alls var så enkelt som det ser ut.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-048 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  -  -  1  -  4  FÖRETAGSKULTUR  Skyddsambassadör  Utbildning för dem som ser risker tidigt och faktiskt  orkar säga något om dem.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-049 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  2  1  3  -  FÖRETAGSKULTUR  BIM-synk  Modeller, discipliner och den eviga drömmen om att  allt ska passa redan på skärmen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-050 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  1  -  -  FÖRETAGSKULTUR  Lagsynk  Korta avstämningar där alla får säga sitt och ingen  behöver gissa vad chefen menade.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-051 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  3  2  -  -  -  FÖRETAGSKULTUR  Kulturfrukost  En lugn start där människor pratar med varandra  utan att någon först måste boka möte.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-052 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  1  2  -  -  -  FÖRETAGSKULTUR  Chefcirkel  Chefer tränar på frågor, lyssnande och att inte alltid  gå direkt på lösning med turbo.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-053 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  1  -  FÖRETAGSKULTUR  Lagövning  Strukturerade samarbetsövningar där konflikter får  komma fram innan måndagsmötet gör det åt dem.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-054 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  2  3  1  -  FÖRETAGSKULTUR  APD-labb  Vi ritar logik på trång yta och låtsas inte att bodar  placerar sig själva.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-055 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  1  -  -  3  FÖRETAGSKULTUR  Pratfrukost  En frukost där det är fullt rimligt att prata om hur  man faktiskt har det.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-056 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  2  -  2  -  FÖRETAGSKULTUR  Omvänd mentor  De yngre lär de äldre något nytt, vilket är nyttigt och  ibland lätt provocerande.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-057 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  1  -  5  FÖRETAGSKULTUR  Dammvett  Skydd, rutiner och en vänlig påminnelse om att  lungor inte är slit-och-släng.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-058 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  -  1  1  -  -  FÖRETAGSKULTUR  Målsikte  Vi sätter mål som går att styra mot, inte bara skriva  snyggt i verksamhetsplanen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-059 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  -  3  -  -  FÖRETAGSKULTUR  Lärdomslyft  Vi fångar lärdomar innan de hinner glömmas bort  och återuppstå som överraskningar.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-060 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  -  1  -  5  FÖRETAGSKULTUR  Fallvett  Rep, sele och repetition för alla som helst vill undvi -  ka gravitationsstyrda misstag.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-061 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  4  1  -  1  -  FÖRETAGSKULTUR  Bladmöte  Redaktionen synkar innehåll, ton och hur man gör  interninfo läsbar utan mutor.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-062 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  3  1  1  FÖRETAGSKULTUR  Prefabpass  Vi går igenom montage så att verkligheten inte  behöver bli den första testmiljön.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-063 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  3  -  -  1  FÖRETAGSKULTUR  Trivselkoll  Först lyssnar vi på läget, sedan gör vi något åt det.  Radikalt, jag vet.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-064 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  3  -  -  2  -  FÖRETAGSKULTUR  Byggsnack  Kort, vasst och inspirerande nog för att folk faktiskt  ska sluta titta på mobilen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-065 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  4  -  -  1  FÖRETAGSKULTUR  Leverantörsträff  UE och projektledning träffas i god tid, så att första  byggdagen inte också blir första riktiga samtalet.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-066 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  3  -  -  1  FÖRETAGSKULTUR  Projektsafari  En halvdag hos grannprojektet ger insikter som  ingen rapport hinner formulera.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-067 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  4  1  -  FÖRETAGSKULTUR  Spillsökning  Vi spårar minuterna som försvinner i väntan på  beslut och stänger igen luckan innan nästa vecka.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-068 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  -  1  4  -  1  FÖRETAGSKULTUR  Bodordning  Allt får sin plats, så att skiftnyckeln slutar leva sitt  eget liv mellan tre containrar.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-069 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  -  1  3  1  -  FÖRETAGSKULTUR  Kontrollrond  Vi jämför planen mot verkligheten regelbundet,  innan verkligheten gör det åt oss.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-070 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  2  3  -  -  -  1  FÖRETAGSKULTUR  Pressprat  När tempot går upp tränar vi på att hålla budskapet  nere på jorden.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-071 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  -  1  2  -  FÖRETAGSKULTUR  Demokväll  Visa upp lösningar, smarta grepp och sådant som  blev bra trots förutsättningarna.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-072 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  3  2  -  -  1  FÖRETAGSKULTUR  Beställarfika  Ett samtal med beställaren i mänsklig ton innan  nästa protokoll försöker döda stämningen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-073 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  4  -  -  2  -  FÖRETAGSKULTUR  Pitchfrukost  Du får träna på att sälja in en idé utan att låta som  en överladdad broschyr.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-074 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  1  1  -  -  4  FÖRETAGSKULTUR  Pausryck  Små rörelser ofta nog för att kroppen ska minnas  att den inte är kontorsmöbel.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-075 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  4  1  -  -  -  1  FÖRETAGSKULTUR  Stormprov  Vi övar när allt går snett, så färre börjar improvisera  med hög puls.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-076 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  4  1  -  -  1  FÖRETAGSKULTUR  Talteknik  Vi tränar röst, tempo och struktur så att budskapet  når ut även när alla tittar på mobilen.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-077 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  1  1  3  -  -  1  FÖRETAGSKULTUR  Korridorsamtal  En oplanerad stund vid kaffemaskinen där in -  formation glider mellan kollegor utan att behöva  kalenderbokning.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-078 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  3  2  1  -  -  -  FÖRETAGSKULTUR  Öppen dörr  En timme då hierarkin mjuknar och frågor får kom -  ma in utan skyddshjälm.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-079 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen
+KULTURAKTIVITET  GF
+STA   Stabilitet  KOM   Kommunikation  SAM   Samarbete  NOG   Noggrannhet  INN   Innovation  ABM   Arbetsmiljö  -  2  -  -  -  4  FÖRETAGSKULTUR  Tårthjälp  Livsviktig repetition toppad med fika, för kunskap  fastnar bättre med glasyr.  KULTURAKTIVITET  GF   GENOMFÖRANDE  KUL-080 KASTA KORTET NÄR DET SPELAS  använd för att hantera utmaningar under  genomförandefasen

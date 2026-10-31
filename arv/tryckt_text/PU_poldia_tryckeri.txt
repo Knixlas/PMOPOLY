@@ -1,0 +1,80 @@
+HÄNDELSEKORT  PU
+Grannprotester mot  buller  Kringboende klagar på vibrationer och buller  från pågående grannbyggen och vänder sig till  kommunen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst intäkt 1-4  +1 riskbuffert 20+  +1 kvalitetskrav 5-10  Ingen effekt 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P01
+HÄNDELSEKORT  PU
+Skärpta energikrav  Nya byggregler sätter strängare krav på primären -  ergital och U-värden i klimatskalet  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +2 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P02
+HÄNDELSEKORT  PU
+Försenad bygglovs -  handläggning  Stadsbyggnadskontoret har personalbrister och  handläggningstiden fördubblas  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Förlora 2 riskbuffertar 1-4  +2 riskbuffertar 20+  +1 tid 5-10  +1 tid 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P03
+HÄNDELSEKORT  PU
+Politisk oenighet om  detaljplan  Kommunfullmäktige kan inte enas om exploate -  ringsgrad i detaljplanen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +1 riskbuffert 20+  +1 hållbarhetskrav 5-10  +1 kvalitetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P04
+HÄNDELSEKORT  PU
+Tidningen granskar  fuktproblem  Lokaltidningen skriver om mögelskador i nybyggda  bostäder  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst intäkt 1-4  +2 riskbuffertar 20+  +1 kvalitetskrav och +1 hållbarhetskrav 5-10  +1 kvalitetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P05
+HÄNDELSEKORT  PU
+Mobilitetskrav  skärps  Kommunen kräver fler laddplatser för elbilar och  cykelparkering per lägenhet  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +1 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P06
+HÄNDELSEKORT  PU
+Brandkrav skärps  Nya brandskyddsregler kräver sprinkler i alla  trapphus  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Förlora 2 riskbuffertar 1-4  +1 riskbuffert 20+  +2 kvalitetskrav 5-10  +1 kvalitetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P07
+HÄNDELSEKORT  PU
+VA-kapacitet räcker  inte  Kommunens spillvattenledning klarar inte ytterliga -  re anslutningar  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst intäkt 1-4  +2 riskbuffertar 20+  +1 tid 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P08
+HÄNDELSEKORT  PU
+Bullerkrav vid för -  skola  Miljökontoret kräver extra ljudisolering enligt nya  byggregler mot trafikbuller  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +1 kvalitetskrav och +1 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P09
+HÄNDELSEKORT  PU
+Valår skapar osä -  kerhet  Nya majoriteten omprövar alla pågående markan -  visningsavtal  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +2 riskbuffertar 20+  +1 tid 5-10  +1 tid 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P10
+HÄNDELSEKORT  PU
+Krav på gröna tak  Kommunen inför krav på dagvattenhantering via  vegetationstak  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +2 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P11
+HÄNDELSEKORT  PU
+Brandinspektion  stoppar projekt  Brandmyndigheten underkänner brandcellsindel -  ningen i ritningarna  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Förlora 2 riskbuffertar 1-4  +2 riskbuffertar 20+  +1 kvalitetskrav 5-10  +1 kvalitetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P12
+HÄNDELSEKORT  PU
+Byggregler uppda -  teras  Nya byggregler skärper kraven på klimatdeklaration  och återbruk i alla nybyggen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +1 hållbarhetskrav 5-10  Ingen effekt 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P13
+HÄNDELSEKORT  PU
+Trafikverket ställer  nya krav  Trafikverket kräver ombyggd infart med signalregle -  ring och bullervall  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +1 riskbuffert 20+  +1 tid 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P14
+HÄNDELSEKORT  PU
+Fågeltrubbel  En häckande hackspett påverkar planeringen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst intäkt 1-4  +2 riskbuffertar 20+  +2 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P15
+HÄNDELSEKORT  PU
+Korruptionsskandal  i kommunen  Mark- och exploateringschefen misstänks för jäv  och pågående markanvisningar granskas på nytt  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +1 riskbuffert 20+  +1 tid 5-10  +1 tid 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P16
+HÄNDELSEKORT  PU
+Överklagad de -  taljplan  Sakägare överklagar detaljplanen till Mark- och  miljödomstolen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Förlora 2 riskbuffertar 1-4  +2 riskbuffertar 20+  +1 tid 5-10  +1 tid 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P17
+HÄNDELSEKORT  PU
+Återbrukskrav i  markanvisning  Kommunen för in andel återbrukat material som  villkor i nya markanvisningsavtal  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +1 riskbuffert 20+  +2 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P18
+HÄNDELSEKORT  PU
+Regional planänd -  ring  Länsstyrelsen flyttar beslutsmakt från kommunen  till regionalt organ  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med lägst  anskaffning  1-4  +2 riskbuffertar 20+  +1 tid 5-10  +1 tid 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P19
+HÄNDELSEKORT  PU
+CSRD och taxono -  mikrav  Nya EU-direktiv om hållbarhetsrapportering och  taxonomi påverkar finansieringen av projektet  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Lämna tillbaka projekt med högst BTA 1-4  +1 riskbuffert 20+  +2 hållbarhetskrav 5-10  +1 hållbarhetskrav 11-15  Ingen effekt 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   P20
+HÄNDELSEKORT  PU
+Workshop med refe -  rensgrupper  Synpunkter på planlösningar och materialval ökar  effektivitet och säljbarhet  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -2 kvalitetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D01
+HÄNDELSEKORT  PU
+Gestalt -  ningsworkshop  Arkitektteamet och beställaren samskapar fasadut -  tryck  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  +2 riskbuffertar 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D02
+HÄNDELSEKORT  PU
+Miljöcertifierings -  möte  Samarbete med SGBC om Miljöbyggnad Silvercer -  tifiering  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D03
+HÄNDELSEKORT  PU
+Teknikworkshop  med installatörerna  Genomgång av installationslösningar ökar effektivi -  teten i anläggningen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -1 tid 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D04
+HÄNDELSEKORT  PU
+Teknikworkshop  prefab  Genomgång av prefablösningar och toleranskrav  med leverantör  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  +2 riskbuffertar 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D05
+HÄNDELSEKORT  PU
+Bygglovsförmöte  Förhandsmöte med stadsbyggnadskontoret om  bygglovsfrågor  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -2 tid 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D06
+HÄNDELSEKORT  PU
+Informationskväll i  området  Öppet möte för grannar och närboende om bygg -  projektet  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D07
+HÄNDELSEKORT  PU
+Bankpresentation  Presentation av projekt och kalkyl för kreditkom -  mittén  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  +2 riskbuffertar 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D08
+HÄNDELSEKORT  PU
+Konstruktionsmöte  Teknisk genomgång med konstruktör om grundlägg -  ning och stomme  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D09
+HÄNDELSEKORT  PU
+Marknadsundersök -  ning bostäder  Analys av efterfrågan, prisnivåer och målgrupp i  området  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -1 kvalitetskrav 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D10
+HÄNDELSEKORT  PU
+Partneringworkshop  Gemensam målsättning och incitamentsmodell med  totalentreprenör  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  +2 riskbuffertar 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D11
+HÄNDELSEKORT  PU
+Kontrollplansmöte  med beställare  Kontroll- och inspektionsplangenomgång med alla  parter  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -2 kvalitetskrav 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D12
+HÄNDELSEKORT  PU
+Energiberäknings -  genomgång  Specialist granskar U-värden och köldbryggor mot  kravnivåer  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D13
+HÄNDELSEKORT  PU
+Tidplanegenomgång  Genomgång av huvudtidplan med kritisk linje, bygge -  tapper och leveranslogistik  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -2 kvalitetskrav 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D14
+HÄNDELSEKORT  PU
+Produktionsbered -  ning  Tvärfunktionell genomgång av arbetsmetoder och  logistik  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  +2 riskbuffertar 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D15
+HÄNDELSEKORT  PU
+Teknisk expertpanel  Branschexperter granskar projektets tekniska  lösningar  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -1 hållbarhetskrav 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D16
+HÄNDELSEKORT  PU
+LCA-workshop  Livscykelanalys av materialval och klimatpåverkan  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D17
+HÄNDELSEKORT  PU
+Kommunikations -  plan  Plan för dialog med grannar och media under  projektets utveckling  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 kvalitetskrav 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  +2 riskbuffertar 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D18
+HÄNDELSEKORT  PU
+Fastighetsvärdering  Oberoende värderare bedömer projektets mark -  nadsvärde  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  -1 hållbarhetskrav 1-4  Dra markanvisning om så önskas 20+  -1 hållbarhetskrav 5-10  -2 hållbarhetskrav 11-15  Byt projekt (samma typ) om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D19
+HÄNDELSEKORT  PU
+Lean-genomgång  Processanalys för att eliminera slöseri i produk -  tionen  HÄNDELSEKORT  PU   PROJEKTUTVECKLING  KONSEKVENSEN BLIR  Slå D20-TÄRNING, lägg till samlad erfarenhet  Ingen effekt 1-4  Dra markanvisning om så önskas 20+  -1 kvalitetskrav 5-10  -2 kvalitetskrav 11-15  Ta projekt från valfri hög, om så önskas 16-19  LÄS   -   SLÅ   -   LÖS   -   KASTA   D20

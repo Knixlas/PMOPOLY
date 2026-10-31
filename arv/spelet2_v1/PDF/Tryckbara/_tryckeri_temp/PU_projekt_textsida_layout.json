@@ -1,0 +1,593 @@
+{
+  "basnamn": "PU_projekt_textsida",
+  "storlek_namn": "88x146",
+  "card_w_mm": 88,
+  "card_h_mm": 146,
+  "spreads": [
+    {
+      "page": 1,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 9,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 10,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 11,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 12,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 13,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 14,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 15,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 16,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 17,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 18,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 19,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 20,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 21,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 22,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 23,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 24,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 25,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 26,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 27,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 28,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 29,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 30,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 31,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 32,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 33,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 34,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 35,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 36,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 37,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 38,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 39,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 40,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 41,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 42,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 43,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 44,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    },
+    {
+      "page": 45,
+      "page_w_mm": 88,
+      "page_h_mm": 146,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 88,
+          "h_mm": 146
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1868 @@
+{
+ "tomt": 16,
+ "grundmark": [
+  [
+   6,
+   6
+  ],
+  [
+   6,
+   7
+  ],
+  [
+   6,
+   8
+  ],
+  [
+   6,
+   9
+  ],
+  [
+   7,
+   6
+  ],
+  [
+   7,
+   7
+  ],
+  [
+   7,
+   8
+  ],
+  [
+   7,
+   9
+  ],
+  [
+   8,
+   6
+  ],
+  [
+   8,
+   7
+  ],
+  [
+   8,
+   8
+  ],
+  [
+   8,
+   9
+  ],
+  [
+   9,
+   6
+  ],
+  [
+   9,
+   7
+  ],
+  [
+   9,
+   8
+  ],
+  [
+   9,
+   9
+  ]
+ ],
+ "fargar": {
+  "MARK": {
+   "fyllning": "#91B542",
+   "ljus": "#e8f0d6"
+  },
+  "BRF": {
+   "fyllning": "#7a3835",
+   "ljus": "#f6e2dd"
+  },
+  "FÖRSKOLA": {
+   "fyllning": "#3f4a1f",
+   "ljus": "#e9ebd5"
+  },
+  "LOKAL": {
+   "fyllning": "#6e4a18",
+   "ljus": "#f1e3c6"
+  },
+  "KONTOR": {
+   "fyllning": "#363f4a",
+   "ljus": "#e0e5ea"
+  },
+  "HYRESRÄTT": {
+   "fyllning": "#6b5a2c",
+   "ljus": "#f1ead2"
+  }
+ },
+ "projekt": [
+  {
+   "id": "P1",
+   "namn": "BRF Eldningen",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/1.jpg"
+  },
+  {
+   "id": "P2",
+   "namn": "BRF Gläntan",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/2.jpg"
+  },
+  {
+   "id": "P3",
+   "namn": "BRF Horisonten",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/3.jpg"
+  },
+  {
+   "id": "P4",
+   "namn": "BRF Klinten",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/4.jpg"
+  },
+  {
+   "id": "P5",
+   "namn": "BRF Kornet",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/5.jpg"
+  },
+  {
+   "id": "P6",
+   "namn": "BRF Solrosen",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/6.jpg"
+  },
+  {
+   "id": "P7",
+   "namn": "BRF Speglingen",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/7.jpg"
+  },
+  {
+   "id": "P8",
+   "namn": "BRF Stigen",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/8.jpg"
+  },
+  {
+   "id": "P9",
+   "namn": "BRF Valvet",
+   "typ": "BRF",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     3
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/9.jpg"
+  },
+  {
+   "id": "P10",
+   "namn": "Förskolan Draklyan",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/10.jpg"
+  },
+  {
+   "id": "P11",
+   "namn": "Förskolan Kullerbyttan",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/11.jpg"
+  },
+  {
+   "id": "P12",
+   "namn": "Förskolan Nyckelpigan",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/12.jpg"
+  },
+  {
+   "id": "P13",
+   "namn": "Förskolan Regnbågen",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/13.jpg"
+  },
+  {
+   "id": "P14",
+   "namn": "Förskolan Skattkistan",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/14.jpg"
+  },
+  {
+   "id": "P15",
+   "namn": "Förskolan Smultronstället",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/15.jpg"
+  },
+  {
+   "id": "P16",
+   "namn": "Förskolan Stjärnfröet",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/16.jpg"
+  },
+  {
+   "id": "P17",
+   "namn": "Förskolan Trollskogen",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/17.jpg"
+  },
+  {
+   "id": "P18",
+   "namn": "Förskolan Tussilagon",
+   "typ": "FÖRSKOLA",
+   "form": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/18.jpg"
+  },
+  {
+   "id": "P19",
+   "namn": "Lokalen Bonden",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/19.jpg"
+  },
+  {
+   "id": "P20",
+   "namn": "Lokalen Drottningen",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/20.jpg"
+  },
+  {
+   "id": "P21",
+   "namn": "Lokalen Gambiten",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/21.jpg"
+  },
+  {
+   "id": "P22",
+   "namn": "Lokalen Kungen",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/22.jpg"
+  },
+  {
+   "id": "P23",
+   "namn": "Lokalen Löparen",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/23.jpg"
+  },
+  {
+   "id": "P24",
+   "namn": "Lokalen Motdraget",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/24.jpg"
+  },
+  {
+   "id": "P25",
+   "namn": "Lokalen Rokaden",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bta": 500,
+   "bild": "bilder/25.jpg"
+  },
+  {
+   "id": "P26",
+   "namn": "Lokalen Springaren",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/26.jpg"
+  },
+  {
+   "id": "P27",
+   "namn": "Lokalen Tornet",
+   "typ": "LOKAL",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/27.jpg"
+  },
+  {
+   "id": "P28",
+   "namn": "Kontoret Galaxen",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bta": 1000,
+   "bild": "bilder/28.jpg"
+  },
+  {
+   "id": "P29",
+   "namn": "Kontoret Fyrtornet",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/29.jpg"
+  },
+  {
+   "id": "P30",
+   "namn": "Kontoret Bastionen",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/30.jpg"
+  },
+  {
+   "id": "P31",
+   "namn": "Kontoret Nebulosan",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/31.jpg"
+  },
+  {
+   "id": "P32",
+   "namn": "Kontoret Kvadranten",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/32.jpg"
+  },
+  {
+   "id": "P33",
+   "namn": "Kontoret Kometbanan",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/33.jpg"
+  },
+  {
+   "id": "P34",
+   "namn": "Kontoret Stjärnhamnen",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/34.jpg"
+  },
+  {
+   "id": "P35",
+   "namn": "Kontoret Rymdaxeln",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     3,
+     3
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/35.jpg"
+  },
+  {
+   "id": "P36",
+   "namn": "Kontoret Observatoriet",
+   "typ": "KONTOR",
+   "form": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     3,
+     3
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/36.jpg"
+  },
+  {
+   "id": "P37",
+   "namn": "Hyresrätt Hamnskiftet",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/37.jpg"
+  },
+  {
+   "id": "P38",
+   "namn": "Hyresrätt Fågelsången",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/38.jpg"
+  },
+  {
+   "id": "P39",
+   "namn": "Hyresrätt Bergsluttningen",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/39.jpg"
+  },
+  {
+   "id": "P40",
+   "namn": "Hyresrätt Rosenlunden",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/40.jpg"
+  },
+  {
+   "id": "P41",
+   "namn": "Hyresrätt Lövängen",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "bta": 1250,
+   "bild": "bilder/41.jpg"
+  },
+  {
+   "id": "P42",
+   "namn": "Hyresrätt Kvarnbacken",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ]
+   ],
+   "bta": 1500,
+   "bild": "bilder/42.jpg"
+  },
+  {
+   "id": "P43",
+   "namn": "Hyresrätt Åkanten",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bta": 750,
+   "bild": "bilder/43.jpg"
+  },
+  {
+   "id": "P44",
+   "namn": "Hyresrätt Stenbrynet",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     3,
+     3
+    ]
+   ],
+   "bta": 2000,
+   "bild": "bilder/44.jpg"
+  },
+  {
+   "id": "P45",
+   "namn": "Hyresrätt Sjöglimten",
+   "typ": "HYRESRÄTT",
+   "form": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "bta": 1750,
+   "bild": "bilder/45.jpg"
+  }
+ ],
+ "markexpansioner": [
+  {
+   "id": "M1",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bya": 500
+  },
+  {
+   "id": "M2",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M3",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M4",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M5",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M6",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bya": 1250
+  },
+  {
+   "id": "M7",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "bya": 500
+  },
+  {
+   "id": "M8",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M9",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M10",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M11",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M12",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M13",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M14",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bya": 750
+  },
+  {
+   "id": "M15",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "bya": 1000
+  },
+  {
+   "id": "M16",
+   "namn": "Markexpansion",
+   "typ": "MARK",
+   "form": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "bya": 1250
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+{
+  "storlek_namn": "88x88",
+  "card_w_mm": 88,
+  "card_h_mm": 88,
+  "rot": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\",
+  "tryck_mapp": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\",
+  "poster": [
+    {
+      "basnamn": "GF_faskort_bildsida",
+      "stem": "GF_faskort",
+      "sida_typ": "bild",
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\GF_faskort_bildsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\GF_faskort_bildsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\GF_faskort_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\3. Genomförande\\GF_faskort.csv",
+      "fas_prefix": "GF_"
+    },
+    {
+      "basnamn": "GF_faskort_textsida",
+      "stem": "GF_faskort",
+      "sida_typ": "text",
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\GF_faskort_textsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\GF_faskort_textsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\GF_faskort_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\3. Genomförande\\GF_faskort.csv",
+      "fas_prefix": "GF_"
+    }
+  ]
+}

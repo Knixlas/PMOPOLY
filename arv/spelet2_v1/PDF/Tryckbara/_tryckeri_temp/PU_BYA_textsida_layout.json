@@ -1,0 +1,60 @@
+{
+  "basnamn": "PU_BYA_textsida",
+  "storlek_namn": "58x88",
+  "card_w_mm": 58,
+  "card_h_mm": 88,
+  "spreads": [
+    {
+      "page": 1,
+      "page_w_mm": 58,
+      "page_h_mm": 88,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 58,
+          "h_mm": 88
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "page_w_mm": 58,
+      "page_h_mm": 88,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 58,
+          "h_mm": 88
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "page_w_mm": 58,
+      "page_h_mm": 88,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 58,
+          "h_mm": 88
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "page_w_mm": 58,
+      "page_h_mm": 88,
+      "cards": [
+        {
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 58,
+          "h_mm": 88
+        }
+      ]
+    }
+  ]
+}

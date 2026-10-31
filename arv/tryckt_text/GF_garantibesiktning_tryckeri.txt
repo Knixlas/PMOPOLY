@@ -1,0 +1,88 @@
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Garantianmärkningar på grund av forcerat slutskede  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T1  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Skador från övertid och tidspress  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T2  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  Bristfällig egenkontroll på grund av tidspress  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T3  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Ventilation ej injusterad korrekt  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T4  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Eftersatt kontroll av arbeten  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T5  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Leveransförseningar skapar felmontage  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T6  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Bristande samordning mot slutet  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T7  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  Slarv vid slutbesiktning  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T8  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Otillräcklig provning  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T9  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Garantikrav från forcerade moment  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T10  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -15 Mkr 1-9  -3 Mkr  -10 Mkr 10-17  -6 Mkr 18-24  KVALITETSBRIST  Systematiska fel kräver totalrenovering  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_T_K  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Sprickor i gipsväggar vid dörrkarmar  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q1  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Kakelfogar spricker i badrum  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q2  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  Parkettgolv bucklar vid trösklar  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q3  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Fönsterbänkar monterade snett  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q4  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Missfärgning på fasadskivor  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q5  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Dörrjustering behövs i alla trapphus  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q6  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Listning lossnar vid innerdörrar  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q7  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Målning ojämn i trapphall  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q8  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  Eluttag sitter snett i kök  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q9  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Balkonginglasning med repor  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q10  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -18 Mkr 1-9  -4 Mkr  -12 Mkr 10-17  -7 Mkr 18-24  KVALITETSBRIST  Dolt fuktskadefel, samtliga lägenheter berörs  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_Q_K  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Köldbryggor vid balkonginfästning  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H1  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Fönster läcker luft vid karmanslutning  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H2  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Ventilationsaggregat bullrar för högt  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H3  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Värmeåtervinning underpresterar  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H4  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Radonsystem inte verifierat  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H5  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Fuktspärr i krypgrund bristfällig  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H6  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Energideklaration visar sämre klass  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H7  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Täthetsprovning underkänd i trapphus  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H8  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Avfallshantering bristfällig  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H9  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Eftersatt underhåll av grönytor  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H10  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -20 Mkr 1-9  -5 Mkr  -14 Mkr 10-17  -8 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Radon och PCB kräver sanering av hela byggnaden  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_H_K  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Värmepump ger lägre COP än avtalat  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK1  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Isolering saknas bakom radiatornisch  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK2  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  FTX-filter av fel typ monterat  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK3  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Termostat i golvvärme felkalibrerad  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK4  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  Ingen effekt  -3 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Driftkostnad överstiger energiberäkning  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK5  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Solceller producerar under prognos  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK6  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  KVALITETSBRIST  Belysningsstyrning fungerar ej i garage  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK7  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -3 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Varmvattenberedare underdimensionerad  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK8  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -4 Mkr 1-9  Ingen effekt  -2 Mkr 10-17  -1 Mkr 18-24  KVALITETSBRIST  Frånluftsdon i kök ger fel flöde  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK9  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -5 Mkr 1-9  -1 Mkr  -3 Mkr 10-17  -2 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Fönster med U-värde sämre än spec  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK10  Slå D20 + erfarenhet  25+
+GARANTI  GF
+KONSEKVENSEN BLIR  -16 Mkr 1-9  -3 Mkr  -11 Mkr 10-17  -6 Mkr 18-24  HÅLLBARHETSAVVIKELSE  Energideklaration underkänd, ombyggnad krävs  GARANTIAVSÄTTNING  GF   GENOMFÖRANDE  LÄS   -   SLÅ   -   KASTA   G_EK_K  Slå D20 + erfarenhet  25+

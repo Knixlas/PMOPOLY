@@ -1,0 +1,8 @@
+BTA MINNESKORT  DIN TOTALA BTA  BEHÅLL KORTET SOM REFERENS  Summera   BTA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS bruttototalarea  B A   5001-7000 kvm 500-5000 kvm  C   7001-9000 kvm   D   >9000 kvm  A
+BTA  Klass A
+BTA MINNESKORT  DIN TOTALA BTA  BEHÅLL KORTET SOM REFERENS  Summera   BTA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS bruttototalarea  B A   5001-7000 kvm 500-5000 kvm  C   7001-9000 kvm   D   >9000 kvm  B
+BTA  Klass B
+BTA MINNESKORT  DIN TOTALA BTA  BEHÅLL KORTET SOM REFERENS  Summera   BTA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS bruttototalarea  B A   5001-7000 kvm 500-5000 kvm  C   7001-9000 kvm   D   >9000 kvm  C
+BTA  Klass C
+BTA MINNESKORT  DIN TOTALA BTA  BEHÅLL KORTET SOM REFERENS  Summera   BTA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS bruttototalarea  B A   5001-7000 kvm 500-5000 kvm  C   7001-9000 kvm   D   >9000 kvm  D
+BTA  Klass D
