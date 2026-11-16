@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Åkepol – Blixt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --paper: #F1E8D6; --paper-deep: #E6D9BD; --bg-card: #FAF6EC;
+    --ink: #1A1410; --ink-mid: #544A3F; --line: #B8A890;
+    --burgundy: #6B1815; --success: #4D5E22; --success-bg: #EEF4E3; --danger-bg: #F6E2DF;
+    --pu: #7A4F20; --pu-bg: #F6E7D2; --pl: #0F3D5C; --pl-bg: #DCEAF3; --gf: #4D5E22; --gf-bg: #EEF4E3; --f: #6B1815; --f-bg: #F6E2DF;
+    --font-serif: 'Source Serif 4', Cambria, 'Times New Roman', serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font-serif); background: var(--paper); color: var(--ink); display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; line-height: 1.4; overflow: hidden; }
+button { font-family: inherit; cursor: pointer; color: inherit; }
+.mono { font-family: var(--font-mono); }
+
+header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px clamp(16px, 3vw, 32px); background: var(--bg-card); border-bottom: 1px solid var(--line); }
+.marke { display: flex; align-items: baseline; gap: 12px; }
+.marke b { font-size: 1.7rem; font-weight: 700; color: var(--burgundy); letter-spacing: -.01em; }
+.marke span { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-mid); }
+.skeden { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.skeden span { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; padding: 6px 12px; border-radius: 99px; color: var(--ink-mid); box-shadow: inset 0 0 0 1.5px var(--line); white-space: nowrap; }
+.skeden span.klar { box-shadow: none; background: var(--c-bg); color: var(--c); }
+.skeden span.nu { box-shadow: none; background: var(--c); color: #fff; }
+
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(360px, 36vw, 480px); }
+#scen { min-height: 0; display: flex; flex-direction: column; padding: 8px clamp(12px, 2vw, 24px) 16px; gap: 10px; }
+#diorama { flex: 1; min-height: 0; }
+#matare { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.mat { background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mat .n { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat .v { font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; white-space: nowrap; }
+.mat .u { font-size: .8rem; color: var(--ink-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat .u.ok { color: var(--success); font-weight: 700; } .mat .u.fel, .mat .v.fel { color: var(--burgundy); } .mat .u.fel { font-weight: 700; }
+.mat.blink { animation: blink .7s ease-out; }
+@keyframes blink { from { background: var(--paper-deep); transform: translateY(-3px); } to { background: var(--bg-card); transform: none; } }
+
+#panel { background: var(--bg-card); border-left: 1px solid var(--line); padding: clamp(18px, 2.4vw, 32px); display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; }
+.kicker { align-self: flex-start; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; padding: 5px 12px; border-radius: 99px; background: var(--c-bg, var(--paper-deep)); color: var(--c, var(--ink-mid)); }
+.kort { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mid); }
+h1 { font-size: clamp(2rem, 3.6vw, 3.1rem); line-height: 1.04; letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
+h2 { font-size: clamp(1.5rem, 2.5vw, 2.2rem); line-height: 1.08; letter-spacing: -.01em; font-weight: 700; text-wrap: balance; }
+p.ingress { font-size: 1.12rem; color: var(--ink-mid); }
+p.text { font-size: 1.05rem; }
+.fyll { flex: 1; min-height: 8px; }
+.val { display: flex; flex-direction: column; gap: 12px; }
+.alt { min-height: 96px; text-align: left; padding: 14px 18px; border: 2px solid var(--ink); border-radius: 12px; background: #fff; display: flex; flex-direction: column; justify-content: center; gap: 4px; transition: background .12s, border-color .12s, transform .12s; }
+.alt:hover, .alt:focus-visible { background: var(--paper); border-color: var(--burgundy); }
+.alt:active { transform: scale(.985); }
+.alt b { font-size: 1.2rem; line-height: 1.2; }
+.alt span { font-size: 1rem; color: var(--ink-mid); }
+.knapp { min-height: 68px; border: none; border-radius: 12px; background: var(--ink); color: #fff; font-size: 1.25rem; font-weight: 700; padding: 0 20px; transition: background .12s; }
+.knapp:hover, .knapp:focus-visible { background: var(--burgundy); }
+.knapp.rod { background: var(--burgundy); } .knapp.rod:hover { background: var(--ink); }
+.knapp.ljus { background: #fff; color: var(--ink); border: 2px solid var(--ink); min-height: 56px; font-size: 1.05rem; } .knapp.ljus:hover { background: var(--paper); }
+.band { display: flex; flex-direction: column; gap: 6px; }
+.rad { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: .98rem; }
+.rad b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rad.traff { background: var(--ink); color: var(--bg-card); }
+.tarning { display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: var(--ink); border-radius: 12px; color: var(--bg-card); }
+.tarning .d20 { width: 84px; height: 84px; flex: none; border-radius: 16px; background: var(--bg-card); color: var(--ink); font-size: 2.6rem; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+.tarning .d20.rullar { animation: rulla .12s linear infinite; }
+@keyframes rulla { 0% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } 100% { transform: rotate(-7deg); } }
+.tarning .sum { font-family: var(--font-mono); font-size: .82rem; color: var(--paper-deep); }
+.tarning .utfall { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: .78rem; font-weight: 600; padding: 5px 11px; border-radius: 8px; background: var(--danger-bg); color: var(--burgundy); }
+.chip.bra { background: var(--success-bg); color: var(--success); }
+.citat { padding: 12px 16px; background: var(--paper); border-radius: 10px; font-style: italic; color: var(--ink-mid); }
+.slutrad { display: flex; gap: 12px; align-items: stretch; }
+.qr { width: 84px; flex: none; border: 2px dashed var(--ink-mid); border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--font-mono); font-size: .62rem; font-weight: 600; color: var(--ink-mid); padding: 4px; }
+.qr img { width: 100%; height: 100%; object-fit: contain; }
+.fel { color: var(--burgundy); font-family: var(--font-mono); font-size: .85rem; }
+
+@media (max-width: 860px), (orientation: portrait) {
+    body { overflow: auto; }
+    main { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+    #scen { padding-bottom: 10px; }
+    #diorama { flex: none; height: 38vh; min-height: 220px; }
+    #matare { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    #matare .mat:nth-child(n+4) { display: none; }
+    #panel { border-left: none; border-top: 1px solid var(--line); overflow: visible; min-height: 52vh; }
+    .skeden span:not(.nu) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .mat.blink, .tarning .d20.rullar { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+    <div class="marke"><b>Åkepol</b><span>Blixt</span></div>
+    <div class="skeden" id="skeden"></div>
+</header>
+<main>
+    <section id="scen">
+        <div id="diorama" role="img" aria-label="Kvarteret i 3D. Det växer fram skede för skede."></div>
+        <div id="matare"></div>
+    </section>
+    <aside id="panel" aria-live="polite"></aside>
+</main>
+<script type="module" src="/js/blixt.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ from room_manager import RoomManager
 from ws_handler import manager, handle_ws_message
 from companion import companion_manager
 from kvarteret import kvarteret_manager
+from blixt import blixt_kort
 
 
 # Global state
@@ -156,6 +157,7 @@ class NoCacheStaticFiles(StaticFiles):
 app.mount("/css", NoCacheStaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
 app.mount("/js", NoCacheStaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
 app.mount("/img", StaticFiles(directory=os.path.join(FRONTEND_DIR, "img")), name="img")
+app.mount("/vendor", StaticFiles(directory=os.path.join(FRONTEND_DIR, "vendor")), name="vendor")
 
 
 @app.get("/")
@@ -763,6 +765,19 @@ async def kvarteret_ws(ws: WebSocket, code: str, player_id: str):
         import traceback
         traceback.print_exc()
         kvarteret_manager.disconnect(code, player_id, ws)
+
+
+# ── Blixt (mässversionen: ett kvarter på tre minuter, körs i webbläsaren) ──
+
+@app.get("/blixt")
+async def blixt_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "blixt.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+
+@app.get("/api/blixt/kort")
+async def blixt_data():
+    return blixt_kort(game_data)
 
 
 @app.get("/health")
