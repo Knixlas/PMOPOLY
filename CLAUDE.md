@@ -41,9 +41,11 @@ Det finns ingen testsvit eller linter. Innan du kallar arbetet klart:
 
 1. Starta servern (ovan) och kontrollera att datan laddas utan fel och att `/health` svarar `{"status":"ok"}`.
 2. Vid ändringar i `data/companion_texts.json` eller prompt-flödet: `python tools/validate_prompts.py` ska ge `0 fel`.
-3. Vid ändringar i `kvarteret.py`, `staden.py` eller `blixt.py`: `python tools/provspela.py` spelar Kvarteret, Kampanj
+3. Spelens pekare till Åkepedia (dokument, nummer och rubrik, aldrig standardens text) kontrolleras med
+   `python tools/validera_pekare.py <sökväg till akepedia/standard>` och ska ge `0 fel`.
+4. Vid ändringar i `kvarteret.py`, `staden.py` eller `blixt.py`: `python tools/provspela.py` spelar Kvarteret, Kampanj
    och Staden från start till slut med datorbolag och ska sluta med `Klart: inga krascher.`
-4. Vid ändringar i spelmotorn: kör det berörda flödet, t.ex. via `tools/stresstest_companion.py`
+5. Vid ändringar i spelmotorn: kör det berörda flödet, t.ex. via `tools/stresstest_companion.py`
    eller `test_phase4.py` (obs: `test_phase4.py` har hårdkodade Windows-sökvägar `C:\PMOPOLY` som måste
    justeras för att köras i Linux).
 

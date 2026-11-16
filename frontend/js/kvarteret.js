@@ -608,6 +608,14 @@ function renderAside() {
     renderDiorama();
     $("mentor").hidden = !S.mentor;
     if (S.mentor) $("mentor").innerHTML = `<div class="kicker">Mentorn</div><p>${esc(S.mentor)}</p>`;
+    // Så gör vi på riktigt: pekare till Åkepedia. Länkas om servern känner till Åkepedias adress.
+    const pek = S.pa_riktigt || [];
+    $("pa-riktigt").hidden = !pek.length;
+    if (pek.length) $("pa-riktigt").innerHTML = `<div class="kicker">Så gör vi på riktigt · Åkepedia</div><ul>${pek.map((p) => {
+        const var_ = p.nr || `kap. ${p.kapitel}`;
+        const dok = S.akepedia_bas ? `<a href="${esc(S.akepedia_bas)}/standard/${esc(p.typ)}" target="_blank" rel="noopener">${esc(p.dokument)}</a>` : esc(p.dokument);
+        return `<li><b>${esc(p.rubrik)}</b><span>${dok} · ${esc(var_)}</span></li>`;
+    }).join("")}</ul>`;
     if (!me || S.step === "lobby") { $("aside").innerHTML = ""; return; }
     let html = `<div class="card"><div class="row"><span class="chip"><span class="dot" style="background:${me.color}"></span>${esc(me.name)}</span></div>`;
     if (S.del === 1) {

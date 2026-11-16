@@ -98,7 +98,7 @@ function rita() {
     const grenar = Object.entries(V.kunskap).map(([id, g]) => {
         const niva = jag.kunskap_niva[id], pris = (niva + 1) * V.kunskap_pris, full = niva >= V.kunskap_max;
         return `<div class="kortet gren"><h3>${esc(g.namn)}<span class="prickar" aria-label="Nivå ${niva} av ${V.kunskap_max}">${Array.from({ length: V.kunskap_max }, (_, i) => `<i class="${i < niva ? "pa" : ""}"></i>`).join("")}</span></h3>
-            <small>${esc(g.ger)} per nivå</small>
+            <small>${esc(g.ger)} per nivå${g.akepedia?.length ? `<br><span class="mono" style="font-size:.66rem;color:var(--dov)">Åkepedia: ${esc(g.akepedia.join(", "))}</span>` : ""}</small>
             <button class="btn" data-gren="${id}" ${full || V.pagar || jag.lardomar < pris ? "disabled" : ""}>${full ? "Full" : `${pris} lärd.`}</button></div>`;
     }).join("");
     $("vanster").innerHTML = `<span class="kicker">Ditt bolag</span>

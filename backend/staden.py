@@ -40,12 +40,16 @@ LARDOMAR_PER_KVARTER = 3
 LARDOMAR_ALLA_KRAV = 2          # extra när inget steg på tid, kvalitet eller hållbarhet missades
 KUNSKAP_MAX = 3
 KUNSKAP_PRIS = 3                # lärdomar per nivå: nivå n kostar n × priset
-# Vad varje nivå i en gren ger bolaget i alla kommande kvarter
+# Vad varje nivå i en gren ger bolaget i alla kommande kvarter. "akepedia" pekar på de dokument
+# i Åkepedia som grenen motsvarar (bara namn och version; upphandling har ingen motsvarighet där).
 KUNSKAP = {
-    "projektering": {"namn": "Projektering", "ger": "+1 hållbarhet från start", "arv": {"h": 1}},
+    "projektering": {"namn": "Projektering", "ger": "+1 hållbarhet från start", "arv": {"h": 1},
+                     "akepedia": [{"dokument": "Projekteringsanvisningar PH", "typ": "projekteringsanvisning-ph", "version": "2026.01"}, {"dokument": "Projektera med omtanke", "typ": "projektera-med-omtanke", "version": "2023.01"}, {"dokument": "Handlingsutformning", "typ": "handlingsutformning", "version": "2026.02"}, {"dokument": "BIM Execution Plan (BEP)", "typ": "bep", "version": "2026.01"}]},
     "upphandling":  {"namn": "Upphandling", "ger": "+1 erfarenhet på alla slag", "arv": {"erf": 1}},
-    "produktion":   {"namn": "Produktion", "ger": "+1 riskbuffert från start", "arv": {"rb": 1}},
-    "forvaltning":  {"namn": "Förvaltning", "ger": "+1 på förhandling och energislag", "arv": {"forh": 1, "energi": 1}},
+    "produktion":   {"namn": "Produktion", "ger": "+1 riskbuffert från start", "arv": {"rb": 1},
+                     "akepedia": [{"dokument": "Svanen valda (P) poäng", "typ": "svanen", "version": "2025.01"}, {"dokument": "Anvisning – Märkning och skyltning av installationer", "typ": "anvisning-markning", "version": "2023.1"}]},
+    "forvaltning":  {"namn": "Förvaltning", "ger": "+1 på förhandling och energislag", "arv": {"forh": 1, "energi": 1},
+                     "akepedia": [{"dokument": "Projekteringsanvisning Mätning", "typ": "projekteringsanvisning-matning", "version": "2025.01"}]},
 }
 
 # Kartan: 6 × 5 platser. K = kvarter, v = vatten, p = park, s/S = befintlig stad (låg/hög)
@@ -301,7 +305,8 @@ class Stad:
             "kolumner": KOLUMNER, "platser": platser,
             "stallning": sorted((offentlig(b) for b in self.bolag), key=lambda b: -b["poang"]),
             "handelser": self.handelser[-8:],
-            "kunskap": {g: {"namn": v["namn"], "ger": v["ger"]} for g, v in KUNSKAP.items()},
+            "kunskap": {g: {"namn": v["namn"], "ger": v["ger"],
+                            "akepedia": [p["dokument"] for p in v.get("akepedia", [])]} for g, v in KUNSKAP.items()},
             "kunskap_max": KUNSKAP_MAX, "kunskap_pris": KUNSKAP_PRIS,
             "jag": None,
         }

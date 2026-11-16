@@ -21,6 +21,12 @@ GARANTIKORT = "Ventilation ej injusterad korrekt"
 ANBUD = {"billig": 1, "erfaren": 3}        # leverantörsnivå för mark och stomme
 ANBUD_SLOTS = ("MARK", "STOMME")
 
+# Pekare till Åkepedia: dokument och nummer, aldrig standardens text.
+# Kontrolleras mot Åkepedias standard med tools/validera_pekare.py.
+AKEPEDIA = {
+    "skiss": {"dokument": "Projekteringsanvisningar PH", "typ": "projekteringsanvisning-ph", "version": "2026.01", "nr": "PH.4.1.2"},
+}
+
 REGLER = {
     "q_start": 1, "h_start": 0,            # övriga upphandlingar, lika för alla
     "q_krav": 2, "h_krav": 2,
@@ -73,6 +79,7 @@ def blixt_kort(gd) -> dict:
     budget = proj.anskaffning - MARK_TOMT_KOSTNAD - proj.kostnad - REGLER["ovrigt"]
     return {
         "regler": {**REGLER, "budget": budget},
+        "akepedia": AKEPEDIA,
         "projekt": {"namn": proj.namn, "typ": proj.typ, "bta": proj.bta, "rutor": max(1, proj.bta // 250),
                     "anskaffning": proj.anskaffning, "utveckling": proj.kostnad, "mark": MARK_TOMT_KOSTNAD},
         "handelse": {"nr": handelse.nr, "rubrik": handelse.rubrik, "text": handelse.text,

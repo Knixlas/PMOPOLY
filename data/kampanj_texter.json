@@ -1,5 +1,5 @@
 {
-  "_om": "Mentorns texter i Åkepol Kampanj. Nyckeln är stegets namn i kvarteret.py, eller steg:runda för en viss runda. 'pa_riktigt' är pekare från spelets steg till företagets egna underlag (etikett och länk). Den är tom här: pekarna läggs in från jobbkontot.",
+  "_om": "Mentorns texter i Åkepol Kampanj. Nyckeln är stegets namn i kvarteret.py, eller steg:runda för en viss runda. 'pa_riktigt' är pekare från spelets steg till Åkepedia: dokument, version, nummer och rubrik, aldrig standardens text. Kontrollera dem mot Åkepedias standard med tools/validera_pekare.py när standarden får en ny version.",
   "steg": {
     "intro1": "Välkommen. Jag är din mentor genom kampanjen. Du leder ett dotterbolag som ska utveckla, bygga och förvalta ett kvarter i staden Åkepol. Här finns ingen klocka. Läs, tänk efter, och fråga dig inför varje beslut vad det kostar om det går dåligt.",
     "pc": "Projektchefen följer med genom hela skede 1. Titta på motståndet: nämndbonus gör nämnden lättare, och lindring tar udden av politikkorten. Riskbuffertarna är omslag som du får nytta av längre fram.",
@@ -31,5 +31,339 @@
     "kvartal_res": "Omvärldskortet träffar alla bolag lika. Skillnaden ligger i vem som hade marginal när det kom.",
     "final": "Titta på dina dyraste missar. De flesta började tidigt: ett projekt för mycket, en leverantör för billig, en riskbuffert för lite. Så är det i riktiga projekt också."
   },
-  "pa_riktigt": {}
+  "pa_riktigt": {
+    "p1": [
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.1.1",
+        "rubrik": "Projektmål"
+      },
+      {
+        "dokument": "Projektera med omtanke",
+        "typ": "projektera-med-omtanke",
+        "version": "2023.01",
+        "nr": "PMO.2.1",
+        "rubrik": "Mål i projektet"
+      }
+    ],
+    "intro2": [
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "nr": "HU.1.2",
+        "rubrik": "Olika skeden"
+      }
+    ],
+    "ac": [
+      {
+        "dokument": "BIM Execution Plan (BEP)",
+        "typ": "bep",
+        "version": "2026.01",
+        "nr": "BEP.2.2",
+        "rubrik": "BIM-organisation och kontaktuppgifter"
+      }
+    ],
+    "upph:1": [
+      {
+        "dokument": "BIM Execution Plan (BEP)",
+        "typ": "bep",
+        "version": "2026.01",
+        "nr": "BEP.2.1",
+        "rubrik": "BIM-mål – projektspecifika"
+      },
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "nr": "HU.22.1",
+        "rubrik": "Detaljnivåer i modellens olika skeden"
+      }
+    ],
+    "upph:2": [
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.8.1",
+        "rubrik": "Mark"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.6",
+        "rubrik": "Fasad"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.9",
+        "rubrik": "Yttertak"
+      },
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "kapitel": 4,
+        "rubrik": "Handlingsmatris – Konstruktion prefab"
+      }
+    ],
+    "upph:3": [
+      {
+        "dokument": "Typrumsbeskrivning",
+        "typ": "typrumsbeskrivning",
+        "version": "2025.01",
+        "kapitel": 5,
+        "rubrik": "Lägenheter"
+      },
+      {
+        "dokument": "Projekteringsanvisning VS",
+        "typ": "projekteringsanvisning-vs",
+        "version": "2023.02",
+        "kapitel": 3,
+        "rubrik": "VÄRME, TAPPVATTEN OCH AVLOPSSYSTEM"
+      },
+      {
+        "dokument": "Projekteringsanvisning Ventilation",
+        "typ": "projekteringsanvisning-ventilation",
+        "version": "2023.02",
+        "kapitel": 3,
+        "rubrik": "VVS-SYSTEM"
+      },
+      {
+        "dokument": "Projekteringsanvisning El och tele",
+        "typ": "projekteringsanvisning-el",
+        "version": "2023.02",
+        "kapitel": 4,
+        "rubrik": "Elkraftsystem"
+      }
+    ],
+    "fas:1": [
+      {
+        "dokument": "Svanen valda (P) poäng",
+        "typ": "svanen",
+        "version": "2025.01",
+        "nr": "SV.3.2",
+        "rubrik": "P9 Bränslebegränsingar på byggarbetsplatsen"
+      },
+      {
+        "dokument": "Svanen valda (P) poäng",
+        "typ": "svanen",
+        "version": "2025.01",
+        "nr": "SV.3.4",
+        "rubrik": "P12 Optimering av byggavfall"
+      }
+    ],
+    "fas:2": [
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.8.1",
+        "rubrik": "Mark"
+      },
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "kapitel": 10,
+        "rubrik": "Handlingsmatris – Geoteknik"
+      },
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "kapitel": 6,
+        "rubrik": "Handlingsmatris – VA med mera i mark utanför hus"
+      }
+    ],
+    "fas:3": [
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "kapitel": 3,
+        "rubrik": "Handlingsmatris – Konstruktion"
+      },
+      {
+        "dokument": "Handlingsutformning",
+        "typ": "handlingsutformning",
+        "version": "2026.02",
+        "kapitel": 4,
+        "rubrik": "Handlingsmatris – Konstruktion prefab"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.3",
+        "rubrik": "Bjälklag"
+      }
+    ],
+    "fas:4": [
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.6",
+        "rubrik": "Fasad"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.7",
+        "rubrik": "Öppningskomplettering"
+      },
+      {
+        "dokument": "Projektera med omtanke",
+        "typ": "projektera-med-omtanke",
+        "version": "2023.01",
+        "nr": "PMO.3.3",
+        "rubrik": "Formfaktor och glasandel"
+      }
+    ],
+    "fas:5": [
+      {
+        "dokument": "Projekteringsanvisning VS",
+        "typ": "projekteringsanvisning-vs",
+        "version": "2023.02",
+        "kapitel": 3,
+        "rubrik": "VÄRME, TAPPVATTEN OCH AVLOPSSYSTEM"
+      },
+      {
+        "dokument": "Projekteringsanvisning Ventilation",
+        "typ": "projekteringsanvisning-ventilation",
+        "version": "2023.02",
+        "kapitel": 3,
+        "rubrik": "VVS-SYSTEM"
+      },
+      {
+        "dokument": "Projekteringsanvisning El och tele",
+        "typ": "projekteringsanvisning-el",
+        "version": "2023.02",
+        "kapitel": 4,
+        "rubrik": "Elkraftsystem"
+      },
+      {
+        "dokument": "Anvisning – Märkning och skyltning av installationer",
+        "typ": "anvisning-markning",
+        "version": "2023.1",
+        "nr": "MÄRK.1.1",
+        "rubrik": "Allmänt"
+      }
+    ],
+    "fas:6": [
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.4.5",
+        "rubrik": "Väggar"
+      },
+      {
+        "dokument": "Typrumsbeskrivning",
+        "typ": "typrumsbeskrivning",
+        "version": "2025.01",
+        "nr": "TYP.3.4",
+        "rubrik": "Vägg"
+      }
+    ],
+    "fas:7": [
+      {
+        "dokument": "Typrumsbeskrivning",
+        "typ": "typrumsbeskrivning",
+        "version": "2025.01",
+        "nr": "TYP.3.2",
+        "rubrik": "Golv"
+      },
+      {
+        "dokument": "Typrumsbeskrivning",
+        "typ": "typrumsbeskrivning",
+        "version": "2025.01",
+        "nr": "TYP.4.1",
+        "rubrik": "Målning"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.2.2",
+        "rubrik": "Ytskikt"
+      }
+    ],
+    "fas:8": [
+      {
+        "dokument": "Projekteringsanvisning VS",
+        "typ": "projekteringsanvisning-vs",
+        "version": "2023.02",
+        "nr": "VS.5.1",
+        "rubrik": "MÄRKNING, KONTROLL, DOKUMENTATION MM"
+      },
+      {
+        "dokument": "Projekteringsanvisning Ventilation",
+        "typ": "projekteringsanvisning-ventilation",
+        "version": "2023.02",
+        "nr": "VENT.4.1",
+        "rubrik": "MÄRKNING, KONTROLL, DOKUMENTATION MM"
+      },
+      {
+        "dokument": "Projekteringsanvisning El och tele",
+        "typ": "projekteringsanvisning-el",
+        "version": "2023.02",
+        "nr": "EL.16.1",
+        "rubrik": "Märkning, kontroll, dokumentation mm"
+      },
+      {
+        "dokument": "Projekteringsanvisning Mätning",
+        "typ": "projekteringsanvisning-matning",
+        "version": "2025.01",
+        "nr": "MÄT.5.3",
+        "rubrik": "Kontroller"
+      }
+    ],
+    "slut2": [
+      {
+        "dokument": "Svanen valda (P) poäng",
+        "typ": "svanen",
+        "version": "2025.01",
+        "nr": "SV.1.1",
+        "rubrik": "Energi och klimat"
+      },
+      {
+        "dokument": "Projekteringsanvisningar PH",
+        "typ": "projekteringsanvisning-ph",
+        "version": "2026.01",
+        "nr": "PH.5.1",
+        "rubrik": "Energi"
+      }
+    ],
+    "kvartal": [
+      {
+        "dokument": "Projekteringsanvisning Mätning",
+        "typ": "projekteringsanvisning-matning",
+        "version": "2025.01",
+        "nr": "MÄT.1.1",
+        "rubrik": "ENERGIUPPFÖLJNINGSSYSTEM"
+      },
+      {
+        "dokument": "Projekteringsanvisning Mätning",
+        "typ": "projekteringsanvisning-matning",
+        "version": "2025.01",
+        "nr": "MÄT.5.1",
+        "rubrik": "Insamling av data"
+      },
+      {
+        "dokument": "Projekteringsanvisning VS",
+        "typ": "projekteringsanvisning-vs",
+        "version": "2023.02",
+        "nr": "VS.2.2",
+        "rubrik": "Energiuppföljning"
+      }
+    ]
+  }
 }

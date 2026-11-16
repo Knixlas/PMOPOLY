@@ -1567,13 +1567,17 @@ class KRoom:
         shared = dict(self.shared)
         if "info" in shared:
             shared["info"] = self._dolj(shared["info"], pid)
-        mentor = None
+        mentor, pa_riktigt = None, []
         if self.lage == "kampanj":
             t = mentor_texter().get("steg", {})
             mentor = t.get(f"{self.step}:{self.round}") or t.get(self.step)
+            # Pekare till Åkepedia för steget: dokument, nummer och rubrik, aldrig standardens text
+            r = mentor_texter().get("pa_riktigt", {})
+            pa_riktigt = r.get(f"{self.step}:{self.round}") or r.get(self.step) or []
         return {
             "lage": self.lage, "cfg": self.cfg, "idx": self.idx, "antal_steg": len(self.flow),
-            "mentor": mentor, "stad": self.stad_kod,
+            "mentor": mentor, "pa_riktigt": pa_riktigt, "akepedia_bas": os.environ.get("AKEPEDIA_BAS", ""),
+            "stad": self.stad_kod,
             "code": self.code, "step": self.step, "round": self.round, "kind": self.kind,
             "deadline": self.deadline, "now": time.time(),
             "del": self._del() if self.step != "lobby" else 0,

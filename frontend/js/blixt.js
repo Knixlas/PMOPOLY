@@ -180,8 +180,8 @@ function vySvar(s, i, st) {
     const r = K.regler;
     if (i === 1) {
         html += S.val[1] === "s"
-            ? `<p class="text">Få hörn ger mindre fasad att bygga, täta och värma. Standarden finns för att inget projekt ska behöva lära sig det på nytt.</p>` + chips([["Åke Sundvall standard", true], [`+${r.standard_h} hållbarhet`, true]])
-            : `<p class="text">Varje hörn och burspråk är mer fasad att bygga, täta och värma. Det går att välja, men det är ett avsteg från standarden och det kostar.</p>` + chips([["Projektspecifik anpassning", false], [`−${r.avsteg_kostnad} Mkr`, false]]);
+            ? `<p class="text">Få hörn ger mindre fasad att bygga, täta och värma. Standarden finns för att inget projekt ska behöva lära sig det på nytt.</p>` + chips([["Åke Sundvall standard", true], [`+${r.standard_h} hållbarhet`, true]]) + akepedia("skiss")
+            : `<p class="text">Varje hörn och burspråk är mer fasad att bygga, täta och värma. Det går att välja, men det är ett avsteg från standarden och det kostar.</p>` + chips([["Projektspecifik anpassning", false], [`−${r.avsteg_kostnad} Mkr`, false]]) + akepedia("skiss");
     } else {
         const a = K.anbud[S.val[2]];
         html += `<p class="citat">”${esc(a.citat)}”</p><p class="text">${S.val[2] === "billig"
@@ -190,6 +190,12 @@ function vySvar(s, i, st) {
             + chips([[`−${a.kostnad} Mkr`, false], a.q && [`${tecken(a.q)} kvalitet`, a.q > 0], a.h && [`${tecken(a.h)} hållbarhet`, a.h > 0], a.erf && [`${tecken(a.erf)} erfarenhet`, a.erf > 0]]);
     }
     return html + `<div class="fyll"></div><button class="knapp" id="b-nasta">Vidare</button>`;
+}
+
+// Var i Åkepedia beslutet hör hemma: dokument och nummer
+function akepedia(nyckel) {
+    const p = K.akepedia?.[nyckel];
+    return p ? `<p class="kort">Åkepedia · ${esc(p.dokument)} · ${esc(p.nr)}</p>` : "";
 }
 
 function vySlut(st) {
