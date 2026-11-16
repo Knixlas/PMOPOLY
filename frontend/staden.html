@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Åkepol – Staden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #14100D; --panel: #26201B; --kort: #2F2822; --linje: #3F362E;
+    --text: #F1E8D6; --dov: #B8A890; --ljus: #E6D9BD; --amber: #DDA063; --amber-ljus: #F0C48E; --rod: #E4572E;
+    --font-serif: 'Source Serif 4', Cambria, 'Times New Roman', serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font-serif); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.4; }
+button, input, select { font-family: inherit; color: inherit; }
+button { cursor: pointer; }
+.mono, .kicker { font-family: var(--font-mono); }
+.kicker { font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dov); }
+h1 { font-size: 2.6rem; line-height: 1.05; font-weight: 700; } h1 em { font-style: italic; font-weight: 400; color: var(--amber); }
+h3 { font-size: 1rem; font-weight: 600; }
+.btn { min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--dov); background: transparent; font-family: var(--font-mono); font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+.btn:hover:not(:disabled) { background: var(--kort); }
+.btn.primar { background: var(--amber); border-color: var(--amber); color: #1A1410; }
+.btn.primar:hover:not(:disabled) { background: var(--amber-ljus); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+.fel { color: #F0A8A2; font-family: var(--font-mono); font-size: .78rem; min-height: 1.2em; }
+
+/* ── Start ── */
+#start { max-width: 460px; margin: 0 auto; padding: 48px 16px; display: flex; flex-direction: column; gap: 16px; }
+#start p.lead { color: var(--ljus); }
+.ruta { background: var(--panel); border: 1px solid var(--linje); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+input[type=text], select { width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--linje); background: var(--bg); font-size: 1rem; }
+input:focus, select:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
+label { font-size: .9rem; color: var(--ljus); display: flex; flex-direction: column; gap: 4px; }
+.rad { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ── Staden ── */
+#spel { display: none; height: 100%; flex-direction: column; }
+header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--linje); }
+.marke { display: flex; align-items: baseline; gap: 12px; }
+.marke b { font-size: 1.55rem; font-weight: 700; }
+.nyckeltal { display: flex; gap: 26px; flex-wrap: wrap; }
+.nyckeltal div { display: flex; flex-direction: column; }
+.nyckeltal b { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.yta { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) 330px; }
+.spalt { background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
+.spalt.v { border-right: 1px solid var(--linje); } .spalt.h { border-left: 1px solid var(--linje); }
+.kortet { background: var(--kort); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: .92rem; }
+.kv .v { font-family: var(--font-mono); font-size: .82rem; text-align: right; }
+.gren { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+.gren small { color: var(--ljus); font-size: .82rem; grid-column: 1; }
+.gren .btn { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; padding: 0 12px; }
+.prickar { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: middle; }
+.prickar i { width: 12px; height: 6px; border-radius: 2px; background: var(--linje); } .prickar i.pa { background: var(--amber); }
+#mitten { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#karta { flex: 1; min-height: 0; position: relative; }
+#fot { flex: none; min-height: 72px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 20px; background: var(--panel); border-top: 1px solid var(--linje); }
+#fot .text { flex: 1; min-width: 200px; font-size: 1.02rem; }
+table { width: 100%; border-collapse: collapse; }
+th { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dov); text-align: right; padding: 4px; font-weight: 500; }
+td { padding: 8px 4px; text-align: right; font-family: var(--font-mono); font-size: .8rem; border-top: 1px solid var(--linje); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; font-family: var(--font-serif); font-size: .92rem; }
+td b { font-size: .95rem; }
+tr.jag td { background: var(--kort); }
+.prick { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; }
+.logg { display: flex; flex-direction: column; gap: 8px; font-size: .88rem; color: var(--ljus); }
+.logg span { color: var(--dov); font-family: var(--font-mono); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; display: block; }
+.toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); background: #8A3030; color: #fff; padding: 10px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: .78rem; z-index: 20; display: none; }
+@media (max-width: 1000px) {
+    html, body { height: auto; }
+    #spel { height: auto; }
+    .yta { grid-template-columns: 1fr; }
+    #karta { height: 56vh; flex: none; }
+    .spalt.v, .spalt.h { border: none; border-top: 1px solid var(--linje); overflow: visible; }
+    #mitten { order: -1; }
+}
+</style>
+</head>
+<body>
+
+<section id="start">
+    <div>
+        <div class="kicker">Åkepol · den långa versionen</div>
+        <h1>Sta<em>den</em></h1>
+        <p class="lead" style="margin-top:10px">Tjugo kvarter ska byggas. Varje omgång väljer bolagen var sitt lediga kvarter på kartan och bygger det, från markanvisning till förvaltning. Kassan, fastigheterna och lärdomarna följer med till nästa kvarter. Spela en kväll, eller en omgång om dagen.</p>
+    </div>
+    <div class="ruta">
+        <div class="kicker">Grunda en stad</div>
+        <label>Ditt bolag<input type="text" id="namn" placeholder="Bolagets namn" maxlength="24"></label>
+        <label>Datorbolag att tävla mot
+            <select id="datorbolag"><option value="0">Inga, vi är flera som spelar</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></label>
+        <label>Varje kvarter spelas som
+            <select id="langd"><option value="kort">Kvarteret, cirka 20 minuter</option><option value="kampanj">Kampanj, ett par timmar</option></select></label>
+        <button class="btn primar" id="b-skapa">Grunda staden</button>
+    </div>
+    <div class="ruta">
+        <div class="kicker">Flytta in i en stad</div>
+        <div class="rad"><input type="text" id="kod" placeholder="Stadens kod" maxlength="4" style="flex:1;text-transform:uppercase" aria-label="Stadens kod">
+        <button class="btn" id="b-ga-med">Flytta in</button></div>
+    </div>
+    <div class="fel" id="start-fel"></div>
+</section>
+
+<section id="spel">
+    <header>
+        <div class="marke"><b>Åkepol</b><span class="kicker">Staden</span></div>
+        <div class="nyckeltal" id="nyckeltal"></div>
+        <span class="kicker" id="h-kod"></span>
+    </header>
+    <div class="yta">
+        <aside class="spalt v" id="vanster"></aside>
+        <div id="mitten">
+            <div id="karta" role="img" aria-label="Karta över staden Åkepol i 3D. Klicka på ett ledigt kvarter för att välja det."></div>
+            <div id="fot"></div>
+        </div>
+        <aside class="spalt h" id="hoger"></aside>
+    </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/staden.js"></script>
+</body>
+</html>

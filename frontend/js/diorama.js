@@ -198,9 +198,10 @@ export function skapaDiorama(behallare, val = {}) {
             hogst = Math.max(hogst, y);
         }
         if (lage === "bygge" && bygg < 0.98) kran("kran", x0 + 1.5, z0 + Math.min(rader - 1, 1.5), hogst + 1.3);
-        for (const k of m.kopta || []) {
-            // Köpta fastigheter står längs tomtens kant
-            const i = (m.kopta.indexOf(k)), x = x0 - 1.3, z = z0 + i * 0.9;
+        const kopta = (m.kopta || []).slice(0, 2 * rader + 2);
+        for (const [i, k] of kopta.entries()) {
+            // Fastigheter utanför tomten (köpta, eller från tidigare kvarter) står längs kanten
+            const x = x0 - 1.3 - Math.floor(i / (rader + 1)) * 0.9, z = z0 + (i % (rader + 1)) * 0.9;
             lada("kopt" + i, { x, z, y: -0.3, b: 0.8, d: 0.8, h: 0.3 + 0.02, material: mat(MARK), direkt: true });
             lada("kopthus" + i, { x, z, y: 0.02, b: 0.64, d: 0.64, h: (VANINGAR[k.typ] || 2) * VH, material: sidor(texMat(kvall ? "fasad-kvall" : "fasad", VANINGAR[k.typ] || 2), mat(TYPFARG[k.typ] || "#6B6056")) });
         }
@@ -255,8 +256,9 @@ export function skapaDiorama(behallare, val = {}) {
                 lada(k + "flagga", { x: x + 0.42, z: z + 0.42, y: 0.03, b: 0.14, d: 0.14, h: 0.14, material: mat(farg) });
                 if (p.status === "pagar") kran(k + "kran", x + 0.25, z + 0.2, h + 0.9);
                 hogst = Math.max(hogst, h);
+                p._h = h + (p.status === "pagar" ? 0.9 : 0);
             }
-            if (p.skylt) skyltar.push({ text: p.skylt, x, y: (p.status === "ledig" ? 0.25 : hogst + 0.3), z, stil: p.skyltStil });
+            if (p.skylt) skyltar.push({ text: p.skylt, x, y: (p.status === "ledig" ? 0.3 : p._h + 0.35), z, stil: p.skyltStil });
         });
         mitt.set(0, 0.3, 0);
         radie = Math.max(kol, rader) * steg * 0.5 + 0.9;

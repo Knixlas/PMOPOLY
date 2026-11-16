@@ -17,6 +17,7 @@ from ws_handler import manager, handle_ws_message
 from companion import companion_manager
 from kvarteret import kvarteret_manager
 from blixt import blixt_kort
+from staden import staden_manager
 
 
 # Global state
@@ -773,6 +774,74 @@ async def kvarteret_ws(ws: WebSocket, code: str, player_id: str):
         import traceback
         traceback.print_exc()
         kvarteret_manager.disconnect(code, player_id, ws)
+
+
+# ── Staden (den långa versionen: en beständig stad, kvarter efter kvarter) ──
+
+@app.get("/staden")
+async def staden_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "staden.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+
+@app.post("/api/staden")
+async def staden_skapa(body: dict):
+    stad = staden_manager.skapa(game_data, (body.get("namn") or "").strip(),
+                                int(body.get("datorbolag", 3)), body.get("langd") or "kort")
+    return {"kod": stad.kod, "nyckel": stad.bolag[0]["nyckel"]}
+
+
+@app.post("/api/staden/{kod}/ga-med")
+async def staden_ga_med(kod: str, body: dict):
+    stad = staden_manager.hamta(kod)
+    if not stad:
+        return JSONResponse({"error": "Staden finns inte."}, status_code=404)
+    if stad.omgang > 0 or stad.rum:
+        return JSONResponse({"error": "Staden har redan börjat byggas."}, status_code=400)
+    b = stad.lagg_till_bolag((body.get("namn") or "").strip())
+    if not b:
+        return JSONResponse({"error": "Staden är full."}, status_code=400)
+    stad.logga(f"{b['namn']} flyttar in i staden.")
+    stad.spara()
+    return {"kod": stad.kod, "nyckel": b["nyckel"]}
+
+
+@app.get("/api/staden/{kod}")
+async def staden_vy(kod: str, nyckel: str = ""):
+    stad = staden_manager.hamta(kod)
+    if not stad:
+        return JSONResponse({"error": "Staden finns inte."}, status_code=404)
+    return stad.vy(nyckel)
+
+
+@app.post("/api/staden/{kod}/drag")
+async def staden_drag(kod: str, body: dict):
+    stad = staden_manager.hamta(kod)
+    bolag = stad.bolag_med_nyckel(body.get("nyckel")) if stad else None
+    if not bolag:
+        return JSONResponse({"error": "Staden eller bolaget finns inte."}, status_code=404)
+    typ, fel = body.get("typ"), None
+    if typ == "valj":
+        fel = stad.valj(bolag, body.get("kvarter"))
+    elif typ == "kunskap":
+        fel = stad.kop_kunskap(bolag, body.get("gren"))
+    elif typ == "starta":
+        if not bolag["vard"]:
+            fel = "Bara den som grundade staden startar omgången."
+        elif stad.rum or stad.klar:
+            fel = "Omgången går inte att starta nu."
+        else:
+            import asyncio
+            kvarteret_manager.gd = game_data
+            room = stad.starta_omgang(game_data, kvarteret_manager)
+            room.start()
+            if room.cfg["klocka"]:
+                kvarteret_manager.tasks[room.code] = asyncio.create_task(kvarteret_manager._ticker(room.code))
+    else:
+        fel = "Okänt drag."
+    if fel:
+        return JSONResponse({"error": fel}, status_code=400)
+    return stad.vy(body.get("nyckel"))
 
 
 # ── Blixt (mässversionen: ett kvarter på tre minuter, körs i webbläsaren) ──

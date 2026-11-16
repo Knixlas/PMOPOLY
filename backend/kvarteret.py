@@ -300,6 +300,7 @@ class KRoom:
         self.lage = lage if lage in LAGEN else "kort"
         self.cfg = dict(LAGEN[self.lage])
         self.vid_slut = None        # anropas med rummet när slutresultatet är räknat (Staden)
+        self.stad_kod: Optional[str] = None
         self.rng = random.Random()
         self.players: Dict[str, KPlayer] = {}
         self.created = time.time()
@@ -1572,7 +1573,7 @@ class KRoom:
             mentor = t.get(f"{self.step}:{self.round}") or t.get(self.step)
         return {
             "lage": self.lage, "cfg": self.cfg, "idx": self.idx, "antal_steg": len(self.flow),
-            "mentor": mentor, "stad": getattr(self, "stad_kod", None),
+            "mentor": mentor, "stad": self.stad_kod,
             "code": self.code, "step": self.step, "round": self.round, "kind": self.kind,
             "deadline": self.deadline, "now": time.time(),
             "del": self._del() if self.step != "lobby" else 0,
@@ -1592,12 +1593,16 @@ class KvarteretManager:
         self.tasks: Dict[str, asyncio.Task] = {}
         self.gd = None
 
+    def ny_kod(self) -> str:
+        while True:
+            code = "".join(random.choices(string.ascii_uppercase, k=4))
+            if code not in self.rooms and not os.path.exists(os.path.join(SPAR_DIR, f"{code}.pkl")):
+                return code
+
     def create(self, gd, name: str, lage: str = "kort"):
         self._cleanup()
         self.gd = gd
-        code = "".join(random.choices(string.ascii_uppercase, k=4))
-        while code in self.rooms or os.path.exists(os.path.join(SPAR_DIR, f"{code}.pkl")):
-            code = "".join(random.choices(string.ascii_uppercase, k=4))
+        code = self.ny_kod()
         room = KRoom(code, gd, lage)
         self.rooms[code] = room
         p = room.add_player(name)

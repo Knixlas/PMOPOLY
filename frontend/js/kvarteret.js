@@ -126,7 +126,7 @@ function connect() {
     ws = new WebSocket(`${proto}://${location.host}/kvarteret/ws/${session.code}/${session.pid}`);
     ws.onmessage = (ev) => {
         const m = JSON.parse(ev.data);
-        if (m.type === "state") { S = m.state; window.__S = S; clockOffset = S.now - Date.now() / 1000; render(); }
+        if (m.type === "state") { S = m.state; window.__S = S; /* för felsökning och genomspelningsskript */ clockOffset = S.now - Date.now() / 1000; render(); }
         if (m.type === "error") toast(m.message);
     };
     ws.onclose = (ev) => {
