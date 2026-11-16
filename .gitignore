@@ -12,3 +12,6 @@ venv/
 node_modules/
 # Kvarterets körtidsloggar (skrivs av servern, fylls bara på)
 data/kvarteret_logs/
+# Sparade kampanjrum och städer (skrivs av servern)
+data/kampanj_sparade/
+data/staden/

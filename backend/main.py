@@ -729,9 +729,17 @@ async def kvarteret_index():
                         headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
+@app.get("/kampanj")
+async def kampanj_index():
+    """Åkepol Kampanj: hela spelet för en spelare i egen takt. Samma sida och motor som Kvarteret."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "kvarteret.html"),
+                        headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+
 @app.post("/api/kvarteret/rooms")
 async def kvarteret_create(body: dict):
-    room, player = kvarteret_manager.create(game_data, (body.get("name") or "").strip())
+    room, player = kvarteret_manager.create(game_data, (body.get("name") or "").strip(),
+                                            lage=body.get("lage") or "kort")
     return {"code": room.code, "player_id": player.id}
 
 
@@ -745,7 +753,7 @@ async def kvarteret_join(code: str, body: dict):
 
 @app.websocket("/kvarteret/ws/{code}/{player_id}")
 async def kvarteret_ws(ws: WebSocket, code: str, player_id: str):
-    room = kvarteret_manager.rooms.get(code)
+    room = kvarteret_manager.hamta(code, game_data)
     if not room or player_id not in room.players:
         await ws.accept()  # stäng med egen kod så att klienten slutar försöka
         await ws.close(code=4004, reason="Rummet eller spelaren finns inte")

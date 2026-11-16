@@ -12,6 +12,7 @@ Kvarteret skriver bara i sina egna data: data/kvarteret_logs/ (fylls bara på).
 import asyncio
 import json
 import os
+import pickle
 import random
 import re
 import string
@@ -61,6 +62,35 @@ MAX_EGNA_UPPH = 3          # upphandlingar man gör själv; resten får gemensam
 FAS_RUNDOR = 2             # byggfaser man spelar; övriga godkänns automatiskt
 QUARTERS = 1               # kvartal i förvaltningen
 ALLA_SLOTS = [s for _, slots in UPPHANDLINGAR for s in slots]
+
+# Spellägen. "kort" är Kvarteret på 20 minuter med konstanterna ovan. "kampanj" är hela
+# Åkepol i egen takt: sex rundor projektutveckling, alla 13 upphandlingar i tre omgångar,
+# alla åtta byggfaser och ett helt förvaltningsår. Kampanjen har ingen klocka och sparas
+# på disk, så att den går att fortsätta en annan dag.
+LAGEN = {
+    "kort": {"start_projekt": START_PROJEKT_ANTAL, "start_rutor": START_PROJEKT_RUTOR,
+             "p1_rundor": P1_ROUNDS, "max_egna_upph": MAX_EGNA_UPPH, "upph_i_grupper": False,
+             "fas_rundor": FAS_RUNDOR, "kvartal": QUARTERS, "klocka": True, "spara": False},
+    "kampanj": {"start_projekt": 2, "start_rutor": 8, "p1_rundor": 6, "max_egna_upph": 13,
+                "upph_i_grupper": True, "fas_rundor": 8, "kvartal": 4, "klocka": False, "spara": True},
+}
+NYA_PA_MARKNADEN = {2: 2, 3: 1}           # fastigheter som kommer ut kvartal 2 och 3 (kampanj)
+SPAR_DIR = os.path.join(DATA_DIR, "kampanj_sparade")
+MENTOR_PATH = os.path.join(DATA_DIR, "kampanj_texter.json")
+_MENTOR: Optional[dict] = None
+
+
+def mentor_texter() -> dict:
+    """Mentorns texter per steg (data/kampanj_texter.json). Saknas filen spelar man utan mentor."""
+    global _MENTOR
+    if _MENTOR is None:
+        try:
+            with open(MENTOR_PATH, encoding="utf-8") as f:
+                _MENTOR = json.load(f)
+        except (OSError, ValueError) as e:
+            print(f"KAMPANJ: inga mentortexter ({e})")
+            _MENTOR = {}
+    return _MENTOR
 
 # Förvaltning 2.1 (FORVALTNING_DESIGN_2-1.md) – lekarna läses ur data/forvaltning_2-1/
 F21_DIR = os.path.join(DATA_DIR, "forvaltning_2-1")
@@ -206,6 +236,8 @@ class KPlayer:
     ready: bool = False
     log: List[dict] = field(default_factory=list)
     result: dict = field(default_factory=dict)
+    # Det bolaget bär med sig in från staden (Åkepol Staden): kassa, fastigheter, kunskap
+    arv: dict = field(default_factory=dict)
 
     @property
     def rutor_kvar(self) -> int:
@@ -262,9 +294,12 @@ class KPlayer:
 
 
 class KRoom:
-    def __init__(self, code: str, gd):
+    def __init__(self, code: str, gd, lage: str = "kort"):
         self.code = code
         self.gd = gd
+        self.lage = lage if lage in LAGEN else "kort"
+        self.cfg = dict(LAGEN[self.lage])
+        self.vid_slut = None        # anropas med rummet när slutresultatet är räknat (Staden)
         self.rng = random.Random()
         self.players: Dict[str, KPlayer] = {}
         self.created = time.time()
@@ -353,15 +388,18 @@ class KRoom:
 
     # ── Flöde ──
     def start(self):
+        c = self.cfg
+        upph_rundor = len(UPPHANDLINGAR) if c["upph_i_grupper"] else 1
         self.flow = ([("intro1", 0), ("pc", 0)] +
-                     [x for r in range(1, P1_ROUNDS + 1) for x in (("p1", r), ("p1_res", r))] +
+                     [x for r in range(1, c["p1_rundor"] + 1) for x in (("p1", r), ("p1_res", r))] +
                      [("namnd", 0), ("namnd_res", 0), ("slut1", 0), ("intro2", 0), ("ac", 0)] +
-                     [("upph", 1), ("upph_res", 1)] +
-                     [x for r in range(1, FAS_RUNDOR + 1) for x in (("fas", r), ("fas_res", r))] +
+                     [x for r in range(1, upph_rundor + 1) for x in (("upph", r), ("upph_res", r))] +
+                     [x for r in range(1, c["fas_rundor"] + 1) for x in (("fas", r), ("fas_res", r))] +
                      [("slut2", 0), ("intro3", 0), ("f_setup", 0)] +
-                     [x for q in range(1, QUARTERS + 1) for x in (("kvartal", q), ("kvartal_res", q))] +
+                     [x for q in range(1, c["kvartal"] + 1) for x in (("kvartal", q), ("kvartal_res", q))] +
                      [("final", 0)])
-        self.fas_steg = [self.rng.choice([1, 2, 3, 4]), self.rng.choice([5, 6, 7, 8])]
+        self.fas_steg = (list(range(1, 9)) if c["fas_rundor"] >= 8
+                         else [self.rng.choice([1, 2, 3, 4]), self.rng.choice([5, 6, 7, 8])])
         # Automatiska upphandlingsnivåer: samma för alla bolag
         self.auto_niva = {slot: self.rng.choice([2, 3]) for slot in ALLA_SLOTS}
         self.log(None, "start", {"spelare": [p.name for p in self.players.values()]})
@@ -378,18 +416,39 @@ class KRoom:
         enter = getattr(self, f"_enter_{self.step}")
         kind = enter()
         self.kind = kind
+        klocka = self.cfg["klocka"]
         if kind == "decision":
-            self.deadline = time.time() + TIMER.get(self.step, 60)
+            self.deadline = time.time() + TIMER.get(self.step, 60) if klocka else None
             for p in self.players.values():
                 if p.is_bot:
                     p.choice = self._bot_choice(p)
             self._maybe_resolve()
         elif kind == "info":
             t = TIMER["intro"] if self.step.startswith("intro") else TIMER["info"]
-            self.deadline = time.time() + t
+            self.deadline = time.time() + t if klocka else None
             self._maybe_continue()
         else:
             self.deadline = None
+        self.spara()
+
+    # ── Sparning (bara lägen med "spara"): hela rummet utom speldatan ──
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        d["gd"] = None
+        d["vid_slut"] = None
+        return d
+
+    def spara(self):
+        if not self.cfg.get("spara") or self.step == "lobby":
+            return
+        try:
+            os.makedirs(SPAR_DIR, exist_ok=True)
+            tmp = os.path.join(SPAR_DIR, f"{self.code}.tmp")
+            with open(tmp, "wb") as f:
+                pickle.dump(self, f)
+            os.replace(tmp, os.path.join(SPAR_DIR, f"{self.code}.pkl"))
+        except Exception as e:  # sparningen får aldrig stoppa spelet
+            print(f"KAMPANJ: kunde inte spara {self.code}: {e}")
 
     def submit(self, pid: str, data: dict) -> Optional[str]:
         p = self.players.get(pid)
@@ -440,11 +499,11 @@ class KRoom:
         piles = [pile for pile in self.proj_piles.values() if pile]
         kandidater = []
         for _ in range(3000):
-            kand = [self.rng.choice(pile) for pile in self.rng.sample(piles, START_PROJEKT_ANTAL)]
-            if markbehov(kand) <= START_PROJEKT_RUTOR:
+            kand = [self.rng.choice(pile) for pile in self.rng.sample(piles, self.cfg["start_projekt"])]
+            if markbehov(kand) <= self.cfg["start_rutor"]:
                 kandidater.append(kand)
         if not kandidater:
-            kandidater = [[min(pile, key=lambda x: x["rutor"]) for pile in piles]]
+            kandidater = [[min(pile, key=lambda x: x["rutor"]) for pile in piles[:self.cfg["start_projekt"]]]]
             # (bara om inga slumpade uppsättningar får plats)
         nycklar = ("anskaffning", "kostnad", "bta", "rutor", "q", "h", "bas_dn")
         vek = lambda kand: [sum(x[k] for x in kand) for k in nycklar]
@@ -487,7 +546,7 @@ class KRoom:
         return {typ: pile[-1] for typ, pile in self.proj_piles.items() if pile}
 
     def _enter_p1(self):
-        self.shared = {"market": self._market(), "runda": self.round, "av": P1_ROUNDS}
+        self.shared = {"market": self._market(), "runda": self.round, "av": self.cfg["p1_rundor"]}
         for p in self.players.values():
             p.offer = {"passar": {t: p.passar(x) for t, x in self.shared["market"].items()}}
         return "decision"
@@ -506,7 +565,7 @@ class KRoom:
             return "Okänt val."
 
     def _resolve_p1(self):
-        self.reveal = {"title": f"Runda {self.round} av {P1_ROUNDS}", "rows": {}}
+        self.reveal = {"title": f"Runda {self.round} av {self.cfg['p1_rundor']}", "rows": {}}
         # Projekt: krockar avgörs med D6, förloraren får nästa kort i samma hög
         by_typ: Dict[str, List[KPlayer]] = {}
         for p in self.players.values():
@@ -701,7 +760,8 @@ class KRoom:
             p.q, p.h = ac.get("q_bonus", 0), ac.get("h_bonus", 0)
             p.t_mal = 12 + max([x["tid"] for x in p.projects] or [0])
             p.t = 12 - ac.get("t_bonus", 0) + p.t_pu
-            p.erf = ac.get("erfarenhet", 0)
+            p.erf = ac.get("erfarenhet", 0) + p.arv.get("erf", 0)
+            p.h += p.arv.get("h", 0)
             p.komp = {k: 0 for k in KOMP_KEYS}
             for src in (p.pc or {}, ac):
                 for k, v in src.get("kompetenser", {}).items():
@@ -726,17 +786,26 @@ class KRoom:
         return {"slot": slot, "min": min_niva, "levels": levels}
 
     def _enter_upph(self):
-        self.shared = {"max": MAX_EGNA_UPPH, "grupper": [[namn, slots] for namn, slots in UPPHANDLINGAR]}
+        if self.cfg["upph_i_grupper"]:      # en grupp per omgång, allt upphandlas av bolaget självt
+            grupper = [list(UPPHANDLINGAR[self.round - 1])]
+            maxval = len(grupper[0][1])
+        else:
+            grupper = [[namn, slots] for namn, slots in UPPHANDLINGAR]
+            maxval = self.cfg["max_egna_upph"]
+        slots = [s for _, gs in grupper for s in gs]
+        self.shared = {"max": maxval, "grupper": grupper, "runda": self.round,
+                       "av": len(UPPHANDLINGAR) if self.cfg["upph_i_grupper"] else 1,
+                       "alla": self.cfg["upph_i_grupper"]}
         for p in self.players.values():
             p.offer = {"slots": [dict(self._offers_for_slot(p, s), auto=max(self._offers_for_slot(p, s)["min"],
                                                                           self.auto_niva[s]))
-                                 for s in ALLA_SLOTS]}
+                                 for s in slots]}
         return "decision"
 
     def _validate_upph(self, p, data):
         val = data.get("val") or {}
-        if len(val) > MAX_EGNA_UPPH:
-            return f"Du upphandlar högst {MAX_EGNA_UPPH} poster själv."
+        if len(val) > self.shared["max"]:
+            return f"Du upphandlar högst {self.shared['max']} poster själv."
         slots = {s["slot"]: s for s in p.offer["slots"]}
         for slot, n in val.items():
             s = slots.get(slot)
@@ -749,7 +818,8 @@ class KRoom:
         """Egna val kostar och ger effekt som vanligt och följs av sitt händelsekort.
         Övriga poster får den gemensamma slumpade nivån (2–3, minst projektens krav) och
         ger varken händelse- eller garantikort, så att det automatiska inte straffar någon."""
-        self.reveal = {"title": "Upphandling", "rows": {},
+        self.reveal = {"title": "Upphandling: " + self.shared["grupper"][0][0].lower() if self.shared["alla"] else "Upphandling",
+                       "rows": {},
                        "val": {pid: p.choice["val"] for pid, p in self.players.items()}}
         for p in self.players.values():
             egna, auto = 0, 0
@@ -773,8 +843,9 @@ class KRoom:
             p.abt -= egna + auto
             if egna:
                 self.note(p, f"Egna upphandlingar för {egna} Mkr.", -egna, plan=True)
-            self.note(p, f"Övriga {len(ALLA_SLOTS) - len(p.choice['val'])} poster upphandlades automatiskt "
-                         f"för {auto} Mkr.", -auto, plan=True)
+            ovriga = len(p.offer["slots"]) - len(p.choice["val"])
+            if ovriga:
+                self.note(p, f"Övriga {ovriga} poster upphandlades automatiskt för {auto} Mkr.", -auto, plan=True)
             for slot in p.choice["val"]:
                 self._planning_event(p, slot)
 
@@ -813,7 +884,7 @@ class KRoom:
     def _enter_fas(self):
         steg = self.fas_steg[self.round - 1]
         card = self.rng.choice(self.gd.phase_cards[steg])
-        self.shared = {"steg": steg, "runda": self.round, "av": FAS_RUNDOR, "kort": card.to_dict(),
+        self.shared = {"steg": steg, "runda": self.round, "av": self.cfg["fas_rundor"], "kort": card.to_dict(),
                        "kulturpris": PHASE_COST[steg - 1]}
         for p in self.players.values():
             key = self._krav_key(p)
@@ -868,7 +939,8 @@ class KRoom:
         self.reveal = {"title": "Skede 2 klart", "rows": {}}
         ovriga = [str(x) for x in range(1, 9) if x not in self.fas_steg]
         for p in self.players.values():
-            self.note(p, f"Byggfas {', '.join(ovriga)} godkändes automatiskt utan anmärkning.")
+            if ovriga:
+                self.note(p, f"Byggfas {', '.join(ovriga)} godkändes automatiskt utan anmärkning.")
             p.n_t = max(0, p.t - p.t_mal)
             p.n_q = max(0, p.q_krav - p.q)
             p.n_h = max(0, p.h_krav - p.h)
@@ -912,6 +984,11 @@ class KRoom:
                        for x in p.projects if x["typ"] != "BRF"]
             for prop in p.props:  # §4: lånet är 70 % av MV vid inträdet i förvaltningen
                 prop["lan"] = self._nytt_lan(self._mv(prop))
+            if p.arv.get("ek") or p.arv.get("props"):   # Staden: kassan och beståndet från tidigare kvarter
+                p.ek += p.arv.get("ek", 0)
+                p.props += [dict(x) for x in p.arv.get("props", [])]
+                self.note(p, f"Från dina tidigare kvarter: {p.arv.get('ek', 0):.0f} Mkr i kassan och "
+                             f"{len(p.arv.get('props', []))} fastigheter att förvalta.")
             self.note(p, f"TB {p.tb:.0f} Mkr förs till kassan. Kassa inför förvaltningen: {p.ek:.0f} Mkr.")
             self.log(p.id, "skede2_slut", {"t": p.t, "q": p.q, "h": p.h, "tb": p.tb, "ek": p.ek})
         return "info"
@@ -994,6 +1071,8 @@ class KRoom:
             for text in (fc["Styrka"], fc["Svaghet"]):
                 for v, typ in re.findall(r"([+-]\d+)\s*(?:på\s*)?(förhandling|energi)", text):
                     mods["forh" if typ == "förhandling" else "energi"] += int(v)
+            mods["energi"] += p.arv.get("energi", 0)
+            mods["forh"] += p.arv.get("forh", 0)
             p.fc = {"id": fc["ID"], "namn": fc["Namn"], "styrka": fc["Styrka"], "svaghet": fc["Svaghet"],
                     **mods, "extra_pk": int("personkort" in fc["Styrka"]),
                     "rb_q": int("riskbuffert" in fc["Styrka"])}
@@ -1080,6 +1159,13 @@ class KRoom:
     def _enter_kvartal(self):
         q = self.round
         self.reveal = {"rows": {}}
+        # Kampanj: nya fastigheter kommer ut på marknaden kvartal 2 och 3
+        if self.cfg["kvartal"] > 1:
+            pool = [x for t, pile in self.proj_piles.items() if t != "BRF" for x in pile]
+            self.rng.shuffle(pool)
+            for proj in pool[:NYA_PA_MARKNADEN.get(q, 0)]:
+                self.proj_piles[proj["typ"]].remove(proj)
+                self.banken.append(self._fastighet({**proj, "lanebelopp": None}, "bank"))
         for p in self.players.values():
             if q == 1:  # Kvartal 0: ett händelsekort per fastighet
                 for prop in p.props:
@@ -1095,7 +1181,7 @@ class KRoom:
                     self.banken.append({**prop, "lan": self._nytt_lan(mv), "agd": "bank", "fynd": True})
                     self.note(p, f"{prop['namn']}: MV {mv} < lån {lan}. Banken tar fastigheten utan "
                                  f"ersättning och listar den som fynd.", -float(prop.get("ek_vid_kop", 0)))
-        self.shared = {"kvartal": q, "info": self.reveal["rows"], "yield_b": self.yield_b,
+        self.shared = {"kvartal": q, "av": self.cfg["kvartal"], "info": self.reveal["rows"], "yield_b": self.yield_b,
                        "yield_k": self.yield_k, "energi_max": ENERGI_MAX.get(q, 0),
                        "market": [self._prop_view(x, egen=False) for x in self.banken]}
         self.reveal = {}
@@ -1405,6 +1491,11 @@ class KRoom:
                                    for _, p in res],
                        "yield_b": self.yield_b, "yield_k": self.yield_k}
         self.log(None, "slut", {"ranking": [(p.name, p.result["score"]) for _, p in res]})
+        if self.vid_slut:
+            try:
+                self.vid_slut(self)
+            except Exception as e:
+                print(f"KVARTERET: vid_slut misslyckades: {e}")
         return "final"
 
     # ════════════════ DATORBOLAG ════════════════
@@ -1475,7 +1566,13 @@ class KRoom:
         shared = dict(self.shared)
         if "info" in shared:
             shared["info"] = self._dolj(shared["info"], pid)
+        mentor = None
+        if self.lage == "kampanj":
+            t = mentor_texter().get("steg", {})
+            mentor = t.get(f"{self.step}:{self.round}") or t.get(self.step)
         return {
+            "lage": self.lage, "cfg": self.cfg, "idx": self.idx, "antal_steg": len(self.flow),
+            "mentor": mentor, "stad": getattr(self, "stad_kod", None),
             "code": self.code, "step": self.step, "round": self.round, "kind": self.kind,
             "deadline": self.deadline, "now": time.time(),
             "del": self._del() if self.step != "lobby" else 0,
@@ -1495,19 +1592,43 @@ class KvarteretManager:
         self.tasks: Dict[str, asyncio.Task] = {}
         self.gd = None
 
-    def create(self, gd, name: str):
+    def create(self, gd, name: str, lage: str = "kort"):
         self._cleanup()
         self.gd = gd
         code = "".join(random.choices(string.ascii_uppercase, k=4))
-        while code in self.rooms:
+        while code in self.rooms or os.path.exists(os.path.join(SPAR_DIR, f"{code}.pkl")):
             code = "".join(random.choices(string.ascii_uppercase, k=4))
-        room = KRoom(code, gd)
+        room = KRoom(code, gd, lage)
         self.rooms[code] = room
         p = room.add_player(name)
+        if room.lage == "kampanj":      # kampanjen spelas mot datorbolag om man inte bjuder in någon
+            for n in (1, 2):
+                room.add_player(f"Datorbolag {n}", is_bot=True)
         return room, p
 
+    def hamta(self, code: str, gd=None) -> Optional[KRoom]:
+        """Rummet ur minnet, eller ett sparat kampanjrum från disk."""
+        code = (code or "").upper()
+        if code in self.rooms:
+            return self.rooms[code]
+        if not re.fullmatch(r"[A-Z]{4}", code):
+            return None
+        path = os.path.join(SPAR_DIR, f"{code}.pkl")
+        if not os.path.exists(path):
+            return None
+        try:
+            with open(path, "rb") as f:
+                room = pickle.load(f)
+        except Exception as e:
+            print(f"KAMPANJ: kunde inte läsa {code}: {e}")
+            return None
+        room.gd = gd or self.gd
+        room.touched = time.time()
+        self.rooms[code] = room
+        return room
+
     def join(self, code: str, name: str):
-        room = self.rooms.get(code.upper())
+        room = self.hamta(code)
         if not room:
             return None, None, "Rummet finns inte."
         if room.step != "lobby":
@@ -1519,7 +1640,7 @@ class KvarteretManager:
     def _cleanup(self):
         now = time.time()
         for code, room in list(self.rooms.items()):
-            if now - room.touched > 6 * 3600:
+            if now - room.touched > 6 * 3600:   # sparade kampanjrum läses in igen från disk vid behov
                 self.rooms.pop(code, None)
                 t = self.tasks.pop(code, None)
                 if t:
@@ -1571,7 +1692,8 @@ class KvarteretManager:
                 del room.players[bot.id]
         elif t == "start" and p and p.is_host and room.step == "lobby":
             room.start()
-            self.tasks[code] = asyncio.create_task(self._ticker(code))
+            if room.cfg["klocka"]:
+                self.tasks[code] = asyncio.create_task(self._ticker(code))
         elif t == "submit":
             err = room.submit(pid, msg.get("data") or {})
         elif t == "ready":
@@ -1580,6 +1702,8 @@ class KvarteretManager:
             room.force()
         if err:
             await ws.send_json({"type": "error", "message": err})
+        elif t in ("submit", "ready", "skip"):
+            room.spara()
         await self.broadcast(code)
 
 

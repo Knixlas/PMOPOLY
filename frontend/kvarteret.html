@@ -82,7 +82,12 @@ header.bar .title { font-weight: 600; font-size: 1.05rem; flex: 1; min-width: 16
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; max-width: 1180px; margin: 0 auto; padding: 20px 16px 120px; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 main { min-width: 0; }
-aside .card { position: sticky; top: 92px; }
+aside .sidospalt { position: sticky; top: 92px; display: grid; gap: 12px; }
+.vy3d { height: 250px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+#mentor { background: var(--ink); color: var(--paper); border-radius: var(--radius); padding: 14px 16px; }
+#mentor .kicker { color: var(--pu); }
+#mentor p { margin-top: 6px; font-size: .92rem; color: #E8DFCB; }
+@media (max-width: 900px) { aside .sidospalt { position: static; } }
 .step-head { margin-bottom: 14px; }
 .step-head .kicker { color: var(--skede); filter: brightness(.8); }
 
@@ -180,9 +185,9 @@ table.rank th:first-child, table.rank td:first-child { text-align: left; font-fa
 
 <section id="start">
     <div>
-        <div class="kicker">Åkepol · digital kortversion</div>
-        <h1>Kvar<em>teret</em></h1>
-        <p class="lead" style="margin-top:10px">Bygg ett fastighetsbolag på 20 minuter: utveckla projekt, bygg dem och förvalta dem ett kvartal. Samma kort och samma regler som i brädspelet, fast nedkortat. Du behöver ingen spelplan och inga tärningar, bara en mobil eller dator per bolag.</p>
+        <div class="kicker" id="start-kicker">Åkepol · digital kortversion</div>
+        <h1 id="start-h1">Kvar<em>teret</em></h1>
+        <p class="lead" id="start-lead" style="margin-top:10px">Bygg ett fastighetsbolag på 20 minuter: utveckla projekt, bygg dem och förvalta dem ett kvartal. Samma kort och samma regler som i brädspelet, fast nedkortat. Du behöver ingen spelplan och inga tärningar, bara en mobil eller dator per bolag.</p>
     </div>
     <div class="card deep">
         <div class="kicker" style="margin-bottom:8px">Ditt bolag</div>
@@ -214,7 +219,11 @@ table.rank th:first-child, table.rank td:first-child { text-align: left; font-fa
     <div class="chips" id="chips"></div>
     <div class="layout">
         <main id="main"></main>
-        <aside id="aside"></aside>
+        <aside><div class="sidospalt">
+            <div class="vy3d" id="vy3d" hidden role="img" aria-label="Ditt kvarter i 3D"></div>
+            <div id="mentor" hidden></div>
+            <div id="aside"></div>
+        </div></aside>
     </div>
 </section>
 <div class="toast" id="toast"></div>

@@ -1,5 +1,11 @@
-// Åkepol – Kvarteret. Digital kortversion utan spelplaner.
+// Åkepol – Kvarteret och Kampanj. Digitala versioner utan spelplaner.
 // All spellogik ligger på servern (backend/kvarteret.py); här ritas bara läget.
+// /kvarteret är kortversionen på 20 minuter, /kampanj hela spelet i egen takt med mentor.
+
+import { skapaDiorama } from "/js/diorama.js";
+
+const KAMPANJ = location.pathname.startsWith("/kampanj");
+const LAGE = KAMPANJ ? "kampanj" : "kort";
 
 const $ = (id) => document.getElementById(id);
 const dec = (s) => String(s ?? "").replace(/(\d)\.(\d)/g, "$1,$2");
@@ -36,6 +42,25 @@ const INTRO = {
     },
 };
 
+// Kampanjen spelar hela spelet, så texterna om nedkortningen gäller inte där
+const INTRO_KAMPANJ = {
+    intro1: {
+        rubrik: "Skede 1: Byggrätten",
+        text: "Du har fått en markanvisning på 4 000 kvm (16 rutor) och två startprojekt. Varje ruta är 250 kvm. Bostäder (BRF och hyresrätter) får staplas ovanpå andra projekt, så marken räcker längre än man tror. Under sex rundor väljer du vad du gör: tar ett projekt till, går på en medborgardialog, bygger en riskbuffert eller köper mer mark. Varje projekt höjer kraven på kvalitet och hållbarhet. Sedan prövar nämnden hela portföljen. Det som blir kvar av intäkterna efter mark och utvecklingskostnader blir din byggbudget (ABT).",
+        analog: INTRO.intro1.analog,
+    },
+    intro2: {
+        rubrik: "Skede 2: Bygget",
+        text: "Välj en arbetschef. Upphandla sedan alla 13 poster i tre omgångar: organisationen, mark till klimatskal, och inredning och installationer. Varje upphandling följs av en händelse som du löser med D20 plus erfarenhet, och leverantörer på nivå 1–2 ger garantianmärkningar om fem år. Därefter bygger du genom alla åtta faserna och lägger kompetenser (STA, KOM, SAM, NOG, INN, ABM) mot faskortens krav. Missar du tid, kvalitet eller hållbarhet drar du konsekvenskort.",
+        analog: INTRO.intro2.analog,
+    },
+    intro3: {
+        rubrik: "Skede 3: Året",
+        text: "Projekten är nu fastigheter med lån på 70 % av marknadsvärdet. Marknadsvärdet (MV) är driftnettot (DN) delat med yield, och energiklassen flyttar DN uppåt eller nedåt. Du förvaltar i fyra kvartal. Varje kvartal börjar med marknaden. Där måste varje fastighet ha MV ≥ lån, annars tar banken den. Där köper du (MV − lån) och säljer. Sedan kommer omvärldskort, driftnetto, personkort, händelser per fastighet och kvartalskort, och sist energiuppgraderingar.",
+        analog: INTRO.intro3.analog,
+    },
+};
+
 const STEP_TITLE = {
     lobby: "Väntrum", intro1: "Del 1: Byggrätten", pc: "Välj projektchef", p1: "Vad gör ni den här rundan?",
     p1_res: "Rundans utfall", namnd: "Nämndbeslut", namnd_res: "Nämndens beslut", slut1: "Skede 1 klart", intro2: "Del 2: Bygget",
@@ -44,7 +69,7 @@ const STEP_TITLE = {
     kvartal: "Kvartal", kvartal_res: "Kvartalets utfall", final: "Slutresultat",
 };
 
-const P1_ROUNDS = 2;
+const p1r = () => S?.cfg?.p1_rundor ?? 2;
 const ORG_SLOTS = ["OPERATIVT TEAM", "STÖDFUNKTIONER", "MARKNADSTEAM", "DIGITALISERING"];
 const BILDPREFIX = { BRF: "BRF", "FÖRSKOLA": "FÖRSKOLOR", LOKAL: "LOKAL", KONTOR: "KONTOR", "HYRESRÄTT": "Hyresrätt" };
 const projImg = (p) => `/img/projects/${encodeURIComponent(`${BILDPREFIX[p.typ] || p.typ} ${p.namn.split(" ").pop()}`)}.png`;
@@ -65,12 +90,15 @@ async function api(path, body) {
     return j;
 }
 
-function saveSession(s) { try { sessionStorage.setItem("kvarteret", JSON.stringify(s)); } catch {} }
-function loadSession() { try { return JSON.parse(sessionStorage.getItem("kvarteret")); } catch { return null; } }
+// Kampanjen ska gå att fortsätta en annan dag, så den minns sitt rum längre än fliken lever
+const minne = KAMPANJ ? localStorage : sessionStorage;
+const MINNESNYCKEL = KAMPANJ ? "akepol-kampanj" : "kvarteret";
+function saveSession(s) { try { minne.setItem(MINNESNYCKEL, JSON.stringify(s)); } catch {} }
+function loadSession() { try { return JSON.parse(minne.getItem(MINNESNYCKEL)); } catch { return null; } }
 
 $("btn-create").onclick = async () => {
     try {
-        const j = await api("/api/kvarteret/rooms", { name: $("name").value || "Bolag 1" });
+        const j = await api("/api/kvarteret/rooms", { name: $("name").value || "Bolag 1", lage: LAGE });
         enter(j.code, j.player_id);
     } catch (e) { $("start-err").textContent = e.message; }
 };
@@ -87,7 +115,7 @@ $("btn-skip").onclick = () => send({ type: "skip" });
 function enter(code, pid) {
     session = { code, pid };
     saveSession(session);
-    history.replaceState(null, "", `/kvarteret?rum=${code}`);
+    history.replaceState(null, "", `${location.pathname}?rum=${code}`);
     $("start").style.display = "none";
     $("game").style.display = "block";
     connect();
@@ -98,7 +126,7 @@ function connect() {
     ws = new WebSocket(`${proto}://${location.host}/kvarteret/ws/${session.code}/${session.pid}`);
     ws.onmessage = (ev) => {
         const m = JSON.parse(ev.data);
-        if (m.type === "state") { S = m.state; clockOffset = S.now - Date.now() / 1000; render(); }
+        if (m.type === "state") { S = m.state; window.__S = S; clockOffset = S.now - Date.now() / 1000; render(); }
         if (m.type === "error") toast(m.message);
     };
     ws.onclose = (ev) => {
@@ -121,11 +149,12 @@ function render() {
     const me = S.me;
     document.body.className = S.del ? `del${S.del}` : "";
     if (["fas", "fas_res", "slut2"].includes(S.step)) document.body.classList.add("genomforande");
-    $("h-del").textContent = S.del ? `${DELAR[S.del].kort} · ${DELAR[S.del].namn}` : "Åkepol · Kvarteret";
+    $("h-del").textContent = S.del ? `${S.lage === "kampanj" ? `Skede ${S.del}` : DELAR[S.del].kort} · ${DELAR[S.del].namn}` : (S.lage === "kampanj" ? "Åkepol · Kampanj" : "Åkepol · Kvarteret");
     let title = STEP_TITLE[S.step] || S.step;
-    if (S.step === "p1" || S.step === "p1_res") title += ` (runda ${S.round} av ${P1_ROUNDS})`;
+    if (S.step === "p1" || S.step === "p1_res") title += ` (runda ${S.round} av ${p1r()})`;
     if (S.step === "fas") title += `: fas ${S.shared.steg} av 8`;
-    if (S.step.startsWith("kvartal")) title = `${title} ${S.round}`;
+    if (S.step === "upph" && S.shared.alla) title += ` ${S.round} av ${S.shared.av}`;
+    if (S.step.startsWith("kvartal")) title = `${title} ${S.round}${S.cfg.kvartal > 1 ? ` av ${S.cfg.kvartal}` : ""}`;
     $("h-title").textContent = title;
     $("h-code").textContent = `Rum ${S.code}`;
     $("btn-skip").style.display = me?.is_host && (S.kind === "decision" || S.kind === "info") ? "" : "none";
@@ -219,10 +248,12 @@ function analogBox(text) {
 const VIEWS = {
     lobby(me) {
         const host = me.is_host;
-        return head("Väntrum", `Rum ${S.code}`, "Dela koden med de andra bolagen, så går de in på samma adress och skriver in koden. Spelet har tre delar och tar cirka 20 minuter. Alla fattar sina beslut samtidigt på sin egen skärm.")
+        return head("Väntrum", `Rum ${S.code}`, S.lage === "kampanj"
+            ? "Kampanjen är hela Åkepol i egen takt: tre skeden, ingen klocka, och en mentor som förklarar reglerna när de behövs. Räkna med ett par timmar. Spelet sparas efter varje steg, så du kan stänga sidan och fortsätta senare på samma dator. Du möter två datorbolag. Vill du hellre spela mot kollegor delar du koden med dem."
+            : "Dela koden med de andra bolagen, så går de in på samma adress och skriver in koden. Spelet har tre delar och tar cirka 20 minuter. Alla fattar sina beslut samtidigt på sin egen skärm.")
             + `<div class="card"><h3>Bolag i rummet (${S.players.length} av 6)</h3><ul style="list-style:none;margin-top:8px;display:grid;gap:6px">${S.players.map((p) =>
                 `<li class="row"><span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>${p.is_host ? '<span class="kicker">värd</span>' : ""}${p.is_bot && host ? `<button class="btn" style="padding:3px 8px" data-rm="${p.id}">Ta bort</button>` : ""}</li>`).join("")}</ul></div>`
-            + (host ? `<div class="sumbar"><button class="btn" id="btn-bot" style="color:var(--paper);border-color:rgba(255,255,255,.5)">+ Datorbolag</button><span class="mono">Spelar du ensam? Lägg till datorbolag att tävla mot.</span><button class="btn primary" id="btn-start">Starta spelet</button></div>`
+            + (host ? `<div class="sumbar"><button class="btn" id="btn-bot" style="color:var(--paper);border-color:rgba(255,255,255,.5)">+ Datorbolag</button><span class="mono">${S.lage === "kampanj" ? "Datorbolagen går att ta bort eller bli fler." : "Spelar du ensam? Lägg till datorbolag att tävla mot."}</span><button class="btn primary" id="btn-start">Starta spelet</button></div>`
                 : `<div class="card waiting">Väntar på att värden startar spelet …</div>`);
     },
     intro1: (me) => introView("intro1", 1),
@@ -244,7 +275,7 @@ const VIEWS = {
         }).join("");
         const alt = (val, rubrik, text, stats) => `<button class="opt ${draft.val === val ? "sel" : ""}" data-val="${val}">
             <div class="typ">${rubrik.typ}</div><h3>${rubrik.h}</h3><div class="desc" style="font-style:normal">${text}</div><div class="stats">${stats}</div></button>`;
-        return head(`Runda ${S.round} av ${P1_ROUNDS}`, "Vad gör ni den här rundan?", "Alla väljer samtidigt. Om två bolag tar samma projekt avgör en D6, och förloraren får nästa projekt i samma hög. Efter varje runda slår alla en D6 för Stadshuset. Den som slår en etta drar ett politikkort och slår D20 på dess skala.")
+        return head(`Runda ${S.round} av ${p1r()}`, "Vad gör ni den här rundan?", "Alla väljer samtidigt. Om två bolag tar samma projekt avgör en D6, och förloraren får nästa projekt i samma hög. Efter varje runda slår alla en D6 för Stadshuset. Den som slår en etta drar ett politikkort och slår D20 på dess skala.")
             + `<h3 style="margin:6px 0 8px">Projektmarknaden: översta kortet i varje hög</h3><div class="grid">${projekt}</div>
                <h3 style="margin:18px 0 8px">Eller …</h3><div class="grid">
                ${alt("dialog", { typ: "Ruta: Dialog", h: "Medborgardialog" }, "Dra ett dialogkort och slå D20 på kortets skala. Det kan sänka dina krav, ge riskbuffertar eller mer mark.", "")}
@@ -254,7 +285,7 @@ const VIEWS = {
             + `<div class="sumbar"><span class="mono" id="p1-sum">${draft.val ? "" : "Välj ett alternativ."}</span><button class="btn primary" id="btn-go" ${draft.val ? "" : "disabled"}>Lägg beslut</button></div>`;
     },
 
-    p1_res: (me) => head(`Runda ${S.round} av ${P1_ROUNDS}`, "Så gick rundan") + revealRows(S.reveal) + readyButton(),
+    p1_res: (me) => head(`Runda ${S.round} av ${p1r()}`, "Så gick rundan") + revealRows(S.reveal) + readyButton(),
     namnd(me) {
         const o = me.offer;
         const alt = (val, rubrik, nu) => `<button class="opt" data-hoj="${val}"><div class="typ">Vid miss</div><h3>Höj ${rubrik}</h3><div class="stats"><span class="stat">Nu ${nu}</span></div></button>`;
@@ -279,7 +310,7 @@ const VIEWS = {
                </div></div>`
             + `<h3 style="margin:16px 0 8px">Alla bolag</h3><div class="card"><table class="rank"><tr><th>Bolag</th><th>Projekt</th><th>BTA</th><th>ABT</th></tr>${S.players.map((p) =>
                 `<tr><td><span class="chip" style="display:inline-flex"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span></td><td>${p.n_projects}</td><td>${p.bta}</td><td>${fmt(p.abt, 0)}</td></tr>`).join("")}</table></div>`
-            + readyButton("Till del 2");
+            + readyButton(S.lage === "kampanj" ? "Till skede 2" : "Till del 2");
     },
 
     ac(me) {
@@ -289,14 +320,18 @@ const VIEWS = {
     },
 
     upph(me) {
-        draft.val ??= {};
+        const alla = !!S.shared.alla;       // kampanj: hela gruppen upphandlas av bolaget självt
+        draft.val ??= alla ? Object.fromEntries(me.offer.slots.map((s) => [s.slot, Math.max(s.min, s.auto)])) : {};
         const egna = Object.keys(draft.val).length;
         const fmtSlot = (x) => esc(x.charAt(0) + x.slice(1).toLowerCase());
         const effekter = (l, s) => `${l.q ? `<span class="stat ${l.q > 0 ? "good" : "bad"}">Q ${l.q > 0 ? "+" : ""}${l.q}</span>` : ""}${l.h ? `<span class="stat ${l.h > 0 ? "good" : "bad"}">H ${l.h > 0 ? "+" : ""}${l.h}</span>` : ""}${l.t ? `<span class="stat ${l.t < 0 ? "good" : "bad"}">${l.t > 0 ? "+" : ""}${l.t} mån</span>` : ""}${l.erf ? `<span class="stat ${l.erf > 0 ? "good" : "bad"}">Erf ${l.erf > 0 ? "+" : ""}${l.erf}</span>` : ""}${l.niva <= 2 && !ORG_SLOTS.includes(s.slot) ? `<span class="stat bad">Garantirisk</span>` : ""}`;
         const slots = Object.fromEntries(me.offer.slots.map((s) => [s.slot, s]));
-        return head("Upphandling", `Välj vilka ${S.shared.max} poster du upphandlar själv`,
-            `Alla 13 poster behövs. Du väljer högst ${S.shared.max} som du upphandlar själv och bestämmer nivå på. Varje sådan följs av ett händelsekort. Övriga poster får en slumpad nivå som är lika för alla bolag. De kostar som vanligt men ger varken händelser eller garantikort. Egna leverantörer på nivå 1–2 ger garantikort vid femårsbesiktningen.`)
-            + S.shared.grupper.map(([namn, gslots]) => `<h3 style="margin:14px 0 6px">${esc(namn)}</h3>` + gslots.map((slot) => {
+        return (alla
+            ? head(`Upphandling ${S.round} av ${S.shared.av}`, S.shared.grupper[0][0],
+                "Välj nivå på varje post. Högre nivå kostar mer men ger kvalitet, hållbarhet, erfarenhet och kompetens. Varje upphandling följs av ett händelsekort, och leverantörer på nivå 1–2 ger garantikort vid femårsbesiktningen.")
+            : head("Upphandling", `Välj vilka ${S.shared.max} poster du upphandlar själv`,
+                `Alla 13 poster behövs. Du väljer högst ${S.shared.max} som du upphandlar själv och bestämmer nivå på. Varje sådan följs av ett händelsekort. Övriga poster får en slumpad nivå som är lika för alla bolag. De kostar som vanligt men ger varken händelser eller garantikort. Egna leverantörer på nivå 1–2 ger garantikort vid femårsbesiktningen.`))
+            + S.shared.grupper.map(([namn, gslots]) => (alla ? "" : `<h3 style="margin:14px 0 6px">${esc(namn)}</h3>`) + gslots.map((slot) => {
                 const s = slots[slot];
                 const vald = draft.val[slot] != null;
                 const auto = s.levels.find((l) => l.niva === s.auto);
@@ -305,7 +340,7 @@ const VIEWS = {
                         <h3>${fmtSlot(slot)}</h3>
                         <span class="row">${s.min > 1 ? `<span class="stat bad">Projekten kräver nivå ${s.min}+</span>` : ""}
                         ${vald ? "" : `<span class="mono" style="font-size:.72rem">Automatiskt: nivå ${s.auto} · ${auto.kostnad} Mkr</span>`}
-                        <button class="btn" style="padding:5px 9px" data-egen="${esc(slot)}" ${!vald && egna >= S.shared.max ? "disabled" : ""}>${vald ? "✓ Själv" : "Upphandla själv"}</button></span>
+                        ${alla ? "" : `<button class="btn" style="padding:5px 9px" data-egen="${esc(slot)}" ${!vald && egna >= S.shared.max ? "disabled" : ""}>${vald ? "✓ Själv" : "Upphandla själv"}</button>`}</span>
                     </div>
                     ${vald ? `<div class="levels">${s.levels.map((l) => `<button class="lvl ${draft.val[slot] === l.niva ? "sel" : ""}" data-slot="${esc(slot)}" data-niva="${l.niva}" ${l.niva < s.min ? "disabled" : ""}>
                         <b>Nivå ${l.niva} · ${l.kostnad} Mkr</b><span class="nm">${esc(l.namn)}</span>
@@ -327,7 +362,7 @@ const VIEWS = {
         const k = S.shared.kort;
         draft.kultur ??= [];
         const komp = kompAfter(me);
-        return head(`Byggfas ${S.shared.steg} av 8 (${S.shared.runda} av ${S.shared.av} som du spelar)`, k.namn, `${esc(k.beskrivning)} Samma faskort gäller alla bolag. Du betalar med kompetenspoäng för att nå en nivå, och poängen är förbrukade efteråt.`)
+        return head(S.shared.av >= 8 ? `Byggfas ${S.shared.steg} av 8` : `Byggfas ${S.shared.steg} av 8 (${S.shared.runda} av ${S.shared.av} som du spelar)`, k.namn, `${esc(k.beskrivning)} Samma faskort gäller alla bolag. Du betalar med kompetenspoäng för att nå en nivå, och poängen är förbrukade efteråt.`)
             + `<div class="faskort"><div class="row" style="justify-content:space-between"><span class="kicker">Faskort · krav för ${esc(me.offer.kolumn)}</span><span class="kicker">${esc(k.id)}</span></div>
                <div class="nivaer">${me.offer.nivaer.map((n, i) => {
                    const ok = Object.entries(n.krav).every(([kk, v]) => (komp[kk] || 0) >= v);
@@ -350,7 +385,7 @@ const VIEWS = {
 
     slut2: (me) => head("Skede 2 klart", "Slutbesiktning, garanti och BRF-försäljning",
         "Varje steg du missar på tid, kvalitet och hållbarhet ger ett konsekvenskort. Vid femårsbesiktningen dras ett garantikort per konsekvenskort och ett per leverantör på nivå 1–2. Det som är kvar av ABT blir ditt täckningsbidrag (TB). BRF:er säljs och vinsten går till eget kapital.")
-        + revealRows(S.reveal) + readyButton("Till del 3"),
+        + revealRows(S.reveal) + readyButton(S.lage === "kampanj" ? "Till skede 3" : "Till del 3"),
 
     f_setup(me) {
         const card = (c, sel, attr, rows) => `<button class="opt ${sel ? "sel" : ""}" ${attr}="${esc(c.ID)}">
@@ -416,13 +451,13 @@ const VIEWS = {
                 <td>${b.slag.map((x) => `<span class="chip" style="display:inline-flex;margin:2px"><span class="dot" style="background:${x.color}"></span>${esc(x.name)} · ${esc(x.txt)}</span>`).join("")}</td>
                 <td style="text-align:right">🏠 <b>${esc(b.vinnare)}</b></td></tr>`).join("")}</table></div>` : "")
             + kort(S.reveal.omvarld, "Omvärldskort") + kort(S.reveal.kvartalskort && { ...S.reveal.kvartalskort, rubrik: `${S.reveal.kvartalskort.rubrik} (${typNamn(S.reveal.kvartalskort.typ)})` }, "Kvartalskort")
-            + revealRows(S.reveal) + readyButton("Till slutresultatet");
+            + revealRows(S.reveal) + readyButton(S.round < S.cfg.kvartal ? "Till nästa kvartal" : "Till slutresultatet");
     },
 
     final(me) {
         const r = S.shared.ranking;
         const mine = me.result;
-        return head("Slutresultat", `${esc(r[0].name)} vinner Kvarteret!`, "Tre delpoäng, en per skede: Utveckling = total anskaffning ÷ 100, Byggande = täckningsgrad (TG, %), Förvaltning = (fastighetsvärde obelånat + kassa) ÷ 30. Summan multipliceras med måluppfyllelsen f(n), där n är antalet missade steg på tid, kvalitet och hållbarhet.")
+        return head("Slutresultat", S.lage === "kampanj" ? (r[0].id === me.id ? "Du vinner kampanjen!" : `${esc(r[0].name)} vinner kampanjen`) : `${esc(r[0].name)} vinner Kvarteret!`, "Tre delpoäng, en per skede: Utveckling = total anskaffning ÷ 100, Byggande = täckningsgrad (TG, %), Förvaltning = (fastighetsvärde obelånat + kassa) ÷ 30. Summan multipliceras med måluppfyllelsen f(n), där n är antalet missade steg på tid, kvalitet och hållbarhet.")
             + `<div class="card"><table class="rank"><tr><th>Bolag</th><th>Utveckling</th><th>Byggande</th><th>Förvaltning</th><th>f(n)</th><th>Poäng</th></tr>
                ${r.map((p, i) => `<tr class="${i === 0 ? "winner" : ""}"><td><span class="chip" style="display:inline-flex"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span></td>
                <td>${fmt(p.skede1)}</td><td>${fmt(p.skede2)}</td><td>${fmt(p.skede3)}</td><td>${Math.round(p.f_n * 100)} %</td><td><b>${fmt(p.score)}</b></td></tr>`).join("")}</table>
@@ -432,13 +467,17 @@ const VIEWS = {
                     `<li><span class="kicker">Del ${l.del}</span><br>${esc(dec(l.text))} <span class="mono neg">${mkr(l.mkr, 1)}</span></li>`).join("") || "<li>Inga missar alls. Imponerande!</li>"}</ul></div>
                <div class="card"><h3>Det som gick bäst</h3><ul style="list-style:none;display:grid;gap:6px;margin-top:6px">${mine.basta.filter((l) => l.mkr > 0).map((l) =>
                     `<li><span class="kicker">Del ${l.del}</span><br>${esc(dec(l.text))} <span class="mono pos">${mkr(l.mkr, 1)}</span></li>`).join("") || "<li>—</li>"}</ul></div></div>`
-            + `<div class="analog"><div class="kicker">Vill du ha hela spelet?</div><h2 style="color:var(--paper)">Det här var Åkepol på 20 minuter</h2>
-               <p>Vid bordet tar spelet några timmar. Ni slår tärning runt Stadsbyggnadskontoret, pusslar in projektformer på tomten, upphandlar alla 13 organisationer och leverantörer och bygger genom alla åtta faserna. Sedan förvaltar ni fastigheterna med hävstång och yieldbana. Samma kort och samma ekonomi, men med mycket mer att diskutera.</p></div>`;
+            + (S.stad ? `<div class="sumbar"><span class="mono">Resultatet är fört till staden.</span><a class="btn primary" href="/staden?stad=${esc(S.stad)}" style="text-decoration:none">Tillbaka till staden</a></div>`
+            : S.lage === "kampanj"
+            ? `<div class="analog"><div class="kicker">Kampanjen är klar</div><h2 style="color:var(--paper)">Det här var hela Åkepol</h2>
+               <p>Du har tagit ett kvarter från markanvisning till ett års förvaltning. Vid bordet spelas samma kort, fast med tärningar, projektformer att pussla in på tomten och kollegor att diskutera varje beslut med. I Åkepol Staden fortsätter du kvarter efter kvarter med samma bolag.</p></div>`
+            : `<div class="analog"><div class="kicker">Vill du ha hela spelet?</div><h2 style="color:var(--paper)">Det här var Åkepol på 20 minuter</h2>
+               <p>Vid bordet tar spelet några timmar. Ni slår tärning runt Stadsbyggnadskontoret, pusslar in projektformer på tomten, upphandlar alla 13 organisationer och leverantörer och bygger genom alla åtta faserna. Sedan förvaltar ni fastigheterna med hävstång och yieldbana. Samma kort och samma ekonomi, men med mycket mer att diskutera.</p></div>`);
     },
 };
 
 function introView(step, del) {
-    const t = INTRO[step];
+    const t = (S.lage === "kampanj" ? INTRO_KAMPANJ : INTRO)[step];
     return head(DELAR[del].namn, t.rubrik) + `<div class="card"><p>${esc(t.text)}</p></div>` + analogBox(t.analog) + readyButton("Kör!");
 }
 
@@ -489,7 +528,7 @@ const BIND = {
             const l = s.levels.find((x) => x.niva === (draft.val[s.slot] ?? s.auto));
             if (l) { cost += l.kostnad; q += l.q; h += l.h; erf += l.erf; }
         }
-        $("upph-sum").innerHTML = `${Object.keys(draft.val).length} av ${S.shared.max} själv · Totalt ${cost} Mkr → ABT kvar ${fmt(me.abt - cost, 0)} Mkr · Q ${q}/${me.q_krav} · H ${h}/${me.h_krav} · Erf ${erf}`;
+        $("upph-sum").innerHTML = `${S.shared.alla ? "" : `${Object.keys(draft.val).length} av ${S.shared.max} själv · `}Totalt ${cost} Mkr → ABT kvar ${fmt(me.abt - cost, 0)} Mkr · Q ${q}/${me.q_krav} · H ${h}/${me.h_krav} · Erf ${erf}`;
         $("btn-go").onclick = () => submit({ val: draft.val });
     },
     fas(me) {
@@ -544,8 +583,31 @@ function meter(label, val, krav, invert = false) {
     return `<div class="meter"><div class="lbl"><span>${label}</span><span>${val} / ${krav}${ok ? " ✓" : ""}</span></div><div class="track"><div class="fill ${ok ? "" : "short"}" style="width:${pct}%"></div></div></div>`;
 }
 
+// Kvarteret i 3D: volymer under projektutvecklingen, bygge i skede 2, färdigt i förvaltningen
+let diorama = null, dioramaFel = false;
+function renderDiorama() {
+    const me = S.me, ruta = $("vy3d");
+    if (!me || S.step === "lobby" || dioramaFel) { ruta.hidden = true; return; }
+    ruta.hidden = false;
+    if (!diorama) {
+        try { diorama = skapaDiorama(ruta); } catch (e) { dioramaFel = true; ruta.hidden = true; return; }
+    }
+    const fasSteg = ["fas", "fas_res"].includes(S.step) ? S.round - (S.step === "fas" ? 1 : 0) : 0;
+    const byggt = S.step === "slut2" || S.del === 3;
+    const lage = byggt ? "klart" : ["upph", "upph_res", "fas", "fas_res"].includes(S.step) ? "bygge" : "plan";
+    const egna = new Set(me.projects.map((p) => p.id));
+    diorama.kvarter({
+        rutor: me.rutor, lage, bygg: 0.08 + 0.9 * (fasSteg / Math.max(1, S.cfg.fas_rundor)),
+        projekt: me.projects.map((p) => ({ id: p.id, namn: p.namn, typ: p.typ, rutor: p.rutor })),
+        kopta: S.del === 3 ? me.props.filter((p) => !egna.has(p.id)).map((p) => ({ typ: p.typ })) : [],
+    });
+}
+
 function renderAside() {
     const me = S.me;
+    renderDiorama();
+    $("mentor").hidden = !S.mentor;
+    if (S.mentor) $("mentor").innerHTML = `<div class="kicker">Mentorn</div><p>${esc(S.mentor)}</p>`;
     if (!me || S.step === "lobby") { $("aside").innerHTML = ""; return; }
     let html = `<div class="card"><div class="row"><span class="chip"><span class="dot" style="background:${me.color}"></span>${esc(me.name)}</span></div>`;
     if (S.del === 1) {
@@ -587,16 +649,24 @@ setInterval(() => {
     $("h-progress").style.width = progressPct();
 }, 500);
 
-const ORDER = ["intro1", "pc", "p1", "p1_res", "namnd", "namnd_res", "slut1", "intro2", "ac", "upph", "upph_res", "fas", "fas_res", "slut2", "intro3", "f_setup", "kvartal", "kvartal_res", "final"];
 function progressPct() {
     if (!S || S.step === "lobby") return "0%";
-    const i = ORDER.indexOf(S.step);
-    return `${Math.round(((i + 1) / ORDER.length) * 100)}%`;
+    return `${Math.round(((S.idx + 1) / Math.max(1, S.antal_steg)) * 100)}%`;
 }
 
 // ── Återanslut om sidan laddas om ──
 
+if (KAMPANJ) {
+    document.title = "Åkepol – Kampanj";
+    $("start-kicker").textContent = "Åkepol · hela spelet i egen takt";
+    $("start-h1").innerHTML = "Kam<em>panj</em>";
+    $("start-lead").textContent = "Ta ett kvarter från markanvisning till ett års förvaltning: sex rundor projektutveckling, alla 13 upphandlingar, åtta byggfaser och fyra kvartal. Ingen klocka, en mentor som förklarar reglerna när de behövs, och två datorbolag att mäta dig mot. Räkna med ett par timmar. Spelet sparas, så du kan fortsätta en annan dag.";
+    $("btn-create").textContent = "Starta kampanjen";
+}
+
 const saved = loadSession();
 const urlRum = new URLSearchParams(location.search).get("rum");
-if (saved && (!urlRum || urlRum === saved.code)) enter(saved.code, saved.pid);
+const urlPid = new URLSearchParams(location.search).get("pid");   // från Åkepol Staden
+if (urlRum && urlPid) enter(urlRum, urlPid);
+else if (saved && (!urlRum || urlRum === saved.code)) enter(saved.code, saved.pid);
 else if (urlRum) $("code").value = urlRum;
