@@ -1,0 +1,53 @@
+{
+  "storlek_namn": "58x88",
+  "card_w_mm": 58,
+  "card_h_mm": 88,
+  "rot": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\",
+  "tryck_mapp": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\",
+  "poster": [
+    {
+      "basnamn": "F_personal_bildsida",
+      "stem": "F_personal",
+      "sida_typ": "bild",
+      "exemplar_nr": 1,
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_personal_bildsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_personal_bildsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\F_personal_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\4. Förvaltning\\F_personal.csv",
+      "fas_prefix": "F_"
+    },
+    {
+      "basnamn": "F_personal_textsida",
+      "stem": "F_personal",
+      "sida_typ": "text",
+      "exemplar_nr": 1,
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_personal_textsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_personal_textsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\F_personal_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\4. Förvaltning\\F_personal.csv",
+      "fas_prefix": "F_"
+    },
+    {
+      "basnamn": "F_yield_bildsida",
+      "stem": "F_yield",
+      "sida_typ": "bild",
+      "exemplar_nr": 1,
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_yield_bildsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_yield_bildsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\F_yield_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\4. Förvaltning\\F_yield.csv",
+      "fas_prefix": "F_"
+    },
+    {
+      "basnamn": "F_yield_textsida",
+      "stem": "F_yield",
+      "sida_typ": "text",
+      "exemplar_nr": 1,
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_yield_textsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\F_yield_textsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\F_yield_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\4. Förvaltning\\F_yield.csv",
+      "fas_prefix": "F_"
+    }
+  ]
+}

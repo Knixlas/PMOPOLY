@@ -1,0 +1,2409 @@
+
+Åkepol REGELHÄFTE
+
+Regel-
+häfte
+
+
+
+
+
+1. Välkommen till Åkepol
+
+Åkepol är en strategisk simulation av hela livscykeln för ett fastighetsutvecklingsprojekt, från
+
+det att marken förvärvas, genom planering och produktion, till långsiktig förvaltning av den
+
+färdiga portföljen. Spelet är designat för att tränat upp förståelsen för hur projektledningens
+
+beslut påverkar kvalitet, hållbarhet, tid och ekonomi i verkliga byggprojekt.
+
+Varje val har konsekvenser. Den som lyckas balansera ambition med realism, och kortsiktig
+
+vinst med långsiktig kvalitet, vinner.
+
+1.1 Spelets mål
+
+Bygg en fastighetsportfölj som ger högst poäng. Slutformeln är:
+
+Slutformel
+
+Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)
+
+Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.
+
+Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz
+
+Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.
+
+Det  kvarter  med  högst  poäng  när  Förvaltningen  är  klar  har  skapat  det  effektivaste
+
+förvaltningsbolaget och vinner spelet.
+
+1.2 Bolagsstruktur: Dotterbolag till Moderbolaget
+
+Ni leder ett fastighetsutvecklingsbolag som är ett dotterbolag till Moderbolaget, en tyst men
+
+ekonomiskt stark partner.
+
+Moderbolagets enda insats, som dock inte ska underskattas, är att garantera byggnadskredi‐
+tiv under produktionen, samt att erbjuda moderbolagslån om kapitalet inte skulle räcka under
+
+förvaltningen. Moderbolaget driver inget operativt och har ingen styrning över portföljen, men
+
+dess ekonomiska ryggrad är vad som möjliggör projekt i den storleksordningen dotterbolaget
+
+arbetar med.
+
+Moderbolagets praktiska roll
+
+Garanterar byggnadskreditivet under Genomförandet.
+
+Erbjuder moderbolagslån om ABT-budgeten tar slut (100 Mkr per lån, 95 betalas ut). Se 6.2.
+
+Moderbolagslån påverkar Förvaltningen hårt, sista utvägen, inte en strategi.
+
+ÅKEPOL · Regelbok
+
+1
+
+
+
+1.3 Geografisk hierarki: Stad, Stadsdel, Kvarter, Projekt
+
+Åkepol använder följande hierarki för att beskriva var och vad:
+
+Stad Den övergripande marknaden där dotterbolaget verkar.
+
+Stadsdel Varje spelplan i Åkepol = en stadsdel. Stadsdelen rymmer 1–4 kvarter (be‐
+roende  på  antal  spelare)  plus  de  fastigheter  som andra  aktörer  redan
+
+byggt utanför de dotterbolagen som agerar på spelplanerna.
+
+Kvarter Det område där bolagsledningen sätter samman sin projektmix. Kvarteret
+
+består  av  mark  (4×4  =  16  celler,  den  ursprungliga  byggrätten)  plus
+
+eventuella markexpansioner som utökar byggrätten.
+
+Projekt Enskilda  byggprojekt  (BRF,  Hyresrätter,  Kontor,  Lokal,  Förskola,  m.fl.).
+
+Projekten passas in i kvarteret som ett pussel med fysiska former.
+
+Tomt Hela  det  område  som  tillhör  bolagsledningen.  Är  större  än  marken,
+
+fungerar som arbetsyta runt kvarteret.
+
+Mark Den ursprungliga byggrätten, 4×4 = 16 celler. Det är där projekt får place‐
+ras.
+
+Markexpansion Utökning  av  byggrätten.  Mark  +  markexpansioner  är  den  totala  yta
+
+projekten ska rymmas på för att bilda kvarteret.
+
+Det finns två rolluppsättningar i Åkepol som är lätta att blanda ihop:
+
+Roller runt bordet vs roller i spelet
+
+CEO, CFO och COO är spelarna runt bordet, det vill säga dotterbolagets ledningsgrupp som
+
+tar de övergripande besluten och fördelar arbetet sinsemellan (se 1.6).  Personkorten med
+
+dessa titlar väljs i 2.3.
+
+Projektchef (PC), Arbetschef (AC) och Fastighetschef (FC) är mekanismer i spelet, kort som
+
+väljs  in  i  organisationen  och  som  ger  erfarenhet,  kompetenser  och  bonusar  genom
+
+respektive skede.
+
+Hierarkin  används rakt  igenom spelet.  I  Projektutvecklingen driver  Projektchefen ett  pro‐
+
+gramhandlingsarbete för att maximera kvarterets potential. Under Planering och Genomfö‐
+
+rande tar Arbetschefen ansvar för upphandling och produktion. I Förvaltningen leder Fastig‐
+hetschefen den löpande driften och agerar på stadsdelens fastighetsmarknad där fastigheter
+
+som byggts av andra aktörer finns att köpa.
+
+**
+
+ÅKEPOL · Regelbok
+
+2
+
+
+
+1.4 Spelets struktur: tre skeden
+
+Spelet är strukturerat i tre skeden, varje med sina egna mekaniker:
+
+Skede 1 Projektutveckling.  Programhandlingen  för  ett  kvarter  tas  fram,
+
+markförvärv, projektval, nämndbeslut.
+
+Skede 2 Planering (2.1, 13 steg) och Genomförande (2.2, 8 utförandefaser). Samma
+
+fysiska bräde.
+
+Skede 3 Förvaltning. 4 kvartal med händelser, drift, köp och sälj.
+
+1.5 Spelkomponenter
+
+Översikt: tomt (16×16) med markens 4×4, plus exempel på markexpansion som utökar bygg‐
+rätten.
+
+Balans- och resultaträkning, ett blad per kvarter för manuella noteringar. Kan ersättas av
+
+Companion, den digitala balans- och resultaträkningen.
+
+ÅKEPOL · Regelbok
+
+3
+
+
+
+**
+
+Skede 1: Projektutveckling — PU (bruna kort)
+
+Stadsdelsbräde  för
+
+Projektutveckling
+
+1
+
+Scoreboard 1 per kvarter
+
+Tomter 16×16 rutnät, 256 celler, 1 per kvarter
+
+Ursprunglig mark 4×4 rutnät, 16 celler, 1 per kvarter
+
+Markexpansioner 16 st, 2-5 celler
+
+Projektkort 45 st, Olika projekttyper med BTA, anskaffning, form och Q/H-påverkan.
+
+Projektformer 45 st, ett per projekt
+
+Händelsekort 52 händelsekort, blandat positiv och negativ effekt
+
+BTA/BYA Klassificeringskort för BTA och BYA.
+
+Projektchefer (PC) 10 st.
+
+Arbetschefer (AC) 10 st.
+
+Skede 2.1: Planering — PL (blå kort)
+
+Leverantörer 9 typer, 4 nivåer. Finns i 4 exemplar (ett set per kvarter).
+
+Organisation 4 typer, 4 nivåer. Finns i 4 exemplar (ett set per kvarter).
+
+Planeringshändel‐
+sekort
+
+56 st. Dras parallellt med varje planeringssteg samt efter varje FAS. (ett
+
+set per kvarter).
+
+Skede 2.2: Genomförande — GF (gröna kort)
+
+FAS-kort Ett per utförandefas (8 st), tre kolumner per kvartertyp och fyra utfallsni‐
+våer.
+
+Konsekvenskort 32 st, Q-, H- och T-konsekvenser vid skedesavslut.
+
+Garantibesiktning 44 st, Dras vid skedets ekonomiska uppgörelse, alltid ≤ 0.
+
+Kulturkort 80 st, delas av samtliga kvarter.
+
+ÅKEPOL · Regelbok
+
+4
+
+
+
+Skede 3: Förvaltning — F (röda kort)
+
+Personalkort 8 FC (Fastighetschef) och 15 FS (Förvaltningsstöd).
+
+Händelsekort 10 per fastighetstyp (Hyresrätt, Kontor, Lokal, Förskola), egen draghög per
+
+typ.
+
+Omvärldskort 16 st. Påverkar alla kvarter, ett vänds per kvartal.
+
+Yieldkort 16 per typ. Egen draghög, uppdaterar yielden för marknaden.
+
+DD-kort 15 st. Due Diligence, dras efter varje köp på sekundärmarknaden.
+
+Kvartalskort 8 per kvartal.
+
+Övergripande personkort
+
+CEO 8 st.
+
+CFO 8 st.
+
+COO 8 st.
+
+• 
+
+ÅKEPOL · Regelbok
+
+5
+
+
+
+Markörer:
+
+Färgade kuber,  nuläge
+
+för  Q  (Kvalitet),  H
+
+(Hållbarhet),  T  (Bygg‐
+tid) och erfarenhet.
+
+1 av vardera per kvarter
+
+Grå/svarta  markörer,
+
+Q-krav och H-krav
+
+1 av vardera per kvarter
+
+Gul/vita  markörer,  för
+
+BTA-  och  BYA-klass
+
+samt kvarterstyp.
+
+3 st per kvarter
+
+Stjärnmarkörer,  risk‐
+buffertar (Rb).
+
+Bokstavsbrickor,  för
+
+justering  av  energik‐
+lass A–E.
+
+Spelpjäser 1 per kvarter (för Skede 1-brädet).
+
+Tärningar D6 för rörelse på Skede 1-brädet, D20 för utfall vid händelser. D4, D8, D10
+
+och D12 finns för enstaka tillfällen
+
+1.6 Lag-rollfördelning vid flera personer per kvarter
+
+Om flera personer spelar i samma lag används ledningskortens roller för en naturlig arbets‐
+delning:
+
+CEO Regelhäftet, strategi, övergripande beslut, läser upp instruktioner.
+
+COO Alla kort och fysiska delar, drar kort, placerar projekt, hanterar markörer.
+
+CFO Sammanräkningar och appen, håller koll  på ABT, scoreboarden, balans-
+
+och resultaträkningen, och allt digitalt i Companion.
+
+ÅKEPOL · Regelbok
+
+6
+
+
+
+1.7 Snabbreferens: centrala begrepp
+
+Q-krav · H-krav Krav på Kvalitet och Hållbarhet. Startar på 6 (från Detaljplanen) och juste‐
+
+ras endast under Skede 1 av projekten. Markeras med grå/svart spelmar‐
+kör.
+
+Q · H Faktiskt utfall för Kvalitet och Hållbarhet. Justeras endast under Skede 2
+
+(även T-utfallet).  Markeras med färgad kub. Jämförs mot Q-krav och H-
+
+krav vid skedesavslut.
+
+T-krav Byggtid, kravet är fast: 12 månader. Rör sig aldrig.
+
+T Byggtidsutfallet (färgad kub). Startar på 12. Vid Planeringens setup ökar det
+
+med det högsta projektets T-värde, max till 14. Rör sig vidare i Genomfö‐
+randet via FAS-kort och händelser. T kan aldrig sjunka under 8.
+
+Anskaffning De pengar som finns för att genomföra projektet till överlämning till fastig‐
+hetsägaren  (i  Mkr).  Ska  räcka  till  tomtkostnad,  markexpansion  och
+
+utveckling, det som blir kvar är ABT-budget.
+
+ABT-budget Det som blir kvar av anskaffningen efter Projektutvecklingens kostnader.
+
+Täcker kostnader för planering och produktion, inklusive täckningsbidrag
+
+för generalentreprenören.
+
+Eget kapital Kassa minus moderbolagslån.
+
+FV (fastighetsvärde) Driftnetto (år) ÷ Yield. Energibonusen multipliceras in vid slutsammanräk‐
+ningen.
+
+Kvartertyp BOSTÄDER, BOSTAD+1 eller ÖVRIGA, bestäms av projektmixen i ert kvarter.
+
+D20 + erfarenhet Slag vid alla händelsekort. Erfarenheten är ackumulerad (max 12).
+
+Nämndkrav Det värde som måste överträffas när ett projekt ska genom nämnden. Står
+
+på projektkortet. D20 + Nämnd-bonus (från PC) jämförs med Nämndkravet,
+
+erfarenhet räknas INTE.
+
+Riskbuffert (Rb) Stjärnmarkör.  Två  användningar:  omslag  på  dåligt  slag,  eller  sänka
+
+projektkrav vid skedesövergång.
+
+ÅKEPOL · Regelbok
+
+7
+
+
+
+D E L  I I  S P E L F Ö R B E R E D E LS E
+
+
+
+ÅKEPOL · Regelbok
+
+9
+
+
+
+2. Setup: innan första draget
+
+Innan första draget genomförs setup för Skede 1. Setup för Skede 2 och Skede 3 sker när
+
+respektive skede inleds.
+
+2.1 Allmänna setup-regler
+
+Tärningar, en uppsättning per kvarter.
+
+Vad betyder D6, D20?
+
+D = die (engelska för tärning). Siffran efter D är antalet sidor.
+
+D6 = sexsidig tärning (1–6). Används för rörelse på Skede 1-brädet.
+
+D20 = tjugosidig tärning (1–20). Används för händelsehantering, händelsekort, nämndbeslut,
+
+m.m.
+
+D4, D8, D10 och D12 förekommer på enstaka kort.
+
+Alla korthögar blandas innan de placeras som draghögar.
+
+Varje kvarter (bolagsledning) väljer en spelpjäs och lägger sin scoreboard framför sig.
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+10
+
+
+
+2.2 Förkortningar i regelhäftet
+
+Förkortningar förklaras vid första användningstillfället. Här är de viktigaste:
+
+PC Projektchef.
+
+AC Arbetschef.
+
+FC Fastighetschef.
+
+FS Förvaltningsstöd.
+
+Q Kvalitet.
+
+H Hållbarhet.
+
+T Byggtid (i månader).
+
+BTA Bruttototalarea (kvm).
+
+BYA Byggnadsarea (kvm).
+
+ABT Allmänna  bestämmelser  för  totalentreprenad.  ABT-budget  =
+
+entreprenadbudget för Genomförandet.
+
+TB Täckningsbidrag (ABT-budget − faktisk ABT-kostnad).
+
+TG Täckningsgrad (TB ÷ ABT-budget).
+
+FV Fastighetsvärde.
+
+Rb Riskbuffert (stjärnmarkör).
+
+STA · KOM · SAM · NOG
+
+· INN · ABM
+
+De  sex  kompetenserna:  Stabilitet,  Kommunikation,  Samarbete,
+
+Noggrannhet, Innovation, Arbetsmiljö.
+
+dotterbolag Joint venture, Moderbolaget äger bolaget och tillsätter ledningsgruppen.
+
+DD Due Diligence, köpsbesiktningskort i Förvaltningen.
+
+2.3 Företagsledningen: välj era roller
+
+Varje  bolagsledning  väljer  tre  personkort:  ett  CEO-,  ett  CFO-  och  ett  COO-kort.  Korten
+
+beskriver er ledning.
+
+Personkorten  ger  färg  åt  vem  ni  är  som  bolag.  Vid  lagspel:  använd  dem  för  naturlig
+
+arbetsdelning enligt 1.6.
+
+DEL III SKEDE 1: FÖRE PRODUKTION
+
+I det första skedet utvecklar ni programhandlingen för ett kvarter. Ni förvärvar mark, väljer
+
+projekt, hanterar politiska och tekniska händelser, och beslutar om era projekt får genomfö‐
+ras.
+
+ÅKEPOL · Regelbok
+
+11
+
+
+
+Skede  1-brädet:  24  rutor  i  ring  med  fyra  hörnrutor  (Stadsbyggnadskontoret,  Stadshuset,
+
+Länsstyrelsen, Skönhetsrådet) samt Scoreboard.
+
+Skede 1: Projektutveckling
+
+ÅKEPOL · Regelbok
+
+12
+
+
+
+3. Markförvärv och projektval
+
+I Projektutvecklingen rör sig Projektchefen runt Skede 1-brädet med sin spelpjäs. Brädet re‐
+presenterar Projektutvecklingens olika beslutsstationer.  Vid varje runda och station fattas
+
+beslut som påverkar projektkraven (Q, H, T) och anskaffningen.
+
+3.1 Setup för Projektutvecklingen
+
+Lägg Skede 1-brädet i mitten av bordet.
+
+Sortera och blanda PU-korten (bruna).  Placera draghögarna på sina rutor:  projektkort,
+
+politik/dialog, mark, BTA/BYA, markexpansion, PU-personal.
+
+Varje  kvarter  placerar  sin  spelpjäs  på  startrutan.  På  er  tur  slår  ni  D6  och  flyttar
+
+spelpjäsen det antalet steg medsols runt Skede 1-brädet.
+
+Varje kvarter lägger sin scoreboard framför sig.
+
+Sätt två grå/svarta spelmarkörer på scoreboarden: Q-krav = 6 och H-krav = 6. Detta är ut‐
+gångskravet, det kommer från Detaljplanen och justeras sedan av projekten under Pro‐
+jektutvecklingen.
+
+Sätt T-utfallet (färgad kub) på 12 och erfarenhetskuben på 0.
+
+Scoreboarden: Q-skala och H-skala med två markörer var (grå/svart krav + färgad kub), T-skala (1
+
+färgad kub), erfarenhetsskala, riskbuffert-rutor, BTA/BYA-fält (gul/vita markörer), plats för sparade
+
+leverantörer nivå 1-2.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+13
+
+
+
+3.2 Tomten, marken och kvarteret
+
+Tomten är ett 16×16 rutnät (256 celler) som utgör hela ert område. På tomten ligger marken:
+
+ett 4×4 rutnät (16 celler) som är den ursprungliga byggrätten. Det är på marken (plus eventu‐
+
+ella markexpansioner som utökar byggrätten) som projekten ska placeras för att bilda kvar‐
+teret.
+
+Markexpansioner kan tillkomma under spelets gång via Hörnruta: Stadsbyggnadskontoret el‐
+ler markexpansionsruta (se 3.7). Varje expansion utökar marken med fysiska celler.
+
+3.3 Projektkort och projektkrav
+
+Varje projektkort visar projekttyp (BRF, Hyresrätt,  Kontor,  Lokal,  Förskola etc.),  projektets
+
+fysiska form, BTA, anskaffning, och projektets påverkan på Q-kravet och H-kravet.
+
+Ett  projektkort  med  fält:  projekttyp,  form,  BTA,  anskaffning,  Q/H-påverkan,  Nämndkrav,
+
+eventuella riskbuffertar.
+
+Q-krav vs Q: och H-krav vs H
+
+Q-krav (grå/svart markör) är vad kvarteret MÅSTE leverera. Startvärdet 6 kommer från De‐
+taljplanen, det är markens grundkrav. Varje projekt kan höja eller sänka Q-kravet utöver det‐
+ta.
+
+Q (färgad kub) är vad kvarteret FAKTISKT levererar, det utfall som mäts upp i Genomförandet
+
+via FAS-korten och händelser. Det är Q som jämförs med Q-kravet vid skedesavslut.
+
+Samma logik gäller H-krav (grå/svart) och H (färgad kub).
+
+T-kravet är fast: 12 månader. Det rör sig aldrig. Det är T-utfallet (färgad kub) som rör sig,
+
+startar på 12, ökar vid Planeringens setup (max till 14), och flyttas vidare i Genomförandet. Vid
+
+skedesavslut jämförs T-utfallet mot T-kravet 12.
+
+ÅKEPOL · Regelbok
+
+14
+
+
+
+När ett kvarter drar ett projektkort får bolagsledningen välja:
+
+Ta projektet, kortet hamnar hos kvarteret och projektet är en del av programhandlingen.
+
+Lägg det i projektbanken, kortet placeras öppet i en gemensam pool. Vilket kvarter som
+
+helst får senare plocka upp det.
+
+När ett projekt tas justeras Q-kravet och H-kravet på scoreboarden enligt projektets värden.
+
+Det är de GRÅ/SVARTA spelmarkörerna som flyttas, inte de färgade resultatkuberna. De fär‐
+gade kuberna börjar likadant som kravmarkörerna och flyttas senare i Genomförandet när
+
+faktiska utfall registreras.
+
+3.4 Händelsekort under Projektutvecklingen
+
+Vid vissa rutor på Skede 1-brädet drar bolagsledningen ett händelsekort. Det är en bunt på 52
+
+kort som täcker både vanliga händelser och specialhändelser. För varje händelse:
+
+Slå D20 (tjugosidig tärning) och addera er ackumulerade erfarenhet.
+
+Resultatet jämförs med kortets skala, utfallet kan vara från allvarligt problem till bonus.
+
+Riskbuffertar (stjärnmarkörer) får användas för omslag enligt 3.6.
+
+Använda kort läggs i spelboxen.
+
+3.5 D20-skalan: riktlinjer
+
+(Skalan kan vara olika på individuella kort, så kontrollera per
+kort)
+
+≤ 5 Allvarligt utfall, den värsta händelsen på kortet.
+
+6–17 Standardutfall, det som vanligtvis händer.
+
+18–20 Bra utfall, viss bonus eller mildring.
+
+21+ Utmärkt utfall, endast nåbart med hög erfarenhet. Maximal bonus.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+15
+
+
+
+3.6 Riskbuffert (Rb)
+
+Riskbuffertar (stjärnmarkörer) kan fås på flera sätt:
+
+Rutor på brädet (stjärnrutor på Skede 1-brädet).
+
+När projekt passerat nämnden (vissa projektkort har Rb som aktiveras efter Nämndbeslu‐
+tet).
+
+Händelsekort som ger Rb som utfall.
+
+Personkort som ger Rb (t.ex. vissa PC-kort).
+
+Riskbuffertar har två användningar:
+
+Omslag på dåligt slag, om D20 + erfarenhet inte gav önskat utfall får ni betala 1 Rb och slå
+
+om. Max 1 Rb per slag, max 1 omslag per slagomgång (ingen tredje serve).
+
+Sänka projektkrav vid skedesövergång, innan Planeringen startar får Rb användas för att
+
+sänka Q-krav, H-krav eller T med 1 steg per Rb. T kan aldrig sjunka under 8; Q-krav och H-
+
+krav kan aldrig gå under 0.
+
+3.7 Hörnrutorna: institutionerna
+
+Skede 1-brädet har fyra hörnrutor som representerar viktiga institutioner i fastighetsutveck‐
+lingsprocessen. När er spelpjäs passerar eller stannar på en hörnruta får ni dess effekt.
+
+Hörnruta:  Stadsbygg‐
+nadskontoret
+
+Ni får möjlighet att dra ett markexpansionskort. Markexpansion kostar 5
+
+Mkr  per  styck.  Beloppet  dras  från  anskaffningssumman för  att  få  fram
+
+ABT-kostnad.
+
+Hörnruta: Stadshuset Ni får ta, lämna tillbaka eller byta ett projektkort.
+
+Hörnruta:  Länsstyrel‐
+sen
+
+Minska Q-krav och/eller H-krav med totalt 2 steg, fördela valfritt (2-0, 1-1
+
+eller 0-2). De grå/svarta spelmarkörerna flyttas.
+
+Hörnruta:  Skönhetsrå‐
+det
+
+Minska Q-krav och/eller H-krav med totalt 2 steg, fördela valfritt (2-0, 1-1
+
+eller 0-2). De grå/svarta spelmarkörerna flyttas.
+
+3.8 Personalkort: Projektchef (PC)
+
+Under Projektutvecklingen väljer kvarteret en projektchef (PC). PC-kortet ger:
+
+Erfarenhetsbonus som adderas till D20-slag genom hela spelet.
+
+Eventuella riskbuffertar (stjärnmarkörer), kan användas enligt 3.6.
+
+Eventuella kompetenser (STA, KOM, SAM, NOG, INN, ABM) som hjälper i Genomförandet.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+16
+
+
+
+**
+
+ÅKEPOL · Regelbok
+
+17
+
+
+
+4. Nämndbeslut och placering
+
+När alla rundor är gjorda kommer nämndbeslutet, moment då bolagsledningen får besked om
+
+vilka projekt som faktiskt får genomföras, och projekten placeras i kvarteret.
+
+4.1 Nämndbeslutet
+
+För varje projekt ni tagit slår ni ett D20-slag. Tröskeln (Nämndkravet) står på projektkortet,
+
+oftast en låg siffra. Ni får addera nämndbonus från er PC.
+
+D20 + Nämnd-bonus jämförs med Nämndkravet på projektkortet.
+
+Misslyckat slag, projektet lämnas tillbaka.
+
+Lyckat slag, projektet godkänns och går vidare till placering.
+
+Erfarenhetsbonusen påverkar INTE detta slag.
+
+4.2 Komplettera er projektmix
+
+Efter nämndbeslutet, innan placeringen, får ni ta nya projekt från projektbanken och från de
+
+översta korten i respektive projekthög. Pris: 3 gånger utvecklingskostnaden per projekt.
+
+Detta gäller både er som tappade projekt i nämnden och er som vill byta strategi efter att ha
+
+sett utfallet.
+
+Sker i spelordning: ett kvarter i taget
+
+Bolagsledningarna  kompletterar  i  tur  och  ordning  enligt  spelordningen,  inte  samtidigt.
+
+Eftersom projekten ligger i en gemensam pool ändras förutsättningarna när någon tar ett
+
+kort.
+
+Om någon tar ett projekt från projekthögen och en annan bolagsledning vill omvärdera sitt
+
+val tar ni ett nytt varv, tills alla är nöjda. Spelordningen gäller fortfarande genom hela proce‐
+duren.
+
+I praktiken sitter ni mycket med era egna pussel, men innan ni tar ett projekt: respektera
+
+spelordningen och fråga om någon annan är ute efter samma kort.
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+18
+
+
+
+4.3 Placering: kvarteret som pussel
+
+Ni  lägger  nu  pussel:  alla  godkända  projekt  ska  placeras  på  er  mark  plus  eventuella
+
+markexpansioner. Tillsammans bildar de kvarteret. Reglerna är:
+
+Allt måste rymmas på er mark, inklusive expansioner.
+
+Inget  projekt  får  sticka  ut  utanför  mark+expansioner,  eller  överlappa  andra  projekt  i
+
+samma lager.
+
+Bostadsprojekt (BRF och Hyresrätt) får läggas ovanpå andra projekt, men hela bostads‐
+formen måste vila på underliggande projektbitar. Inga "hål" där bostaden hänger i luften.
+
+Placeringsexempel: en godkänd projektmix (alla bostadsbitar vilar på underlag) bredvid en
+
+ogiltig (bostad hänger i luften).
+
+OBS Spelförenkling
+
+Att  placera bostäder  ovanpå andra projekttyper  är  spelets  sätt  att  illustrera flerskiktade
+
+kvarter.  I  verkligheten  är  det  byggrättsligt  ofta  inte  tillåtet  eller  mycket  komplicerat,
+
+detaljplaner, brandkrav och bjälklagstyper sätter hårda gränser.
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+19
+
+
+
+4.4 Kvartertyp: vad har ni byggt?
+
+När pusslet är klart är kvarteret klassificerat som en av tre kvarterstyper. Detta påverkar
+
+händelsekorten i Planeringen och FAS-korten i Genomförandet.
+
+BOSTÄDER Endast BRF och/eller Hyresrätt. Mildaste händelse- och FAS-kort.
+
+BOSTAD+1 BRF/HR plus max en (1) annan projekttyp. Medelsvåra händelse- och FAS-
+
+kort.
+
+ÖVRIGA BRF/HR plus minst två andra projekttyper.  Hårdast händelse- och FAS-
+
+kort.
+
+ÅKEPOL · Regelbok
+
+20
+
+
+
+5.  Anskaffning,  ABT-budget  och
+övergång till Skede 2
+
+5.1 Anskaffningen: er inkomst från projektet
+
+Anskaffningen är de pengar som finns för att genomföra projektet till överlämning till fastig‐
+
+hetsägaren (i Mkr). Det är kvarterets budget, aldrig en kostnad. Skriv inte anskaffningskost‐
+nad.
+
+Anskaffningen ska räcka till:
+
+Tomtkostnad (markförvärv).
+
+Markexpansion (5 Mkr per styck).
+
+Utvecklingskostnaden för alla projekt som klarade nämnden, även de ni inte placerade. Ni
+
+har bekostat utvecklingen oavsett.
+
+Det som blir kvar är er ABT-budget, det ni har att spendera i Genomförandet. Notera den på
+
+balans- och resultaträkningen (eller i Companion-koden).
+
+5.2 Sista justering: använd Rb om ni vill
+
+Innan Planeringen startar får riskbuffertar användas enligt 3.6 för att sänka Q-krav, H-krav
+
+eller T (1 Rb = 1 steg). Golv: T kan aldrig sjunka under 8; Q-krav och H-krav kan aldrig gå under
+
+0.
+
+5.3 Avslut av Projektutvecklingen
+
+Lägg  Skede  1-brädet,  PU-händelsekorten,  markexpansionkorten  och  PU-personalkorten  i
+
+spelboxen. Projektutvecklingen är nu klar.
+
+Projektkorten BEHÅLLS, både de placerade och de godkända projekt som inte placerats. Ej
+
+godkända BRF-projekt kan tas bort, eftersom BRF inte används i Förvaltningen (de säljs efter
+
+Skede 2).
+
+DEL IV SKEDE 2: UNDER PRODUKTION
+
+Skede 2 spelas på samma fysiska bräde och består av två delar: Planering (2.1) följt av Ge‐
+
+nomförande (2.2). I Planeringen handlar kvarteret upp leverantörer och bygger sin organisa‐
+tion. I Genomförandet byggs projektet, åtta utförandefaser med FAS-kort, kompetensspel och
+
+händelser.
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+21
+
+
+
+Skede 2-brädet:  en blå och en grön spelplan på samma bräde. De blå används under 2.1
+
+Planering och de gröna under 2.2 Genomförande.
+
+Skede 2.1: Planering
+
+ÅKEPOL · Regelbok
+
+22
+
+
+
+5. Planering
+
+I Planeringen görs T-justeringen, kvartertypen sätts, och kvarteret går igenom 13 planerings‐
+steg där bolagsledningen handlar upp leverantörer och organisation.
+
+5.1 Setup för Planeringen
+
+Plocka fram Skede 2-brädet.
+
+Välj Arbetschef. Kvarteret med lägst BTA väljer först.
+
+COO sorterar de blå korten (PL) i 13 högar, en hög per planeringssteg. Leverantörs-, orga‐
+nisations- och händelsekort finns i fyra exemplar av varje (ett per kvarter), så att kvarter
+
+kan välja samma alternativ samtidigt. I varje hög ligger lev/org-kortet (eller alternativen)
+
+ÖVERST och tillhörande händelsekort UNDER.
+
+Placera de 13 högarna på respektive ruta på spelbrädet.
+
+COO tar fram moderbolagslånekorten och placerar dem synligt, de finns som sista utväg
+
+under Genomförandet (se 6.2).
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+23
+
+
+
+De blå rutorna som används i 2.1 – Planering.
+
+ÅKEPOL · Regelbok
+
+24
+
+
+
+5.2 Tidsjusteringen
+
+Vid Planeringens setup justeras T-utfallet (färgad kub). Ta det HÖGSTA T-värdet bland kvarte‐
+rets projekt, inte summan, och LÄGG TILL på startvärdet 12. T-utfallet kan därmed öka högst 2
+
+steg, från 12 till max 14 (sämre, längre byggtid). T-utfallet kan senare i Genomförandet både
+
+öka och minska, men kan aldrig sjunka under 8.
+
+T-krav vs T-utfall
+
+T-kravet är fast: 12 månader. Det rör sig aldrig.
+
+T-utfallet  (färgad  kub)  startar  på  12.  Vid  Planeringens  setup  ÖKAR  det  med  det  högsta
+
+projektets T-värde, max 2 steg, alltså till max 14.
+
+T-justeringen i  Planeringens setup sker bara här,  inte löpande i  Projektutvecklingen,  inte
+
+heller i slutet av Projektutvecklingen.
+
+Det är T-utfallet (färgad kub) som flyttas, inte T-kravet.
+
+T-utfallet kan röra sig vidare under Genomförandet via FAS-kort och händelser, men aldrig
+
+under 8.
+
+5.3 De 13 planeringsstegen
+
+Vid varje av de 13 stegen ligger fyra alternativ uppe på spelbrädet. Alla kvarter har samma
+
+fyra alternativ tillgängliga, det är inte "ett per kvarter". Ni får välja samma alternativ som
+
+varandra (ett företag jobbar ofta åt flera beställare samtidigt).
+
+För varje steg:
+
+Var och en spelar sin egen hand och väljer ett av de fyra alternativen. Lägg övriga i spel‐
+boxen.
+
+Blanda in samtliga händelsekort som hör till steget i draghögen. (Den kommer alltså att
+
+växa efterhand. Alla kvarter har sin egen draghög. Placera den på Scoreboarden).
+
+Justera scoreboarden enligt valets effekter på Q, H, T och erfarenhet.
+
+Behåll kortet till genomförandet.
+
+Projektens minimi-nivå på leverantörer
+
+Varje projektkort anger en minimi-nivå (1-4) som kvarteret måste uppfylla vid leverantörsva‐
+len.
+
+Ni får alltså inte välja en leverantör på nivå 1 om något av era projekt kräver nivå 2 eller
+
+högre. Den högsta minimi-nivån i projektmixen styr.
+
+Regeln gäller varje av de 13 planeringsstegen där en leverantör ska väljas.
+
+**
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+25
+
+
+
+5.4 Händelsekort
+
+Efter varje vald leverantör dras ett händelsekort från draghögen. Draghögen växer efterhand.
+
+Dragna kort läggs i spelboxen. Totalt dras alltså 13 kort under planeringen. Högen fortsätter
+
+sedan med i Genomförandet, och ytterligare 8 kort kommer att dras.
+
+ÅKEPOL · Regelbok
+
+26
+
+
+
+Ett händelsekort med D20-skala
+
+Slå D20, lägg till kvarterets samlade erfarenhet (max 12) och utför kortets effekt. Den kan
+
+vara både positiv, negativ och neutral beroende på kort.
+
+ÅKEPOL · Regelbok
+
+27
+
+
+
+5.5 Avslut av Planeringen
+
+När alla 13 steg är gjorda och alla 13 händelsekort är dragna är Planeringen klar.
+
+Skede 2.2: Genomförande
+
+ÅKEPOL · Regelbok
+
+28
+
+
+
+6. Genomförande
+
+I Genomförandet byggs projektet, åtta utförandefaser. För varje fas vänds ett FAS-kort med
+
+fyra utfallsnivåer (röd, gul, grön, mörkgrön). Bolagsledningen betalar med kompetens för att
+
+välja en bättre nivå än standardutfallet (röd). Vid skedets slut summeras Q, H och T mot kra‐
+ven.
+
+6.1 Setup för Genomförandet
+
+Innan  första  FAS-kortet  vänds  gör  COO  i  ordning  bord,  scoreboard  och  företagsroller,
+
+kortlekar, markörer och korthögar ska ligga där de ska.
+
+COO tar fram alla gröna kort (GF), blandar och placerar dem på respektive ruta på spel‐
+brädet: FAS-kort, konsekvenskort (Q, H, T), garantibesiktning, kulturkort.
+
+COO kontrollerar att scoreboarden är uppdaterad: Q, H och T-kuberna ska stå där Plane‐
+ringen  lämnade  dem;  Q-krav  och  H-krav  är  där  projekten  justerade  dem;  eventuella
+
+sparade leverantörskort på nivå 1-2 ligger i sin ruta.
+
+COO vänder översta FAS-kortet i den bunt som motsvarar nästkommande utförandefas.
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+29
+
+
+
+De gröna rutorna som används i 2.2– Genomförande.
+
+6.2 Moderbolagslån: sista utväg
+
+Om  ABT-budgeten  tar  slut  under  Genomförandet  kan  moderbolaget,  dotterbolagets  tysta
+
+partner, gå in med ett lån. Lånekorten ligger redan framme (se 5.1).
+
+Lånet är 100 Mkr nominellt, bara 95 Mkr betalas ut till er kassa (5 Mkr i avgift).
+
+Vid slutvärderingen dras hela det nominella beloppet (100 Mkr) från eget kapital.
+
+Konsekvenser i Förvaltningen om ni har tagit moderbolagslån
+
+Säljkrav ner till en (1) fastighet. Om ni har fler måste ni sälja tills ni har bara en kvar.
+
+Köpstopp, ni får inte köpa nya fastigheter på sekundärmarknaden.
+
+Uppgraderingsstopp, ni får inte göra energiförbättringar.
+
+Moderbolagslån är en sista utväg, inte en strategi.
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+30
+
+
+
+6.3 Företagskultur (kompetenspoäng)
+
+Företagskulturkort är frivilliga inköp innan varje utförandefas. De ger kompetenspoäng (STA,
+
+KOM, SAM, NOG, INN, ABM) som ni kan använda för att betala FAS-kort. Priset stiger genom
+
+spelet.
+
+Totalt finns 80 kulturkort och de delas av samtliga kvarter. Tar de slut, så tar de slut, först till
+
+kvarn. Använda kort läggs i spelboxen.
+
+Vad representerar kulturkorten?
+
+Kulturkorten motsvarar det "lilla extra" som varje person i organisationen har, det engage‐
+mang och den extrainsats som går utöver normalnivån. Mängden är begränsad.
+
+När energin är "tömd" är personernas bidrag tillbaka på normalnivån, det driver projektet
+
+vidare men ger ingen extra effekt på FAS-korten.
+
+Det vi  spelar är alltså inte "hela arbetschefen" utan "AC:s extraenergi",  och samma logik
+
+gäller för leverantörer, organisation och företagsledning.
+
+Detta förklarar också varför ledningens bidrag är relativt litet: ledningen har andra uppgifter
+
+att sköta utöver just detta projekt och har därför begränsad möjlighet att delta aktivt.
+
+**
+
+6.4 FAS-kortets fyra nivåer
+
+Varje FAS-kort har fyra utfallsnivåer markerade med färg:
+
+Röd (negativt) Inget kompetenskrav. "Låt det vara." Kostar Mkr och/eller försämrar Q, H
+
+eller T.
+
+Gul (lägre kostnad) Kräver lägre kompetens. Sparar pengar och tid.
+
+Grön (ingen effekt) Kräver mer kompetens. Inga negativa konsekvenser.
+
+Mörkgrön (bonus) Kräver mest kompetens. Kan ge tidsvinst, Q-bonus eller B-ÄTA-intäkt (se
+
+ruta nedan om B-ÄTA).
+
+Varje kort har också tre kolumner, BOSTÄDER · BOSTAD+1 · ÖVRIGA, som visar olika krav för
+
+varje kvartertyp. Ni använder den kolumn som matchar er kvartertyp.
+
+ÅKEPOL · Regelbok
+
+31
+
+
+
+Ett  FAS-kort  med  fyra  utfallsnivåer  (röd,  gul,  grön,  mörkgrön)  och  tre  kolumner  per
+
+kvartertyp (BOSTÄDER, BOSTAD+1, ÖVRIGA).
+
+B-ÄTA: beställarinitierad ändring
+
+B-ÄTA = Beställarens Ändrings-, Tilläggs- eller Avgående arbeten. När FAS-kortets Mörk‐
+grön-nivå ger en B-ÄTA-intäkt motsvarar det att beställaren beställer mer arbete och betalar
+
+för det.
+
+Konsekvens i spelet: B-ÄTA-intäkten Läggs till kassan, motsvarar vinsten på B-ÄTA, efter att
+
+AVT betalats.
+
+ÅKEPOL · Regelbok
+
+32
+
+
+
+6.5 Klara FAS-kortet med kompetens
+
+Ni väljer utfallsnivå genom att spela kort som har tillräcklig kompetens, leverantörs-, organi‐
+sations-, personal- eller kulturkort. Om ni inte spelar någon kompetens står ni kvar på den
+
+röda (negativa) nivån. Reglerna för spel:
+
+Spela  kort  tills  den  sammanlagda  summan av  relevanta  kompetenser  möter  eller
+
+överstiger kravet.
+
+Överskott räknas inte, extra kompetens utöver kravet ger ingen bonus.
+
+Hela kortet förbrukas och läggs i spelboxen efter användning, även om kortet hade kom‐
+petenser ni inte behövde (t.ex. ett kort med STA 3 som ni bara använde för KOM-värdet).
+
+Undantag: leverantörskort på nivå 1 eller 2 läggs INTE i spelboxen. De sparas på score‐
+boarden i särskild ruta, antalet räknas senare för garantibesiktningskorten vid skedets
+
+avslut (se 7.4).
+
+Exempel på hur man hanterar ett faskort för att nå önskat utfall.
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+33
+
+
+
+**
+
+6.6 Händelsekort efter varje fas
+
+När FAS-kortet är hanterat drar bolagsledningen ETT kort från sin egen händelsekortshög,
+
+den hög som från planeringen ligger uppe på scoreboarden.
+
+Slå D20 och addera er ackumulerade erfarenhet (inkl projektchefen, max 12).
+
+Resultatet jämförs med kortets skala, utfallet kan vara från allvarligt problem till bonus.
+
+Riskbuffertar får användas för omslag enligt 3.6.
+
+Använda händelsekort läggs i spelboxen.
+
+6.7 Genomgång av alla 8 faser
+
+Utför samtliga åtta utförandefaser på samma sätt: vänd FAS-kort, ev. köp kulturkort, betala
+
+kompetens för önskat utfall, justera scoreboarden, lägg använda kort i spelboxen (utom leve‐
+rantörer nivå 1-2 som sparas på scoreboarden), och dra därefter ett händelsekort från er
+
+egen hög.
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+34
+
+
+
+7.  Skedesavslut:  konsekvenserna
+kommer
+
+Efter alla 8 utförandefaser jämförs Q-, H- och T-utfallet (de färgade kuberna) mot Q-krav, H-
+
+krav och T-krav 12 (de grå/svarta markörerna). Detta sker i tre separata steg.
+
+CFO antecknar antalet dragna konsekvenskort
+
+Konsekvenskorten  blandas  tillbaka  i  draghögen mellan  kvarter,  eftersom de  återanvänds
+
+finns korten inte kvar på bordet att räkna senare.
+
+Antalet  dragna  konsekvenskort  påverkar  antalet  garantibesiktningskort  som  dras  i  7.4,
+
+därför måste det noteras.
+
+CFO antecknar på balans- och resultaträkningen hur många konsekvenskort kvarteret drog
+
+totalt (Tid + Kvalitet + Hållbarhet).
+
+Notera också den totala avvikelsen från målen efter att alla kort är hanterade (även korten
+
+kan i  värsta  fall  påverka måutfallet).  T,  Q,  H summerat.  Läs av  i  tabell  för  att  få  Mu till
+
+slutberäkningen av resultatet.
+
+7.1 Tidskonsekvenser (T)
+
+Jämför T-utfallet (färgad kub) med T-kravet 12.
+
+Dra ett konsekvenskort-Tid per steg ni saknar för att uppnå kravet.
+
+Utför det som står på korten.
+
+CFO antecknar antalet dragna konsekvenskort på balans- och resultaträkningen.
+
+COO blandar tillbaka använda kort i draghögen, sedan kör nästa kvarter sin tidsloop.
+
+7.2 Kvalitetskonsekvenser (Q)
+
+Jämför Q-utfallet (färgad kub) med Q-kravet (grå/svart markör).
+
+Dra ett konsekvenskort-Kvalitet per steg som saknas.
+
+Utför händelserna.
+
+CFO antecknar antalet dragna konsekvenskort på balans- och resultaträkningen.
+
+COO blandar tillbaka, sedan kör nästa kvarter sin Q-loop.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+35
+
+
+
+7.3 Hållbarhetskonsekvenser (H)
+
+Jämför H-utfallet (färgad kub) med H-kravet (grå/svart markör).
+
+Dra ett konsekvenskort-Hållbarhet per steg som saknas.
+
+Utför händelserna.
+
+CFO antecknar antalet dragna konsekvenskort på balans- och resultaträkningen.
+
+COO blandar tillbaka, sedan kör nästa kvarter sin H-loop.
+
+Q- och H-loopen kan rulla på
+
+Vissa Q- och H-konsekvenskort har utfall som drar utfallet ytterligare nedåt, då saknas fler
+
+steg och ni får dra fler kort. Mata på tills utfallet möter kravet, eller når 0. Vid 0 är ni klara
+
+med loopen, förmodligen också med karriären.
+
+7.4 Garantibesiktning
+
+Slutligen dras garantibesiktningskort: ett per draget konsekvenskort enligt CFO:s anteckning‐
+
+ar (T + Q + H), plus ett per leverantör på nivå 1 eller 2 som sparats på scoreboarden. Garanti‐
+besiktningskorten är alltid negativa eller noll, aldrig en bonus.
+
+Om garantibesiktningshögen tar slut: blanda om använda kort och dra igen. (Är ni där har ni
+
+det förmodligen redan ganska illa ställt.)
+
+7.5 Ekonomisk uppgörelse
+
+När alla konsekvenser och garantibesiktningar är gjorda summeras kvarvarande medel:
+
+CFO beräknar kvarterets nyckeltal:
+
+TB Täckningsbidrag = ABT-budget − faktisk ABT-kostnad. Visar hur mycket av
+budgeten som blev över.
+
+TG Täckningsgrad = TB ÷ ABT-budget. Procentmått på överskott.
+
+Sista justeringar
+
+Om moderbolagslån har tecknats (se 6.2).
+
+Lägg kvarvarande medel i kassan, de följer med till Förvaltningen som eget kapital.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+36
+
+
+
+7.6 BRF-försäljning
+
+Efter  Skede  2,  innan  Förvaltningen  tar  vid,  säljer  kvarteret  av  sina  BRF-projekt.  Intäkt  =
+
+marknadsvärde − anskaffningsvärde + rörlig intäkt (slå projektkortets tärning). Intäkten läggs
+i kassan.
+
+Behåll BRF-projektkorten: och anteckna BTA
+
+Lägg sålda BRF-projektkort i en separat hög hos er.
+
+För in BRF:ens BTA-värde i er balans- och resultaträkning. Det behövs vid slutsammanräk‐
+ningen, eftersom sålda BRF räknas med i BTA-divisorn, kassan från BRF-försäljningen ska
+
+"förtjäna sin yta" i jämförelsetalet (se 9.3).
+
+7.7 Avsluta Skede 2: städa bordet
+
+Innan ni går vidare till Skede 3 ska Skede 2-brädet och alla dess markörer rensas från bor‐
+det.
+
+Räkna avvikelser INNAN scoreboarden plockas bort
+
+För varje krav, räkna hur många steg ni avviker:
+
+• Q-avvikelse = Q-krav − Q-utfall, om Q-utfallet är lägre än kravet (annars 0).
+
+• H-avvikelse = H-krav − H-utfall, om H-utfallet är lägre än kravet (annars 0).
+
+• T-avvikelse = T-utfall − T-krav (12), om T-utfallet är högre än kravet (annars 0).
+
+Summera de tre värdena och läs av i tabell för Mu, måluppfyllelse och notera denna. (Eller
+
+spara ett antal händelse- eller garantikort framför er för att komma ihåg.)
+
+COO lägger Skede 2-brädet, scoreboarden och alla markörer som använts (Q-, H- och T-
+
+kuber, erfarenhetskuber, krav-markörer, riskbuffert-stjärnor) i spelboxen.
+
+Eventuella oanvända lev/org/händelsekort läggs i spelboxen.
+
+Projektkorten behåller ni,  både placerade och de godkända som inte placerades. Sålda
+
+BRF-kort (efter 7.6) sparas i sin separata hög.
+
+Tärningarna ligger kvar på bordet, de behövs i Skede 3.
+
+DEL V SKEDE 3: EFTER PRODUKTION
+
+I det tredje skedet förvaltar ni de fastigheter ni byggt, och kanske kompletterar ni portföljen
+
+genom att köpa eller sälja på sekundärmarknaden. Spelet växlar takt: från projektets enskil‐
+da risker till en löpande kvartalsrytm där omvärlden, hyresgäster och drift styr ert resultat.
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+37
+
+
+
+Skede 3-brädet: stadsdelens fastighetsmarknad med rutor för fastigheter byggda av andra
+
+aktörer,  plus areal för draghögar (omvärldskort,  händelsekort per fastighetstyp,  yieldkort,
+
+DD-kort, kvartalskort).
+
+Skede 3: Förvaltning
+
+ÅKEPOL · Regelbok
+
+38
+
+
+
+8. Förvaltning
+
+Förvaltningen spelas i  fyra kvartal.  För varje kvartal hanteras omvärldshändelser, händel‐
+
+sekort per fastighet, drift och eventuella köp/sälj. Vid slutet av Förvaltningen görs slutvärde‐
+ringen.
+
+8.1 Setup för Förvaltningen
+
+Skede 2 är avslutat och bordet är städat (se 7.7). Nu plockas Skede 3-brädet fram.
+
+Plocka  fram  Skede  3-brädet.  Det  representerar  STADSDELEN,  den  marknad
+
+bolagsledningen agerar på.
+
+Kvarterets egna fastigheter ligger framför kvarteret på dess spelplats, INTE på spelbrädet.
+
+På  spelbrädet  ligger  fastigheter  som finns i  stadsdelen men som inget  kvarter  byggt.
+
+Dessa har byggts av andra aktörer utanför spelet  och kan köpas av kvarteren när de
+
+kommer ut på marknaden.
+
+COO sorterar de röda korten (F): personalkort, händelsekort, omvärldskort, DD-kort och
+
+kvartalskort. Placerar draghögarna på sina rutor.
+
+8.2 Personal: FC och FS
+
+I Skede 3 anställer ni personal för förvaltningsbolaget:
+
+FC (Fastighetschef), leder förvaltningen, motsvarar projektchefen från tidigare skeden. En
+
+per kvarter.
+
+FS  (Förvaltningsstöd),  kompletterande  personal  som  ger  kompetens  eller  hanterar
+
+löpande drift.
+
+Personalstyrkan måste täcka antalet fastigheter
+
+Ni måste anställa tillräckligt med personal för att täcka ert antal fastigheter.
+
+Vid köp av fastigheter måste personalens ackumulerade kapacitet vara lika eller över antalet
+
+fastigheter ni äger.
+
+Personalstyrkan kan inte minskas, även om ni har övertalighet.
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+39
+
+
+
+8.3 Kvartalsspiralen: så spelar ni varje kvartal
+
+Förvaltningen består av fyra kvartal. För varje kvartal upprepas följande sekvens:
+
+Vänd ett omvärldskort. Det påverkar alla kvarter (yield, marknad, lagstiftning, ränteläge).
+
+Varje kvarter drar ett händelsekort av rätt typ per ägd fastighet (Hyresrätt, Kontor, Lokal,
+
+Förskola, egen draghög per typ). Lägg tillbaka och blanda mellan varje kvarter.
+
+Hantera köp/sälj på sekundärmarknaden om bolagsledningen vill (se 8.5).
+
+Frivilligt: höj energiklass på en eller flera fastigheter (se 8.6).
+
+CFO noterar utfall i balans- och resultaträkningen (eller Companion-koden).
+
+När alla fyra kvartal är spelade är Förvaltningen klar och slutvärderingen tar vid (se Del VI).
+
+8.4 Händelsekort per fastighet
+
+Varje kvartal drar ni ETT händelsekort av rätt typ per fastighet ni äger, typen står på fastighe‐
+ten (Hyresrätt, Kontor, Lokal, Förskola) och varje typ har sin egen draghög. Ett kvarter med
+
+fyra fastigheter drar alltså fyra kort, ett kvarter med en fastighet drar ett.
+
+Blanda mellan varje kvarter
+
+Lägg tillbaka korten och blanda direkt efter att ett kvarter dragit klart sina händelsekort.
+
+Sedan tar  nästa  kvarter.  Detta  ger  varje  kvarter  samma sannolikheter,  inte  de kort  som
+
+råkade bli kvar i högen.
+
+8.5 Marknadsvärdet: varierar över Skede 3
+
+Marknadsvärdet (FV) för varje fastighet räknas som driftnetto (år) ÷ yield. Eftersom yielden
+
+uppdateras av yieldkorten (se 8.11) varierar marknadsvärdet mellan kvartalen, det är inte ett
+
+fast värde under hela skedet.
+
+Var noterar ni marknadsvärdet?
+
+Med  Companion-koden:  marknadsvärdet  räknas  om  automatiskt  varje  kvartal  när
+
+omvärldskort vänds.
+
+Utan Companion-koden: CFO för en matris på balans- och resultaträkningen, fastigheter som
+
+rader, marknadsvärde per kvartal som kolumner. Uppdatera när yielden ändras.
+
+Energibonusen  räknas  INTE  in  i  marknadsvärdet  under  skedet,  bara  vid
+
+slutsammanräkningen (se 9.1).
+
+• 
+
+• 
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+40
+
+
+
+8.6 Köp och sälj på sekundärmarknaden
+
+Bolagsledningen kan köpa fastigheter från stadsdelens utbud (på spelbrädet) eller från andra
+
+kvarter som lägger ut till försäljning. Mekaniken:
+
+Bud läggs på det totala marknadsvärdet, köparen betalar dock bara 30 % av budet kontant.
+
+De övriga 70 % är lånefinansiering och belastar inte eget kapital.
+
+Lägsta accepterade bud är 80 % av marknadsvärdet.
+
+Banken köper alltid tillbaka för 80 %, säljaren kan alltid garanteras att kunna sälja, men då
+
+till "bankgolvet" 80 %.
+
+Bud  läggs  på  det  aktuella  marknadsvärdet  (se  8.5).  Eftersom  yielden  uppdateras  av
+
+yieldkorten kan marknadsvärdet variera mellan kvartalen.
+
+Vad säljaren får i handen: Säljaren får 30 % av köpeskillingen i handen — symmetriskt med
+
+köparens 30 %. De övriga 70 % motsvarar bankens lån som följer med fastigheten till köparen
+
+och löses tyst utanför spelets kassaflöde. Vid bank-tillbakaköp är budet 80 % av marknads‐
+värdet, vilket ger säljaren 30 % × 80 % = 24 % av MV i handen.
+
+DD-kort dras vid varje köp
+
+Varje gång ett kvarter köper en fastighet på sekundärmarknaden dras ett Due Diligence-kort
+
+efter att  affären är slutförd.  Kortet kan vara en kostnad (oförutsedd renovering),  neutralt
+
+eller positivt (övervärde). Det går inte att ångra köpet, utfallet får ni leva med.
+
+8.7 Energiklass
+
+Varje fastighet har en energiklass A–E som markeras med en bokstavsbricka. Klassen påver‐
+kar inte marknadsvärdet under skedet, den slår bara igenom vid slutsammanräkningen som
+
+energibonus (se 9.1).
+
+8.8 Omvärldskort
+
+Vid varje kvartal vänds ett omvärldskort. Korten påverkar ALLA kvarter. Effekten gäller från
+
+det kvartal kortet vänds tills något annat säger emot.
+
+8.9 Driftnetto
+
+Varje fastighets driftnetto = hyresintäkter minus driftkostnader. Värdet per kvartal står på fas‐
+tighetskortet.
+
+**
+
+• 
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+41
+
+
+
+8.10 Yield
+
+Yielden är ett avkastningskrav i procent och hämtas från egna yieldkort (inte omvärldskor‐
+ten). Startvärden: bostäder 4 %, kommersiellt 5 %. Yieldkort dras i slutet av kvartal 1, 2 och 3
+
+för att sätta nästa kvartals värde. I kvartal 4 är yielden låst (slutsättning sker innan eventuellt
+
+yieldkort skulle dras). Yielden är generell för marknaden och påverkar marknadsvärdet enligt
+
+formeln i 8.5: FV = Driftnetto (år) ÷ Yield.
+
+8.11 Avslut av Förvaltningen
+
+När alla fyra kvartal är spelade är förvaltningsperioden över. Det är nu fastigheternas värde
+
+låses fast och slutvärderingen tar vid (se Del VI).
+
+ÅKEPOL · Regelbok
+
+42
+
+
+
+D E L  V I  S LU T VÄ R D E R I N G
+
+
+
+ÅKEPOL · Regelbok
+
+44
+
+
+
+9. Slutvärdering: vem vinner?
+
+När Förvaltningen är klar görs slutvärderingen. Det kvarter med högst poäng per kvadratme‐
+ter vinner. Detta belönar effektiv markanvändning och hög kvalitet, inte bara stora portföljer.
+
+9.1 Slutformeln
+
+Slutformel
+
+Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)
+
+Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.
+
+Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz
+
+Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.
+
+Termerna i formeln, en för en:
+
+FV Summan av alla kvarterets fastigheters fastighetsvärde. FV per fastighet =
+
+(driftnetto (år) × 4) ÷ (yield/100).
+
+× 30 % Eget kapital i fastigheterna. 70 % av fastighetsvärdet antas vara lånefinan‐
+sierat.
+
+Energibonus Multiplikator per energiklass, se tabell nedan. Tillämpas per fastighet vid
+
+slutsammanräkningen.
+
+Eget kapital Kvarvarande kassa minus moderbolagslån (100 Mkr per lån,  oavsett  att
+
+bara 95 betalades ut). Multipliceras med EK_faktor i slutformeln: 0,10 om
+
+EK ≥ 0 (positiv kassa räknas till 10 %), 2,00 om EK \< 0 (moderbolagslån
+straffas dubbelt).
+
+TB Täckningsbidrag = ABT-budget − faktisk ABT-kostnad. Sätts till 0 om ABT-
+budget var 0 eller negativ.
+
+BTA Total  BTA  i  kvadratmeter,  summan  av  BTA  från  alla  placerade  projekt
+
+(inklusive sålda BRF) plus köpta fastigheter. Se 9.3.
+
+÷ (BTA/1000) Normaliserar för att få ett jämförelsetal per 1 000 kvadratmeter. Poängen
+
+har ingen enhet, det är ett jämförelsetal mellan kvarter.
+
+Energibonus per energiklass:
+
+ÅKEPOL · Regelbok
+
+45
+
+
+
+A +10 % (1.10)
+
+B +5 % (1.05)
+
+C 0 % (1.00)
+
+D −5 % (0.95)
+
+E −100 % (0)
+
+Energibonusen räknas in BARA vid slutsammanräkningen, inte i marknadsvärdet under Skede
+
+3.
+
+9.2 Straffaktor för Q-, H- och T-avvikelser
+
+Avvikelser från projektkraven straffas i slutpoängen. Avvikelsen mäts vid Skede 2:s slut (se
+
+7.7) och avvikelsehögen ligger framför kvarteret tills slutvärderingen.
+
+n  =  antal  kort  i  avvikelsehögen  =  summan  av  Q-,  H-  och  T-avvikelserna.  Läs  av
+
+Måluppfyllelsekofficient beroende på antal avvikelser.
+
+n = 0 → Mu = 100 %
+
+n = 1 → Mu = 90 %
+
+n = 2 → Mu = 82 %
+
+n = 3 → Mu = 75 %
+
+n = 4 → Mu = 70 %
+
+n = 5 → Mu = 65 %
+
+n = 6 → Mu = 61 %
+
+n = 7 → Mu = 58 %
+
+n = 8 → Mu = 55 %
+
+n = 9 → Mu = 52 %
+
+n = 10 → Mu = 50 %
+
+n ≥ 11 → Mu = max(0, 50 − (n − 10)) % (sjunker med 1 procentenhet per ytterligare avvikelse)
+
+Exempel:
+
+Vid Skede 2:s slut har kvarteret Q-utfall = 5 (krav 6, alltså 1 steg under), H-utfall = 4 (krav 6, 2
+
+steg under) och T-utfall = 13 (krav 12, 1 steg över).
+
+n = 1 + 2 + 1 = 4 → f(4) = 70 %.
+
+Slutpoängen blir 70 % lägre än om samtliga målen nät
+
+ÅKEPOL · Regelbok
+
+46
+
+
+
+9.3 BTA-divisorn: sålda BRF räknas med
+
+Vid slutvärderingen räknas total BTA som summan av alla projekt kvarteret PLACERAT på
+
+marken (inklusive expansioner), plus BRF som sålts efter Skede 2, plus eventuella fastigheter
+
+som köpts på sekundärmarknaden under Förvaltningen.
+
+Varför räknas sålda BRF?
+
+BRF-försäljningen genererar intäkter som ligger kvar i  kassan när Förvaltningen är klar,
+
+kassan finns med i slutformeln via "eget kapital".
+
+Om BRF:erna inte räknades med i BTA-divisorn skulle ett kvarter som sålde av allt och satt
+
+kvar med fet kassa få ett orättvist högt jämförelsetal, kassan skulle delas på en mycket liten
+
+BTA.
+
+Genom att räkna sålda BRF med i BTA-divisorn blir jämförelsetalet rättvist: kassan från BRF-
+
+försäljningen måste fortfarande "förtjäna sin yta".
+
+Praktiskt:  behåll  BRF-projektkorten  även  efter  försäljning  och  anteckna  BTA-summan  i
+
+balans- och resultaträkningen (eller i Companion-koden).
+
+9.4 Det kvarter med högst poäng vinner
+
+Jämför alla kvarterens poäng. Den med högst värde har skapat det effektivaste förvaltnings‐
+bolaget och vinner. Vid lika poäng är det kvarteret med högst förvaltad BTA som vinner.
+
+ÅKEPOL · Regelbok
+
+47
+
+
+
+D E L  V I I  B I L AGO R
+
+
+
+ÅKEPOL · Regelbok
+
+49
+
+
+
+10. D20 + ackumulerad erfarenhet
+
+Vid alla händelsekort (i Projektutvecklingen, Planeringen, Genomförandet och Förvaltningen)
+
+slås  en  tjugosidig  tärning  (D20)  och  den  ackumulerade  erfarenheten  adderas.  Resultatet
+
+jämförs med kortets  skala.  Erfarenheten är  cumulativ,  den byggs upp genom projektchef,
+
+leverantörer, organisation och vissa händelsekort. Erfarenhetstaket är 12.
+
+10.1 Trösklar (riktlinje)
+
+≤ 5 Allvarligt utfall, den värsta händelsen på kortet.
+
+6–17 Standardutfall, det som vanligtvis händer.
+
+18–20 Bra utfall, viss bonus eller mildring.
+
+21+ Utmärkt utfall, endast nåbart med hög erfarenhet. Maximal bonus.
+
+Riskbuffert (Rb) får användas för omslag enligt 3.6:  max 1 Rb per slag, max 1 omslag per
+
+slagomgång (ingen tredje serve).
+
+ÅKEPOL · Regelbok
+
+50
+
+
+
+11. Kompetenser
+
+Sex parametrar som speglar personens, leverantörens eller företagskulturens styrkor. Per‐
+sonal-, leverantörs-, organisations- och kulturkort har dessa kompetenser tryckta på sig och
+
+spelas i Genomförandet för att möta kraven på FAS-korten.
+
+STA Stabilitet. Förmåga att hantera press, kris och osäkerhet utan att tappa fo‐
+kus.
+
+KOM Kommunikation.  Förmåga  att  tala,  nå  fram  och  bygga  relationer  i
+
+upphandling, grannrelationer och besiktningar.
+
+SAM Samarbete.  Förmåga  att  jobba  med  andra  och  samordna  discipliner
+
+(installationer, stomme, inredning).
+
+NOG Noggrannhet. Detaljkoll, planering och kvalitetsfokus, hjälper i projektering
+
+och slutbesiktning.
+
+INN Innovation. Kreativitet och nyfikenhet.
+
+ABM Arbetsmiljö. Krävs vid riskmoment, höjder, tunga lyft och komplexa bygg‐
+arbetsplatser.
+
+ÅKEPOL · Regelbok
+
+51
+
+
+
+12. Termer
+
+ÅKEPOL · Regelbok
+
+52
+
+
+
+ÅKEPOL
+
+Spelets namn (versaler i rubrik, "Åkepol" i löptext).
+
+dotterbolag
+
+Joint venture, Moderbolaget äger bolaget och tillsätter ledningsgruppen.
+
+Stadsdel
+
+Spelplanen i Åkepol. Rymmer 1–4 kvarter samt fastigheter byggda av andra aktörer.
+
+Kvarter
+
+Det område där projektmixen byggs upp. Mark + markexpansioner = den totala byggrätten.
+
+Tomt
+
+Hela bolagsledningens område. Är större än marken, fungerar som arbetsyta.
+
+Mark
+
+Ursprunglig byggrätt, 4×4 = 16 celler.
+
+Markexpansion
+
+Utökning av  byggrätten via  markexpansionskort  eller  Hörnruta:  Stadsbyggnadskontoret.  5
+
+Mkr per styck.
+
+Bolagsledning
+
+Beslutsfattaren bakom kvarteret. Kan utgöras av en spelare eller flera personer i lag.
+
+Skede
+
+Övergripande indelning i tre delar: före/under/efter produktion.
+
+Faser
+
+I Genomförandet (Skede 2.2) finns 8 utförandefaser, det är dessa FAS-korten gäller.
+
+Anskaffning
+
+De pengar som finns för att genomföra projektet till överlämning till fastighetsägaren (i Mkr).
+
+Ska räcka till tomtkostnad, markexpansion och utveckling, det som blir kvar är ABT-budget.
+
+ABT-budget
+
+Det som blir kvar av anskaffningen efter Projektutvecklingens kostnader. Täcker kostnader
+
+för planering och produktion, inklusive täckningsbidrag för generalentreprenören.
+
+ABT-kostnad
+
+Vad  som dras  av  under  Genomförandet  (kompetenskort,  FAS-kort-utfall,  konsekvenskort
+
+etc.).
+
+BTA
+
+Bruttototalarea. Summan av BTA från placerade projekt (inkl. sålda BRF) plus köpta fastighe‐
+ter.
+
+BYA
+
+Byggnadsarea. Summan av marken plus eventuella markexpansioner, alltså den totala bygg‐
+rätten.
+
+BRF
+
+Bostadsrättsförening. Säljs efter Skede 2 (mellan produktion och förvaltning), projektkortet
+
+sparas dock.
+
+ÅKEPOL · Regelbok
+
+53
+
+
+
+Companion-koden
+
+Den digitala balans- och resultaträkningen. Ersätter det manuella bladet.
+
+DD-kort
+
+Due Diligence-kort. Dras vid varje köp på sekundärmarknaden i Förvaltningen.
+
+Driftnetto
+
+Hyresintäkter − driftkostnader på en fastighet.
+
+Eget kapital
+
+Kassa − moderbolagslån. Spelets förenkling, inte redovisningens EK.
+
+Energibonus
+
+Multiplikator per energiklass: A=1.10, B=1.05, C=1.00 (referens), D=0.95, E=0 (E ger 0 FV-bidrag
+
+— hård bestraffning). Tillämpas vid slutsammanräkningen.
+
+Erfarenhet
+
+Adderas till D20 vid händelsekort. Tak: 12.
+
+FV
+
+Fastighetsvärde = Driftnetto (år) ÷ Yield (under spelet). Energibonus räknas in vid slut.
+
+Företagskultur
+
+Frivilliga inköpta kompetenskort som förbrukas vid spelet.
+
+FAS-kort
+
+Grönt kort i  Genomförandet med fyra utfallsnivåer (en per utförandefas).  Bolagsledningen
+
+betalar kompetens för bättre nivå.
+
+Händelsekort
+
+Slumpmässig händelse, D20 + erfarenhet jämförs med kortets skala.
+
+Konsekvenskort
+
+Dras vid skedesavslut för varje steg som saknas Q/H/T mot kraven.
+
+Kvartertyp
+
+BOSTÄDER · BOSTAD+1 · ÖVRIGA, bestäms av projektmixen i kvarteret.
+
+Moderbolag
+
+dotterbolagets tysta partner. Garanterar byggnadskreditiv och erbjuder moderbolagslån.
+
+Nämndkrav
+
+Det värde som måste överträffas när ett projekt ska genom nämnden. D20 + Nämnd-bonus
+
+(från PC) jämförs med Nämndkravet, erfarenhet räknas INTE.
+
+Moderbolagslån
+
+100 Mkr per lån (95 betalas ut, 100 dras vid slut). Säljkrav, köpstopp, uppgraderingsstopp i
+
+Förvaltningen.
+
+Personkort
+
+Samlingsterm för CEO/CFO/COO-kort, 8 av varje, 24 totalt.
+
+Projektkrav
+
+Q (Kvalitet), H (Hållbarhet), T (Byggtid). Mäts på scoreboarden.
+
+Riskbuffert (Rb)
+
+ÅKEPOL · Regelbok
+
+54
+
+
+
+Stjärnmarkör. Två användningar: omslag på dåligt slag, eller sänka projektkrav vid skedes‐
+övergång.
+
+Scoreboard
+
+Kvarterets bräde i Skede 1 och Skede 2 där Q/H/T-kuber och erfarenhet registreras.
+
+Slutformel
+
+Råpoäng = (FV × 30 % × Energibonus + EK_faktor × Eget kapital + TB) ÷ (BTA / 1000). EK_faktor
+
+är 0,10 om EK ≥ 0, annars 2,00. Poängen har ingen enhet, ett jämförelsetal mellan kvarter.
+
+Spelpjäs
+
+Den fysiska figur som flyttas runt Skede 1-brädet. En per kvarter.
+
+TB
+
+Täckningsbidrag = ABT-budget − faktisk ABT-kostnad.
+
+TG
+
+Täckningsgrad = TB ÷ ABT-budget.
+
+Yield
+
+Avkastningskrav i procent. Marknadsvärdet = Driftnetto (år) ÷ Yield.
+
+ÅKEPOL · Regelbok
+
+55
+
+
+
+13. Snabbreferens: en sida
+
+Tre skeden
+
+Skede 1 Projektutveckling. Markförvärv, projektval, nämndbeslut.
+
+Skede 2.1 Planering. 13 steg av leverantörs- och organisationsval.
+
+Skede 2.2 Genomförande. 8 utförandefaser, FAS-kort, konsekvenskort.
+
+Skede 3 Förvaltning. 4 kvartal, händelsekort, köp/sälj.
+
+D20-trösklar (händelsekort)
+
+≤ 5 Allvarligt
+
+6–17 Standard
+
+18–20 Bra
+
+21+ Utmärkt (endast med hög erfarenhet)
+
+Slutformel
+
+Slutformel
+
+Fastighetspoäng (Fp) = (FV × 30 % × Energibonus)
+
+Måluppfyllnad (Mu) = ej uppfyllda mål ger avdrag i procent. Tabell finns i regelhäftet 9.2.
+
+Slutpoäng = Mu × (Fp + Eget kapital + TB) ÷ (BTA / 1000)+quiz
+
+Förklaring av termerna och energibonus per energiklass finns i regelhäftet kapitel 9.
+
+Energibonus per energiklass
+
+A = 1.10 B = 1.05
+
+C = 1.00 (ref) D = 0.95
+
+E = 0
+
+ÅKEPOL · Regelbok
+
+56
+
+
+
+Riskbuffert (Rb): två användningar
+
+Omslag på dåligt slag, max 1 Rb per slag, max 1 omslag per slagomgång (ingen tredje ser‐
+ve).
+
+Sänka projektkrav (Q, H eller T) vid övergång Skede 1 → Skede 2, 1 Rb = 1 steg. T ≥ 8; Q-
+krav och H-krav ≥ 0.
+
+• 
+
+• 
+
+ÅKEPOL · Regelbok
+
+57
+
+
+
+
+	1. Välkommen till Åkepol
+	1.1 Spelets mål
+	1.2 Bolagsstruktur: Dotterbolag till Moderbolaget
+	1.3 Geografisk hierarki: Stad, Stadsdel, Kvarter, Projekt
+	1.4 Spelets struktur: tre skeden
+	1.5 Spelkomponenter
+	Skede 1: Projektutveckling — PU (bruna kort)
+	Skede 2.1: Planering — PL (blå kort)
+	Skede 2.2: Genomförande — GF (gröna kort)
+	Skede 3: Förvaltning — F (röda kort)
+	Övergripande personkort
+	Markörer:
+	1.6 Lag-rollfördelning vid flera personer per kvarter
+	1.7 Snabbreferens: centrala begrepp
+
+	2. Setup: innan första draget
+	2.1 Allmänna setup-regler
+	2.2 Förkortningar i regelhäftet
+	2.3 Företagsledningen: välj era roller
+
+	3. Markförvärv och projektval
+	3.1 Setup för Projektutvecklingen
+	3.2 Tomten, marken och kvarteret
+	3.3 Projektkort och projektkrav
+	3.4 Händelsekort under Projektutvecklingen
+	3.5 D20-skalan: riktlinjer
+	(Skalan kan vara olika på individuella kort, så kontrollera per kort)
+	3.6 Riskbuffert (Rb)
+	3.7 Hörnrutorna: institutionerna
+	3.8 Personalkort: Projektchef (PC)
+
+	4. Nämndbeslut och placering
+	4.1 Nämndbeslutet
+	4.2 Komplettera er projektmix
+	4.3 Placering: kvarteret som pussel
+	4.4 Kvartertyp: vad har ni byggt?
+
+	5. Anskaffning, ABT-budget och övergång till Skede 2
+	5.1 Anskaffningen: er inkomst från projektet
+	5.2 Sista justering: använd Rb om ni vill
+	5.3 Avslut av Projektutvecklingen
+
+	5. Planering
+	5.1 Setup för Planeringen
+	5.2 Tidsjusteringen
+	5.3 De 13 planeringsstegen
+	5.4 Händelsekort
+	5.5 Avslut av Planeringen
+
+	6. Genomförande
+	6.1 Setup för Genomförandet
+	6.2 Moderbolagslån: sista utväg
+	6.3 Företagskultur (kompetenspoäng)
+	6.4 FAS-kortets fyra nivåer
+	6.5 Klara FAS-kortet med kompetens
+	6.6 Händelsekort efter varje fas
+	6.7 Genomgång av alla 8 faser
+
+	7. Skedesavslut: konsekvenserna kommer
+	7.1 Tidskonsekvenser (T)
+	7.2 Kvalitetskonsekvenser (Q)
+	7.3 Hållbarhetskonsekvenser (H)
+	7.4 Garantibesiktning
+	7.5 Ekonomisk uppgörelse
+	7.6 BRF-försäljning
+	7.7 Avsluta Skede 2: städa bordet
+
+	8. Förvaltning
+	8.1 Setup för Förvaltningen
+	8.2 Personal: FC och FS
+	8.3 Kvartalsspiralen: så spelar ni varje kvartal
+	8.4 Händelsekort per fastighet
+	8.5 Marknadsvärdet: varierar över Skede 3
+	8.6 Köp och sälj på sekundärmarknaden
+	8.7 Energiklass
+	8.8 Omvärldskort
+	8.9 Driftnetto
+	8.10 Yield
+	8.11 Avslut av Förvaltningen
+
+	9. Slutvärdering: vem vinner?
+	9.1 Slutformeln
+	9.2 Straffaktor för Q-, H- och T-avvikelser
+	9.3 BTA-divisorn: sålda BRF räknas med
+	9.4 Det kvarter med högst poäng vinner
+
+	10. D20 + ackumulerad erfarenhet
+	10.1 Trösklar (riktlinje)
+
+	11. Kompetenser
+	12. Termer
+	13. Snabbreferens: en sida
+	Tre skeden
+	D20-trösklar (händelsekort)
+	Slutformel
+	Energibonus per energiklass
+	Riskbuffert (Rb): två användningar
+
+	Tom sida
+
+
+
+

@@ -1,0 +1,8 @@
+BYA MINNESKORT  DIN TOTALA BYA  BEHÅLL KORTET SOM REFERENS  Summera   BYA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS byggnadsarea  A   0-4000 kvm   B   4001-4750 kvm  C   4751-5000 kvm   D   >5000 kvm  A
+BYA  Klass A
+BYA MINNESKORT  DIN TOTALA BYA  BEHÅLL KORTET SOM REFERENS  Summera   BYA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS byggnadsarea  A   0-4000 kvm   B   4001-4750 kvm  C   4751-5000 kvm   D   >5000 kvm  B
+BYA  Klass B
+BYA MINNESKORT  DIN TOTALA BYA  BEHÅLL KORTET SOM REFERENS  Summera   BYA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS byggnadsarea  A   0-4000 kvm   B   4001-4750 kvm  C   4751-5000 kvm   D   >5000 kvm  C
+BYA  Klass C
+BYA MINNESKORT  DIN TOTALA BYA  BEHÅLL KORTET SOM REFERENS  Summera   BYA   från alla projekt som du har  med till planeringsfasen. Läs av klass i tabel -  len nedan.   Behåll kortet som referens.  KLASS byggnadsarea  A   0-4000 kvm   B   4001-4750 kvm  C   4751-5000 kvm   D   >5000 kvm  D
+BYA  Klass D

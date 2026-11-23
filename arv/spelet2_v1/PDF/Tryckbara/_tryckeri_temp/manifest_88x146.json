@@ -1,0 +1,29 @@
+{
+  "storlek_namn": "88x146",
+  "card_w_mm": 88,
+  "card_h_mm": 146,
+  "rot": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\",
+  "tryck_mapp": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\",
+  "poster": [
+    {
+      "basnamn": "PU_projekt_bildsida",
+      "stem": "PU_projekt",
+      "sida_typ": "bild",
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\PU_projekt_bildsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\PU_projekt_bildsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\PU_projekt_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\1. Projektutveckling\\PU_projekt.csv",
+      "fas_prefix": "PU_"
+    },
+    {
+      "basnamn": "PU_projekt_textsida",
+      "stem": "PU_projekt",
+      "sida_typ": "text",
+      "temp_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\PU_projekt_textsida_temp.pdf",
+      "layout_json": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\_tryckeri_temp\\PU_projekt_textsida_layout.json",
+      "final_pdf": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\PDF\\Tryckbara\\PU_projekt_tryckeri.pdf",
+      "csv_path": "C:\\Users\\niklas.sviden\\OneDrive - Åke Sundvalls Byggnads AB\\SPELET 2\\1. Projektutveckling\\PU_projekt.csv",
+      "fas_prefix": "PU_"
+    }
+  ]
+}
